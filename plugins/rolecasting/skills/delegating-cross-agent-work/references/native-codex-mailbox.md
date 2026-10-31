@@ -11,6 +11,17 @@ Dispatch setup owns acceptance on the real native path and operational cutover.
 The predecessor Foreman remains the admission writer until the separately
 accepted handover. Reading a mailbox transfers no operational ownership.
 
+## Profile boundary
+
+This is the existing mailbox procedure and store contract for routes exposing
+its native send/read/wait controls. For ordinary current-tree Cloud operations,
+select the separate versioned `native_tree.py` profile through
+[native-codex-subagents.md](native-codex-subagents.md). Do not assume this
+procedure's `read_thread` or `wait_threads` controls exist on that surface, or
+reinterpret its thread/host identities as the new profile's canonical targets.
+The existing helper, stored obligations, and explicit reconciliation rules
+remain unchanged. A new profile does not migrate or transfer their ownership.
+
 ## Inputs and observation boundary
 
 Use one explicitly bound SQLite store on a local filesystem with working SQLite

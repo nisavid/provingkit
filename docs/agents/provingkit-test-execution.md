@@ -1,6 +1,6 @@
 # Run complete Provingkit contract methods
 
-Use this procedure to run, change, or diagnose the two-worker source-contract
+Use this procedure to run, change, or diagnose the complete source-contract
 schedule. The production consumer is the **Provingkit source boundary** job in
 `.github/workflows/provingkit-source.yml`; the command and its regression suite
 are `scripts/run_provingkit_tests.py` and `tests/test_run_provingkit_tests.py`.
@@ -20,12 +20,24 @@ Other member checks and the standalone source validator keep their own routes.
    python scripts/run_provingkit_tests.py . --output-dir /tmp/provingkit-tests
    ```
 
-   The runner requires an observed capacity of at least two CPUs, bounded by
-   affinity and every visible ancestor cgroup quota. Missing observations or
-   insufficient capacity fail before test workers start. The fixed budget is
-   one runner and at most two simultaneous complete-method test workers.
-3. Require exit status zero, `result.json` with `successful: true`, both worker
-   reports and logs, and successful cleanup records. Every discovered method
+   The default `--workers 2` requires an observed capacity of at least two CPUs,
+   bounded by affinity and every visible ancestor cgroup quota. Missing
+   observations or insufficient capacity fail before test workers start.
+   For local functional validation, explicitly select serial execution when
+   capacity is unknown or insufficient for two workers:
+
+   ```sh
+   python scripts/run_provingkit_tests.py . --workers 1 --output-dir /tmp/provingkit-tests-serial
+   ```
+
+   Serial execution retains CPU observations, errors, and unknown capacity;
+   it makes no minimum-capacity claim. The host scheduler and quotas govern
+   execution. The fixed budget is one controller and the selected one or two
+   complete-method test workers, with their ordinary descendants. Serial mode
+   does not impose a one-CPU utilization cap or extend the deadline.
+3. Require exit status zero, `result.json` with `successful: true`, the selected
+   `worker_count` in the plan and result, all selected worker reports and logs,
+   and successful cleanup records. Every discovered method
    must appear exactly once with a completed outcome. Inspect method and subtest
    skips and their reasons; a skipped optional dependency remains a missing
    runtime observation. Complete the standalone validator, projection, prepared
@@ -41,10 +53,11 @@ that isolation. Review any new shared module/class fixture before using this
 schedule.
 
 `scripts/provingkit_test_timings.json` supplies advisory duration estimates.
-Longest-first allocation balances the workers while retaining discovery order
-inside each worker. New methods receive the longest current estimate; obsolete
-hint names are ignored. Hints never define coverage or acceptance. The initial
-estimates come from the accepted
+With two workers, longest-first allocation balances their assignments while
+retaining discovery order inside each worker. Serial execution puts every
+method in one worker in discovery order. New methods receive the longest current
+estimate; obsolete hint names are ignored. Hints never define coverage or
+acceptance. The initial estimates come from the accepted
 [serial measurement](https://github.com/nisavid/provingkit/actions/runs/35374474769).
 Updating estimates requires complete successful current-run records and review;
 there is no dependency on a frozen source, prior hosted run, or experiment branch.
@@ -52,7 +65,8 @@ there is no dependency on a frozen source, prior hosted run, or experiment branc
 ## Diagnose and retain execution
 
 Keep the complete output directory for failed as well as successful runs. It
-contains discovery, plan and CPU observations, Python/dependency information,
+contains discovery, plan and CPU observations (including raw membership and
+mount inputs and observation errors), Python/dependency information,
 tracked-source snapshots, worker logs and method records, resource observations,
 and cleanup records. CI retains these for 30 days. A zero worker exit without a
 complete result still fails the controller. Discovery errors, duplicate IDs,
@@ -67,6 +81,12 @@ kill can prevent reporting or artifact upload; absent results never establish
 acceptance. Retry only through the owning task's allocation policy, preserving
 the first attempt's evidence.
 
+A successful serial run establishes complete local functional execution only
+when coverage, outcomes, source stability, and cleanup all pass. It does not
+qualify the two-worker schedule or parallel fixture isolation, establish hosted
+timing, or replace required production status checks. An unknown CPU capacity
+remains unknown after a successful serial run.
+
 Report command elapsed time, method durations, summed test-process CPU including
 waited-for children, and per-process peak RSS separately. Peaks are not summed
 memory consumption. Hosted workflow elapsed and total occupied runner time come
@@ -76,10 +96,19 @@ variance or repeatability, and local timings are not matched hosted speedup.
 ## Change and qualify the schedule
 
 Run `python -m unittest tests.test_run_provingkit_tests`, the complete command
-above, the other owning source checks, `actionlint` on the source workflow, and
-`git diff --check`. The disposable command fixtures exercise failure and
-cancellation branches; they do not replace the real candidate suite. Review the
+in the selected mode above, the other owning source checks, `actionlint` on the
+source workflow, and `git diff --check`. The disposable command fixtures exercise
+failure and cancellation branches; they do not replace the real candidate suite. Review the
 runner, workflow, tests, hints, and this procedure together on the same immutable
 revision. Check required-status continuity and fixture isolation when the suite
 changes. Return the candidate, local results, review evidence, and expected
 runner use to the preview coordinator before any hosted allocation or landing.
+
+The regression suite keeps native two-worker command checks alongside serial
+checks. A host with unknown capacity can run the serial and synthetic selector
+checks explicitly with
+`python -m unittest tests.test_run_provingkit_tests.SerialProvingkitTestExecutionTests tests.test_run_provingkit_tests.SyntheticCapacitySelectionTests`.
+The synthetic observations establish scheduling branches only; they do not
+attest the host's capacity. Keep blocked native two-worker checks visible and
+run them on an environment with complete capacity observations before claiming
+parallel qualification. Serial success does not turn their failures into skips.

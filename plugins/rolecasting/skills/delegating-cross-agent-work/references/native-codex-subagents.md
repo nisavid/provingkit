@@ -3,7 +3,7 @@
 This is the operational binding for ChatGPT Codex, Codex CLI/TUI, and Codex
 Desktop. They are separate target surfaces with separate adapter profiles and use
 the harness's native subagent tool as a leader-owned child transport. The
-binding is skill-mediated: `native_codex.py` sequences freeze and record state,
+strict-profile binding is skill-mediated: `native_codex.py` sequences freeze and record state,
 while the skill invokes the native tool between those operations. The module is
 not a launcher and does not turn caller-supplied facts into portable
 attestation.
@@ -22,6 +22,58 @@ Do not use this binding to create or steer a user-owned task. That ownership
 requires explicit user consent and a separately classified route.
 App-server is an optional later transport, not a Codex surface and not an
 initial-release dependency.
+
+## Select the ordinary Cloud native-tree profile
+
+Ordinary current-tree Cloud child operations use the separate `native_tree.py`
+driver through [the native-tree procedure](native-tree-driver.md). Select its explicit versioned
+profile and schema, bound to the current surface and native controls; missing
+legacy fields do not select this profile automatically. The strict
+`native_codex.py` records and their readers remain unchanged. Desktop, CLI/TUI,
+and consumers requiring the strict record use the strict procedure below.
+
+Freeze the bounded operation, current controller, native target binding and
+generation, requested selection, capability observations, authority, and
+consumer minimum before dispatch. Model choice still belongs to
+`choosing-agent-models`. Native children remain leader-owned; logical role names
+supply neither native identity nor authority. For independent review, preserve
+the read-only invocation plan, denied onward authority, closed dispatch set,
+and distinct observed execution contexts. A generic coordination operation
+cannot borrow that review plan as permission for additional actions.
+
+Bind the canonical target only from the controller's returned or observed
+identity. Keep separate agent, task, and session IDs only when independently
+exposed. A missing separate session ID is permitted; copying the target into a
+second ID is not evidence. Product build may be explicitly unavailable only
+for this ordinary profile with its frozen surface/capability binding. An
+environment publication version cannot replace it. A consumer requiring an
+observed product version or stronger evidence still blocks; this exception
+does not apply to Desktop, CLI/TUI, or witnessed evidence.
+
+Use the driver's immutable command and transactional claim before making one
+native call. Only the newly successful claimant may emit that attempt. Record
+the raw observation and its source; the driver does not invoke native tools
+from a shell. Preserve an uncertain attempt before reconciliation instead of
+automatically resending. Native arguments contain only supported fields;
+application correlation and explicit reply intent belong inside messages.
+
+The maximum-assurance table below is a ceiling, not achieved evidence. For
+this profile, derive each achieved dimension only from supplied observations.
+Unknown shapes remain unknown. A running previous status does not prove a
+finished interruption, and a wait timeout does not prove nondelivery. A native
+parent final does not establish sibling-owner acceptance. Missing or unverified
+results remain unusable; preserve strict Boolean usability and explicit owner
+verification. Worker prose cannot supply native provenance or promote a weaker
+dimension. These records remain ordinary same-controller evidence, not portable
+attestation.
+
+Continue only while the controller, target/generation, requested selection,
+authority, and required capabilities remain current, following the choosing
+skill's same-controller continuation branch. A new root requires an explicit
+checkpoint handoff and newly verified bindings; old handles alone do not restore
+continuity. If the profile or driver is unavailable, do not fabricate missing
+metadata or reinterpret strict records. Use another contract-preserving route
+or continue useful authorized work that needs no child operation.
 
 ## Identify the Desktop target
 
@@ -60,7 +112,7 @@ does not establish a valid Desktop target. Product-version evidence does not
 identify the engine or executed model, attest effective permissions, or qualify
 a native review. The Desktop profile retains the assurance limits below.
 
-## Freeze before launch
+## Strict-profile freeze before launch
 
 Before freezing, consume the choosing skill's [effort eligibility](../../choosing-agent-models/references/effort-policy.md) and [named-successor capability gates](../../choosing-agent-models/references/capability-probes-and-fallbacks.md#resolve-named-successors). The native adapter binds opaque plan and request digests; it does not validate model-policy eligibility. The owning selection workflow must prove it, including inherited or executor-default effort, before launch.
 
@@ -103,7 +155,7 @@ enforced those denials. If a consumer requires stronger model or authority
 assurance, return `BLOCKED` before spawning. Do not weaken the frozen minimum
 as a fallback.
 
-## Invoke and observe
+## Strict-profile invoke and observe
 
 After a successful freeze, invoke exactly one native subagent for the frozen
 dispatch. Explicitly pass the selected model and reasoning effort in every

@@ -59,7 +59,12 @@ directory remains; raw Git stderr is not returned.
 Do not reconstruct a receipt, run the Git command separately, or override a
 blocked or `unknown` result by hand.
 
-The guard prevents replacement by other local users once the immediate parent
+Ordinary runtime selection trusts the host-supplied fixed Git executable and
+system namespace. It binds and rechecks observable path identities without
+requiring numeric root ownership; this does not attest host isolation. It
+still rejects candidate-controlled runtime paths and unsafe configuration.
+
+The worktree-directory guard prevents replacement by other local users once the immediate parent
 and sibling root satisfy those permissions. A privileged process or another
 process running as the same user remains outside this filesystem guarantee; do
 not run concurrent worktree mutators. Initialize recursive submodules when the

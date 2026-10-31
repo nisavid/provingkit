@@ -37,10 +37,11 @@ from types import MappingProxyType, ModuleType
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 _RUNNING_AS_ENTRYPOINT = __name__ == "__main__"
-SOURCE_SHA256 = "e9a83c059c2a6a38440407fce9a92e34a4b87eaddea590ba78825f0f43ccdd23"
+SOURCE_SHA256 = "818e5940efedd4eff19d4611b9fae51016932d4ca90062c8d591717eed7ffbd8"
 PREPARED_SUPERVISOR_SOURCE_OPTION = "--prepared-supervisor-source-sha256"
 MAX_PROOF_SOURCE_BYTES = 2 * 1024 * 1024
 RELEASE_SUPPORT_SOURCES = (
+    ("host_trust", "scripts/host_trust.py"),
     ("evidence_transport", "scripts/evidence_transport.py"),
     ("amberbridge_compatibility_projection", "scripts/amberbridge_compatibility_projection.py"),
     (
@@ -69,6 +70,7 @@ COMMON_SUPPORT_PATHS = {
     "evals/control-plane-matrix.json",
     "evals/skill-routing-matrix.json",
     "scripts/run_control_plane_eval.py",
+    "scripts/host_trust.py",
     "scripts/evidence_transport.py",
     "scripts/amberbridge_compatibility_projection.py",
     "scripts/amberbridge_private_evidence_backend_contracts.json",
@@ -2438,7 +2440,9 @@ def validate_composed_receipt(repository: Path, path: Path | None) -> dict:
     )
     require(
         receipt["public_candidate_identity"]
-        == candidate_content_identity(repository, error_factory=ReleaseError),
+        == candidate_content_identity(
+            repository, error_factory=ReleaseError, runtime_policy="hardened"
+        ),
         "composed receipt public candidate identity mismatch",
     )
     public_compatibility = compatibility_bytes(repository)

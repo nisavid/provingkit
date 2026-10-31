@@ -96,6 +96,11 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
                 "isolated-task-companion-boundary",
                 "dedicated-daybreak-resume-rebinds-account-route",
                 "scarce-specialist-decision-handoff",
+                "native-tree-canonical-target-optional-metadata",
+                "native-tree-observation-boundaries",
+                "native-tree-owner-acceptance-late-generation",
+                "native-tree-unknown-claim-no-new-id-retry",
+                "select-native-cloud-same-controller-continuation",
             },
         )
 

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import importlib.util
 import os
 import signal
 from pathlib import Path
@@ -10,12 +11,16 @@ import sys
 import tempfile
 import time
 import unittest
+from unittest import mock
 
 
 RUNNER = Path(__file__).resolve().parents[1] / "scripts/run_provingkit_tests.py"
 
 
 class ProvingkitTestExecutionTests(unittest.TestCase):
+    worker_arguments = ()  # Exercise the production default of two workers.
+    worker_count = 2
+
     def setUp(self):
         temporary = tempfile.TemporaryDirectory()
         self.addCleanup(temporary.cleanup)
@@ -28,10 +33,13 @@ class ProvingkitTestExecutionTests(unittest.TestCase):
     def write_suite(self, content):
         (self.candidate / "tests/test_validate_provingkit.py").write_text(content)
 
+    def command(self, *arguments):
+        return [sys.executable, "-B", str(RUNNER), str(self.candidate),
+                "--output-dir", str(self.output), *self.worker_arguments, *arguments]
+
     def run_suite(self, *arguments, affinity=None):
         return subprocess.run(
-            [sys.executable, "-B", str(RUNNER), str(self.candidate),
-             "--output-dir", str(self.output), *arguments],
+            self.command(*arguments),
             capture_output=True, text=True, timeout=20,
             preexec_fn=(lambda: os.sched_setaffinity(0, affinity)) if affinity else None,
         )
@@ -197,7 +205,7 @@ class Example(unittest.TestCase):
         self.assertFalse(report["successful"])
         self.assertIn("timed out", report["error"])
         pid_files = list((self.candidate / "tests").glob("worker-*.pid"))
-        self.assertEqual(len(pid_files), 2, "both workers must reach the timed operation")
+        self.assertEqual(len(pid_files), self.worker_count, "each worker must reach the timed operation")
         for pid_file in pid_files:
             self.assertFalse(self.running(int(pid_file.read_text())))
 
@@ -213,10 +221,9 @@ class Example(unittest.TestCase):
         time.sleep(10)
 ''')
         process = subprocess.Popen(
-            [sys.executable, "-B", str(RUNNER), str(self.candidate),
-             "--output-dir", str(self.output)], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+            self.command(), stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
         )
-        pid_files = [self.candidate / f"tests/worker-{letter}.pid" for letter in "ab"]
+        pid_files = [self.candidate / f"tests/worker-{letter}.pid" for letter in "ab"[:self.worker_count]]
         try:
             deadline = time.monotonic() + 5
             while not all(path.exists() for path in pid_files):
@@ -389,7 +396,7 @@ class Example(unittest.TestCase):
     def test_other(self): pass
 ''')
         process = subprocess.Popen(
-            [sys.executable, "-B", str(RUNNER), str(self.candidate), "--output-dir", str(self.output)],
+            self.command(),
             stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
         )
         try:
@@ -409,6 +416,156 @@ class Example(unittest.TestCase):
                 process.wait()
             if pid_file.exists() and self.running(int(pid_file.read_text())):
                 os.kill(int(pid_file.read_text()), signal.SIGKILL)
+
+
+class SerialProvingkitTestExecutionTests(unittest.TestCase):
+    """Real command observations; CPU observations are never replaced here."""
+
+    worker_arguments = ("--workers", "1")
+    worker_count = 1
+    setUp = ProvingkitTestExecutionTests.setUp
+    write_suite = ProvingkitTestExecutionTests.write_suite
+    command = ProvingkitTestExecutionTests.command
+    run_suite = ProvingkitTestExecutionTests.run_suite
+    running = staticmethod(ProvingkitTestExecutionTests.running)
+
+    # The same consumer refusals must hold through the explicit serial command.
+    test_duplicate_discovery_cannot_report_success = ProvingkitTestExecutionTests.test_duplicate_discovery_cannot_report_success
+    test_changed_worker_discovery_cannot_silently_drop_a_method = ProvingkitTestExecutionTests.test_changed_worker_discovery_cannot_silently_drop_a_method
+    test_successful_unittest_status_cannot_hide_missing_duplicate_or_unknown_execution = ProvingkitTestExecutionTests.test_successful_unittest_status_cannot_hide_missing_duplicate_or_unknown_execution
+    test_completed_worker_leaves_no_running_descendant = ProvingkitTestExecutionTests.test_completed_worker_leaves_no_running_descendant
+    test_discovery_timeout_is_unsuccessful_and_cleans_its_process = ProvingkitTestExecutionTests.test_discovery_timeout_is_unsuccessful_and_cleans_its_process
+    test_worker_exit_without_a_result_cannot_succeed = ProvingkitTestExecutionTests.test_worker_exit_without_a_result_cannot_succeed
+    test_evidence_directory_must_be_outside_the_candidate = ProvingkitTestExecutionTests.test_evidence_directory_must_be_outside_the_candidate
+    test_changed_tracked_candidate_cannot_report_success = ProvingkitTestExecutionTests.test_changed_tracked_candidate_cannot_report_success
+    test_cancellation_during_cleanup_still_stops_descendants = ProvingkitTestExecutionTests.test_cancellation_during_cleanup_still_stops_descendants
+    test_timeout_stops_the_serial_worker = ProvingkitTestExecutionTests.test_timed_out_suite_is_unsuccessful_and_stops_both_workers
+    test_cancellation_stops_the_serial_worker = ProvingkitTestExecutionTests.test_cancellation_is_unsuccessful_and_stops_owned_workers
+
+    def test_failed_subtest_keeps_failure_and_skip_evidence(self):
+        self.write_suite('''import unittest
+class Example(unittest.TestCase):
+    def test_failure(self):
+        with self.subTest(case="failure"): self.fail("intentional serial failure")
+        with self.subTest(case="skip"): self.skipTest("optional serial subcase")
+    def test_success(self): pass
+''')
+        process = self.run_suite()
+        self.assertNotEqual(process.returncode, 0)
+        report = json.loads((self.output / "result.json").read_text())
+        self.assertFalse(report["successful"])
+        self.assertEqual(report["worker_count"], 1)
+        failed, passed = report["records"]
+        self.assertEqual(failed["outcome"], "failure")
+        self.assertEqual(failed["subtests"]["failure"], 1)
+        self.assertEqual(failed["subtests"]["skip"], 1)
+        self.assertEqual(failed["skip_reasons"], ["optional serial subcase"])
+        self.assertEqual(passed["outcome"], "success")
+        self.assertIn("intentional serial failure", (self.output / "worker-0.log").read_text())
+
+    def test_unsupported_worker_counts_are_parser_errors(self):
+        for value in ("0", "3", "-1", "1.5"):
+            with self.subTest(workers=value):
+                process = self.run_suite("--workers", value)
+                self.assertEqual(process.returncode, 2)
+                self.assertIn("--workers", process.stderr)
+                self.assertFalse(self.output.exists())
+
+    def test_explicit_serial_runs_every_method_in_discovery_order(self):
+        self.write_suite('''import unittest
+class Example(unittest.TestCase):
+    def test_a(self):
+        with self.subTest(value=1): self.assertEqual(1, 1)
+        with self.subTest(value=2): self.skipTest("optional subcase")
+    @unittest.skip("optional dependency")
+    def test_b(self): self.fail("must be skipped")
+    def test_c(self): pass
+def load_tests(loader, suite, pattern):
+    return unittest.TestSuite([Example("test_c"), Example("test_a"), Example("test_b")])
+''')
+        process = self.run_suite()
+        self.assertEqual(process.returncode, 0, process.stdout + process.stderr)
+        report = json.loads((self.output / "result.json").read_text())
+        plan = json.loads((self.output / "plan.json").read_text())
+        expected = ["tests.test_validate_provingkit.Example.test_" + name for name in "cab"]
+        self.assertTrue(report["successful"])
+        self.assertEqual(report["worker_count"], 1)
+        self.assertEqual(plan["worker_count"], 1)
+        self.assertEqual(plan["ids"], expected)
+        self.assertEqual(plan["workers"], [expected])
+        self.assertEqual(len(report["workers"]), 1)
+        worker = report["workers"][0]
+        for field in ("selected_ids", "started_ids", "stopped_ids"):
+            self.assertEqual(worker[field], expected)
+        self.assertEqual([record["id"] for record in report["records"]], expected)
+        self.assertEqual(report["records"][1]["subtests"], {
+            "success": 1, "failure": 0, "error": 0, "skip": 1,
+        })
+        self.assertEqual(report["records"][1]["skip_reasons"], ["optional subcase"])
+        self.assertEqual(report["records"][2]["outcome"], "skip")
+        self.assertEqual(report["records"][2]["skip_reasons"], ["optional dependency"])
+        self.assertEqual(report["cpu_capacity"], plan["cpu_capacity"])
+        environment = json.loads((self.output / "environment.json").read_text())
+        self.assertEqual(environment["cpu_capacity"], report["cpu_capacity"])
+        self.assertIn("membership", report["cpu_capacity"])
+        self.assertIn("mountinfo", report["cpu_capacity"])
+        self.assertEqual(report["worker_returncodes"], [0])
+        cleanup = json.loads((self.output / "cleanup.json").read_text())
+        self.assertTrue(cleanup["successful"])
+        self.assertEqual(len(cleanup["process_groups"]), 1)
+        self.assertFalse(list(self.output.glob("tmp-*")))
+
+
+class SyntheticCapacitySelectionTests(unittest.TestCase):
+    """Synthetic observations prove selector branches, never actual host capacity."""
+
+    def setUp(self):
+        spec = importlib.util.spec_from_file_location("provingkit_test_runner", RUNNER)
+        self.runner = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(self.runner)
+
+    def test_unknown_capacity_admits_only_explicit_serial(self):
+        unknown = {"complete": False, "effective_cpu_capacity": None, "issues": ["unavailable"]}
+        self.runner.require_worker_capacity(unknown, 1)
+        with self.assertRaisesRegex(ValueError, "complete capacity"):
+            self.runner.require_worker_capacity(unknown, 2)
+
+    def test_two_workers_require_complete_capacity_of_at_least_two(self):
+        for capacity in (0.5, 1, 1.99):
+            with self.subTest(capacity=capacity):
+                report = {"complete": True, "effective_cpu_capacity": capacity}
+                self.runner.require_worker_capacity(report, 1)
+                with self.assertRaisesRegex(ValueError, "two effective CPUs"):
+                    self.runner.require_worker_capacity(report, 2)
+        for capacity in (2, 4):
+            self.runner.require_worker_capacity({"complete": True, "effective_cpu_capacity": capacity}, 2)
+
+    def test_namespace_parent_mount_preserves_unknown_capacity(self):
+        report = self.runner.cgroup_capacity(
+            "0::/\n", "1 0 0:1 /.. /sys/fs/cgroup ro - cgroup2 cgroup2 rw\n", 5,
+        )
+        self.assertFalse(report["complete"])
+        self.assertIsNone(report["effective_cpu_capacity"])
+        self.assertEqual(report["ancestors"], [])
+        self.assertTrue(report["issues"])
+        self.assertIn("/..", report["issues"][0])
+        self.assertEqual(report["membership"], "0::/\n")
+
+    def test_unavailable_proc_inputs_are_retained_as_unknown(self):
+        with mock.patch.object(Path, "read_text", side_effect=FileNotFoundError("missing proc")):
+            report = self.runner.cpu_capacity()
+        self.assertFalse(report["complete"])
+        self.assertIsNone(report["effective_cpu_capacity"])
+        self.assertTrue(any("/proc/self/cgroup unavailable" in issue for issue in report["issues"]))
+        self.assertTrue(any("/proc/self/mountinfo unavailable" in issue for issue in report["issues"]))
+        self.runner.require_worker_capacity(report, 1)
+        with self.assertRaises(ValueError):
+            self.runner.require_worker_capacity(report, 2)
+
+    def test_observation_programming_errors_are_not_suppressed(self):
+        with mock.patch.object(Path, "read_text", side_effect=RuntimeError("implementation defect")):
+            with self.assertRaisesRegex(RuntimeError, "implementation defect"):
+                self.runner.cpu_capacity()
 
 
 if __name__ == "__main__":

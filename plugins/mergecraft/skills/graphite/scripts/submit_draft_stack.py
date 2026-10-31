@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import importlib.util
 import json
 import os
 import re
@@ -18,6 +19,20 @@ import urllib.parse
 from contextlib import ExitStack, contextmanager
 from pathlib import Path
 from typing import Any, Iterator
+
+# Standalone and installed scripts load only their adjacent generated helper.
+_host_trust_spec = importlib.util.spec_from_file_location(
+    f"{__name__}._host_trust", Path(__file__).with_name("host_trust.py")
+)
+if _host_trust_spec is None or _host_trust_spec.loader is None:
+    raise ImportError("adjacent host trust helper is unavailable")
+_host_trust = importlib.util.module_from_spec(_host_trust_spec)
+sys.modules[_host_trust_spec.name] = _host_trust
+try:
+    _host_trust_spec.loader.exec_module(_host_trust)
+except BaseException:
+    sys.modules.pop(_host_trust_spec.name, None)
+    raise
 
 PUBLISHER_SCRIPTS = Path(__file__).parents[2] / "publishing-reviewable-prs/scripts"
 WRITER_SCRIPTS = (
@@ -228,8 +243,23 @@ def _empty_hooks_path() -> Path:
     return Path(_EMPTY_HOOKS.name).resolve()
 
 
-def _trusted_system_executable(name: str) -> str:
+def _trusted_system_executable(
+    name: str, root: Path | None = None, *, profile: str | None = None,
+    bindings: list[_host_trust.HostExecutable] | None = None,
+) -> str:
     path = TRUSTED_SYSTEM_EXECUTABLES[name]
+    if (profile or _git_config_profile()) == "host-compatible":
+        try:
+            bound = _host_trust.bind_host_executable(
+                path, excluded_roots=() if root is None else (root,)
+            )
+            if bindings is not None:
+                bindings.append(bound)
+            return bound.path
+        except _host_trust.HostTrustError as error:
+            raise GraphiteTransportError(
+                f"trusted {name} executable is unavailable"
+            ) from error
     try:
         resolved = path.resolve(strict=True)
         if resolved != path:
@@ -254,10 +284,21 @@ def _trusted_system_executable(name: str) -> str:
         or stat.S_IMODE(metadata.st_mode) & 0o111 == 0
     ):
         raise GraphiteTransportError(f"trusted {name} executable is unavailable")
+    if bindings is not None:
+        try:
+            bindings.append(
+                _host_trust.bind_host_executable(
+                    resolved, excluded_roots=() if root is None else (root,)
+                )
+            )
+        except _host_trust.HostTrustError as error:
+            raise GraphiteTransportError(
+                f"trusted {name} executable is unavailable"
+            ) from error
     return str(resolved)
 
 
-def _trusted_graphite_executable(root: Path) -> str:
+def _trusted_graphite_executable(root: Path, *, profile: str | None = None) -> str:
     configured = os.environ.get(TRUSTED_GRAPHITE_EXECUTABLE_ENV)
     if configured is not None:
         selected = Path(configured)
@@ -271,13 +312,24 @@ def _trusted_graphite_executable(root: Path) -> str:
     try:
         resolved = selected.resolve(strict=True)
         repository = root.resolve(strict=True)
-        if resolved == repository or repository in resolved.parents:
+        lexical = Path(os.path.abspath(selected))
+        if any(
+            candidate == excluded or excluded in candidate.parents
+            for candidate in (lexical, resolved)
+            for excluded in (Path(os.path.abspath(root)), repository)
+        ):
             raise OSError("Graphite executable is candidate-controlled")
         for parent in reversed(resolved.parents):
             metadata = parent.lstat()
             if (
                 not stat.S_ISDIR(metadata.st_mode)
-                or metadata.st_uid not in {0, os.geteuid()}
+                or (
+                    metadata.st_uid not in {0, os.geteuid()}
+                    and not (
+                        (profile or _git_config_profile()) == "host-compatible"
+                        and _host_trust.is_host_namespace_anchor(parent)
+                    )
+                )
                 or stat.S_IMODE(metadata.st_mode) & 0o022
             ):
                 raise OSError("Graphite executable ancestry is mutable")
@@ -294,14 +346,28 @@ def _trusted_graphite_executable(root: Path) -> str:
     return str(resolved)
 
 
-def _bind_executable(arguments: list[str], root: Path) -> list[str]:
+def _bind_executable(
+    arguments: list[str], root: Path, *, profile: str | None = None,
+    bindings: list[_host_trust.HostExecutable] | None = None,
+) -> list[str]:
     if not arguments:
         raise GraphiteTransportError("command is empty")
     executable = arguments[0]
     if executable in TRUSTED_SYSTEM_EXECUTABLES:
-        bound = _trusted_system_executable(executable)
+        bound = _trusted_system_executable(
+            executable, root, profile=profile, bindings=bindings
+        )
     elif executable == "gt":
-        bound = _trusted_graphite_executable(root)
+        bound = _trusted_graphite_executable(root, profile=profile)
+        if bindings is not None:
+            try:
+                bindings.append(
+                    _host_trust.bind_host_executable(Path(bound), excluded_roots=(root,))
+                )
+            except _host_trust.HostTrustError as error:
+                raise GraphiteTransportError(
+                    "trusted gt executable is unavailable"
+                ) from error
     elif Path(executable).is_absolute():
         bound = executable
     else:
@@ -318,8 +384,12 @@ def _git_config_profile() -> str:
     return profile
 
 
-def _environment(profile: str | None = None) -> dict[str, str]:
+def _environment(
+    profile: str | None = None, *, root: Path | None = None,
+    bindings: list[_host_trust.HostExecutable] | None = None,
+) -> dict[str, str]:
     profile = _git_config_profile() if profile is None else profile
+    ssh = _trusted_system_executable("ssh", root, profile=profile, bindings=bindings)
     environment = {
         key: value for key, value in os.environ.items() if key in SUBPROCESS_ENV_ALLOWLIST
     }
@@ -334,7 +404,7 @@ def _environment(profile: str | None = None) -> dict[str, str]:
             "GIT_PAGER": "cat",
             "GIT_SEQUENCE_EDITOR": "true",
             "GIT_SSH_COMMAND": (
-                f"{_trusted_system_executable('ssh')} "
+                f"{ssh} "
                 "-oBatchMode=yes -oConnectionAttempts=1 "
                 f"-oConnectTimeout={READ_TIMEOUT_SECONDS}"
             ),
@@ -393,12 +463,26 @@ def _run_raw(
     timeout: int = READ_TIMEOUT_SECONDS,
     allowed: tuple[int, ...] = (),
 ) -> subprocess.CompletedProcess[str]:
-    bound_arguments = _bind_executable(arguments, cwd)
+    profile = _git_config_profile()
+    bindings: list[_host_trust.HostExecutable] = []
+    bound_arguments = _bind_executable(
+        arguments, cwd, profile=profile, bindings=bindings
+    )
+    environment = _environment(profile, root=cwd, bindings=bindings)
+
+    def recheck() -> None:
+        try:
+            for bound in bindings:
+                _host_trust.recheck_host_executable(bound)
+        except _host_trust.HostTrustError as error:
+            raise GraphiteTransportError("command executable changed") from error
+
+    recheck()
     try:
         result = subprocess.run(
             bound_arguments,
             cwd=cwd,
-            env=_environment(),
+            env=environment,
             text=True,
             capture_output=True,
             check=False,
@@ -408,6 +492,7 @@ def _run_raw(
         raise GraphiteTransportError(
             f"command did not complete: {arguments[0]}"
         ) from error
+    recheck()
     if result.returncode != 0 and result.returncode not in allowed:
         raise GraphiteTransportError(
             f"command failed with status {result.returncode}: {arguments[0]}"
@@ -551,7 +636,13 @@ def _require_secure_local_ancestry(path: Path) -> None:
     child = path.lstat()
     for parent in path.parents:
         metadata = parent.lstat()
-        if not stat.S_ISDIR(metadata.st_mode) or metadata.st_uid not in trusted_owners:
+        if not stat.S_ISDIR(metadata.st_mode) or (
+            metadata.st_uid not in trusted_owners
+            and not (
+                _git_config_profile() == "host-compatible"
+                and _host_trust.is_host_namespace_anchor(parent)
+            )
+        ):
             raise GraphiteTransportError(
                 "repository local remote is not owner-secure"
             )

@@ -10,6 +10,12 @@
 4. Resolve the newest proven same-name GPT or Claude version below, then apply [effort eligibility](effort-policy.md), including fixed and default efforts.
 5. Record the exact live-catalog and target-executor-schema intersection, and pass only a pair present in both.
 
+For an explicitly selected versioned ordinary current-tree Cloud profile,
+product build may be recorded as unavailable when the consumer does not need
+it and the exact surface/controller capability binding is frozen. Bind the
+profile revision and actual observations; an environment publication version
+is not a product version. Desktop/CLI and witnessed requirements are unchanged.
+
 Catalog presence never proves that a native subagent, task, CLI, app-server,
 remote API, or peer accepts the pair. Proof for one product surface does not
 prove its paired surface. Model support also does not prove relationship,
@@ -78,6 +84,32 @@ Model selection does not grant authority to invoke a model, peer, CLI, API, or e
 During an already authorized no-task-data refresh, you may inspect route metadata exposed for unrelated tasks, including advertised model availability; this does not authorize reading task data. An existing task is eligible only when delegation created it for the current source task and bounded purpose, or the operator identified it as a same-purpose companion. Do not use an unrelated task as an execution or authorization route for current-task work, including to execute with its model or under its account, entitlement, permissions, or context.
 
 ## Re-prove Continuation Capability
+
+### Ordinary current-tree Cloud
+
+For the explicitly selected versioned native-tree profile, establish that the
+current controller still owns the exact observed target and binding generation
+for the authorized bounded purpose. Retain the original requested selection,
+its source, current capability observations, authority, and consumer minima.
+Reclassify the continuation's work and confirm that this retained selection
+remains suitable. Reuse unchanged observations within their valid binding and
+freshness window; refresh when stale, absent, or invalidated by a relevant
+change. Initial selection alone does not establish continued suitability.
+
+Pass every selection field the continuation actually supports. If it exposes
+none, retain the established requested binding and record that no field can
+change it; do not invent a separate account or served-model readback. This
+establishes requested configuration and current native capability, not actual
+model execution. Missing required binding or capability blocks the operation.
+A replacement child must meet creation requirements. A new root or lost
+controller continuity requires verified new bindings or explicit handoff, not
+restoration from an old target string.
+
+This branch applies only to ordinary current-tree Cloud operations. It does
+not relax Desktop/CLI, foreign/account-routed, or witnessed requirements, and
+cannot satisfy a consumer requiring stronger model or account evidence.
+
+### Other continuation routes
 
 Initial capability proof does not prove continuation capability. Before sending continuation task data, require a currently fresh observation of the same private account binding and the exact selected model on the continuation surface. Reuse an unchanged observation inside its declared freshness window; run a new no-task-data refresh only when the observation is missing, stale, or invalidated by a tuple change. A task or session ID and its stored provider or model are useful identity facts, but a shared session database is not account-affinity evidence.
 

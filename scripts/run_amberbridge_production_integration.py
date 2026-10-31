@@ -35,11 +35,12 @@ from typing import Any
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 _RUNNING_AS_ENTRYPOINT = __name__ == "__main__"
-SOURCE_SHA256 = "922fc9c665627f4471f64c15e743808049a4f2ab9c710ccbad971d8216770965"
+SOURCE_SHA256 = "f95bf6b8ce8d5795150996a1881977a2c086726a9eb5951278545d125b52f4d8"
 PREPARED_SUPERVISOR_SOURCE_OPTION = "--prepared-supervisor-source-sha256"
 MAX_PROOF_SOURCE_BYTES = 2 * 1024 * 1024
 CANONICAL_REPOSITORY_URL = "https://github.com/nisavid/provingkit"
 AMBERBRIDGE_SUPPORT_SOURCES = (
+    ("host_trust", "scripts/host_trust.py"),
     ("evidence_transport", "scripts/evidence_transport.py"),
     ("amberbridge_compatibility_projection", "scripts/amberbridge_compatibility_projection.py"),
     (
@@ -437,6 +438,7 @@ def frozen_public_execution(
             semantic_sha256=candidate_content_identity(
                 snapshot,
                 error_factory=IntegrationError,
+                runtime_policy="hardened",
             ),
             git_candidate=expected_candidate,
             supervisor_source_sha256=prepared_supervisor_source_sha256,

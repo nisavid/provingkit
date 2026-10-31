@@ -42,10 +42,10 @@ Every prompt binds goal, success criteria, worktree, immutable base, facts, targ
 
 Read [scarce-specialist handoffs](references/scarce-specialist-handoffs.md) before assigning one.
 
-For native Codex children, follow
+For native Codex, select Cloud or strict profiles in
 [native-codex-subagents.md](references/native-codex-subagents.md).
 
-Freeze ordinary handoffs as `adapter:rolecasting-invocation-plan` under [invocation-topology-receipt.md](references/invocation-topology-receipt.md). Witnessed consumers also require `adapter:rolecasting-invocation-topology-receipt`. Model selection never supplies dispatch authority. Use [dispatch-evidence.md](references/dispatch-evidence.md) for witnessed execution and assurance.
+Freeze ordinary review handoffs as `adapter:rolecasting-invocation-plan` under [invocation-topology-receipt.md](references/invocation-topology-receipt.md). Witnessed consumers also require `adapter:rolecasting-invocation-topology-receipt`. Model selection never supplies dispatch authority. Use [dispatch-evidence.md](references/dispatch-evidence.md) for witnessed execution and assurance.
 
 Workers return one status:
 
@@ -62,7 +62,7 @@ Batch small independent same-shape work into one dispatch and review its diff as
 
 Do local work before waiting; avoid short polling, use a bounded wait when idle, then reconcile live children and recover missed terminal results.
 
-For durable native Codex peer recovery, use [mailbox bookkeeping](references/native-codex-mailbox.md).
+For legacy peer recovery, use [mailbox bookkeeping](references/native-codex-mailbox.md).
 
 ## Leader Integration
 

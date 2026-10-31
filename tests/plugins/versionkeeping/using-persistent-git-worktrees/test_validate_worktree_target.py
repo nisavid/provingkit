@@ -4,7 +4,9 @@ import importlib.util
 import json
 import os
 import shlex
+import shutil
 import subprocess
+import sys
 import sys
 import tempfile
 import unittest
@@ -144,6 +146,46 @@ class ValidateWorktreeTargetTests(unittest.TestCase):
             text=True,
         )
 
+    def test_public_creation_in_owned_workspace_verifies_exact_branch(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="worktree-consumer-", dir=REPOSITORY) as scratch:
+            clone = Path(scratch) / "project"
+            clone.mkdir(mode=0o700)
+            subprocess.run(["/usr/bin/git", "init", "-q", str(clone)], check=True)
+            subprocess.run(
+                ["/usr/bin/git", "-C", str(clone), "-c", "user.name=Fixture",
+                 "-c", "user.email=fixture@example.invalid", "commit", "-q",
+                 "--allow-empty", "-m", "fixture"], check=True,
+            )
+            result = subprocess.run(
+                [sys.executable, str(VALIDATOR), "--main-clone", str(clone),
+                 "--name", "feature", "--branch", "topic/feature", "--create"],
+                text=True, capture_output=True, check=False,
+            )
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            receipt = json.loads(result.stdout)
+            self.assertEqual(receipt["status"], "created")
+            target = Path(scratch) / "project.wt" / "feature"
+            self.assertEqual(receipt["worktree_path"], str(target))
+            actual_branch = subprocess.check_output(
+                ["/usr/bin/git", "-C", str(target), "symbolic-ref", "--short", "HEAD"],
+                text=True,
+            ).strip()
+            self.assertEqual(actual_branch, "topic/feature")
+            self.assertNotEqual(actual_branch, "topic/wrong-branch")
+
+    def test_installed_worktree_import_does_not_need_source_checkout(self) -> None:
+        with tempfile.TemporaryDirectory(dir=REPOSITORY, prefix="installed-worktree-") as scratch:
+            installed = Path(scratch) / "scripts"
+            installed.mkdir()
+            for name in ("validate_worktree_target.py", "host_trust.py"):
+                shutil.copyfile(VALIDATOR.with_name(name), installed / name)
+            result = subprocess.run(
+                [sys.executable, "-I", "-B", str(installed / VALIDATOR.name), "--help"],
+                cwd=scratch, capture_output=True, text=True, check=False,
+            )
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertIn("--main-clone", result.stdout)
+
     def test_returns_exact_sibling_target(self) -> None:
         result = self.run_validator()
         self.assertEqual(result.returncode, 0, result.stdout)
@@ -282,6 +324,43 @@ class ValidateWorktreeTargetTests(unittest.TestCase):
             self.assertEqual(options["timeout"], module.GIT_TIMEOUT_SECONDS)
             self.assertEqual(options["env"]["GIT_TERMINAL_PROMPT"], "0")
             self.assertNotIn("GH_TOKEN", options["env"])
+
+    def test_runtime_drift_before_execution_blocks_without_running_git(self) -> None:
+        module = load_validator_module()
+        receipt = module.validated_target(self.clone, "feature", "topic/feature")
+        runner = mock.Mock()
+        with mock.patch.object(
+            module, "recheck_host_executable", side_effect=module.HostTrustError("changed")
+        ):
+            with self.assertRaisesRegex(module.InvalidTarget, "changed before execution"):
+                module.create_worktree(receipt, runner=runner)
+        runner.assert_not_called()
+
+    def test_runtime_drift_after_mutation_is_unknown(self) -> None:
+        module = load_validator_module()
+        receipt = module.validated_target(self.clone, "feature", "topic/feature")
+        mutated = False
+        original = module.recheck_host_executable
+
+        def check(runtime):
+            if mutated:
+                raise module.HostTrustError("changed")
+            original(runtime)
+
+        def runner(command, **kwargs):
+            nonlocal mutated
+            if "show-ref" in command:
+                return subprocess.CompletedProcess(command, 1, "", "")
+            if "worktree" in command and "add" in command:
+                mutated = True
+                Path(receipt["worktree_path"]).mkdir()
+            return subprocess.CompletedProcess(command, 0, "", "")
+
+        with mock.patch.object(module, "recheck_host_executable", side_effect=check):
+            result = module.create_worktree(receipt, runner=runner)
+        self.assertEqual(result["status"], "unknown")
+        self.assertIn("changed during execution", result["reason"])
+        self.assertTrue(mutated)
 
     def test_failed_or_timed_out_mutation_is_unknown_without_a_target(self) -> None:
         module = load_validator_module()

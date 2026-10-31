@@ -175,22 +175,41 @@ class ReleaseArtifactBuilderTests(unittest.TestCase):
                 build(ROOT, Path(tmp) / "bad", "agent-plugins", ["task-witness"], "preview", False)
 
     def test_source_and_output_paths_must_not_overlap(self):
-        with tempfile.TemporaryDirectory(dir=ROOT) as tmp:
-            output = Path(tmp) / "output"
+        # A failed overlap guard must never put the real checkout at risk.
+        with tempfile.TemporaryDirectory(dir=ROOT.parent) as tmp:
+            source = Path(tmp) / "source"
+            source.mkdir()
+            policy = source / builder.POLICY_PATH
+            policy.parent.mkdir()
+            policy.write_bytes((ROOT / builder.POLICY_PATH).read_bytes())
+            plugin = source / "plugins/proseweaving"
+            plugin.mkdir(parents=True)
+            (plugin / "plugin.json").write_text(json.dumps({"name": "proseweaving"}))
+            subprocess.run(["/usr/bin/git", "init", "-q"], cwd=source, check=True)
+            subprocess.run(["/usr/bin/git", "add", "."], cwd=source, check=True)
+            subprocess.run([
+                "/usr/bin/git", "-c", "user.name=Test", "-c",
+                "user.email=test@example.invalid", "-c", "commit.gpgSign=false",
+                "commit", "-qm", "test: isolated overlap fixture",
+            ], cwd=source, check=True)
+            output = source / "scratch/output"
+            output.parent.mkdir()
             output.mkdir()
             marker = output / "marker"
             marker.write_text("preserve this")
-            for source, destination in (
-                (ROOT, ROOT),
-                (ROOT, output),
-                (ROOT, output / "nested"),
-                (ROOT / "plugins", ROOT),
-                (ROOT / "plugins", ROOT / "release"),
+            policy_bytes = policy.read_bytes()
+            for selected_source, destination in (
+                (source, source),
+                (source, output),
+                (source, output / "nested"),
+                (source / "plugins", source),
+                (source / "plugins", source / "release"),
             ):
-                with self.subTest(source=source, output=destination):
+                with self.subTest(source=selected_source, output=destination):
                     with self.assertRaisesRegex(ValueError, "source and output paths must not overlap"):
-                        build(source, destination, "agent-plugins", ["proseweaving"], "preview", True)
+                        build(selected_source, destination, "agent-plugins", ["proseweaving"], "preview", True)
             self.assertEqual(marker.read_text(), "preserve this")
+            self.assertEqual(policy.read_bytes(), policy_bytes)
 
     def test_projection_uses_head_snapshot_when_source_is_dirty(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -417,6 +436,40 @@ class ReleaseArtifactOutputSafetyTests(unittest.TestCase):
         self.assertEqual(self.marker.read_text(), "preserve this")
         self.assertEqual(list(self.sentinel.iterdir()), [self.marker])
 
+    def test_translated_host_root_owner_allows_private_workspace_output(self):
+        root_identity = Path(ROOT.anchor).stat()
+        original_fstat = os.fstat
+
+        def translated_root(descriptor):
+            metadata = original_fstat(descriptor)
+            if (metadata.st_dev, metadata.st_ino) == (root_identity.st_dev, root_identity.st_ino):
+                fields = list(metadata)
+                fields[4] = 65534
+                return os.stat_result(fields)
+            return metadata
+
+        with tempfile.TemporaryDirectory(dir=ROOT.parent) as temporary:
+            output = Path(temporary) / "artifact"
+            with mock.patch.object(builder.os, "fstat", side_effect=translated_root):
+                created = builder.prepare_output(output, False)
+            self.assertEqual(created, output)
+            self.assertEqual(stat.S_IMODE(created.stat().st_mode), 0o700)
+            self.assert_sentinel_preserved()
+
+    def test_source_identity_uses_fixed_git_despite_path_substitution(self):
+        expected = subprocess.check_output(
+            ["/usr/bin/git", "rev-parse", "HEAD"], cwd=self.source, text=True
+        ).strip()
+        fake_bin = self.parent / "bin"
+        fake_bin.mkdir()
+        fake_git = fake_bin / "git"
+        fake_git.write_text("#!/bin/sh\nprintf '%s\\n' 'wrong-git'\n")
+        fake_git.chmod(0o700)
+        with mock.patch.dict(os.environ, {"PATH": str(fake_bin) + os.pathsep + os.environ.get("PATH", "")}):
+            self.assertEqual(builder.git("rev-parse", "HEAD", cwd=self.source), expected)
+            with builder.source_snapshot(self.source, expected) as snapshot:
+                self.assertTrue((snapshot / builder.POLICY_PATH).is_file())
+
     def test_build_refuses_output_symlink_without_touching_target(self):
         for force in (False, True):
             for suffix in ("", "/", "/."):
@@ -503,6 +556,15 @@ class ReleaseArtifactOutputSafetyTests(unittest.TestCase):
         alias = Path(self.parent.anchor) / "provingkit-system-alias"
         real_lstat = Path.lstat
         real_resolve = Path.resolve
+        real_stat = Path.stat
+
+        def root_stat(path, *args, **kwargs):
+            metadata = real_stat(path, *args, **kwargs)
+            if path == Path(self.parent.anchor):
+                fields = list(metadata)
+                fields[4] = 0
+                return os.stat_result(fields)
+            return metadata
 
         def alias_lstat(path):
             if path == alias:
@@ -518,7 +580,7 @@ class ReleaseArtifactOutputSafetyTests(unittest.TestCase):
             return real_resolve(path, *args, **kwargs)
 
         self.output.symlink_to(self.sentinel, target_is_directory=True)
-        with mock.patch.object(Path, "lstat", alias_lstat), mock.patch.object(Path, "resolve", alias_resolve):
+        with mock.patch.object(Path, "stat", root_stat), mock.patch.object(Path, "lstat", alias_lstat), mock.patch.object(Path, "resolve", alias_resolve):
             with self.assertRaisesRegex(ValueError, "not a symlink"):
                 builder.prepare_output(alias / self.output.name, True)
             self.output.unlink()

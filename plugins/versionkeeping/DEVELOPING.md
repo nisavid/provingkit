@@ -5,6 +5,17 @@ its internals. It stays in the source repository and is not part of an
 installed copy. The [README](README.md) is the page for people using the
 plugin.
 
+## Host-runtime helper projections
+
+Ordinary runtime selection uses the canonical `scripts/host_trust.py` in the
+source repository. Its exact-byte skill-local projections keep installed
+skills independent of the source checkout and other plugins. Edit the
+canonical file, run `python scripts/validate_host_trust_projections.py . --write`,
+inspect all changed copies, then refresh the owning content locks. Run the
+same command without `--write` and `python -m unittest tests.test_host_trust`
+to check projection integrity and the ordinary trust boundary. This helper
+does not replace hardened publication or stronger evidence requirements.
+
 ## Layout
 
 ```text

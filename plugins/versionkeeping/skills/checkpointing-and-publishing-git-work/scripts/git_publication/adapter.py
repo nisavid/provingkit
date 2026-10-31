@@ -30,6 +30,12 @@ from .core import (
     plan_publication,
     request_document,
 )
+from .host_trust import (
+    HostExecutable,
+    bind_host_executable,
+    is_host_namespace_anchor,
+    recheck_host_executable,
+)
 
 
 SHA_RE = re.compile(r"^(?:[0-9a-f]{40}|[0-9a-f]{64})$")
@@ -715,17 +721,37 @@ class _TrustedGitRuntime:
     shell: str
     command_path: str
     windows_root: Path | None
+    host_executables: tuple[HostExecutable, ...] = ()
 
 
-def _trusted_git_runtime() -> _TrustedGitRuntime:
+def _trusted_git_runtime(
+    *, config_profile: str, repository_root: Path
+) -> _TrustedGitRuntime:
     if sys.platform != "win32":
+        host_executables = []
+        executables = {}
+        for name, path in TRUSTED_SYSTEM_EXECUTABLES.items():
+            if config_profile == "host-compatible":
+                try:
+                    bound = bind_host_executable(
+                        path, excluded_roots=(repository_root,)
+                    )
+                except OSError as error:
+                    raise PolicyGate(
+                        f"TRUSTED_{name.upper()}_EXECUTABLE_UNAVAILABLE"
+                    ) from error
+                host_executables.append(bound)
+                executables[name] = bound.path
+            else:
+                executables[name] = _trusted_system_executable(name)
         return _TrustedGitRuntime(
-            git_executable=_trusted_system_executable("git"),
-            ssh_executable=_trusted_system_executable("ssh"),
+            git_executable=executables["git"],
+            ssh_executable=executables["ssh"],
             askpass="false",
             shell="/bin/sh",
             command_path=TRUSTED_COMMAND_PATH,
             windows_root=None,
+            host_executables=tuple(host_executables),
         )
 
     for root in _windows_git_install_roots():
@@ -1037,8 +1063,11 @@ class GitRepository:
                 profile=self.config_profile,
                 supported_profiles=sorted(GIT_CONFIG_PROFILES),
             )
-        runtime = _trusted_git_runtime()
+        runtime = _trusted_git_runtime(
+            config_profile=self.config_profile, repository_root=self.path
+        )
         self.git_executable = runtime.git_executable
+        self._host_runtime = runtime.host_executables
         self._windows_git_root = runtime.windows_root
         self._windows_runtime_identities: dict[
             Path,
@@ -1156,9 +1185,19 @@ class GitRepository:
             if observed != expected:
                 raise PolicyGate("TRUSTED_WINDOWS_RUNTIME_CHANGED")
 
+    def _verify_runtime_identity(self) -> None:
+        self._verify_windows_runtime_identity()
+        try:
+            for executable in self._host_runtime:
+                recheck_host_executable(executable)
+        except OSError as error:
+            raise PolicyGate("TRUSTED_GIT_RUNTIME_CHANGED") from error
+
     def enable_https_credentials(self, endpoint: str) -> None:
         """Bind one trusted noninteractive provider for one HTTPS execution."""
-        _validate_transport_endpoint(endpoint, self.path)
+        _validate_transport_endpoint(
+            endpoint, self.path, config_profile=self.config_profile
+        )
         if urllib.parse.urlsplit(endpoint).scheme.lower() != "https":
             return
         if self._https_credentials_enabled:
@@ -1217,6 +1256,7 @@ class GitRepository:
             f"host={parsed.netloc}\n"
             f"path={parsed.path.lstrip('/')}\n\n"
         )
+        self._verify_runtime_identity()
         try:
             result = subprocess.run(
                 [self.git_executable, "credential", "fill"],
@@ -1234,6 +1274,7 @@ class GitRepository:
                 "HTTPS_CREDENTIALS_UNAVAILABLE",
                 profile=self.config_profile,
             ) from error
+        self._verify_runtime_identity()
         if result.returncode != 0:
             raise PolicyGate(
                 "HTTPS_CREDENTIALS_UNAVAILABLE",
@@ -1261,7 +1302,7 @@ class GitRepository:
             if set(env_overrides) != {"VERSIONKEEPING_PUBLICATION_ENDPOINT"}:
                 raise PolicyGate("GIT_CONFIG_ENVIRONMENT_OVERRIDE_REJECTED")
             env.update(env_overrides)
-        self._verify_windows_runtime_identity()
+        self._verify_runtime_identity()
         try:
             completed = subprocess.run(
                 [self.git_executable, *args],
@@ -1279,7 +1320,7 @@ class GitRepository:
                 operation=args[0] if args else "git",
                 timeout_seconds=self.timeout_seconds,
             ) from error
-        self._verify_windows_runtime_identity()
+        self._verify_runtime_identity()
         if check and completed.returncode != 0 and completed.returncode not in allowed:
             raise RuntimeError(
                 f"git command failed ({completed.returncode}): "
@@ -1642,12 +1683,19 @@ def _fingerprint(endpoint: str) -> str:
     return "sha256:" + hashlib.sha256(endpoint.encode("utf-8")).hexdigest()
 
 
-def _require_secure_local_ancestry(path: Path) -> None:
+def _require_secure_local_ancestry(
+    path: Path, *, config_profile: str = "hardened"
+) -> None:
     trusted_owners = {0, os.geteuid()}
     child = path.lstat()
     for parent in path.parents:
         metadata = parent.lstat()
-        if not stat.S_ISDIR(metadata.st_mode) or metadata.st_uid not in trusted_owners:
+        host_anchor = (
+            config_profile == "host-compatible" and is_host_namespace_anchor(parent)
+        )
+        if not stat.S_ISDIR(metadata.st_mode) or (
+            metadata.st_uid not in trusted_owners and not host_anchor
+        ):
             raise PolicyGate(
                 "UNSAFE_GIT_REMOTE",
                 remote_kind="local",
@@ -1686,7 +1734,7 @@ def _reject_untrusted_local_symlink_ancestors(path: Path) -> None:
             )
 
 
-def _guard_local_remote(path: Path) -> None:
+def _guard_local_remote(path: Path, *, config_profile: str = "hardened") -> None:
     try:
         lexical = Path(os.path.abspath(path))
         if lexical.is_symlink():
@@ -1714,7 +1762,7 @@ def _guard_local_remote(path: Path) -> None:
             remote_kind="local",
             reason="ownership_or_mode",
         )
-    _require_secure_local_ancestry(resolved)
+    _require_secure_local_ancestry(resolved, config_profile=config_profile)
 
 
 def _is_scp_endpoint(endpoint: str) -> bool:
@@ -1731,6 +1779,8 @@ def _is_scp_endpoint(endpoint: str) -> bool:
 def _validate_transport_endpoint(
     endpoint: str,
     repository_root: Path | None = None,
+    *,
+    config_profile: str = "hardened",
 ) -> None:
     if not endpoint or CONTROL_RE.search(endpoint):
         raise PolicyGate("UNSAFE_GIT_REMOTE", reason="malformed")
@@ -1791,7 +1841,7 @@ def _validate_transport_endpoint(
         if repository_root is None:
             raise PolicyGate("UNSAFE_GIT_REMOTE", reason="unsupported_protocol")
         local = repository_root / local
-    _guard_local_remote(local)
+    _guard_local_remote(local, config_profile=config_profile)
 
 
 def _endpoint(repo: GitRepository, remote: str) -> Tuple[str, str]:
@@ -1803,7 +1853,9 @@ def _endpoint(repo: GitRepository, remote: str) -> Tuple[str, str]:
     urls = result.stdout.splitlines()
     if len(urls) != 1 or not urls[0]:
         raise PolicyGate("PUSH_ENDPOINT_AMBIGUOUS", count=len(urls))
-    _validate_transport_endpoint(urls[0], repo.path)
+    _validate_transport_endpoint(
+        urls[0], repo.path, config_profile=repo.config_profile
+    )
     return urls[0], _fingerprint(urls[0])
 
 

@@ -243,6 +243,8 @@ class RequestTests(unittest.TestCase):
 
     def test_https_credential_preflight_includes_repository_path(self):
         repository = object.__new__(adapter.GitRepository)
+        repository._host_runtime = ()
+        repository._windows_runtime_identities = {}
         repository.git_executable = "git"
         repository.path = Path("/controlled/repository")
         repository.env = {}
@@ -268,6 +270,8 @@ class RequestTests(unittest.TestCase):
 
     def test_https_credential_preflight_uses_only_return_code(self):
         repository = object.__new__(adapter.GitRepository)
+        repository._host_runtime = ()
+        repository._windows_runtime_identities = {}
         repository.git_executable = "git"
         repository.path = Path("/controlled/repository")
         repository.env = {}

@@ -28,6 +28,16 @@ Operational support is not evidence issuance:
 witnessed-publication producer and issuer qualification remains pending for every
 exact surface, version, executor, transport, and assurance source.
 
+The separate ordinary Cloud profile `chatgpt-codex-native-tree-v1` uses the
+[native-tree driver](skills/delegating-cross-agent-work/references/native-tree-driver.md)
+for exact native-call planning, transactional local claims, source-tagged
+observations, and owner acceptance within one current controller tree.
+Canonical native targets may lack separate session IDs or exposed product
+builds; profile maxima remain ceilings, not achieved evidence. The agent makes
+the native calls. This source support does not establish an installed release
+or qualified deployment, and leaves the strict native helper, Desktop/CLI
+requirements, and witnessed contracts intact.
+
 It does not decide repository ownership, review disposition, publication, or
 pull-request work.
 
@@ -125,6 +135,7 @@ uv run --with PyYAML python -m unittest tests/test_validate_rolecasting.py
 python3 -m unittest tests/test_rolecasting_eval_corpus.py
 python3 -m unittest tests/plugins/test_rolecasting_dispatch_evidence.py
 python3 -m unittest tests/plugins/test_rolecasting_native_codex.py
+python3 -m unittest tests/plugins/test_rolecasting_native_tree.py
 python3 -m unittest tests/plugins/test_rolecasting_daybreak_routing.py
 ```
 

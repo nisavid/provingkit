@@ -96,6 +96,20 @@ configuration and permits only the validated platform provider described
 below. The selected profile is included in the reviewed destination
 configuration digest; changing it requires a fresh plan and review.
 
+On POSIX, the host-compatible profile also trusts the host-supplied interpreter,
+fixed `/usr/bin/git` and `/usr/bin/ssh`, and filesystem root namespace without
+requiring UID 0. It selects neither executable from ambient `PATH` or repository
+configuration. Executable targets must be regular, executable, free of
+redirection and group/other write permission, and outside the candidate
+repository. Their ancestor modes and identities remain checked. The operation
+binds the selected paths and rechecks their identities before and after Git
+execution, including credential preflight. Observable replacement blocks
+further execution; a failure after push begins retains the unknown-outcome
+contract below. These checks detect drift but do not independently authenticate
+the host or rule out concurrent same-user mutation. The hardened profile keeps
+its root-owned executable requirements and never falls back to ordinary trust.
+Windows retains its existing registration and ACL requirements.
+
 The hardened publication profile supports noninteractive HTTPS credentials on
 modern macOS, Linux, and Windows through closed platform-provider sets:
 
@@ -151,6 +165,14 @@ inspects provider response bytes. Credential bytes never enter arguments,
 diagnostics, plans, receipts, or repository configuration. SSH and
 ancestry-guarded local endpoints do not enable a credential helper and retain
 their existing contracts.
+
+Ordinary local endpoint ancestry exempts only the filesystem root's owner
+from the ownership check. It retains directory mode and symlink checks,
+current-user endpoint ownership, regular-file link-count checks, and the
+ownership checks on intermediate ancestors. A foreign-owned writable temporary
+root is not admitted through this exemption; use an owned workspace path.
+Hardened local endpoint ancestry retains its existing root/current-user owner
+requirements throughout.
 
 ## Terminal Remote-Ref Deletion
 

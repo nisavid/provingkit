@@ -22,6 +22,13 @@ import tempfile
 from contextlib import contextmanager
 from pathlib import Path
 
+if __package__:
+    from .evidence_transport import candidate_repository_root, run_candidate_git
+    from .host_trust import is_host_namespace_anchor
+else:
+    from evidence_transport import candidate_repository_root, run_candidate_git
+    from host_trust import is_host_namespace_anchor
+
 
 SCHEMA = "provingkit-artifact-receipt-v1"
 BUILDER_VERSION = "provingkit-artifact-projector-v1"
@@ -37,7 +44,12 @@ def sha256_bytes(value: bytes) -> str:
 
 
 def git(*args: str, cwd: Path) -> str:
-    return subprocess.check_output(["git", *args], cwd=cwd, text=True).strip()
+    if args == ("rev-parse", "--show-toplevel"):
+        return str(candidate_repository_root(cwd, error_factory=ValueError))
+    return run_candidate_git(
+        cwd, list(args), error_factory=ValueError,
+        operation="read artifact source", runtime_policy="host-compatible",
+    ).decode("utf-8").strip()
 
 
 def matches(path: str, pattern: str) -> bool:
@@ -138,7 +150,8 @@ def contained_path(root: Path, relative: Path) -> Path:
 def prepare_output(output: Path, force: bool) -> Path:
     """Create an output without following links or trusting a shared namespace.
 
-    Ownership protects subsequent path-based writes from other local users;
+    Ordinary execution trusts the host filesystem-root namespace. Ownership
+    below that anchor protects subsequent writes from other local users;
     descriptor-relative, symlink-safe removal also rejects leaf substitution.
     Processes with the current user's authority are outside that guarantee.
     """
@@ -178,8 +191,10 @@ def prepare_output(output: Path, force: bool) -> Path:
     flags = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | getattr(os, "O_CLOEXEC", 0)
     descriptor = os.open(output.anchor, flags)
     try:
+        namespace = Path(output.anchor)
         for component in (None, *output.parent.parts[1:]):
             if component is not None:
+                namespace /= component
                 try:
                     os.mkdir(component, 0o700, dir_fd=descriptor)
                 except FileExistsError:
@@ -189,7 +204,10 @@ def prepare_output(output: Path, force: bool) -> Path:
                 os.close(descriptor)
                 descriptor = child
             metadata = os.fstat(descriptor)
-            if metadata.st_uid not in {0, os.geteuid()} or (
+            if (
+                not is_host_namespace_anchor(namespace)
+                and metadata.st_uid not in {0, os.geteuid()}
+            ) or (
                 metadata.st_mode & 0o022 and not metadata.st_mode & stat.S_ISVTX
             ):
                 raise ValueError(
@@ -226,8 +244,9 @@ def prepare_output(output: Path, force: bool) -> Path:
 @contextmanager
 def source_snapshot(source: Path, commit: str):
     with tempfile.TemporaryDirectory() as temporary:
-        archive = subprocess.check_output(
-            ["git", "archive", "--format=tar", commit], cwd=source
+        archive = run_candidate_git(
+            source, ["archive", "--format=tar", commit], error_factory=ValueError,
+            operation="capture artifact source", runtime_policy="host-compatible",
         )
         with tarfile.open(fileobj=io.BytesIO(archive), mode="r:") as tar:
             tar.extractall(temporary)
