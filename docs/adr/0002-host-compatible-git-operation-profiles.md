@@ -22,6 +22,28 @@ detect visible drift; they do not prove host provenance or eliminate races.
 The host, interpreter, and same-user concurrent mutation remain outside this
 ordinary assurance boundary.
 
+The ordinary Linux GitHub HTTPS route has a bounded exception for existing
+environment-backed gh credentials. It selects only the fixed, identity-checked
+`/usr/bin/gh auth git-credential` helper and inherits only `GH_TOKEN`, or
+`GITHUB_TOKEN` when the former is absent, for matching credential preflight and
+transport. It does not put a token in stored configuration, arguments, plans,
+or logs. Git and its children receive the token; no exclusive-secret-isolation
+claim is made. Nonmatching operations and hardened mode retain the scrubbed
+environment. Helper ambiguity, HTTP/auth overrides and URL rewriting block
+the token-bearing route. The nonsecret policy/provider/source-name identity is
+part of the reviewed configuration digest and is compared before any
+credential-bearing transport. A fixed, identity-checked nonprompting fallback
+prevents ambient PATH from selecting an askpass process. Only the ordinary
+publication planner and executor activate the exception; the separate
+remote-ref-deletion contract remains unchanged. Other platforms and enterprise
+authorities need their own qualified provider binding.
+The selected environment-token route excludes conditional-include directives,
+even inactive ones and those reached through ordinary includes. The expanded
+key inventory is checked before every token-bearing call; unconditional
+includes remain admissible if their expanded contents satisfy the route's
+other checks. This restriction does not change unselected provider or deletion
+configuration behavior.
+
 This runtime policy is separate from Git configuration policy. Worktree
 creation and ordinary candidate inspection retain their closed configuration
 contracts. Ordinary publication retains its host-compatible configuration

@@ -218,7 +218,7 @@ class RequestTests(unittest.TestCase):
                 self.env_overrides = None
                 self.hooks_path = Path("/controlled/empty-hooks")
 
-            def run(self, args, check=True, allowed=(), env_overrides=None):
+            def run_transport(self, args, endpoint, check=True, env_overrides=None):
                 self.args = args
                 self.env_overrides = env_overrides
                 return subprocess.CompletedProcess(["git", *args], 0, "", "")
@@ -248,6 +248,7 @@ class RequestTests(unittest.TestCase):
         repository.git_executable = "git"
         repository.path = Path("/controlled/repository")
         repository.env = {}
+        repository.config_profile = "hardened"
         repository.timeout_seconds = 1
         repository.enable_https_credentials = mock.Mock()
         completed = subprocess.CompletedProcess(
@@ -429,7 +430,7 @@ class RequestTests(unittest.TestCase):
                 self.output = output
                 self.hooks_path = Path("/controlled/empty-hooks")
 
-            def run(self, *args, **kwargs):
+            def run_transport(self, *args, **kwargs):
                 return subprocess.CompletedProcess(["git"], 0, self.output, "")
 
         reference = "refs/heads/topic"

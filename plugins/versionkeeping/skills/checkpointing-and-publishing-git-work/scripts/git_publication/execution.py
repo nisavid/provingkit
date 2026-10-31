@@ -269,7 +269,7 @@ def execute_repository(
     """Execute one reviewed plan against one captured endpoint without retry."""
     raw_plan = _load_reviewed_plan(plan_bytes, reviewed_plan_sha256)
     plan, request = validate_ready_plan(raw_plan)
-    with GitRepository(Path(path)) as repo:
+    with GitRepository(Path(path), publication_credentials=True) as repo:
         push_attempted = False
         try:
             _guard_repository(repo)
@@ -305,19 +305,18 @@ def execute_repository(
                     expected_fingerprint=destination["endpoint_fingerprint"],
                     observed_fingerprint=endpoint_fingerprint,
                 )
-            if repo.config_profile != destination["config_profile"]:
-                early_selection = dict(selection)
-                early_selection["default_branch_ref"] = destination[
-                    "default_branch_ref"
-                ]
-                early_selection["config_profile"] = repo.config_profile
+            early_selection = dict(selection)
+            early_selection["default_branch_ref"] = destination["default_branch_ref"]
+            early_selection["config_profile"] = repo.config_profile
+            credential_policy = repo.publication_credential_policy(endpoint)
+            if credential_policy is not None:
+                early_selection["credential_environment"] = credential_policy
+            early_digest = _config_digest(early_selection, endpoint_fingerprint)
+            if early_digest != destination["config_digest"]:
                 raise PolicyGate(
                     "REVIEWED_CONFIG_CHANGED",
                     expected_digest=destination["config_digest"],
-                    observed_digest=_config_digest(
-                        early_selection,
-                        endpoint_fingerprint,
-                    ),
+                    observed_digest=early_digest,
                 )
             repo.enable_https_credentials(endpoint)
             default_branch_ref = _probe_default_branch(repo, endpoint, object_format)
@@ -330,6 +329,9 @@ def execute_repository(
             selection = dict(selection)
             selection["default_branch_ref"] = default_branch_ref
             selection["config_profile"] = repo.config_profile
+            credential_policy = repo.publication_credential_policy(endpoint)
+            if credential_policy is not None:
+                selection["credential_environment"] = credential_policy
             config_digest = _config_digest(selection, endpoint_fingerprint)
             if config_digest != destination["config_digest"]:
                 raise PolicyGate(
