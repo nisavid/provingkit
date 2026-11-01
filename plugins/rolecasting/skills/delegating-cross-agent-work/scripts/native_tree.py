@@ -253,8 +253,14 @@ class NativeTree:
             self.db.execute("SELECT observation_id, command_id, content, facts FROM observations LIMIT 0")
             self.db.execute("PRAGMA foreign_keys = ON")
             self.db.execute("PRAGMA synchronous = FULL")
-        except BaseException:
+        except BaseException as error:
             self.close()
+            if create and isinstance(error, (ValueError, TypeError, OSError, sqlite3.Error)):
+                raise NativeTreeError(
+                    f"native-tree store initialization failed at {self.path}; "
+                    "the path was not removed and may contain an incomplete store. "
+                    "Choose a new --store path and retry with --create. "
+                    f"Cause: {error}") from error
             raise
 
     @property
@@ -1323,7 +1329,15 @@ def main(argv=None):
             raise NativeTreeError("--create requires an initial bind-role operation")
         with NativeTree(arguments.store, run=context["run"], actor=context["actor"], create=arguments.create) as tree:
             if operation == "bind-role":
-                result = tree.bind_role(request["binding"])
+                try:
+                    result = tree.bind_role(request["binding"])
+                except (NativeTreeError, TypeError) as error:
+                    if arguments.create:
+                        raise NativeTreeError(
+                            f"initial binding failed; initialized store retained at {tree.path}. "
+                            "Correct the bind-role request and retry with the same context "
+                            f"and store without --create. Cause: {error}") from error
+                    raise
             elif operation == "retire-role":
                 result = tree.retire_role(request["role"], request["generation"], request["evidence_ref"])
             elif operation in ("prepare", "prepare-claim"):

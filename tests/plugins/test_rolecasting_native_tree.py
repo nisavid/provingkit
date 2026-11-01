@@ -12,6 +12,7 @@ import sys
 from pathlib import Path
 import tempfile
 import unittest
+import unittest.mock as mock
 
 
 MODULE = (Path(__file__).resolve().parents[2] / "plugins" / "rolecasting" / "skills"
@@ -434,6 +435,75 @@ class NativeTreeConsumerTests(unittest.TestCase):
         self.assertNotEqual(reply.returncode, 0)
         self.assertFalse(unused.exists())
         self.assertEqual(reply.stdout, "")
+
+    def test_initialization_failure_preserves_artifact_and_explains_new_path_recovery(self):
+        for failure in ("connection", "schema"):
+            with self.subTest(failure=failure):
+                failed = Path(self.temp.name) / (failure + "-failed.sqlite3")
+                if failure == "connection":
+                    fault = mock.patch.object(self.module.sqlite3, "connect",
+                                              side_effect=sqlite3.OperationalError("synthetic connection failure"))
+                else:
+                    # Use the real SQLite transaction and parser; the invalid
+                    # final statement fails after earlier schema statements.
+                    fault = mock.patch.object(self.module, "_SCHEMA",
+                                              self.module._SCHEMA + ("INVALID SQL",))
+                with fault:
+                    with self.assertRaises(Exception) as caught:
+                        self.module.NativeTree(failed, run=self.run, actor=self.actor, create=True)
+                self.assertTrue(failed.is_file())
+                retained = failed.read_bytes()
+                with self.assertRaises(FileExistsError):
+                    self.module.NativeTree(failed, run=self.run, actor=self.actor, create=True)
+                self.assertEqual(failed.read_bytes(), retained)
+                with self.assertRaises(self.module.NativeTreeError):
+                    self.module.NativeTree(failed, run=self.run, actor=self.actor)
+                recovered = Path(self.temp.name) / (failure + "-recovered.sqlite3")
+                with self.module.NativeTree(recovered, run=self.run, actor=self.actor, create=True) as tree:
+                    self.assertTrue(tree.bind_role(binding("concierge", target="/root"))["created"])
+                    self.assertEqual(len(tree.inspect("synthetic-run")["bindings"]), 1)
+                self.assertEqual(failed.read_bytes(), retained)
+                diagnostic = str(caught.exception)
+                self.assertIn(str(failed), diagnostic)
+                self.assertIn("not removed", diagnostic)
+                self.assertIn("new --store path", diagnostic)
+                self.assertIn("--create", diagnostic)
+                self.assertIsInstance(caught.exception.__cause__, sqlite3.Error)
+
+    def assert_cli_bootstrap_recovers(self, malformed_binding):
+        store = Path(self.temp.name) / "unbound.sqlite3"
+        failed = self.cli({"operation": "bind-role", "binding": malformed_binding}, store=store, create=True)
+        self.assertEqual(failed.returncode, 2)
+        self.assertEqual(failed.stdout, "")
+        self.assertTrue(store.is_file())
+        with self.module.NativeTree(store, run=self.run, actor=self.actor) as tree:
+            self.assertEqual(tree.inspect("synthetic-run")["bindings"], [])
+        request = {"operation": "bind-role", "binding": binding("concierge", target="/root")}
+        retained = store.read_bytes()
+        repeated_create = self.cli(request, store=store, create=True)
+        self.assertEqual(repeated_create.returncode, 2)
+        self.assertEqual(repeated_create.stdout, "")
+        self.assertEqual(store.read_bytes(), retained)
+        recovered = self.cli(request, store=store)
+        self.assertEqual(recovered.returncode, 0, recovered.stderr)
+        self.assertTrue(json.loads(recovered.stdout)["created"])
+        with self.module.NativeTree(store, run=self.run, actor=self.actor) as tree:
+            self.assertEqual(tree.inspect("synthetic-run")["bindings"][0]["role"], "concierge")
+        diagnostic = json.loads(failed.stderr)["error"]
+        self.assertIn(str(store), diagnostic)
+        self.assertIn("initialized store retained", diagnostic)
+        self.assertIn("bind-role", diagnostic)
+        self.assertIn("without --create", diagnostic)
+        return diagnostic
+
+    def test_cli_malformed_bootstrap_recovers_without_create_and_retains_store(self):
+        self.assert_cli_bootstrap_recovers({})
+
+    def test_cli_unhashable_binding_field_has_bootstrap_recovery_diagnostic(self):
+        malformed = binding("concierge", target="/root")
+        malformed["source_kind"] = []
+        diagnostic = self.assert_cli_bootstrap_recovers(malformed)
+        self.assertIn("unhashable type: 'list'", diagnostic)
 
     def assignment_view(self):
         return next(item for item in self.tree.inspect("synthetic-run")["assignments"]

@@ -42,6 +42,19 @@ a null target. Optional `agent_id`, `session_id`, `task_id`,
 `native_parent_target`, and `logical_owner` remain separate and absent when
 unexposed. Never manufacture them from a role name or target string.
 
+Creation reserves a new pathname before initializing SQLite. If initialization
+fails, the driver closes its connection and retains the pathname, which may
+contain an incomplete store. Its error identifies the path and original cause.
+After addressing that cause, choose a new `--store` path and retry bootstrap
+with `--create`. The driver does not remove the failed artifact; repeating
+`--create` on any existing path is refused without replacing its contents.
+
+Initial binding validation happens after SQLite initialization. If the initial
+`bind-role` request is malformed or ineligible, its error identifies the
+retained initialized store. Correct that request and retry `bind-role` with the
+same `--store`, context, run and actor, **without `--create`**. This bootstraps
+the existing unbound store; it does not require recreating or deleting it.
+
 A created child binding must cite the recorded result of its exact claimed
 spawn, including the current native `{task_name: ...}` return. Adoption from
 inventory is supplied-controller bookkeeping, not proof of an unobserved
