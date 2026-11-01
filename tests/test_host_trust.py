@@ -99,7 +99,7 @@ class HostTrustTests(unittest.TestCase):
 
     def test_unrelated_ancestor_entries_preserve_execution_and_rebinding(self):
         runtime = self.root / "runtime"
-        runtime.mkdir()
+        runtime.mkdir(mode=0o700)
         executable = runtime / "tool"
         executable.write_bytes(self.executable.read_bytes())
         executable.chmod(0o700)
@@ -124,7 +124,7 @@ class HostTrustTests(unittest.TestCase):
 
     def test_binding_keeps_all_lexical_and_resolved_ancestors(self):
         runtime = self.root / "runtime"
-        runtime.mkdir()
+        runtime.mkdir(mode=0o700)
         executable = runtime / "tool"
         executable.write_bytes(self.executable.read_bytes())
         executable.chmod(0o700)
@@ -141,11 +141,11 @@ class HostTrustTests(unittest.TestCase):
     def test_directory_replacement_is_rejected(self):
         # Replace a bound ancestor while retaining the same executable inode.
         runtime = self.root / "runtime"
-        runtime.mkdir()
+        runtime.mkdir(mode=0o700)
         self.executable.rename(runtime / "tool")
         bound = trust.bind_host_executable(runtime / "tool")
         runtime.rename(self.root / "old-runtime")
-        runtime.mkdir()
+        runtime.mkdir(mode=0o700)
         (self.root / "old-runtime" / "tool").rename(runtime / "tool")
         with self.assertRaisesRegex(trust.HostTrustError, "changed"):
             trust.recheck_host_executable(bound)

@@ -32,7 +32,7 @@ class ValidateWorktreeTargetTests(unittest.TestCase):
         self.tempdir = tempfile.TemporaryDirectory()
         self.root = Path(self.tempdir.name).resolve()
         self.clone = self.root / "project"
-        self.clone.mkdir()
+        self.clone.mkdir(mode=0o700)
 
     def tearDown(self) -> None:
         self.tempdir.cleanup()

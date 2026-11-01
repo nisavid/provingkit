@@ -34,8 +34,10 @@ class OrdinaryPublicationTests(unittest.TestCase):
         self.root = Path(self.scratch.name)
         self.repo = self.root / "repo"
         self.remote = self.root / "remote.git"
+        self.remote.mkdir(mode=0o700)
+        self.repo.mkdir(mode=0o700)
         home = self.root / "home"
-        home.mkdir()
+        home.mkdir(mode=0o700)
         self.environment = mock.patch.dict(
             os.environ,
             {
@@ -108,7 +110,7 @@ class OrdinaryPublicationTests(unittest.TestCase):
 
     def test_unrelated_runtime_sibling_during_push_preserves_verified_result(self):
         runtime = self.root / "runtime"
-        runtime.mkdir()
+        runtime.mkdir(mode=0o700)
         selected_git = runtime / "git"
         selected_git.write_text('#!/bin/sh\nexec /usr/bin/git "$@"\n', encoding="utf-8")
         selected_git.chmod(0o755)
@@ -213,7 +215,7 @@ class OrdinaryPublicationTests(unittest.TestCase):
 
     def test_observed_executable_replacement_is_not_rebound(self):
         runtime = self.root / "runtime"
-        runtime.mkdir()
+        runtime.mkdir(mode=0o700)
         selected_git = runtime / "git"
         selected_git.write_text('#!/bin/sh\nexec /usr/bin/git "$@"\n', encoding="utf-8")
         selected_git.chmod(0o755)

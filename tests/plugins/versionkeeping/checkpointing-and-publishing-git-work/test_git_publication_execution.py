@@ -269,10 +269,8 @@ class WindowsRuntimeIdentityTests(unittest.TestCase):
             with mock.patch.object(adapter.sys, "platform", "win32"):
                 with mock.patch.object(adapter, "_trusted_git_runtime", return_value=runtime):
                     repository = adapter.GitRepository(root, config_profile=profile)
-            try:
+            with repository:
                 yield repository, git_root, executables
-            finally:
-                repository.close()
 
     def test_directory_identity_ignores_sibling_entry_churn(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

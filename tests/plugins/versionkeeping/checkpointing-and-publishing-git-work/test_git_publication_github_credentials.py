@@ -98,7 +98,7 @@ class GitHubCredentialTests(unittest.TestCase):
         with self.repository() as repo:
             repo.publication_credential_policy(self.endpoint)
             original_mode = self.root.stat().st_mode & 0o777
-            self.root.chmod(original_mode ^ 0o100)
+            self.root.chmod(original_mode | 0o010)
             try:
                 with mock.patch.object(adapter.subprocess, "run") as run:
                     with self.assertRaises(adapter.PolicyGate) as raised:
