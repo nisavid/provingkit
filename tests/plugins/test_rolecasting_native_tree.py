@@ -446,6 +446,156 @@ class NativeTreeConsumerTests(unittest.TestCase):
                                 observation_ref="synthetic-evidence-launch"))
         return frozen_plan, payload
 
+    def assert_native_outcome(self, command_id, state, *, missing=False, tree=None):
+        snapshot = (tree or self.tree).inspect("synthetic-run", command_id)
+        command = snapshot["commands"][0]
+        self.assertEqual({"command_id": command_id, "kind": "native-outcome"}
+                         in snapshot["missing_evidence"], missing)
+        self.assertEqual(command["native_outcome"]["state"], state)
+        # A derived outcome must never rewrite the committed claim history.
+        self.assertEqual(command["state"], "unknown")
+        return command["native_outcome"]
+
+    def test_native_outcome_recovers_spawn_receipt_and_final_without_acceptance(self):
+        frozen_plan, _ = self.claimed_spawn()
+        self.assertIn({"command_id": "spawn-1", "kind": "native-outcome"},
+                      self.tree.inspect("synthetic-run", "spawn-1")["missing_evidence"])
+        self.observe({"task_name": "/root/fresh"}, command_id="spawn-1", observation_id="launch")
+        receipt = self.assert_native_outcome("spawn-1", "creation-observed")
+        self.assertEqual(receipt["native_target"], "/root/fresh")
+        self.assertEqual(receipt["evidence_refs"], ["synthetic-evidence-launch"])
+        self.tree.bind_role(dict(binding("fresh", target="/root/fresh"), source_kind="native-tool-result",
+                                observation_ref="synthetic-evidence-launch"))
+        payload = "An attributable result."
+        self.observe("Message Type: FINAL_ANSWER\nTask name: /root\nSender: /root/fresh\nPayload:\n" + payload,
+                     "harness-final-event", command_id="spawn-1", observation_id="final")
+        result = self.assert_native_outcome("spawn-1", "output-observed")
+        self.assertEqual(result["result_digest"], digest(payload))
+        self.assertIn("synthetic-evidence-final", result["evidence_refs"])
+        self.assertFalse(self.assignment_view()["evidence"]["accepted"])
+        self.assertTrue(self.assignment_view()["native_busy"])
+        with self.module.NativeTree(self.path, run=self.run, actor=self.actor) as reopened:
+            self.assertEqual(self.assert_native_outcome("spawn-1", "output-observed", tree=reopened), result)
+        self.tree.reconcile("spawn-1", "use-observed-result", {
+            "reconciliation_id": "use-final", "decision_ref": "owner decision",
+            "evidence_ref": "synthetic-evidence-final"})
+        verification = {"assignment_id": "assignment-1", "generation": 1,
+                        "input_digest": frozen_plan["request_sha256"], "result_digest": digest(payload),
+                        "usable": True, "evidence_ref": "synthetic-evidence-verify-final"}
+        self.observe(verification, "owner-verification", command_id="spawn-1", observation_id="verify-final")
+        self.tree.accept("assignment-1", 1, digest(payload), verification["evidence_ref"])
+        self.assertTrue(self.assignment_view()["evidence"]["usable"])
+        self.assertTrue(self.assignment_view()["native_busy"])
+        self.claim_inventory("inventory-final")
+        self.claim_inventory("unrelated-inventory")
+        self.observe({"agents": [{"agent_name": "/root/fresh", "agent_status": {"completed": payload}}]},
+                     "native-inventory", command_id="spawn-1", observation_id="completed-final",
+                     collected_by="inventory-final")
+        self.assert_native_outcome("spawn-1", "output-observed")
+        inventory = self.assert_native_outcome("inventory-final", "inventory-observed")
+        self.assertEqual(inventory["evidence_refs"], ["synthetic-evidence-completed-final"])
+        self.assert_native_outcome("unrelated-inventory", "unknown", missing=True)
+        self.assertFalse(self.assignment_view()["native_busy"])
+        self.assertFalse(self.tree.claim("spawn-1")["claimed"])
+
+    def test_native_outcome_keeps_worker_acceptance_and_disposition_separate(self):
+        result_digest, input_digest = self.reported_result()
+        self.tree.reconcile("command-1", "use-observed-result", {
+            "reconciliation_id": "use-worker", "decision_ref": "owner decision",
+            "evidence_ref": "synthetic-evidence-report"})
+        ref = self.verify_result(result_digest, input_digest)
+        self.tree.accept("assignment-1", 1, result_digest, ref)
+        self.assert_native_outcome("command-1", "unknown", missing=True)
+        self.assertTrue(self.assignment_view()["evidence"]["usable"])
+        self.assertFalse(self.assignment_view()["evidence"]["native_completion"]["observed"])
+        self.assertTrue(self.assignment_view()["native_busy"])
+
+    def test_native_outcome_limits_interrupt_and_timeout_to_the_observed_response(self):
+        self.prepare_work()
+        self.tree.claim("command-1")
+        self.tree.prepare(plan({}, "interrupt", None), "interrupt", "worker", 1, {}, "request")
+        self.tree.claim("interrupt")
+        self.observe({"previous_status": "running"}, command_id="interrupt", observation_id="interrupted")
+        outcome = self.assert_native_outcome("interrupt", "interrupt-response-observed")
+        self.assertEqual(outcome["previous_status"], "running")
+        self.assertEqual(outcome["operation_effect"], "unknown")
+        self.tree.prepare(plan({}, "wait", None), "wait", None, None, {}, "bounded")
+        self.tree.claim("wait")
+        self.observe({"timed_out": True}, command_id="wait", observation_id="timeout")
+        outcome = self.assert_native_outcome("wait", "wait-timeout-observed")
+        self.assertEqual(outcome["operation_effect"], "unknown")
+        self.assert_native_outcome("command-1", "unknown", missing=True)
+        payload = {"message": "continue without established interruption"}
+        self.tree.prepare(plan(payload, "continuation"), "activate-or-steer", "worker", 1, payload, "continue")
+        with self.assertRaises(self.module.NativeTreeError):
+            self.tree.claim("continuation")
+        with self.assertRaises(self.module.NativeTreeError):
+            self.tree.reconcile("command-1", "authorize-new-attempt", {
+                "reconciliation_id": "retry-timeout", "decision_ref": "owner decision",
+                "basis": "wait-timeout", "evidence_ref": "synthetic-evidence-timeout"})
+
+    def test_native_outcome_inventory_is_collector_evidence_not_subject_completion(self):
+        self.claim_inventory("old-inventory")
+        self.prepare_work()
+        self.tree.claim("command-1")
+        self.observe({"agents": [{"agent_name": "/root/worker", "agent_status": {"completed": "done"}}]},
+                     "native-inventory", collected_by="old-inventory")
+        self.assert_native_outcome("old-inventory", "inventory-observed")
+        self.assert_native_outcome("command-1", "unknown", missing=True)
+        self.assertTrue(self.assignment_view()["native_busy"])
+        self.claim_inventory("empty-inventory")
+        self.observe({"agents": []}, "native-inventory", observation_id="empty", collected_by="empty-inventory")
+        self.assert_native_outcome("empty-inventory", "inventory-observed")
+        self.claim_inventory("unmapped-inventory")
+        for index, raw in enumerate(({"unknown": []}, {"agents": [{"agent_name": "/root/worker", "agent_status": "future"}]},
+                                     {"agents": [{"agent_name": "/root/worker", "agent_status": "running"},
+                                                 {"agent_name": "/root/worker", "agent_status": "interrupted"}]})):
+            self.observe(raw, "native-inventory", observation_id="unmapped-" + str(index),
+                         collected_by="unmapped-inventory")
+        self.assert_native_outcome("unmapped-inventory", "unknown", missing=True)
+        self.assert_native_outcome("command-1", "unknown", missing=True)
+
+    def test_native_outcome_does_not_attribute_copied_foreign_or_ambiguous_finals(self):
+        self.bound_spawn()
+        envelope = "Message Type: FINAL_ANSWER\nTask name: /root\nSender: /root/fresh\nPayload:\nDONE"
+        for index, (raw, source) in enumerate(((envelope, "worker-report"),
+                (envelope.replace("Task name: /root\n", "Task name: /root/other\n"), "harness-final-event"),
+                (envelope.replace("Sender: /root/fresh\n", "Sender: /root/foreign\n"), "harness-final-event"),
+                ({"future_envelope": "DONE"}, "native-tool-result"))):
+            self.observe(raw, source, command_id="spawn-1", observation_id="unsupported-" + str(index))
+        self.assert_native_outcome("spawn-1", "creation-observed")
+        payload = {"message": "another input"}
+        self.tree.prepare(plan(payload, "notice", None), "notify", "fresh", 1, payload, "information")
+        self.tree.claim("notice")
+        self.observe(envelope, "harness-final-event", command_id="spawn-1", observation_id="ambiguous")
+        self.observe({"acknowledged": True}, command_id="notice", observation_id="acknowledgement")
+        self.assert_native_outcome("spawn-1", "creation-observed")
+        self.assert_native_outcome("notice", "unknown", missing=True)
+        self.assertFalse(self.assignment_view()["evidence"]["native_completion"]["observed"])
+        self.observe({"task_name": "/root/conflicting"}, command_id="spawn-1", observation_id="conflicting-target")
+        self.assert_native_outcome("spawn-1", "conflicting", missing=True)
+
+    def test_native_outcome_keeps_older_attempt_unknown_after_retry_receipt(self):
+        frozen_plan, payload = self.claimed_spawn()
+        self.tree.reconcile("spawn-1", "keep-unknown", {
+            "reconciliation_id": "keep-old", "decision_ref": "owner decision", "evidence_ref": "lost response"})
+        self.tree.reconcile("spawn-1", "authorize-new-attempt", {
+            "reconciliation_id": "retry-old", "decision_ref": "owner decision",
+            "basis": "duplicate-risk-accepted", "evidence_ref": "bounded retry decision"})
+        retry = dict(frozen_plan, command_id="spawn-retry", predecessor_reconciliation_ref="retry-old")
+        self.tree.prepare(retry, "spawn", "fresh", 1, payload, "fresh")
+        self.tree.claim("spawn-retry")
+        self.observe({"task_name": "/root/retry"}, command_id="spawn-retry", observation_id="retry-launch")
+        self.assert_native_outcome("spawn-retry", "creation-observed")
+        self.assert_native_outcome("spawn-1", "unknown", missing=True)
+        self.tree.reconcile("spawn-retry", "abandon", {
+            "reconciliation_id": "abandon-retry", "decision_ref": "owner decision", "evidence_ref": "uncertain work"})
+        self.assert_native_outcome("spawn-1", "unknown", missing=True)
+        self.assertTrue(self.assignment_view()["native_busy"])
+        replay = self.tree.claim("spawn-retry")
+        self.assertFalse(replay["claimed"])
+        self.assertNotIn("native_call", replay)
+
     def test_business_input_digest_is_distinct_from_transport_request_digest(self):
         self.tree.bind_role(binding())
         input_digest = digest({"business_input": "fixed source data"})

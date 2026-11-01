@@ -366,6 +366,24 @@ class EvidenceTransportTests(unittest.TestCase):
                     )
                 run.assert_not_called()
 
+    def test_repository_discovery_from_root_and_nested_directory(self) -> None:
+        checkout = self.root / "checkout"
+        subprocess.run(
+            ["/usr/bin/git", "init", "-q", str(checkout)],
+            check=True,
+            capture_output=True,
+        )
+        nested = checkout / "nested" / "directory"
+        nested.mkdir(parents=True)
+        for start in (checkout, nested):
+            with self.subTest(start=start):
+                self.assertEqual(
+                    SUPPORT.candidate_repository_root(
+                        start, error_factory=SupportError
+                    ),
+                    checkout,
+                )
+
     def test_candidate_git_reuses_binding_and_checks_command_completion(self) -> None:
         with mock.patch.object(
             SUPPORT, "bind_host_executable", wraps=SUPPORT.bind_host_executable

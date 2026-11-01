@@ -82,13 +82,13 @@
     "skills/delegating-cross-agent-work/references/invocation-topology-receipt.md": "b1f2970a61350d34684487a97fb78acfe2852c9c8ebce6241cf153870f65c2cd",
     "skills/delegating-cross-agent-work/references/native-codex-mailbox.md": "41134701b251235387c64b1be13bf5eea52ca2ce0d1d98b9eec944af1571ebb4",
     "skills/delegating-cross-agent-work/references/native-codex-subagents.md": "f28f45d73985625869620f353bd35ff8e12bc37bb177cda7742d0aa2879b505a",
-    "skills/delegating-cross-agent-work/references/native-tree-driver.md": "008ac51a4d9fe12c515f165fa2b217d77ca601f62843550eff258723ba784cee",
+    "skills/delegating-cross-agent-work/references/native-tree-driver.md": "eda57d4c2ed33bd3b2aad33f1e5c06f218b7882457e4c7569daba269ccf07ee4",
     "skills/delegating-cross-agent-work/references/scarce-specialist-handoffs.md": "370b850d85903ce9fb136e389606256d0112686177e533b7d52acd76848e66cc",
     "skills/delegating-cross-agent-work/scripts/dispatch_adapter.py": "dbf7199ce070cd0c8bd3df84c934a5b4eb58c0d3bbe0346389794808f21ae736",
     "skills/delegating-cross-agent-work/scripts/dispatch_evidence.py": "fa10b5feb5847755b8d44dcdd8c1514a0c862f8bb5aa0d7766ceaaab4e52e27d",
     "skills/delegating-cross-agent-work/scripts/native_codex.py": "b0a6f6a02202bf0d00e9eb410eb13301ad5949a3bdbce7706cb724bb71bb7aa4",
     "skills/delegating-cross-agent-work/scripts/native_codex_mailbox.py": "fb4541ddba49869a0a131d6b520f883edb40400702c54b1f0d45d4bbbc8f1214",
-    "skills/delegating-cross-agent-work/scripts/native_tree.py": "76a25d6dc9b728aba0980b45c303bbcbfcadffb4e687bd9cc88ae8d72becd408",
+    "skills/delegating-cross-agent-work/scripts/native_tree.py": "1be3926d0154977c0efd86afc4121999c25cffe9e1c64f8fc417d7a240631204",
     "task-witness-provider.json": "cfc5bf01814ffacc82bccaa83f02dcd03ee8c2c9dc3a498eab805182f4b8670b",
     "topology.json": "5c0d4776619282eb274f4411e78350b5166c305de60227ad916d54f3f2a2b225"
   }

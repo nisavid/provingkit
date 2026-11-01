@@ -1009,6 +1009,79 @@ class NativeTree:
                             (observation["observation_id"], command_id, content, _canonical(facts)))
         return {"created": True, "observation_id": observation["observation_id"], "command_id": command_id, "state": row[3]}
 
+    def _native_outcome(self, command, claimed):
+        """Project this attempt's supported response, never its owner's decision."""
+        outcome = {"state": "unknown" if claimed else "unclaimed",
+                   "operation_effect": "unknown", "evidence_refs": []}
+        if not claimed:
+            return outcome
+        command_id, action = command["plan"]["command_id"], command["action"]
+        responses, finals = {}, {}
+        for content, facts_content in self.db.execute("SELECT content, facts FROM observations ORDER BY sequence"):
+            observation, facts = json.loads(content), json.loads(facts_content)
+            reference = observation["evidence_ref"]
+            if action == "inspect":
+                if (observation["source_kind"] != "native-inventory"
+                        or observation["collected_by"] != command_id
+                        or observation["recorded_by"] != command["actor"]):
+                    continue
+                # Empty inventory is a response, but says nothing about a
+                # subject's delivery or completion. Unsupported or conflicting
+                # entries cannot supply a known inventory outcome.
+                raw = observation["raw"]
+                if not isinstance(raw, dict) or not isinstance(raw.get("agents"), list):
+                    continue
+                statuses = {}
+                for item in raw["agents"]:
+                    if (not isinstance(item, dict) or type(item.get("agent_name")) is not str
+                            or not item["agent_name"] or _native_status(item.get("agent_status")) is None):
+                        break
+                    target, status = item["agent_name"], _native_status(item["agent_status"])
+                    if target in statuses and statuses[target] != status:
+                        break
+                    statuses[target] = status
+                else:
+                    responses.setdefault(tuple(sorted(statuses.items())), []).append(reference)
+                continue
+            if observation["command_id"] != command_id:
+                continue
+            if (observation["source_kind"] == "native-tool-result"
+                    and observation["collected_by"] == command_id):
+                if action == "spawn" and "native_target" in facts:
+                    responses.setdefault(facts["native_target"], []).append(reference)
+                elif action == "interrupt" and "previous_status" in facts:
+                    responses.setdefault(facts["previous_status"], []).append(reference)
+                elif action == "wait" and facts.get("wait_timed_out") is True:
+                    responses.setdefault(True, []).append(reference)
+            if action == "spawn" and observation["source_kind"] == "harness-final-event":
+                result = facts.get("native_result", {})
+                if result.get("creation_command") == command_id:
+                    finals.setdefault((result["native_target"], result["result_digest"]), []).append(reference)
+        references = sorted({ref for refs in responses.values() for ref in refs})
+        outcome["evidence_refs"] = references
+        if len(responses) > 1 or len(finals) > 1:
+            outcome["state"] = "conflicting"
+            outcome["evidence_refs"] = sorted(set(references) | {ref for refs in finals.values() for ref in refs})
+        elif responses:
+            value = next(iter(responses))
+            if action == "spawn":
+                outcome.update(state="creation-observed", operation_effect="child-created", native_target=value)
+                if finals:
+                    (target, result_digest), refs = next(iter(finals.items()))
+                    if target == value:
+                        outcome.update(state="output-observed", operation_effect="output-observed",
+                                       result_digest=result_digest, evidence_refs=sorted(set(references + refs)))
+                    else:
+                        outcome.update(state="conflicting", operation_effect="unknown",
+                                       evidence_refs=sorted(set(references + refs)))
+            elif action == "inspect":
+                outcome.update(state="inventory-observed", operation_effect="inventory-returned")
+            elif action == "interrupt":
+                outcome.update(state="interrupt-response-observed", previous_status=value)
+            elif action == "wait":
+                outcome["state"] = "wait-timeout-observed"
+        return outcome
+
     def inspect(self, run_id, role_or_command=None):
         """Read local state without querying the native controller."""
         self._check_open()
@@ -1054,7 +1127,8 @@ class NativeTree:
                     command["assignment_correlation"] = {"assignment_id": command["plan"]["assignment_id"], "established": established}
                 command.pop("native_call")
                 command.update(command_id=command_id, command_sha256=command_digest,
-                               claimed=bool(claimed), state=outcome, observations=[])
+                               claimed=bool(claimed), state=outcome,
+                               native_outcome=self._native_outcome(command, claimed), observations=[])
                 for observed_content, facts in self.db.execute("SELECT content, facts FROM observations WHERE command_id=? ORDER BY sequence", (command_id,)):
                     observation = json.loads(observed_content)
                     observation["facts"] = json.loads(facts)
@@ -1086,7 +1160,8 @@ class NativeTree:
         return {"run_id": run_id, "bindings": bindings, "commands": commands,
                 "assignments": assignments, "activities": activities, "reconciliations": reconciliations,
                 "missing_evidence": [{"command_id": item["command_id"], "kind": "native-outcome"}
-                                     for item in commands if item["claimed"] and item["state"] == "unknown"],
+                                     for item in commands if item["claimed"]
+                                     and item["native_outcome"]["state"] in ("unknown", "conflicting")],
                 "next_actions": next_actions, "blocked_actions": blocked_actions}
 
     def accept(self, assignment_id, generation, result_digest, verification_ref):

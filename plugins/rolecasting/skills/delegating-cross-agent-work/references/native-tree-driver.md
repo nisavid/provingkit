@@ -131,6 +131,32 @@ Sources are `native-tool-result`, `native-inventory`, `harness-final-event`,
 source and collection context, not only raw bytes. Replay cannot relabel it.
 Unknown shapes remain retained without derived facts.
 
+Command inspection preserves `state` as the original claim-time record and
+adds a read-only `native_outcome` projection with evidence references. Its
+`state` is `unclaimed`, `unknown`, `conflicting`, or an action-specific observed
+response: `creation-observed`, `output-observed`, `inventory-observed`,
+`interrupt-response-observed`, or `wait-timeout-observed`. Only the command's
+own mapped spawn receipt and qualified native final establish creation or
+output, respectively. Conflicting targets or native results stay uncertain.
+Activation, steering and notification have no supported outcome mapping;
+acknowledgement prose, target status and worker reports leave them unknown.
+
+An inventory response belongs to its explicitly named, claimed `inspect`
+collector, even when recorded against a work command. Supported empty inventory
+establishes that response alone. Unsupported or conflicting inventory entries
+do not establish a known outcome. An older collector's response says nothing
+about newer work; all existing subject freshness and activity rules still
+apply. A filtered inspection also finds inventory recorded against another
+command. `missing_evidence` lists claimed commands whose derived native outcome
+is unknown or conflicting, rather than every historical unknown claim.
+
+`operation_effect` remains `unknown` for interrupt responses and wait timeouts:
+an observed `previous_status` is not a completed interruption, and a timeout
+does not establish work success or nondelivery. Creation, attributable output
+and inventory responses describe only their own effects. These projections
+neither accept a result, authorize a retry nor release a target. Reconciliation
+and owner acceptance never manufacture missing native evidence.
+
 For inventory used to permit continuation or clear an activity hazard, first
 claim and execute a fresh inventory command. Record its response against the
 subject work command with `collected_by` naming that inventory command. The
