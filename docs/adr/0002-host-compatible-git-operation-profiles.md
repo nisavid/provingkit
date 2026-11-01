@@ -22,6 +22,33 @@ detect visible drift; they do not prove host provenance or eliminate races.
 The host, interpreter, and same-user concurrent mutation remain outside this
 ordinary assurance boundary.
 
+The shared POSIX guard retains every lexical and resolved ancestor, including
+the filesystem root. Directory observations compare device, inode, type/mode,
+UID, and GID; other entries retain their full metadata tuples, and resolved
+targets are compared separately. Unrelated directory-entry activity therefore
+does not invalidate the selected executable or an equivalent new binding.
+Removing directory size, link count, mtime, and ctime deliberately narrows
+drift detection: ctime can also record metadata changes or intervening changes
+whose final represented state matches. These snapshots do not establish ACL
+or extended-security-metadata continuity, uninterrupted identity, or absence
+of intervening mutation; inode reuse and path-check/use races remain possible.
+POSIX mode is not a portable ACL fingerprint.
+
+This shared identity rule applies to ordinary publication, selected Linux
+GitHub credential providers, worktree execution, and both host-compatible and
+hardened Graphite execution. Hardened Graphite retains its stronger root-owned
+selection without fallback, but its shared guard's timestamp/history
+observations narrow too. Hardened POSIX Versionkeeping retains its existing
+root-owned selector without adding shared-guard bindings.
+
+Windows publication in both profiles analogously compares directory device,
+inode, and type/mode, while retaining full six-field file identities. Its
+registration, owner, ACL, and path-redirection admission checks remain separate
+and unchanged; stat mode does not represent Windows ACL permissions, nor is
+ctime a portable security-change counter. Neither platform's directory tuple
+asserts ACL continuity. Native platform checks are required for platform
+qualification; Linux tests of Windows identity logic establish only that logic.
+
 The ordinary Linux GitHub HTTPS route has a bounded exception for existing
 environment-backed gh credentials. It selects only the fixed, identity-checked
 `/usr/bin/gh auth git-credential` helper and inherits only `GH_TOKEN`, or
@@ -32,7 +59,9 @@ claim is made. Nonmatching operations and hardened mode retain the scrubbed
 environment. Helper ambiguity, HTTP/auth overrides and URL rewriting block
 the token-bearing route. The nonsecret policy/provider/source-name identity is
 part of the reviewed configuration digest and is compared before any
-credential-bearing transport. A fixed, identity-checked nonprompting fallback
+credential-bearing transport. Plans recording the previous directory-identity
+representation require fresh planning and review; no compatibility bypass
+accepts their old digest. A fixed, identity-checked nonprompting fallback
 prevents ambient PATH from selecting an askpass process. Only the ordinary
 publication planner and executor activate the exception; the separate
 remote-ref-deletion contract remains unchanged. Other platforms and enterprise

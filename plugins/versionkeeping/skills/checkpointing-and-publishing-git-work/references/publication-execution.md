@@ -110,6 +110,16 @@ the host or rule out concurrent same-user mutation. The hardened profile keeps
 its root-owned executable requirements and never falls back to ordinary trust.
 Windows retains its existing registration and ACL requirements.
 
+Directory identities exclude entry-activity timestamps, size and link count:
+POSIX records device, inode, mode, owner and group; Windows records device,
+inode and mode alongside its separate registration and ACL admission checks.
+Selected files and symlink entries retain their full identity observations.
+This avoids invalidating an operation for unrelated directory activity while
+reducing incidental metadata/history signals; it does not establish ACL
+continuity or the absence of intervening mutation. A plan containing the prior
+credential-provider identity representation requires fresh planning and review;
+the reviewed configuration digest is not migrated or bypassed.
+
 On Linux, ordinary GitHub HTTPS transport can use an existing `GH_TOKEN` or,
 when absent, `GITHUB_TOKEN` through the explicitly configured
 `!/usr/bin/gh auth git-credential` helper. This bounded exception checks the

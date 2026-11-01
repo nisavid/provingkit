@@ -128,6 +128,51 @@ class OrdinaryHostRuntimeTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0)
         self.assertTrue(result.stdout.startswith("git version "))
 
+    def test_unrelated_registered_runtime_sibling_preserves_both_profiles(self):
+        gt = Path(self.temporary.name) / "gt"
+        gt.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+        gt.chmod(0o700)
+        # Real selectors and full bindings surround an inert submit handler;
+        # this does not execute Graphite or contact a forge.
+        for profile in ("host-compatible", "hardened"):
+            with self.subTest(profile=profile):
+                calls = []
+                real_lstat = Path.lstat
+
+                def ownership_fixture(path, *args, **kwargs):
+                    metadata = real_lstat(path, *args, **kwargs)
+                    # This container displays its system paths as foreign
+                    # owned. Supply only the hardened selector's owner fields;
+                    # modes, ancestry, identities and all checks remain real.
+                    if profile == "hardened" and path in {
+                        Path("/"), Path("/usr"), Path("/usr/bin"), Path("/usr/bin/ssh")
+                    }:
+                        values = {name: getattr(metadata, name)
+                                  for name in dir(metadata) if name.startswith("st_")}
+                        values["st_uid"] = 0
+                        return SimpleNamespace(**values)
+                    return metadata
+
+                def completed(command, **kwargs):
+                    calls.append(command)
+                    (gt.parent / f"unrelated-{profile}").mkdir()
+                    return subprocess.CompletedProcess(command, 0, "submitted fixture", "")
+
+                with (
+                    mock.patch.dict(os.environ, {
+                        GRAPHITE.GIT_CONFIG_PROFILE_ENV: profile,
+                        GRAPHITE.TRUSTED_GRAPHITE_EXECUTABLE_ENV: str(gt),
+                    }),
+                    mock.patch.object(Path, "lstat", ownership_fixture),
+                    mock.patch.object(GRAPHITE.subprocess, "run", side_effect=completed),
+                ):
+                    result = GRAPHITE._run_raw(["gt", "submit", "--stack", "--draft"], cwd=self.root)
+                self.assertEqual(calls, [[str(gt), "submit", "--stack", "--draft"]])
+                self.assertEqual(result.returncode, 0)
+                self.assertEqual(result.stdout, "submitted fixture")
+                with self.assertRaises(AssertionError):
+                    self.assertEqual(result.stdout, "wrong-result")
+
     def test_runtime_drift_is_rejected_before_command(self):
         with (
             mock.patch.object(

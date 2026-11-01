@@ -27,7 +27,7 @@
     "skills/getting-prs-ready-for-review/agents/openai.yaml": "7c68f326623e8f7a36878250784679d34250f8fac1360c2f624df1596e7d0740",
     "skills/graphite/SKILL.md": "1e4207665556da5328a9a7fa5707b2fac58754a753fc0d57b73e21b7068d4ea5",
     "skills/graphite/agents/openai.yaml": "b2e58ad3e22cc7bf4b336b66212d1bc0dc8df558570ecd1c6206eff865d2c80c",
-    "skills/graphite/scripts/host_trust.py": "468b4d99344c0da04f986a3a744489e5778d158a0d67bb75b0ce9500ab82541f",
+    "skills/graphite/scripts/host_trust.py": "fd95e418f50ed4b3e4e44307836ee3f4401aeac23f3405ab0dd95e56db6825f4",
     "skills/graphite/scripts/submit_draft_stack.py": "b2e75635352dbccc6cd861dc4f51b75fc265e76985bd771f3f86f737c4172444",
     "skills/interacting-with-pr-review-feedback/SKILL.md": "82292a085eab09fdf2f3313518e4e860ff911dfef55ea0ac91619fb375e956fa",
     "skills/interacting-with-pr-review-feedback/agents/openai.yaml": "e6ac26b75f325b4de2e92c94b62e88f56ad48c33eb19656e438deb7bbd5e8832",

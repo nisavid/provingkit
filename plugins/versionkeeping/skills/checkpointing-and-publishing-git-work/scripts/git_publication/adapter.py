@@ -535,11 +535,14 @@ def _windows_path_has_protected_acl(
     _windows_paths_have_protected_acls(((path, replacement_only),))
 
 
-def _windows_path_identity(path: Path) -> tuple[int, int, int, int, int, int]:
+def _windows_path_identity(path: Path) -> tuple[int, ...]:
     resolved = path.resolve(strict=True)
     if resolved != path.absolute():
         raise OSError("Windows runtime path is redirected")
     metadata = resolved.lstat()
+    if stat.S_ISDIR(metadata.st_mode):
+        # Ancestor directory-content metadata is not runtime object identity.
+        return (metadata.st_dev, metadata.st_ino, metadata.st_mode)
     return (
         metadata.st_dev,
         metadata.st_ino,
@@ -1085,7 +1088,7 @@ class GitRepository:
         self._windows_git_root = runtime.windows_root
         self._windows_runtime_identities: dict[
             Path,
-            tuple[int, int, int, int, int, int],
+            tuple[int, ...],
         ] = {}
         if sys.platform == "win32":
             askpass = _credential_helper_config(runtime.askpass)

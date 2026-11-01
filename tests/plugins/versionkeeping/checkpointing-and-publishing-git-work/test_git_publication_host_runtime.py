@@ -106,6 +106,35 @@ class OrdinaryPublicationTests(unittest.TestCase):
         with self.assertRaises(AssertionError):
             self.assertEqual(self.git(self.remote, "rev-parse", "refs/heads/topic"), self.start)
 
+    def test_unrelated_runtime_sibling_during_push_preserves_verified_result(self):
+        runtime = self.root / "runtime"
+        runtime.mkdir()
+        selected_git = runtime / "git"
+        selected_git.write_text('#!/bin/sh\nexec /usr/bin/git "$@"\n', encoding="utf-8")
+        selected_git.chmod(0o755)
+        original_run = subprocess.run
+        pushed = []
+
+        def run(command, **kwargs):
+            completed = original_run(command, **kwargs)
+            if "push" in command:
+                self.assertEqual(command[0], str(selected_git))
+                (runtime / "unrelated-entry").write_text("unrelated")
+                pushed.append(command)
+            return completed
+
+        with mock.patch.dict(adapter.TRUSTED_SYSTEM_EXECUTABLES, {"git": selected_git}):
+            plan = adapter.plan_repository(self.repo, self.request)
+            self.assertEqual(plan["status"], "ready", plan)
+            with mock.patch.object(adapter.subprocess, "run", side_effect=run):
+                result = self.execute(plan)
+        self.assertEqual(len(pushed), 1)
+        self.assertEqual(result["status"], "verified", result)
+        self.assertTrue(result["push_attempted"])
+        self.assertEqual(self.git(self.remote, "rev-parse", "refs/heads/topic"), self.source)
+        with self.assertRaises(AssertionError):
+            self.assertEqual(result["status"], "blocked")
+
     def test_hardened_still_refuses_foreign_owned_system_root(self):
         original = Path.lstat
 

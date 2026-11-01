@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import os
+import stat
 import subprocess
 import sys
 import tempfile
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 import unittest.mock as mock
 
 
@@ -94,6 +96,122 @@ class HostTrustTests(unittest.TestCase):
         self.root.chmod(0o750)
         with self.assertRaisesRegex(trust.HostTrustError, "changed"):
             trust.recheck_host_executable(bound)
+
+    def test_unrelated_ancestor_entries_preserve_execution_and_rebinding(self):
+        runtime = self.root / "runtime"
+        runtime.mkdir()
+        executable = runtime / "tool"
+        executable.write_bytes(self.executable.read_bytes())
+        executable.chmod(0o700)
+        bound = trust.bind_host_executable(executable)
+        sibling = self.root / "unrelated"
+        renamed = self.root / "renamed"
+        actions = (
+            lambda: sibling.write_text("unrelated\n"),
+            lambda: sibling.rename(renamed),
+            renamed.unlink,
+            sibling.mkdir,
+            lambda: sibling.rename(renamed),
+            renamed.rmdir,
+        )
+        for index, action in enumerate(actions):
+            with self.subTest(activity=index):
+                action()
+                trust.recheck_host_executable(bound)
+                self.assertEqual(trust.bind_host_executable(executable), bound)
+                result = subprocess.run([bound.path], capture_output=True, text=True)
+                self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_binding_keeps_all_lexical_and_resolved_ancestors(self):
+        runtime = self.root / "runtime"
+        runtime.mkdir()
+        executable = runtime / "tool"
+        executable.write_bytes(self.executable.read_bytes())
+        executable.chmod(0o700)
+        alias = self.root / "alias"
+        alias.symlink_to(executable)
+        selected = alias
+        bound = trust.bind_host_executable(selected, allow_symlink=True)
+        paths = {path for path, _ in bound.identities}
+        self.assertEqual(paths, {*selected.parents, selected, *executable.parents, executable})
+        (runtime / "unrelated").mkdir()
+        trust.recheck_host_executable(bound)
+        self.assertEqual(trust.bind_host_executable(selected, allow_symlink=True), bound)
+
+    def test_directory_replacement_is_rejected(self):
+        # Replace a bound ancestor while retaining the same executable inode.
+        runtime = self.root / "runtime"
+        runtime.mkdir()
+        self.executable.rename(runtime / "tool")
+        bound = trust.bind_host_executable(runtime / "tool")
+        runtime.rename(self.root / "old-runtime")
+        runtime.mkdir()
+        (self.root / "old-runtime" / "tool").rename(runtime / "tool")
+        with self.assertRaisesRegex(trust.HostTrustError, "changed"):
+            trust.recheck_host_executable(bound)
+
+    def test_symlink_entry_change_and_retarget_are_rejected(self):
+        alias = self.root / "alias"
+        alias.symlink_to(self.executable)
+        bound = trust.bind_host_executable(alias, allow_symlink=True)
+        # A changed spelling keeps the same resolved target but changes the link.
+        alias.unlink()
+        alias.symlink_to(str(self.root) + "/./tool")
+        with self.assertRaisesRegex(trust.HostTrustError, "changed"):
+            trust.recheck_host_executable(bound)
+        bound = trust.bind_host_executable(alias, allow_symlink=True)
+        other = self.root / "other"
+        other.write_bytes(self.executable.read_bytes())
+        other.chmod(0o700)
+        alias.unlink()
+        alias.symlink_to(other)
+        with self.assertRaisesRegex(trust.HostTrustError, "changed"):
+            trust.recheck_host_executable(bound)
+
+    def test_directory_identity_observes_exactly_object_owner_and_mode_fields(self):
+        bound = trust.bind_host_executable(self.executable)
+        original = Path.lstat
+        metadata = original(self.root)
+        retained = ("st_dev", "st_ino", "st_mode", "st_uid", "st_gid")
+        omitted = ("st_nlink", "st_size", "st_mtime_ns", "st_ctime_ns")
+        for field in (*retained, *omitted):
+            with self.subTest(field=field):
+                values = {name: getattr(metadata, name) for name in (*retained, *omitted)}
+                values[field] += 1
+
+                def changed(path):
+                    return SimpleNamespace(**values) if path == self.root else original(path)
+
+                with mock.patch.object(Path, "lstat", changed):
+                    if field in retained:
+                        with self.assertRaisesRegex(trust.HostTrustError, "changed"):
+                            trust.recheck_host_executable(bound)
+                    else:
+                        trust.recheck_host_executable(bound)
+        values["st_mode"] = stat.S_IFREG | 0o700
+        with mock.patch.object(Path, "lstat", changed):
+            with self.assertRaisesRegex(trust.HostTrustError, "changed"):
+                trust.recheck_host_executable(bound)
+
+    def test_non_directory_identity_retains_every_existing_field(self):
+        fields = ("st_dev", "st_ino", "st_mode", "st_uid", "st_gid", "st_nlink",
+                  "st_size", "st_mtime_ns", "st_ctime_ns")
+        for kind in (stat.S_IFREG, stat.S_IFLNK, stat.S_IFIFO):
+            values = dict(zip(fields, (11, 12, kind | 0o700, 13, 14, 15, 16, 17, 18)))
+            expected = tuple(values[field] for field in fields)
+            with self.subTest(kind=kind):
+                self.assertEqual(trust._identity(SimpleNamespace(**values)), expected)
+                for field in fields:
+                    changed = {**values, field: values[field] + 1}
+                    self.assertNotEqual(trust._identity(SimpleNamespace(**changed)), expected)
+
+    def test_selected_file_content_and_mode_changes_are_rejected(self):
+        for change in (lambda: self.executable.write_text("#!/bin/sh\nexit 1\n"),
+                       lambda: self.executable.chmod(0o500)):
+            bound = trust.bind_host_executable(self.executable)
+            change()
+            with self.assertRaisesRegex(trust.HostTrustError, "changed"):
+                trust.recheck_host_executable(bound)
 
 
 class ProjectionTests(unittest.TestCase):

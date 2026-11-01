@@ -56,19 +56,6 @@ class GitHubCredentialTests(unittest.TestCase):
         self.provider_patch = mock.patch.object(adapter, "GITHUB_GH_EXECUTABLE", self.helper, create=True)
         self.provider_patch.start()
         self.addCleanup(self.provider_patch.stop)
-        real_bind = adapter.bind_host_executable
-        def bind(path, **kwargs):
-            observed = real_bind(path, **kwargs)
-            if Path(path) != self.helper:
-                return observed
-            # The substitute provider lives below a shared test workspace.
-            # Isolate its fixture ancestry from concurrent unrelated workers;
-            # production system-provider ancestry is covered by host tests.
-            return adapter.HostExecutable(observed.path, observed.resolved_path,
-                tuple(item for item in observed.identities if item[0].is_relative_to(self.root)))
-        self.binding_patch = mock.patch.object(adapter, "bind_host_executable", side_effect=bind)
-        self.binding_patch.start()
-        self.addCleanup(self.binding_patch.stop)
         subprocess.run(["/usr/bin/git", "init", "-q", str(self.repo_path)], check=True)
 
     def repository(self):
@@ -80,6 +67,46 @@ class GitHubCredentialTests(unittest.TestCase):
             self.assertNotIn("GH_TOKEN", repo.env)
             repo.ensure_https_credentials(self.endpoint)
             self.assertNotIn("GH_TOKEN", repo.env)
+
+    def test_unrelated_ancestor_entries_preserve_complete_credential_policy(self):
+        askpass = self.root / "askpass"
+        askpass.write_text("#!/bin/sh\nexit 1\n")
+        askpass.chmod(0o700)
+        with mock.patch.object(adapter, "GITHUB_ASKPASS_EXECUTABLE", askpass):
+            with self.repository() as repo:
+                first = repo.publication_credential_policy(self.endpoint)
+                digest = adapter._config_digest({"credential_environment": first}, "sha256:example")
+                for name, executable in (("provider_identity", self.helper), ("askpass_identity", askpass)):
+                    self.assertEqual({Path(path) for path, _ in first[name]},
+                                     {*executable.parents, executable})
+                sibling = self.root / "unrelated"
+                sibling.mkdir()
+                (sibling / "entry").write_text("unrelated")
+                self.assertEqual(repo.publication_credential_policy(self.endpoint), first)
+                sibling.rename(self.root / "renamed")
+                with self.repository() as fresh:
+                    third = fresh.publication_credential_policy(self.endpoint)
+                self.assertEqual(third, first)
+                self.assertEqual(adapter._config_digest({"credential_environment": third}, "sha256:example"), digest)
+                (self.root / "renamed/entry").unlink()
+                (self.root / "renamed").rmdir()
+                self.assertEqual(repo.publication_credential_policy(self.endpoint), first)
+                with self.assertRaises(AssertionError):
+                    self.assertEqual(third["source"], "not-the-selected-source")
+
+    def test_provider_ancestor_mode_drift_blocks_before_credential_delivery(self):
+        with self.repository() as repo:
+            repo.publication_credential_policy(self.endpoint)
+            original_mode = self.root.stat().st_mode & 0o777
+            self.root.chmod(original_mode ^ 0o100)
+            try:
+                with mock.patch.object(adapter.subprocess, "run") as run:
+                    with self.assertRaises(adapter.PolicyGate) as raised:
+                        repo.ensure_https_credentials(self.endpoint)
+                self.assertEqual(raised.exception.code, "TRUSTED_GIT_RUNTIME_CHANGED")
+                run.assert_not_called()
+            finally:
+                self.root.chmod(original_mode)
 
     def test_precedence_and_rotation_bind_names_not_token_bytes(self):
         with self.repository() as repo:
@@ -410,8 +437,39 @@ class GitHubCredentialTests(unittest.TestCase):
             raw = (json.dumps(plan, sort_keys=True, separators=(",", ":")) + "\n").encode()
             return execution.execute_repository(self.repo_path, raw, "sha256:" + hashlib.sha256(raw).hexdigest())
         with mock.patch.object(adapter.subprocess, "run", side_effect=substitute_transport):
-            plan = adapter.plan_repository(self.repo_path, request)
+            selections = []
+            real_digest = adapter._config_digest
+
+            def capture_digest(selection, fingerprint):
+                selections.append((json.loads(json.dumps(selection)), fingerprint))
+                return real_digest(selection, fingerprint)
+
+            with mock.patch.object(adapter, "_config_digest", side_effect=capture_digest):
+                plan = adapter.plan_repository(self.repo_path, request)
             self.assertEqual(plan["status"], "ready")
+            # The old directory representation must require fresh planning and
+            # review before either credential delivery or outbound transport.
+            old_selection, fingerprint = selections[-1]
+            for key in ("provider_identity", "askpass_identity"):
+                for entry in old_selection["credential_environment"][key]:
+                    path = Path(entry[0])
+                    if path.is_dir():
+                        value = path.lstat()
+                        entry[1] = [value.st_dev, value.st_ino, value.st_mode,
+                                    value.st_uid, value.st_gid, value.st_nlink,
+                                    value.st_size, value.st_mtime_ns, value.st_ctime_ns]
+            old_plan = json.loads(json.dumps(plan))
+            old_plan["destination"]["config_digest"] = real_digest(old_selection, fingerprint)
+            self.assertNotEqual(old_plan["destination"]["config_digest"], plan["destination"]["config_digest"])
+            before_old = (list(transports), list(credential_calls))
+            refused_old = execute(old_plan)
+            self.assertEqual(refused_old["reasons"][0]["code"], "REVIEWED_CONFIG_CHANGED")
+            self.assertFalse(refused_old["push_attempted"])
+            self.assertEqual((transports, credential_calls), before_old)
+            (self.root / "unrelated-plan-entry").write_text("unrelated")
+            fresh_plan = adapter.plan_repository(self.repo_path, request)
+            self.assertEqual(fresh_plan["status"], "ready", fresh_plan)
+            self.assertEqual(fresh_plan["destination"]["config_digest"], plan["destination"]["config_digest"])
             os.environ["GITHUB_TOKEN"] = os.environ.pop("GH_TOKEN")
             before_refusal = list(transports)
             before_credentials = list(credential_calls)

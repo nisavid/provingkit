@@ -241,6 +241,159 @@ def credential_protocol_fields(output: str) -> dict[str, str]:
     )
 
 
+class WindowsRuntimeIdentityTests(unittest.TestCase):
+    """Portable logic tests; native Windows filesystem/ACL checks remain in CI."""
+
+    @contextmanager
+    def _repository(self, profile="host-compatible"):
+        # Inject selection only: binding, verification and command handling are real.
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            git_root = root / "Program Files" / "Git"
+            executables = {
+                name: git_root / relative
+                for name, relative in adapter.WINDOWS_GIT_RUNTIME.items()
+            }
+            for executable in executables.values():
+                executable.parent.mkdir(parents=True, exist_ok=True)
+                executable.write_bytes(b"inert runtime")
+            command_directories = (git_root / "cmd", git_root / "usr" / "bin")
+            runtime = adapter._TrustedGitRuntime(
+                git_executable=str(executables["git"]),
+                ssh_executable=str(executables["ssh"]),
+                askpass=str(executables["false"]),
+                shell=str(executables["shell"]),
+                command_path=";".join(map(str, command_directories)),
+                windows_root=git_root,
+            )
+            with mock.patch.object(adapter.sys, "platform", "win32"):
+                with mock.patch.object(adapter, "_trusted_git_runtime", return_value=runtime):
+                    repository = adapter.GitRepository(root, config_profile=profile)
+            try:
+                yield repository, git_root, executables
+            finally:
+                repository.close()
+
+    def test_directory_identity_ignores_sibling_entry_churn(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            baseline = adapter._windows_path_identity(root)
+            metadata = root.stat()
+            sibling = root / "unrelated"
+            sibling.write_bytes(b"unrelated")
+            self.assertEqual(adapter._windows_path_identity(root), baseline)
+            sibling.rename(root / "renamed")
+            self.assertEqual(adapter._windows_path_identity(root), baseline)
+            (root / "renamed").unlink()
+            sibling.mkdir()
+            self.assertEqual(adapter._windows_path_identity(root), baseline)
+            sibling.rmdir()
+            self.assertEqual(adapter._windows_path_identity(root), baseline)
+            self.assertEqual(baseline, (metadata.st_dev, metadata.st_ino, metadata.st_mode))
+
+    def test_directory_identity_rejects_replacement_and_type_change(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            selected = root / "selected"
+            selected.mkdir()
+            baseline = adapter._windows_path_identity(selected)
+            selected.rename(root / "original")
+            selected.mkdir()
+            self.assertNotEqual(adapter._windows_path_identity(selected), baseline)
+            selected.rmdir()
+            selected.write_bytes(b"not a directory")
+            self.assertNotEqual(adapter._windows_path_identity(selected), baseline)
+
+    def test_regular_file_identity_retains_all_six_fields(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            leaf = Path(directory).resolve() / "git.exe"
+            leaf.write_bytes(b"inert")
+            metadata = leaf.stat()
+            expected = tuple(getattr(metadata, field) for field in (
+                "st_dev", "st_ino", "st_mode", "st_size", "st_mtime_ns", "st_ctime_ns"
+            ))
+            self.assertEqual(adapter._windows_path_identity(leaf), expected)
+            leaf.write_bytes(b"changed runtime content")
+            self.assertNotEqual(adapter._windows_path_identity(leaf), expected)
+
+    def test_runtime_consumer_accepts_sibling_churn_in_both_profiles(self) -> None:
+        for profile in ("host-compatible", "hardened"):
+            for timing in ("before", "during"):
+                with self.subTest(profile=profile, timing=timing):
+                    with self._repository(profile) as fixture:
+                        repository, git_root, executables = fixture
+                        required_paths = {
+                            *executables.values(), git_root / "cmd", git_root / "usr" / "bin",
+                            git_root, git_root.parent, Path(git_root.anchor),
+                        }
+                        self.assertEqual(set(repository._windows_runtime_identities), required_paths)
+                        expected = dict(repository._windows_runtime_identities)
+
+                        def churn():
+                            for parent in (git_root / "cmd", git_root, git_root.parent):
+                                sibling = parent / "unrelated"
+                                sibling.write_bytes(b"temporary sibling")
+                                sibling.rename(parent / "renamed")
+                                (parent / "renamed").unlink()
+                                sibling.mkdir()
+                                sibling.rmdir()
+
+                        if timing == "before":
+                            churn()
+                            repository._verify_windows_runtime_identity()
+                        self.assertEqual(repository._windows_runtime_identities, expected)
+
+                        def inert_run(argv, **kwargs):
+                            self.assertEqual(argv, [str(executables["git"]), "--version"])
+                            self.assertEqual(kwargs["cwd"], str(repository.path))
+                            if timing == "during":
+                                churn()
+                            return subprocess.CompletedProcess(argv, 0, "completed\n", "")
+
+                        with mock.patch.object(adapter.subprocess, "run", side_effect=inert_run) as run:
+                            completed = repository._run_raw(["--version"])
+                        run.assert_called_once()
+                        self.assertEqual((completed.returncode, completed.stdout), (0, "completed\n"))
+                        repository._verify_windows_runtime_identity()
+
+    def test_runtime_consumer_rejects_drift_before_and_after_command(self) -> None:
+        for profile in ("host-compatible", "hardened"):
+            for change in ("directory-replacement", "directory-type", "leaf-content", "leaf-replacement"):
+                for timing in ("before", "during"):
+                    with self.subTest(profile=profile, change=change, timing=timing):
+                        with self._repository(profile) as fixture:
+                            repository, git_root, executables = fixture
+
+                            def mutate():
+                                if change.startswith("directory"):
+                                    selected = git_root / "cmd"
+                                    selected.rename(git_root / "old-cmd")
+                                    if change == "directory-replacement":
+                                        selected.mkdir()
+                                    else:
+                                        selected.write_bytes(b"not a directory")
+                                else:
+                                    selected = executables["git"]
+                                    if change == "leaf-replacement":
+                                        selected.rename(selected.with_suffix(".old"))
+                                    selected.write_bytes(b"changed runtime content")
+
+                            def inert_run(argv, **_kwargs):
+                                mutate()
+                                return subprocess.CompletedProcess(argv, 0, "completed\n", "")
+
+                            if timing == "before":
+                                mutate()
+                                with self.assertRaises(adapter.PolicyGate) as verified:
+                                    repository._verify_windows_runtime_identity()
+                                self.assertEqual(verified.exception.code, "TRUSTED_WINDOWS_RUNTIME_CHANGED")
+                            with mock.patch.object(adapter.subprocess, "run", side_effect=inert_run) as run:
+                                with self.assertRaises(adapter.PolicyGate) as raised:
+                                    repository._run_raw(["--version"])
+                            self.assertEqual(raised.exception.code, "TRUSTED_WINDOWS_RUNTIME_CHANGED")
+                            self.assertEqual(run.call_count, 0 if timing == "before" else 1)
+
+
 class PublicationExecutionTests(unittest.TestCase):
     def setUp(self) -> None:
         self.profile = mock.patch.dict(

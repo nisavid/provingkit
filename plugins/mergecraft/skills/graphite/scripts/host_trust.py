@@ -32,6 +32,16 @@ def is_host_namespace_anchor(path: Path) -> bool:
 
 
 def _identity(metadata: os.stat_result) -> tuple[int, ...]:
+    if stat.S_ISDIR(metadata.st_mode):
+        # Ancestor entry activity is not executable identity. These snapshots
+        # retain object/owner/mode state, not timestamps or mutation history.
+        return (
+            metadata.st_dev,
+            metadata.st_ino,
+            metadata.st_mode,
+            metadata.st_uid,
+            metadata.st_gid,
+        )
     return (
         metadata.st_dev,
         metadata.st_ino,

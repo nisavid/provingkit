@@ -325,6 +325,39 @@ class ValidateWorktreeTargetTests(unittest.TestCase):
             self.assertEqual(options["env"]["GIT_TERMINAL_PROMPT"], "0")
             self.assertNotIn("GH_TOKEN", options["env"])
 
+    def test_unrelated_runtime_sibling_preserves_completed_creation(self) -> None:
+        module = load_validator_module()
+        receipt = module.validated_target(self.clone, "feature", "topic/feature")
+        # Git effects are inert; selection, binding, checks and result handling
+        # execute normally. This does not prove a live Git worktree operation.
+        with tempfile.TemporaryDirectory(dir=REPOSITORY.parent) as runtime_dir:
+            runtime = Path(runtime_dir)
+            selected_git = runtime / "git"
+            selected_git.write_text("#!/bin/sh\nexit 0\n")
+            selected_git.chmod(0o700)
+            calls = []
+
+            def runner(command, **kwargs):
+                calls.append(command)
+                self.assertEqual(command[0], str(selected_git))
+                if "show-ref" in command:
+                    return subprocess.CompletedProcess(command, 1, "", "")
+                if "worktree" in command and "add" in command:
+                    Path(receipt["worktree_path"]).mkdir()
+                    (runtime / "unrelated-entry").mkdir()
+                output = (f"worktree {receipt['worktree_path']}\n"
+                          if "--porcelain" in command else
+                          "topic/feature\n" if "symbolic-ref" in command else "")
+                return subprocess.CompletedProcess(command, 0, output, "")
+
+            with mock.patch.object(module, "TRUSTED_GIT_EXECUTABLE", selected_git):
+                result = module.create_worktree(receipt, runner=runner)
+        self.assertEqual(result["status"], "created", result)
+        self.assertEqual(sum("add" in command for command in calls), 1)
+        self.assertEqual(result["branch"], "topic/feature")
+        with self.assertRaises(AssertionError):
+            self.assertEqual(result["status"], "unknown")
+
     def test_runtime_drift_before_execution_blocks_without_running_git(self) -> None:
         module = load_validator_module()
         receipt = module.validated_target(self.clone, "feature", "topic/feature")
