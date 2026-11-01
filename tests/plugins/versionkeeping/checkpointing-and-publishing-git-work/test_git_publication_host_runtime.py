@@ -13,7 +13,7 @@ import sys
 import tempfile
 from types import SimpleNamespace
 import unittest
-from unittest import mock
+import unittest.mock as mock
 
 
 REPOSITORY = Path(__file__).resolve().parents[4]

@@ -9,7 +9,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
-from unittest import mock
+import unittest.mock as mock
 
 
 REPOSITORY = Path(__file__).resolve().parents[4]
