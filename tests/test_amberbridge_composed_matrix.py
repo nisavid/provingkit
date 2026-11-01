@@ -23,10 +23,14 @@ import run_amberbridge_composed_matrix as runner
 import validate_public_release as release_validator
 
 COMPATIBILITY_BYTES = runner.compatibility_bytes(REPO_ROOT)
-PUBLIC_IDENTITY = runner.candidate_identity(REPO_ROOT)
 
 
 class AmberbridgeComposedMatrixTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        super().setUpClass()
+        cls.public_identity = runner.candidate_identity(REPO_ROOT)
+
     def replay_summary(self, target: str = "macos-seatbelt") -> dict[str, object]:
         summary = fixture.replay_summary(COMPATIBILITY_BYTES)
         transient = summary["conformance"]
@@ -105,7 +109,7 @@ class AmberbridgeComposedMatrixTests(unittest.TestCase):
                 expected_commit_oid=replay["private_commit_oid"],
                 expected_producer_package_sha256=replay["producer_package_sha256"],
                 public_root=REPO_ROOT,
-                public_identity=PUBLIC_IDENTITY,
+                public_identity=self.public_identity,
                 output=output,
             )
         verify.assert_called_once()
@@ -243,7 +247,7 @@ class AmberbridgeComposedMatrixTests(unittest.TestCase):
                 "version_sha256": fixture.digest_bytes(f"{target}-version".encode()),
                 "policy_sha256": runtime["policy_sha256"],
                 "capability_manifest_sha256": runtime["capability_manifest_sha256"],
-                "public_candidate_identity": PUBLIC_IDENTITY,
+                "public_candidate_identity": self.public_identity,
                 "host_identity_sha256": runtime["host_identity_sha256"],
                 "kernel_identity_sha256": runtime["kernel_identity_sha256"],
                 "conformance_sha256": runtime["conformance_sha256"],
@@ -262,7 +266,7 @@ class AmberbridgeComposedMatrixTests(unittest.TestCase):
         backend_evidence = {
             "schema_version": 2,
             "contract": "amberbridge-public-backend-release-evidence-v2",
-            "public_candidate_identity": PUBLIC_IDENTITY,
+            "public_candidate_identity": self.public_identity,
             "targets": proofs,
         }
 
@@ -296,7 +300,7 @@ class AmberbridgeComposedMatrixTests(unittest.TestCase):
                     release_validator.validate_runtime_backend_release_evidence(
                         receipt["runtime_isolation"],
                         validated_proofs,
-                        public_candidate_identity=PUBLIC_IDENTITY,
+                        public_candidate_identity=self.public_identity,
                     )
                     self.assertEqual(
                         receipt["runtime_isolation"]["backend"]["target"], target
@@ -397,7 +401,7 @@ class AmberbridgeComposedMatrixTests(unittest.TestCase):
                         expected_commit_oid=fixture.COMMIT_OID,
                         expected_producer_package_sha256=fixture.DIGEST_C,
                         public_root=REPO_ROOT,
-                        public_identity=PUBLIC_IDENTITY,
+                        public_identity=self.public_identity,
                         output=output,
                     )
                 )

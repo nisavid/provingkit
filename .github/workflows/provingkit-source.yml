@@ -99,6 +99,7 @@ jobs:
       - name: Validate Rolecasting
         run: |
           python -m unittest tests.test_validate_rolecasting tests.test_rolecasting_eval_corpus
+          python -m unittest tests.plugins.test_rolecasting_native_tree tests.plugins.test_rolecasting_native_codex tests.plugins.test_rolecasting_native_mailbox
           python scripts/validate_rolecasting.py .
 
   tricritical:
@@ -138,7 +139,10 @@ jobs:
 
       - name: Validate Versionkeeping
         run: |
-          python -m unittest tests.test_validate_versionkeeping
+          python scripts/validate_host_trust_projections.py .
+          python -m unittest tests.test_validate_versionkeeping tests.test_host_trust
+          python -m unittest discover -s tests/plugins/versionkeeping/using-persistent-git-worktrees
+          python -m unittest discover -s tests/plugins/versionkeeping/checkpointing-and-publishing-git-work
           python scripts/validate_versionkeeping.py .
 
   mergecraft:
@@ -222,7 +226,7 @@ jobs:
 
       - name: Validate the projector and stage each target
         run: |
-          python -m unittest tests.test_build_release_artifacts
+          python -m unittest tests.test_build_release_artifacts tests.test_build_cloud_coordination
           python scripts/build_release_artifacts.py --target agent-plugins --output "$RUNNER_TEMP/provingkit-agent"
           python scripts/build_release_artifacts.py --target claude --output "$RUNNER_TEMP/provingkit-claude"
           python scripts/build_release_artifacts.py --target cursor --output "$RUNNER_TEMP/provingkit-cursor"

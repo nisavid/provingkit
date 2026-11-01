@@ -1212,6 +1212,7 @@ def verify_public_release_evidence(
         and candidate_content_identity(
             public_root,
             error_factory=PrivateEvidenceError,
+            runtime_policy="hardened",
         )
         == expected_public_candidate_sha256,
         "public candidate identity mismatch",

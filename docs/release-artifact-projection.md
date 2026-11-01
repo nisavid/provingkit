@@ -44,7 +44,9 @@ output. Copied and generated files stay beneath the prepared output root.
 The output root is created privately (mode `0700`), including when replacing an
 existing output with `--force`. Its parent must belong to the current user and
 must not be writable by the group or other users. Missing parents are created
-privately. Ancestors must belong to the current user or root and must not be
+privately. Ordinary execution trusts the host-supplied filesystem-root namespace
+without requiring its displayed owner to be numeric UID 0. Below that anchor,
+ancestors must belong to the current user or root and must not be
 writable by other users, except for sticky directories such as `/tmp`. For a shared staging location,
 create a private subdirectory first and put the output inside it. The projector
 rejects output and parent symlinks, including dangling output links; root-owned

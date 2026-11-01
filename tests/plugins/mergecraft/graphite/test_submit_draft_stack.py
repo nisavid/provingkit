@@ -12,6 +12,7 @@ import tempfile
 import unittest
 from contextlib import nullcontext, redirect_stderr, redirect_stdout
 from pathlib import Path
+from types import SimpleNamespace
 from unittest import mock
 
 REPOSITORY = Path(__file__).resolve().parents[4]
@@ -86,6 +87,241 @@ def observe_publication(command):
     if len(observed) != 1:
         raise AssertionError("publisher did not enter exactly one inert operation")
     return observed[0]
+
+
+class OrdinaryHostRuntimeTests(unittest.TestCase):
+    """Real command boundary; metadata fixtures do not attest host integrity."""
+
+    def setUp(self) -> None:
+        self.temporary = tempfile.TemporaryDirectory(dir=REPOSITORY.parent)
+        self.addCleanup(self.temporary.cleanup)
+        self.root = Path(self.temporary.name) / "candidate"
+        self.root.mkdir()
+        self.profile = mock.patch.dict(
+            os.environ, {GRAPHITE.GIT_CONFIG_PROFILE_ENV: "host-compatible"}
+        )
+        self.profile.start()
+        self.addCleanup(self.profile.stop)
+
+    @staticmethod
+    def foreign_root(path, *args, **kwargs):
+        metadata = OrdinaryHostRuntimeTests.real_lstat(path, *args, **kwargs)
+        if path == Path(path.anchor):
+            values = {
+                name: getattr(metadata, name)
+                for name in dir(metadata) if name.startswith("st_")
+            }
+            values["st_uid"] = 123456
+            return SimpleNamespace(**values)
+        return metadata
+
+    real_lstat = Path.lstat
+
+    def test_ordinary_fixed_git_runs_with_foreign_displayed_host_ownership(self):
+        with mock.patch.object(Path, "lstat", self.foreign_root):
+            result = GRAPHITE._run_raw(["git", "--version"], cwd=self.root)
+            with mock.patch.dict(
+                os.environ, {GRAPHITE.GIT_CONFIG_PROFILE_ENV: "hardened"}
+            ):
+                with self.assertRaises(GRAPHITE.GraphiteTransportError):
+                    GRAPHITE._run_raw(["git", "--version"], cwd=self.root)
+        self.assertEqual(result.returncode, 0)
+        self.assertTrue(result.stdout.startswith("git version "))
+
+    def test_unrelated_registered_runtime_sibling_preserves_both_profiles(self):
+        gt = Path(self.temporary.name) / "gt"
+        gt.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+        gt.chmod(0o700)
+        # Real selectors and full bindings surround an inert submit handler;
+        # this does not execute Graphite or contact a forge.
+        for profile in ("host-compatible", "hardened"):
+            with self.subTest(profile=profile):
+                calls = []
+                real_lstat = Path.lstat
+
+                def ownership_fixture(path, *args, **kwargs):
+                    metadata = real_lstat(path, *args, **kwargs)
+                    # This container displays its system paths as foreign
+                    # owned. Supply only the hardened selector's owner fields;
+                    # modes, ancestry, identities and all checks remain real.
+                    if profile == "hardened" and path in {
+                        Path("/"), Path("/usr"), Path("/usr/bin"), Path("/usr/bin/ssh")
+                    }:
+                        values = {name: getattr(metadata, name)
+                                  for name in dir(metadata) if name.startswith("st_")}
+                        values["st_uid"] = 0
+                        return SimpleNamespace(**values)
+                    return metadata
+
+                def completed(command, **kwargs):
+                    calls.append(command)
+                    (gt.parent / f"unrelated-{profile}").mkdir()
+                    return subprocess.CompletedProcess(command, 0, "submitted fixture", "")
+
+                with (
+                    mock.patch.dict(os.environ, {
+                        GRAPHITE.GIT_CONFIG_PROFILE_ENV: profile,
+                        GRAPHITE.TRUSTED_GRAPHITE_EXECUTABLE_ENV: str(gt),
+                    }),
+                    mock.patch.object(Path, "lstat", ownership_fixture),
+                    mock.patch.object(GRAPHITE.subprocess, "run", side_effect=completed),
+                ):
+                    result = GRAPHITE._run_raw(["gt", "submit", "--stack", "--draft"], cwd=self.root)
+                self.assertEqual(calls, [[str(gt), "submit", "--stack", "--draft"]])
+                self.assertEqual(result.returncode, 0)
+                self.assertEqual(result.stdout, "submitted fixture")
+                with self.assertRaises(AssertionError):
+                    self.assertEqual(result.stdout, "wrong-result")
+
+    def test_runtime_drift_is_rejected_before_command(self):
+        with (
+            mock.patch.object(
+                GRAPHITE._host_trust, "recheck_host_executable",
+                side_effect=GRAPHITE._host_trust.HostTrustError("changed"),
+            ),
+            mock.patch.object(GRAPHITE.subprocess, "run") as run,
+            self.assertRaisesRegex(GRAPHITE.GraphiteTransportError, "changed"),
+        ):
+            GRAPHITE._run_raw(["git", "--version"], cwd=self.root)
+        self.assertFalse(run.called)
+
+    def test_ordinary_local_endpoint_keeps_intermediate_owner_and_mode_checks(self):
+        remote = Path(self.temporary.name) / "remote.git"
+        remote.mkdir(mode=0o700)
+        real_lstat = Path.lstat
+        for rejected, change in (
+            (remote.parent, {"st_uid": 123456}),
+            (Path("/"), {"st_mode": 0o40777}),
+        ):
+            with self.subTest(rejected=rejected):
+                def changed(path, *args, **kwargs):
+                    metadata = real_lstat(path, *args, **kwargs)
+                    if path == rejected:
+                        values = {
+                            name: getattr(metadata, name)
+                            for name in dir(metadata) if name.startswith("st_")
+                        }
+                        values.update(change)
+                        return SimpleNamespace(**values)
+                    return metadata
+
+                with (
+                    mock.patch.object(Path, "lstat", changed),
+                    self.assertRaisesRegex(
+                        GRAPHITE.GraphiteTransportError, "owner-secure"
+                    ),
+                ):
+                    GRAPHITE._validate_local_remote(remote)
+
+    def test_candidate_symlink_cannot_register_an_external_gt(self):
+        gt = Path(self.temporary.name) / "gt"
+        gt.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+        gt.chmod(0o700)
+        candidate = self.root / "gt"
+        candidate.symlink_to(gt)
+        with (
+            mock.patch.object(Path, "lstat", self.foreign_root),
+            mock.patch.dict(
+                os.environ, {GRAPHITE.TRUSTED_GRAPHITE_EXECUTABLE_ENV: str(candidate)}
+            ),
+            self.assertRaises(GRAPHITE.GraphiteTransportError),
+        ):
+            GRAPHITE._trusted_graphite_executable(self.root)
+
+    def test_changed_fixed_git_or_ssh_is_rejected_after_command(self):
+        for changed in (Path("/usr/bin/git"), Path("/usr/bin/ssh")):
+            with self.subTest(changed=changed):
+                state = {"changed": False}
+                real_lstat = Path.lstat
+
+                def observed(path, *args, **kwargs):
+                    metadata = real_lstat(path, *args, **kwargs)
+                    if path == changed and state["changed"]:
+                        values = {
+                            name: getattr(metadata, name)
+                            for name in dir(metadata) if name.startswith("st_")
+                        }
+                        values["st_mtime_ns"] += 1
+                        return SimpleNamespace(**values)
+                    return metadata
+
+                def completed(*args, **kwargs):
+                    state["changed"] = True
+                    return subprocess.CompletedProcess(args[0], 0, "", "")
+
+                with (
+                    mock.patch.object(Path, "lstat", observed),
+                    mock.patch.object(
+                        GRAPHITE.subprocess, "run", side_effect=completed
+                    ),
+                    self.assertRaisesRegex(
+                        GRAPHITE.GraphiteTransportError, "changed"
+                    ),
+                ):
+                    GRAPHITE._run_raw(["git", "--version"], cwd=self.root)
+
+    def test_candidate_controlled_ssh_is_rejected_before_command(self):
+        ssh = self.root / "ssh"
+        ssh.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+        ssh.chmod(0o700)
+        with (
+            mock.patch.dict(GRAPHITE.TRUSTED_SYSTEM_EXECUTABLES, {"ssh": ssh}),
+            mock.patch.object(GRAPHITE.subprocess, "run") as run,
+            self.assertRaises(GRAPHITE.GraphiteTransportError),
+        ):
+            GRAPHITE._run_raw(["git", "--version"], cwd=self.root)
+        self.assertFalse(run.called)
+
+    def test_changed_registered_gt_is_rejected_after_command(self):
+        gt = Path(self.temporary.name) / "gt"
+        gt.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+        gt.chmod(0o700)
+
+        def completed(*args, **kwargs):
+            gt.write_text("#!/bin/sh\nexit 1\n", encoding="utf-8")
+            return subprocess.CompletedProcess(args[0], 0, "", "")
+
+        with (
+            mock.patch.object(Path, "lstat", self.foreign_root),
+            mock.patch.dict(
+                os.environ, {GRAPHITE.TRUSTED_GRAPHITE_EXECUTABLE_ENV: str(gt)}
+            ),
+            mock.patch.object(GRAPHITE.subprocess, "run", side_effect=completed),
+            self.assertRaisesRegex(GRAPHITE.GraphiteTransportError, "changed"),
+        ):
+            GRAPHITE._run_raw(["gt", "--version"], cwd=self.root)
+
+    def test_local_remote_exempts_only_root_ownership_in_ordinary_profile(self):
+        remote = Path(self.temporary.name) / "remote.git"
+        remote.mkdir(mode=0o700)
+        with mock.patch.object(Path, "lstat", self.foreign_root):
+            GRAPHITE._validate_local_remote(remote)
+            with mock.patch.dict(
+                os.environ, {GRAPHITE.GIT_CONFIG_PROFILE_ENV: "hardened"}
+            ):
+                with self.assertRaisesRegex(
+                    GRAPHITE.GraphiteTransportError, "owner-secure"
+                ):
+                    GRAPHITE._validate_local_remote(remote)
+
+    def test_registered_gt_exempts_only_root_ownership_in_ordinary_profile(self):
+        gt = Path(self.temporary.name) / "gt"
+        gt.write_text("#!/bin/sh\nexit 0\n", encoding="utf-8")
+        gt.chmod(0o700)
+        with (
+            mock.patch.object(Path, "lstat", self.foreign_root),
+            mock.patch.dict(
+                os.environ, {GRAPHITE.TRUSTED_GRAPHITE_EXECUTABLE_ENV: str(gt)}
+            ),
+        ):
+            self.assertEqual(
+                GRAPHITE._trusted_graphite_executable(self.root), str(gt)
+            )
+            with mock.patch.dict(
+                os.environ, {GRAPHITE.GIT_CONFIG_PROFILE_ENV: "hardened"}
+            ):
+                with self.assertRaises(GRAPHITE.GraphiteTransportError):
+                    GRAPHITE._trusted_graphite_executable(self.root)
 
 
 class GraphiteTransportTests(unittest.TestCase):

@@ -1505,6 +1505,7 @@ class ValidateTricriticalTests(unittest.TestCase):
         original_validator = validator_module.validate_eval_corpus
         readme_path = self.plugin_root / "README.md"
         original_content = readme_path.read_text()
+        original_mode = readme_path.stat().st_mode & 0o777
         original_digest = validator_module.deterministic_tree_digest(self.plugin_root)
         original_validation_identity = validator_module.validation_input_digest(
             self.repo, self.plugin_root
@@ -1515,6 +1516,7 @@ class ValidateTricriticalTests(unittest.TestCase):
             readme_path.write_text(original_content + "\ntransient invalid state\n")
             replacement_path = readme_path.with_name("README.replacement.md")
             replacement_path.write_text(original_content)
+            replacement_path.chmod(original_mode)
             replacement_path.replace(readme_path)
 
         stderr = io.StringIO()

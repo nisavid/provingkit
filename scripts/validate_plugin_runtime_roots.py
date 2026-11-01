@@ -146,6 +146,57 @@ def resolve_local_module(
     return resolved
 
 
+def adjacent_python_dependency(
+    relative: str, node: ast.AST, python_files: set[str]
+) -> str | None:
+    """Recognize literal adjacent loaders without evaluating path expressions."""
+    match node:
+        case ast.Call(
+            func=ast.Attribute(
+                value=ast.Attribute(value=ast.Name(id="importlib"), attr="util"),
+                attr="spec_from_file_location",
+            ),
+            args=[module_name, location],
+            keywords=[],
+        ):
+            pass
+        case _:
+            return None
+    if isinstance(module_name, ast.Starred):
+        return None
+    match location:
+        case ast.Call(
+            func=ast.Attribute(value=base, attr="with_name"),
+            args=[ast.Constant(value=str() as filename)],
+            keywords=[],
+        ):
+            pass
+        case _:
+            return None
+    match base:
+        case ast.Call(
+            func=ast.Attribute(value=path, attr="resolve"), args=[], keywords=[]
+        ):
+            base = path
+    match base:
+        case ast.Call(func=ast.Name(id="Path"), args=[ast.Name(id="__file__")], keywords=[]):
+            pass
+        case _:
+            return None
+    if (
+        not filename.endswith(".py")
+        or len(filename) <= 3
+        or any(character in filename for character in ("/", "\\", ":", "\0"))
+    ):
+        return None
+    target = posixpath.join(posixpath.dirname(relative), filename)
+    require(
+        target in python_files,
+        f"undeclared adjacent Python dependency: {relative} -> {target}",
+    )
+    return target
+
+
 def imported_local_modules(
     relative: str,
     content: str,
@@ -155,13 +206,32 @@ def imported_local_modules(
         tree = ast.parse(content, filename=relative)
     except SyntaxError as error:
         raise RuntimeRootError(f"invalid runtime Python syntax: {relative}") from error
+    # Like ordinary import edges, these are syntax observations, not Python
+    # control-flow or name-shadowing analysis. Aliased APIs are unsupported.
+    nodes = list(ast.walk(tree))
+    imports_importlib = any(
+        isinstance(node, ast.Import)
+        and any(
+            alias.name in {"importlib", "importlib.util"} and alias.asname is None
+            for alias in node.names
+        )
+        for node in nodes
+    )
+    imports_path = any(
+        isinstance(node, ast.ImportFrom)
+        and node.module == "pathlib"
+        and node.level == 0
+        and any(alias.name == "Path" and alias.asname is None for alias in node.names)
+        for node in nodes
+    )
+    python_files = {path for paths in module_index.values() for path in paths}
     current_module = python_module_name(relative)
     if relative.endswith("/__init__.py"):
         current_package = current_module
     else:
         current_package = current_module.rpartition(".")[0]
     resolved: set[str] = set()
-    for node in ast.walk(tree):
+    for node in nodes:
         if isinstance(node, ast.Import):
             for imported in node.names:
                 resolved.update(resolve_local_module(imported.name, module_index))
@@ -186,6 +256,10 @@ def imported_local_modules(
                     continue
                 child = ".".join(part for part in (base, imported.name) if part)
                 resolved.update(resolve_local_module(child, module_index))
+        elif imports_importlib and imports_path:
+            target = adjacent_python_dependency(relative, node, python_files)
+            if target is not None:
+                resolved.add(target)
     return resolved
 
 

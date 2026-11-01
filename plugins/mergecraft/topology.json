@@ -250,7 +250,7 @@
       "interface": "skills/graphite/agents/openai.yaml",
       "references": [],
       "scripts": ["skills/graphite/scripts/submit_draft_stack.py"],
-      "modules": [],
+      "modules": ["skills/graphite/scripts/host_trust.py"],
       "calls": [
         "operation:pr-text-write",
         "operation:pr-readiness-write",

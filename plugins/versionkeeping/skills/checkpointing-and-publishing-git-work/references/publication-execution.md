@@ -96,6 +96,75 @@ configuration and permits only the validated platform provider described
 below. The selected profile is included in the reviewed destination
 configuration digest; changing it requires a fresh plan and review.
 
+On POSIX, the host-compatible profile also trusts the host-supplied interpreter,
+fixed `/usr/bin/git` and `/usr/bin/ssh`, and filesystem root namespace without
+requiring UID 0. It selects neither executable from ambient `PATH` or repository
+configuration. Executable targets must be regular, executable, free of
+redirection and group/other write permission, and outside the candidate
+repository. Their ancestor modes and identities remain checked. The operation
+binds the selected paths and rechecks their identities before and after Git
+execution, including credential preflight. Observable replacement blocks
+further execution; a failure after push begins retains the unknown-outcome
+contract below. These checks detect drift but do not independently authenticate
+the host or rule out concurrent same-user mutation. The hardened profile keeps
+its root-owned executable requirements and never falls back to ordinary trust.
+Windows retains its existing registration and ACL requirements.
+
+Directory identities exclude entry-activity timestamps, size and link count:
+POSIX records device, inode, mode, owner and group; Windows records device,
+inode and mode alongside its separate registration and ACL admission checks.
+Selected files and symlink entries retain their full identity observations.
+This avoids invalidating an operation for unrelated directory activity while
+reducing incidental metadata/history signals; it does not establish ACL
+continuity or the absence of intervening mutation. A plan containing the prior
+credential-provider identity representation requires fresh planning and review;
+the reviewed configuration digest is not migrated or bypassed.
+
+On Linux, ordinary GitHub HTTPS transport can use an existing `GH_TOKEN` or,
+when absent, `GITHUB_TOKEN` through the explicitly configured
+`!/usr/bin/gh auth git-credential` helper. This bounded exception checks the
+fixed executable's identity and the full potentially matching helper chain;
+conflicting or ambiguous declarations are refused after gh is selected. A matching
+path-specific declaration cannot hide a conflicting helper. The operation
+seals the known helper, TLS verification, disabled redirects, and empty hooks
+for each transport. Ambient HTTP overrides, other credential controls and
+URL rewrites are not admitted by this token-bearing path. Other host providers
+retain their existing behavior without receiving these token variables.
+This route also requires no conditional-include directives, including inactive
+conditions or directives reached through ordinary includes. Their selection
+can differ in transport context, so the expanded key inventory is checked on
+every policy validation before constructing a token-bearing environment.
+Ordinary unconditional includes remain supported when their expanded contents
+pass these checks. Unselected providers and deletion retain their prior include
+behavior and scrubbed environment.
+The exception also binds the fixed `/usr/bin/false` nonprompting fallback and
+sets absolute askpass paths; helper failure cannot select a fallback from
+ambient `PATH`.
+
+Only the selected token variable reaches matching credential preflight,
+`ls-remote`, `fetch`, and `push` subprocesses. Other Git calls, authorities,
+SSH/local transport and hardened mode receive no new token environment.
+Debug/tracing and client redirection variables remain scrubbed. Git and its
+children can read the token; this is not gh-exclusive secret isolation.
+The token is never persisted, printed, passed in arguments, or hashed into
+the plan. The credential policy, source-variable name, helper declarations
+and executable identities are bound into the reviewed configuration digest.
+Token rotation under the same source name does not bind a new principal.
+Execution compares that identity before any credential-bearing preflight or
+transport, then independently rechecks the live default branch and lease.
+Only the ordinary publication planner and executor activate this capability.
+The shared remote-ref-deletion operations retain their previous scrubbed
+environment and credential contract; this exception does not authorize or
+enable deletion.
+
+The harness owns helper configuration. It can select the standard helper in
+a private external Git config without storing a token; preserve existing
+configuration and use the same selection for planning and execution. This
+operation never installs gh, writes configuration, or creates a token store.
+The environment-token exception currently supports the fixed Linux path;
+macOS, Windows and enterprise authorities retain their existing provider
+routes and require separate qualification for such an exception.
+
 The hardened publication profile supports noninteractive HTTPS credentials on
 modern macOS, Linux, and Windows through closed platform-provider sets:
 
@@ -151,6 +220,14 @@ inspects provider response bytes. Credential bytes never enter arguments,
 diagnostics, plans, receipts, or repository configuration. SSH and
 ancestry-guarded local endpoints do not enable a credential helper and retain
 their existing contracts.
+
+Ordinary local endpoint ancestry exempts only the filesystem root's owner
+from the ownership check. It retains directory mode and symlink checks,
+current-user endpoint ownership, regular-file link-count checks, and the
+ownership checks on intermediate ancestors. A foreign-owned writable temporary
+root is not admitted through this exemption; use an owned workspace path.
+Hardened local endpoint ancestry retains its existing root/current-user owner
+requirements throughout.
 
 ## Terminal Remote-Ref Deletion
 

@@ -383,7 +383,10 @@ EXPECTED_SKILL_FILES = {
         "scripts/publish_relation_ledger.py",
         "scripts/relation_ledger_receipts.py",
     },
-    "graphite": COMMON_SKILL_FILES | {"scripts/submit_draft_stack.py"},
+    "graphite": COMMON_SKILL_FILES | {
+        "scripts/submit_draft_stack.py",
+        "scripts/host_trust.py",
+    },
     "addressing-pr-review-feedback": COMMON_SKILL_FILES
     | {
         "references/feedback-flow.md",
@@ -4744,12 +4747,13 @@ with tempfile.TemporaryDirectory() as raw_directory:
 
     original_graphite_environment = graphite._environment
 
-    def graphite_probe_environment():
-        environment = original_graphite_environment()
+    def graphite_probe_environment(profile=None, *, root=None, bindings=None):
+        environment = original_graphite_environment(profile, root=root, bindings=bindings)
         environment["PATH"] = f"{fake_bin}:{environment['PATH']}"
         return environment
 
-    def bind_graphite_probe_executable(arguments, _root):
+    def bind_graphite_probe_executable(arguments, _root, *, profile="hardened", bindings=None):
+        assert profile in {"host-compatible", "hardened"}
         executable = Path(arguments[0]).name
         if executable == "git":
             return [str(fake_git), *arguments[1:]]

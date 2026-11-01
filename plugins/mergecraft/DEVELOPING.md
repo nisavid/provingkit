@@ -8,6 +8,17 @@ copy. The [README](README.md) is the page for people using the plugin.
 operation-ownership authority. Its `schema_version` versions Mergecraft's local
 topology shape, not a repository-wide interchange schema.
 
+## Host-runtime helper projection
+
+Graphite carries an exact-byte skill-local projection of the repository's
+canonical `scripts/host_trust.py`. Edit the canonical helper, run
+`python scripts/validate_host_trust_projections.py . --write`, inspect its
+projections, and refresh each owning content lock. The checker without
+`--write` and `python -m unittest tests.test_host_trust` verify the copies and
+ordinary host-runtime policy. Installed Graphite does not import a source
+checkout or another plugin. Hardened runtime and provider requirements stay
+separate.
+
 ## Layout
 
     plugins/mergecraft/

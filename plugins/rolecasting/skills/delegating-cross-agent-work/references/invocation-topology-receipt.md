@@ -42,6 +42,24 @@ peer remains leader-controlled despite its independent session. A user-owned
 peer requires explicit user authority to create or steer it. Model choice is a
 separate record and does not change any topology dimension.
 
+## Ordinary Cloud profile inputs
+
+For an explicitly selected versioned ordinary current-tree Cloud profile, bind
+the current surface, controller, native controls, and capability observations.
+Product build may be explicitly unavailable only when the consumer does not
+require an observed version. Retain a canonical observed native target plus
+separate agent, task, or session IDs only when exposed. Distinct observed
+execution contexts establish the required isolation; a target string alone or
+a fabricated second ID does not. The strict Desktop/CLI and witnessed version
+and identity requirements remain unchanged.
+
+This profile's maximum assurance is only a ceiling. Each achieved dimension
+comes from the supplied observation and its source, never from the maximum or
+worker prose. Unknown or missing facts cannot satisfy a required dimension.
+Missing or unverified selected results remain unusable. The profile changes
+how ordinary evidence is represented, not read-only authority, denied onward
+action, selected dispatch membership, or review completeness.
+
 ## Frozen plan
 
 Bind one content-addressed plan identity to the immutable candidate identity,
@@ -66,7 +84,8 @@ Every dispatch entry records:
 - the same candidate, review-input, and requirements identities as the plan;
 - bounded scope and read-only authority;
 - return shape, verification, and stop conditions;
-- distinct session and context isolation from every other selected execution;
+- distinct session and context isolation from every other selected execution,
+  with the ordinary Cloud identity representation defined above;
 - default-denied subdelegation and external-action authority; and
 - for a user-owned task or thread, the exact explicit user authority to create
   or steer it.

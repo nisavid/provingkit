@@ -3056,6 +3056,7 @@ def candidate_git_bytes(repo: Path, arguments: list[str], operation: str) -> byt
         arguments,
         error_factory=EvaluationError,
         operation=operation,
+        runtime_policy="hardened",
     )
 
 

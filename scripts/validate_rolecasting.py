@@ -67,6 +67,8 @@ NATIVE_CODEX_REFERENCE = (
     "skills/delegating-cross-agent-work/references/native-codex-subagents.md"
 )
 NATIVE_CODEX_RUNTIME = "skills/delegating-cross-agent-work/scripts/native_codex.py"
+NATIVE_TREE_REFERENCE = "skills/delegating-cross-agent-work/references/native-tree-driver.md"
+NATIVE_TREE_RUNTIME = "skills/delegating-cross-agent-work/scripts/native_tree.py"
 DAYBREAK_CATALOG_RUNTIME = (
     "skills/choosing-agent-models/scripts/daybreak_catalog.py"
 )
@@ -1379,6 +1381,8 @@ def inspect_contract(root: Path) -> tuple[dict, set[str]]:
         "topology.json",
         "evals/delivery.json",
         "skills/delegating-cross-agent-work/scripts/native_codex_mailbox.py",
+        NATIVE_TREE_REFERENCE,
+        NATIVE_TREE_RUNTIME,
     }
     semantic_files = validate_evals(root, topology, bodies, delivery, semantic_files)
     return topology, semantic_files
