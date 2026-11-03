@@ -40,27 +40,33 @@
       "association": "recorded",
       "caller_access": "Current callable schema/host route, consent, delivery, ACK and full accepted preservation profile remain open.",
       "evidence": [
-        "reviewed-comparison"
+        "reviewed-comparison",
+        "claude-mcp-sender-source-844",
+        "claude-mcp-sender-consumers-844",
+        "claude-mcp-sender-source-review-844"
       ],
       "fabrics": [
         "claude-native-messaging",
         "claude-message-entrances",
-        "claude-desktop-tab-tools"
+        "claude-desktop-tab-tools",
+        "rolecasting-claude-mcp-sender"
       ],
       "gaps": [
         "Current callable schema/host route, consent, delivery, ACK and full accepted preservation profile remain open.",
         "All candidates remain conditional associations; neither population has live operation proof.",
-        "Broad legacy Desktop association has unresolved correspondence to the displayed local view; no local/SSH/WSL route qualification transfers."
+        "Broad legacy Desktop association has unresolved correspondence to the displayed local view; no local/SSH/WSL route qualification transfers.",
+        "Maintained stdio sender source and synthetic consumer evidence do not establish the actual GUI caller, server/build or receiver binding."
       ],
       "id": "chatgpt-codex-gui-to-claude-desktop-code",
-      "next_check": "Prepare and review the exact caller/target/evidence binding under the selected cohort.",
+      "next_check": "Consume the maintained sender/procedure in the exact current-consumer live-case proposal, preserving the separate stronger Desktop route.",
       "profiles": [
         "claude-native-messaging-existing",
         "claude-native-messaging-controlled",
         "claude-message-entrances-existing",
         "claude-message-entrances-controlled",
         "claude-desktop-tab-tools-existing",
-        "claude-desktop-tab-tools-controlled"
+        "claude-desktop-tab-tools-controlled",
+        "rolecasting-claude-mcp-sender-existing-source"
       ],
       "source": "chatgpt-codex-gui",
       "target": "claude-desktop-code",
@@ -11719,6 +11725,36 @@
   ],
   "evidence": [
     {
+      "id": "claude-mcp-sender-consumers-844",
+      "kind": "synthetic",
+      "limits": [
+        "Public summary of controller-retained invented-fixture observations. One failed unprompted application is retained; corrected positive application was explicitly assisted. No live harness operation proof."
+      ],
+      "observed_at": "2026-11-03T13:17:10.727308+00:00",
+      "sha256": "bef9b854e4b406c5adda780472b6057f63c1d20062700533ca6cfe1b9797f51d",
+      "uri": "docs/coordination/batches/2026-11-03-claude-mcp-sender.md"
+    },
+    {
+      "id": "claude-mcp-sender-source-844",
+      "kind": "source",
+      "limits": [
+        "Published maintained source only; actual launcher/native receiver binding and compatibility remain unassessed."
+      ],
+      "observed_at": "2026-11-03T13:17:10.727308+00:00",
+      "revision": "61c17375c28e72db15a4c2898bfc90b251bd1deb",
+      "uri": "https://github.com/nisavid/provingkit/blob/61c17375c28e72db15a4c2898bfc90b251bd1deb/plugins/rolecasting/skills/delegating-cross-agent-work/scripts/claude_mcp_sender.py"
+    },
+    {
+      "id": "claude-mcp-sender-source-review-844",
+      "kind": "review",
+      "limits": [
+        "Summary of independent source critics and adjudication on commit61; root separately verified consumer artifacts. This is no live, installation or security-enforcement certification."
+      ],
+      "observed_at": "2026-11-03T13:17:10.727308+00:00",
+      "sha256": "bef9b854e4b406c5adda780472b6057f63c1d20062700533ca6cfe1b9797f51d",
+      "uri": "docs/coordination/batches/2026-11-03-claude-mcp-sender.md"
+    },
+    {
       "id": "cohort-chatgpt-to-codex-terminal",
       "kind": "source",
       "limits": [
@@ -16641,6 +16677,104 @@
       "parent": null,
       "role": "host",
       "source_scope": "Provider framework and persistent own sessions, unsuitable as native cross-harness evidence. Commit `6b399e5` is immutable 0.14.0 comparison source; current HEAD was not established.",
+      "status": "discovered"
+    },
+    {
+      "compatibility": {
+        "evidence": [],
+        "scope": "Source implementation and local synthetic mechanics reviewed; actual native-server build, caller route and receiver remain unassessed. A changed build is not demonstrated incompatibility.",
+        "status": "unassessed"
+      },
+      "crosswalk": [
+        "Maintained-source producer nisavid/provingkit#844; reviewed commit 61c17375c28e72db15a4c2898bfc90b251bd1deb"
+      ],
+      "dependencies": [
+        "rolecasting-peer-message-support",
+        "selected-claude-mcp-peer-server"
+      ],
+      "effort": {
+        "active_minutes": null,
+        "cost": null
+      },
+      "evidence": [
+        "claude-mcp-sender-source-844",
+        "claude-mcp-sender-consumers-844",
+        "claude-mcp-sender-source-review-844"
+      ],
+      "gaps": [
+        "Actual caller, nominated server/launcher, current tool schema, native peer and applicable authority still need binding.",
+        "Submission is not receipt, ACK, handling or fulfillment; idle/busy and recovery remain unqualified.",
+        "Narrow protocol/schema/result and outgoing-frame profile; request read/start/reap lack a complete total-time guarantee."
+      ],
+      "id": "rolecasting-claude-mcp-sender",
+      "name": "Rolecasting mailbox-backed Claude MCP sender",
+      "next_check": "Use the reviewed procedure in the scoped link-case proposal; qualify actual target and receipt under a separate live grant.",
+      "parent": null,
+      "role": "actuator",
+      "source_scope": "Maintained Python stdio MCP command with one claimed mailbox attempt, shared versioned peer envelope, supported SendMessage(to,message), selected-result capture and owned-child closure. Source support establishes no authenticated peer or permission.",
+      "status": "discovered"
+    },
+    {
+      "compatibility": {
+        "evidence": [],
+        "scope": "Source implementation and local synthetic mechanics reviewed; actual native-server build, caller route and receiver remain unassessed. A changed build is not demonstrated incompatibility.",
+        "status": "unassessed"
+      },
+      "crosswalk": [
+        "Maintained-source producer nisavid/provingkit#844; reviewed commit 61c17375c28e72db15a4c2898bfc90b251bd1deb"
+      ],
+      "dependencies": [],
+      "effort": {
+        "active_minutes": null,
+        "cost": null
+      },
+      "evidence": [
+        "claude-mcp-sender-source-844",
+        "claude-mcp-sender-consumers-844",
+        "claude-mcp-sender-source-review-844"
+      ],
+      "gaps": [
+        "Local records and referenced grants do not authenticate authority or prove receiver delivery.",
+        "Store/locking, lifecycle and custody remain caller-bound conditions; installation and adoption are not established."
+      ],
+      "id": "rolecasting-peer-message-support",
+      "name": "Rolecasting peer mailbox and envelope helpers",
+      "next_check": "Carry the same reviewed helper revision into each maintained adapter and assess affected source/runtime changes.",
+      "parent": null,
+      "role": "support",
+      "source_scope": "Required local source package includes native_codex_mailbox.py and peer_message.py: retained immutable message/attempt obligations plus peer-labelled envelope serialization. These are separate functions in the same maintained helper layer, not another delivery queue.",
+      "status": "discovered"
+    },
+    {
+      "compatibility": {
+        "evidence": [],
+        "scope": "Source implementation and local synthetic mechanics reviewed; actual native-server build, caller route and receiver remain unassessed. A changed build is not demonstrated incompatibility.",
+        "status": "unassessed"
+      },
+      "crosswalk": [
+        "Maintained-source producer nisavid/provingkit#844; reviewed commit 61c17375c28e72db15a4c2898bfc90b251bd1deb"
+      ],
+      "dependencies": [
+        "claude-native-messaging"
+      ],
+      "effort": {
+        "active_minutes": null,
+        "cost": null
+      },
+      "evidence": [
+        "claude-mcp-sender-source-844",
+        "claude-mcp-sender-consumers-844",
+        "claude-mcp-sender-source-review-844"
+      ],
+      "gaps": [
+        "No exact actual launcher, current native tool inventory, peer binding or startup-effect assessment is supplied by this synthetic batch."
+      ],
+      "id": "selected-claude-mcp-peer-server",
+      "name": "Selected native Claude stdio MCP peer server",
+      "next_check": "Bind the actual server/build/tool schema and native peer in the live proposal before launching it.",
+      "parent": null,
+      "role": "support",
+      "source_scope": "Mandatory operating component class for the sender: a caller-selected stdio server exposing the documented native SendMessage profile. Its exact backend and deployment are unresolved; Claude MCP serve is a candidate, not a selected installed instance.",
       "status": "discovered"
     },
     {
@@ -38002,6 +38136,79 @@
       "target_input": "exact-reference"
     },
     {
+      "assurance": "Reviewed source implementation and explicitly assisted synthetic public-command application with independent parent checks; no actual native receiver operation.",
+      "channel": null,
+      "claims": [
+        {
+          "coverage": "partial",
+          "evidence": [
+            "claude-mcp-sender-source-844",
+            "claude-mcp-sender-consumers-844",
+            "claude-mcp-sender-source-review-844"
+          ],
+          "limits": [
+            "Implemented tool-result submission path exercised with a disposable fake MCP server; no live caller/receiver binding or operation qualification.",
+            "Identical-invocation refusal and exact envelope/payload mapping observed; initial failed caller launch retained.",
+            "Submitted is not correlated receiver receipt, acknowledgment, handling or fulfillment."
+          ],
+          "milestone": "submitted",
+          "operation": "notify",
+          "stage": "implemented"
+        }
+      ],
+      "consent": {
+        "limits": [
+          "Source/test decisions provide no live grant. A caller nomination and serialized authority reference are not verified permission."
+        ],
+        "references": [
+          "https://github.com/nisavid/provingkit/issues/840",
+          "https://github.com/nisavid/provingkit/issues/844"
+        ]
+      },
+      "continuity": {
+        "busy": "Not qualified; native admission, queue/hold/refusal and work continuity remain distinct.",
+        "idle": "Not qualified by the invented stdio fixture.",
+        "restart": "No restart or pending-delivery recovery qualification."
+      },
+      "fabric": "rolecasting-claude-mcp-sender",
+      "gaps": [
+        "Receipt/ACK/reply and the remaining six-operation milestones have no live proof from this batch.",
+        "Current launcher/tool schema, exact peer/authority, idle/busy behavior, recovery, runtime preservation and adoption remain unresolved."
+      ],
+      "id": "rolecasting-claude-mcp-sender-existing-source",
+      "input_semantics": "Explicitly peer-labelled provingkit-peer-message-v1 envelope. Preserve original sender, forwarding actor, message/exchange identity, obligation owner, authority reference, holds and unchanged payload; no new operator authority.",
+      "next_check": "Prepare a concrete exact-target negotiation and notification/receipt case; keep live grants and stronger qualification profiles separate.",
+      "operations": {
+        "continue-task": [],
+        "create-task": [],
+        "inspect": [],
+        "notify": [
+          {
+            "coverage": "partial",
+            "evidence": [
+              "claude-mcp-sender-source-844",
+              "claude-mcp-sender-consumers-844",
+              "claude-mcp-sender-source-review-844"
+            ],
+            "limits": [
+              "Implemented tool-result submission path exercised with a disposable fake MCP server; no live caller/receiver binding or operation qualification.",
+              "Identical-invocation refusal and exact envelope/payload mapping observed; initial failed caller launch retained.",
+              "Submitted is not correlated receiver receipt, acknowledgment, handling or fulfillment."
+            ],
+            "milestone": "submitted",
+            "operation": "notify",
+            "stage": "implemented"
+          }
+        ],
+        "reply": [],
+        "request-work": []
+      },
+      "ownership": "Caller must establish actual receiver ownership and applicable original/transitive consent. Invented records do not prove it.",
+      "population": "existing",
+      "relationship": "Peer; actual native sender/receiver association still requires binding.",
+      "target_input": "exact-reference"
+    },
+    {
       "assurance": "Reviewed source assessment only; no live operation or runtime-preservation proof.",
       "channel": null,
       "claims": [],
@@ -39979,6 +40186,23 @@
         "route": "R48 AXI/Recensa/Rolecasting/observers"
       }
     ],
+    "claude_mcp_source_batch_844": {
+      "affected_fabrics": [
+        "rolecasting-claude-mcp-sender",
+        "rolecasting-peer-message-support",
+        "selected-claude-mcp-peer-server"
+      ],
+      "no_actual_operation_qualified": true,
+      "original_failed_application_retained": true,
+      "positive_application_assisted": true,
+      "preserved_prior_fabrics": 160,
+      "procedure_revision": "b3cb9a47de3f90a35d3c9fef1970baf81f9c299c",
+      "producer": "https://github.com/nisavid/provingkit/issues/844",
+      "report": "docs/coordination/batches/2026-11-03-claude-mcp-sender.md",
+      "report_sha256": "bef9b854e4b406c5adda780472b6057f63c1d20062700533ca6cfe1b9797f51d",
+      "scope": "Shared source support and one existing intended ChatGPT-to-Desktop candidate association only; other callers/populations/reverse directions unchanged. Actual private evidence stays in its existing custody.",
+      "source_revision": "61c17375c28e72db15a4c2898bfc90b251bd1deb"
+    },
     "cohort_comparison_batch": {
       "acpx_native_endpoint_mapping": "Unresolved; shared source profiles retained, no endpoint association inferred from adapter name.",
       "coverage_model": "Separate operational surface views, not unique native populations or support counts.",
@@ -44607,6 +44831,62 @@
           },
           "mandatory_components": [],
           "rationale": "Selected /sessions service class for DirectConnect, distinct from browser CCR session-service assumptions. No additional component requirement established beyond the declared finite source; no installed or operation claim."
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Actual caller, nominated server/launcher, current tool schema, native peer and applicable authority still need binding.",
+            "Submission is not receipt, ACK, handling or fulfillment; idle/busy and recovery remain unqualified.",
+            "Narrow protocol/schema/result and outgoing-frame profile; request read/start/reap lack a complete total-time guarantee."
+          ],
+          "crosswalk": [
+            "Maintained-source producer nisavid/provingkit#844; reviewed commit 61c17375c28e72db15a4c2898bfc90b251bd1deb"
+          ],
+          "fabric": "rolecasting-claude-mcp-sender",
+          "grouping_only": null,
+          "mandatory_components": [
+            "rolecasting-peer-message-support",
+            "selected-claude-mcp-peer-server"
+          ],
+          "rationale": "Maintained Python stdio MCP command with one claimed mailbox attempt, shared versioned peer envelope, supported SendMessage(to,message), selected-result capture and owned-child closure. Source support establishes no authenticated peer or permission. Complete producer batch: published source61 imports, nominated-child command and procedure; docs/coordination/batches/2026-11-03-claude-mcp-sender.md"
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Local records and referenced grants do not authenticate authority or prove receiver delivery.",
+            "Store/locking, lifecycle and custody remain caller-bound conditions; installation and adoption are not established."
+          ],
+          "crosswalk": [
+            "Maintained-source producer nisavid/provingkit#844; reviewed commit 61c17375c28e72db15a4c2898bfc90b251bd1deb"
+          ],
+          "fabric": "rolecasting-peer-message-support",
+          "grouping_only": null,
+          "mandatory_components": [],
+          "rationale": "Required local source package includes native_codex_mailbox.py and peer_message.py: retained immutable message/attempt obligations plus peer-labelled envelope serialization. These are separate functions in the same maintained helper layer, not another delivery queue. Complete producer batch: published source61 imports, nominated-child command and procedure; docs/coordination/batches/2026-11-03-claude-mcp-sender.md"
+        },
+        {
+          "alternatives": [
+            {
+              "component_ids": [
+                "claude-message-entrances-claude-mcp-serve"
+              ],
+              "source_components": [
+                "Claude CLI MCP serve"
+              ]
+            }
+          ],
+          "binding_gaps": [
+            "No exact actual launcher, current native tool inventory, peer binding or startup-effect assessment is supplied by this synthetic batch."
+          ],
+          "crosswalk": [
+            "Maintained-source producer nisavid/provingkit#844; reviewed commit 61c17375c28e72db15a4c2898bfc90b251bd1deb"
+          ],
+          "fabric": "selected-claude-mcp-peer-server",
+          "grouping_only": null,
+          "mandatory_components": [
+            "claude-native-messaging"
+          ],
+          "rationale": "Mandatory operating component class for the sender: a caller-selected stdio server exposing the documented native SendMessage profile. Its exact backend and deployment are unresolved; Claude MCP serve is a candidate, not a selected installed instance. Complete producer batch: published source61 imports, nominated-child command and procedure; docs/coordination/batches/2026-11-03-claude-mcp-sender.md"
         }
       ],
       "relations": [
@@ -44800,9 +45080,9 @@
   },
   "schema_version": 1,
   "snapshot": {
-    "coverage": "Dated coherent source candidate comparison: 23 Wave 1 operational views, 28 all waves; native population overlaps unresolved. Potential directions are not supported routes. All 150 seed fabrics retained, 10 scoped source requirements/compositions added; no actual fabric operation qualified. Pure synthetic state models remain separate evidence; GitHub owns review, publication, reactions and live gates.",
-    "generated_at": "2026-10-13T22:56:57.248122+00:00",
-    "revision": "first-cohort-granular-source-comparison"
+    "coverage": "Dated source update over the retained first-cohort catalog. All160 earlier fabrics and unrelated records retained; 3 required sender/support components added, with one conditional existing-task source association. No actual fabric operation, installed release or deployment is qualified by this source batch.",
+    "generated_at": "2026-11-03T13:17:10.727308+00:00",
+    "revision": "claude-mcp-maintained-source-and-consumers"
   },
-  "source_sha256": "9adeed2fde02320e335440801d22881d0a0b7b4facf1c28f1282ccbf4d8285ba"
+  "source_sha256": "3fe97b14f5f822eb2a8f75b38da485fb533893375a1c1a2aafd89670fcca113f"
 }

@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
   "snapshot": {
-    "revision": "first-cohort-granular-source-comparison",
-    "generated_at": "2026-10-13T22:56:57.248122+00:00",
-    "coverage": "Dated coherent source candidate comparison: 23 Wave 1 operational views, 28 all waves; native population overlaps unresolved. Potential directions are not supported routes. All 150 seed fabrics retained, 10 scoped source requirements/compositions added; no actual fabric operation qualified. Pure synthetic state models remain separate evidence; GitHub owns review, publication, reactions and live gates."
+    "revision": "claude-mcp-maintained-source-and-consumers",
+    "generated_at": "2026-11-03T13:17:10.727308+00:00",
+    "coverage": "Dated source update over the retained first-cohort catalog. All160 earlier fabrics and unrelated records retained; 3 required sender/support components added, with one conditional existing-task source association. No actual fabric operation, installed release or deployment is qualified by this source batch."
   },
   "decisions": [
     "https://github.com/nisavid/provingkit/issues/538#issuecomment-6112579765",
@@ -31,7 +31,7 @@
       "sha256": "eeb2589f1ecb80be7bdf4b6410185a74b7e7fa6d542c07a34c620b1626bde26b",
       "observed_at": "2026-10-13T22:56:57.248122+00:00",
       "limits": [
-        "Timestamp identifies this report intake/reconciliation, not a new harness observation. Preserve the report\u2019s original acquisition dates, pinned builds and partial acquisition limits.",
+        "Timestamp identifies this report intake/reconciliation, not a new harness observation. Preserve the report’s original acquisition dates, pinned builds and partial acquisition limits.",
         "Reviewed finite source report; no installed caller/owner/native mapping, actual operation, measured cost or runtime qualification."
       ]
     },
@@ -43,7 +43,7 @@
       "sha256": "bdb9e5bf8bb93131eec3b2a6a3de1f9f1d8267234f1e398815f9110ae6b0c364",
       "observed_at": "2026-10-13T22:56:57.248122+00:00",
       "limits": [
-        "Timestamp identifies this report intake/reconciliation, not a new harness observation. Preserve the report\u2019s original acquisition dates, pinned builds and partial acquisition limits.",
+        "Timestamp identifies this report intake/reconciliation, not a new harness observation. Preserve the report’s original acquisition dates, pinned builds and partial acquisition limits.",
         "Reviewed finite source report; no installed caller/owner/native mapping, actual operation, measured cost or runtime qualification."
       ]
     },
@@ -55,7 +55,7 @@
       "sha256": "4665cc4699b722c188d84031b8c5076ba18d1a37175d832c412eb632296f8cf3",
       "observed_at": "2026-10-13T22:56:57.248122+00:00",
       "limits": [
-        "Timestamp identifies this report intake/reconciliation, not a new harness observation. Preserve the report\u2019s original acquisition dates, pinned builds and partial acquisition limits.",
+        "Timestamp identifies this report intake/reconciliation, not a new harness observation. Preserve the report’s original acquisition dates, pinned builds and partial acquisition limits.",
         "Reviewed finite source report; no installed caller/owner/native mapping, actual operation, measured cost or runtime qualification."
       ]
     },
@@ -67,7 +67,7 @@
       "sha256": "8109ea3838063d597de432d9dcfed4e2f53b748f8f81f02f0403f38d414e6c50",
       "observed_at": "2026-10-13T22:56:57.248122+00:00",
       "limits": [
-        "Timestamp identifies this report intake/reconciliation, not a new harness observation. Preserve the report\u2019s original acquisition dates, pinned builds and partial acquisition limits.",
+        "Timestamp identifies this report intake/reconciliation, not a new harness observation. Preserve the report’s original acquisition dates, pinned builds and partial acquisition limits.",
         "Reviewed finite source report; no installed caller/owner/native mapping, actual operation, measured cost or runtime qualification."
       ]
     },
@@ -79,7 +79,7 @@
       "sha256": "231601ab097eb1f73eeb8da1b066a6375d37ee886d81650c510da7567c9a5d5a",
       "observed_at": "2026-10-13T22:56:57.248122+00:00",
       "limits": [
-        "Timestamp identifies this report intake/reconciliation, not a new harness observation. Preserve the report\u2019s original acquisition dates, pinned builds and partial acquisition limits.",
+        "Timestamp identifies this report intake/reconciliation, not a new harness observation. Preserve the report’s original acquisition dates, pinned builds and partial acquisition limits.",
         "Reviewed finite source report; no installed caller/owner/native mapping, actual operation, measured cost or runtime qualification."
       ]
     },
@@ -91,7 +91,7 @@
       "sha256": "f78a50aeaec40d2b1753a5a5b7dc4bd462b7bd5dda980d8d476dffd1afa3ce9e",
       "observed_at": "2026-10-13T22:56:57.248122+00:00",
       "limits": [
-        "Timestamp identifies this report intake/reconciliation, not a new harness observation. Preserve the report\u2019s original acquisition dates, pinned builds and partial acquisition limits.",
+        "Timestamp identifies this report intake/reconciliation, not a new harness observation. Preserve the report’s original acquisition dates, pinned builds and partial acquisition limits.",
         "Reviewed finite source report; no installed caller/owner/native mapping, actual operation, measured cost or runtime qualification."
       ]
     },
@@ -103,7 +103,7 @@
       "sha256": "46796e3786c6eb2098f9d40d68fa7fd1f03291c81581f3fe77bea44bf372d887",
       "observed_at": "2026-10-13T22:56:57.248122+00:00",
       "limits": [
-        "Timestamp identifies this report intake/reconciliation, not a new harness observation. Preserve the report\u2019s original acquisition dates, pinned builds and partial acquisition limits.",
+        "Timestamp identifies this report intake/reconciliation, not a new harness observation. Preserve the report’s original acquisition dates, pinned builds and partial acquisition limits.",
         "Reviewed finite source report; no installed caller/owner/native mapping, actual operation, measured cost or runtime qualification."
       ]
     },
@@ -115,7 +115,7 @@
       "sha256": "24662929424af83cff2534af5f4015e550a5e4ee4047790b4dd954735003e697",
       "observed_at": "2026-10-13T22:56:57.248122+00:00",
       "limits": [
-        "Timestamp identifies this report intake/reconciliation, not a new harness observation. Preserve the report\u2019s original acquisition dates, pinned builds and partial acquisition limits.",
+        "Timestamp identifies this report intake/reconciliation, not a new harness observation. Preserve the report’s original acquisition dates, pinned builds and partial acquisition limits.",
         "Reviewed finite source report; no installed caller/owner/native mapping, actual operation, measured cost or runtime qualification."
       ]
     },
@@ -127,7 +127,7 @@
       "sha256": "286b1e550830f7477f2318cc0e4f693dba78ba37dcb5fa880466b6c713c6d402",
       "observed_at": "2026-10-13T22:56:57.248122+00:00",
       "limits": [
-        "Timestamp identifies this report intake/reconciliation, not a new harness observation. Preserve the report\u2019s original acquisition dates, pinned builds and partial acquisition limits.",
+        "Timestamp identifies this report intake/reconciliation, not a new harness observation. Preserve the report’s original acquisition dates, pinned builds and partial acquisition limits.",
         "Reviewed finite source report; no installed caller/owner/native mapping, actual operation, measured cost or runtime qualification."
       ]
     },
@@ -139,7 +139,7 @@
       "sha256": "62c9b297fbe37a2c9d352353ba1db1b7beb1750a5a540a80d0479718b3cce5fa",
       "observed_at": "2026-10-13T22:56:57.248122+00:00",
       "limits": [
-        "Timestamp identifies this report intake/reconciliation, not a new harness observation. Preserve the report\u2019s original acquisition dates, pinned builds and partial acquisition limits.",
+        "Timestamp identifies this report intake/reconciliation, not a new harness observation. Preserve the report’s original acquisition dates, pinned builds and partial acquisition limits.",
         "Reviewed finite source report; no installed caller/owner/native mapping, actual operation, measured cost or runtime qualification."
       ]
     },
@@ -151,7 +151,7 @@
       "sha256": "682fafa72b1c855f4f7bf7c7b2caed782ccb87b785937b2f21fdf10535379eaa",
       "observed_at": "2026-10-13T22:56:57.248122+00:00",
       "limits": [
-        "Timestamp identifies this report intake/reconciliation, not a new harness observation. Preserve the report\u2019s original acquisition dates, pinned builds and partial acquisition limits.",
+        "Timestamp identifies this report intake/reconciliation, not a new harness observation. Preserve the report’s original acquisition dates, pinned builds and partial acquisition limits.",
         "Reviewed finite source report; no installed caller/owner/native mapping, actual operation, measured cost or runtime qualification."
       ]
     },
@@ -163,7 +163,7 @@
       "sha256": "40f14ee5ee994dc815cba09dc98104672dad127470d885c1632f62bfb7ace5c1",
       "observed_at": "2026-10-13T22:56:57.248122+00:00",
       "limits": [
-        "Timestamp identifies this report intake/reconciliation, not a new harness observation. Preserve the report\u2019s original acquisition dates, pinned builds and partial acquisition limits.",
+        "Timestamp identifies this report intake/reconciliation, not a new harness observation. Preserve the report’s original acquisition dates, pinned builds and partial acquisition limits.",
         "Reviewed finite source report; no installed caller/owner/native mapping, actual operation, measured cost or runtime qualification."
       ]
     },
@@ -175,7 +175,7 @@
       "sha256": "3d58653c5362e381586533cd16fafab28a23224496b9a799bdda72076c25d506",
       "observed_at": "2026-10-13T22:56:57.248122+00:00",
       "limits": [
-        "Timestamp identifies this report intake/reconciliation, not a new harness observation. Preserve the report\u2019s original acquisition dates, pinned builds and partial acquisition limits.",
+        "Timestamp identifies this report intake/reconciliation, not a new harness observation. Preserve the report’s original acquisition dates, pinned builds and partial acquisition limits.",
         "Reviewed finite source report; no installed caller/owner/native mapping, actual operation, measured cost or runtime qualification."
       ]
     },
@@ -202,6 +202,36 @@
         "Worker/Cloud invented-record state model only. Independent source review and publication have separate tracker evidence; no native fabric implementation or actual qualified operation.",
         "Synthetic mechanism/state-model checks are separate from actual backend capability prototyping and behavioral/live qualification."
       ]
+    },
+    {
+      "id": "claude-mcp-sender-source-844",
+      "kind": "source",
+      "uri": "https://github.com/nisavid/provingkit/blob/61c17375c28e72db15a4c2898bfc90b251bd1deb/plugins/rolecasting/skills/delegating-cross-agent-work/scripts/claude_mcp_sender.py",
+      "observed_at": "2026-11-03T13:17:10.727308+00:00",
+      "limits": [
+        "Published maintained source only; actual launcher/native receiver binding and compatibility remain unassessed."
+      ],
+      "revision": "61c17375c28e72db15a4c2898bfc90b251bd1deb"
+    },
+    {
+      "id": "claude-mcp-sender-consumers-844",
+      "kind": "synthetic",
+      "uri": "docs/coordination/batches/2026-11-03-claude-mcp-sender.md",
+      "observed_at": "2026-11-03T13:17:10.727308+00:00",
+      "limits": [
+        "Public summary of controller-retained invented-fixture observations. One failed unprompted application is retained; corrected positive application was explicitly assisted. No live harness operation proof."
+      ],
+      "sha256": "bef9b854e4b406c5adda780472b6057f63c1d20062700533ca6cfe1b9797f51d"
+    },
+    {
+      "id": "claude-mcp-sender-source-review-844",
+      "kind": "review",
+      "uri": "docs/coordination/batches/2026-11-03-claude-mcp-sender.md",
+      "observed_at": "2026-11-03T13:17:10.727308+00:00",
+      "limits": [
+        "Summary of independent source critics and adjudication on commit61; root separately verified consumer artifacts. This is no live, installation or security-enforcement certification."
+      ],
+      "sha256": "bef9b854e4b406c5adda780472b6057f63c1d20062700533ca6cfe1b9797f51d"
     }
   ],
   "endpoints": [
@@ -2159,7 +2189,7 @@
         "evidence": []
       },
       "gaps": [
-        "Same native-ID and reply gaps; Slack\u2019s behavior is not evidence for Teams."
+        "Same native-ID and reply gaps; Slack’s behavior is not evidence for Teams."
       ],
       "next_check": "Assess the exact named subroute and task population; retain parent source limits.",
       "effort": {
@@ -2329,7 +2359,7 @@
         "reviewed-comparison",
         "cohort-granular-coverage"
       ],
-      "source_scope": "T3-owned Codex thread \u2192 native thread \u2192 run mapping; read/resume/turn calls. At T3 5753207d, configured owned App Server/native turn/raw-history seams are source-supported. Installed binary/home, managed provider, outside caller access and complete result mapping remain unbound.",
+      "source_scope": "T3-owned Codex thread → native thread → run mapping; read/resume/turn calls. At T3 5753207d, configured owned App Server/native turn/raw-history seams are source-supported. Installed binary/home, managed provider, outside caller access and complete result mapping remain unbound.",
       "compatibility": {
         "status": "unassessed",
         "scope": "Actual build and caller applicability remain unassessed.",
@@ -2361,7 +2391,7 @@
         "reviewed-comparison",
         "cohort-granular-coverage"
       ],
-      "source_scope": "T3-owned thread \u2192 SDK session mapping; query/resume, prompt queue, interrupt. At T3 5753207d, query allocation/resume bookkeeping is lazy; buffered continuation can submit no prompt, turn IDs can be weak, and provider snapshots are unsupported. Actual installed SDK is not bound to separately inspected 0.3.296.",
+      "source_scope": "T3-owned thread → SDK session mapping; query/resume, prompt queue, interrupt. At T3 5753207d, query allocation/resume bookkeeping is lazy; buffered continuation can submit no prompt, turn IDs can be weak, and provider snapshots are unsupported. Actual installed SDK is not bound to separately inspected 0.3.296.",
       "compatibility": {
         "status": "unassessed",
         "scope": "Actual build and caller applicability remain unassessed.",
@@ -2681,14 +2711,14 @@
         "reviewed-comparison",
         "cohort-granular-coverage"
       ],
-      "source_scope": "Exact T3-owned threads through the connector\u2019s operation journal and selected server. Cohort source refinement: Server edge retained, deployment unrefreshed; Coverage, Seed R43. Preserve the earlier distinct source scope and unresolved actual caller/runtime binding.",
+      "source_scope": "Exact T3-owned threads through the connector’s operation journal and selected server. Cohort source refinement: Server edge retained, deployment unrefreshed; Coverage, Seed R43. Preserve the earlier distinct source scope and unresolved actual caller/runtime binding.",
       "compatibility": {
         "status": "unassessed",
         "scope": "Actual build and caller applicability remain unassessed.",
         "evidence": []
       },
       "gaps": [
-        "Every enabled operation requires that deployment\u2019s schema; no arbitrary native GUI attach or later reply guarantee.",
+        "Every enabled operation requires that deployment’s schema; no arbitrary native GUI attach or later reply guarantee.",
         "Journal connector requires selected T3 server/schema; optional outside MCP entrance is not assumed",
         "Cohort source refinement: Server edge retained, deployment unrefreshed; Coverage, Seed R43. Preserve the earlier distinct source scope and unresolved actual caller/runtime binding."
       ],
@@ -5682,6 +5712,104 @@
         "active_minutes": null,
         "cost": null
       }
+    },
+    {
+      "status": "discovered",
+      "parent": null,
+      "crosswalk": [
+        "Maintained-source producer nisavid/provingkit#844; reviewed commit 61c17375c28e72db15a4c2898bfc90b251bd1deb"
+      ],
+      "evidence": [
+        "claude-mcp-sender-source-844",
+        "claude-mcp-sender-consumers-844",
+        "claude-mcp-sender-source-review-844"
+      ],
+      "compatibility": {
+        "status": "unassessed",
+        "scope": "Source implementation and local synthetic mechanics reviewed; actual native-server build, caller route and receiver remain unassessed. A changed build is not demonstrated incompatibility.",
+        "evidence": []
+      },
+      "effort": {
+        "active_minutes": null,
+        "cost": null
+      },
+      "id": "rolecasting-claude-mcp-sender",
+      "name": "Rolecasting mailbox-backed Claude MCP sender",
+      "role": "actuator",
+      "dependencies": [
+        "rolecasting-peer-message-support",
+        "selected-claude-mcp-peer-server"
+      ],
+      "source_scope": "Maintained Python stdio MCP command with one claimed mailbox attempt, shared versioned peer envelope, supported SendMessage(to,message), selected-result capture and owned-child closure. Source support establishes no authenticated peer or permission.",
+      "gaps": [
+        "Actual caller, nominated server/launcher, current tool schema, native peer and applicable authority still need binding.",
+        "Submission is not receipt, ACK, handling or fulfillment; idle/busy and recovery remain unqualified.",
+        "Narrow protocol/schema/result and outgoing-frame profile; request read/start/reap lack a complete total-time guarantee."
+      ],
+      "next_check": "Use the reviewed procedure in the scoped link-case proposal; qualify actual target and receipt under a separate live grant."
+    },
+    {
+      "status": "discovered",
+      "parent": null,
+      "crosswalk": [
+        "Maintained-source producer nisavid/provingkit#844; reviewed commit 61c17375c28e72db15a4c2898bfc90b251bd1deb"
+      ],
+      "evidence": [
+        "claude-mcp-sender-source-844",
+        "claude-mcp-sender-consumers-844",
+        "claude-mcp-sender-source-review-844"
+      ],
+      "compatibility": {
+        "status": "unassessed",
+        "scope": "Source implementation and local synthetic mechanics reviewed; actual native-server build, caller route and receiver remain unassessed. A changed build is not demonstrated incompatibility.",
+        "evidence": []
+      },
+      "effort": {
+        "active_minutes": null,
+        "cost": null
+      },
+      "id": "rolecasting-peer-message-support",
+      "name": "Rolecasting peer mailbox and envelope helpers",
+      "role": "support",
+      "dependencies": [],
+      "source_scope": "Required local source package includes native_codex_mailbox.py and peer_message.py: retained immutable message/attempt obligations plus peer-labelled envelope serialization. These are separate functions in the same maintained helper layer, not another delivery queue.",
+      "gaps": [
+        "Local records and referenced grants do not authenticate authority or prove receiver delivery.",
+        "Store/locking, lifecycle and custody remain caller-bound conditions; installation and adoption are not established."
+      ],
+      "next_check": "Carry the same reviewed helper revision into each maintained adapter and assess affected source/runtime changes."
+    },
+    {
+      "status": "discovered",
+      "parent": null,
+      "crosswalk": [
+        "Maintained-source producer nisavid/provingkit#844; reviewed commit 61c17375c28e72db15a4c2898bfc90b251bd1deb"
+      ],
+      "evidence": [
+        "claude-mcp-sender-source-844",
+        "claude-mcp-sender-consumers-844",
+        "claude-mcp-sender-source-review-844"
+      ],
+      "compatibility": {
+        "status": "unassessed",
+        "scope": "Source implementation and local synthetic mechanics reviewed; actual native-server build, caller route and receiver remain unassessed. A changed build is not demonstrated incompatibility.",
+        "evidence": []
+      },
+      "effort": {
+        "active_minutes": null,
+        "cost": null
+      },
+      "id": "selected-claude-mcp-peer-server",
+      "name": "Selected native Claude stdio MCP peer server",
+      "role": "support",
+      "dependencies": [
+        "claude-native-messaging"
+      ],
+      "source_scope": "Mandatory operating component class for the sender: a caller-selected stdio server exposing the documented native SendMessage profile. Its exact backend and deployment are unresolved; Claude MCP serve is a candidate, not a selected installed instance.",
+      "gaps": [
+        "No exact actual launcher, current native tool inventory, peer binding or startup-effect assessment is supplied by this synthetic batch."
+      ],
+      "next_check": "Bind the actual server/build/tool schema and native peer in the live proposal before launching it."
     }
   ],
   "profiles": [
@@ -5715,7 +5843,7 @@
       ],
       "next_check": "Bind this population, caller and evidence before assessing its positive outcomes.",
       "source_assessment": {
-        "vector": "SS\u2013SPS",
+        "vector": "SS–SPS",
         "evidence": [
           "reviewed-comparison"
         ],
@@ -5795,7 +5923,7 @@
       ],
       "next_check": "Bind this population, caller and evidence before assessing its positive outcomes.",
       "source_assessment": {
-        "vector": "UU\u2013UUU",
+        "vector": "UU–UUU",
         "evidence": [
           "reviewed-comparison"
         ],
@@ -5875,7 +6003,7 @@
       ],
       "next_check": "Bind this population, caller and evidence before assessing its positive outcomes.",
       "source_assessment": {
-        "vector": "PP\u2013PPS",
+        "vector": "PP–PPS",
         "evidence": [
           "reviewed-comparison"
         ],
@@ -5955,7 +6083,7 @@
       ],
       "next_check": "Bind this population, caller and evidence before assessing its positive outcomes.",
       "source_assessment": {
-        "vector": "PP\u2013PUP",
+        "vector": "PP–PUP",
         "evidence": [
           "reviewed-comparison"
         ],
@@ -6035,7 +6163,7 @@
       ],
       "next_check": "Bind this population, caller and evidence before assessing its positive outcomes.",
       "source_assessment": {
-        "vector": "PP\u2013PPS",
+        "vector": "PP–PPS",
         "evidence": [
           "reviewed-comparison"
         ],
@@ -6115,7 +6243,7 @@
       ],
       "next_check": "Bind this population, caller and evidence before assessing its positive outcomes.",
       "source_assessment": {
-        "vector": "PP\u2013P?P",
+        "vector": "PP–P?P",
         "evidence": [
           "reviewed-comparison"
         ],
@@ -6195,7 +6323,7 @@
       ],
       "next_check": "Bind this population, caller and evidence before assessing its positive outcomes.",
       "source_assessment": {
-        "vector": "PP\u2013P?P",
+        "vector": "PP–P?P",
         "evidence": [
           "reviewed-comparison"
         ],
@@ -6274,7 +6402,7 @@
       ],
       "next_check": "Bind this population, caller and evidence before assessing its positive outcomes.",
       "source_assessment": {
-        "vector": "UU\u2013UUP",
+        "vector": "UU–UUP",
         "evidence": [
           "reviewed-comparison"
         ],
@@ -6353,7 +6481,7 @@
       ],
       "next_check": "Bind this population, caller and evidence before assessing its positive outcomes.",
       "source_assessment": {
-        "vector": "PP\u2013PUP",
+        "vector": "PP–PUP",
         "evidence": [
           "reviewed-comparison"
         ],
@@ -6433,7 +6561,7 @@
       ],
       "next_check": "Bind this population, caller and evidence before assessing its positive outcomes.",
       "source_assessment": {
-        "vector": "PP\u2013PUP",
+        "vector": "PP–PUP",
         "evidence": [
           "reviewed-comparison"
         ],
@@ -6513,7 +6641,7 @@
       ],
       "next_check": "Bind this population, caller and evidence before assessing its positive outcomes.",
       "source_assessment": {
-        "vector": "PP\u2013P?P",
+        "vector": "PP–P?P",
         "evidence": [
           "reviewed-comparison"
         ],
@@ -6593,7 +6721,7 @@
       ],
       "next_check": "Bind this population, caller and evidence before assessing its positive outcomes.",
       "source_assessment": {
-        "vector": "??\u2013S??",
+        "vector": "??–S??",
         "evidence": [
           "reviewed-comparison"
         ],
@@ -6673,7 +6801,7 @@
       ],
       "next_check": "Bind this population, caller and evidence before assessing its positive outcomes.",
       "source_assessment": {
-        "vector": "SS\u2013SPS",
+        "vector": "SS–SPS",
         "evidence": [
           "reviewed-comparison"
         ],
@@ -6752,7 +6880,7 @@
       ],
       "next_check": "Bind this population, caller and evidence before assessing its positive outcomes.",
       "source_assessment": {
-        "vector": "??\u2013???",
+        "vector": "??–???",
         "evidence": [
           "reviewed-comparison"
         ],
@@ -6830,7 +6958,7 @@
       ],
       "next_check": "Bind this population, caller and evidence before assessing its positive outcomes.",
       "source_assessment": {
-        "vector": "PP\u2013SPP",
+        "vector": "PP–SPP",
         "evidence": [
           "reviewed-comparison"
         ],
@@ -6908,7 +7036,7 @@
       ],
       "next_check": "Bind this population, caller and evidence before assessing its positive outcomes.",
       "source_assessment": {
-        "vector": "??\u2013???",
+        "vector": "??–???",
         "evidence": [
           "reviewed-comparison"
         ],
@@ -6986,7 +7114,7 @@
       ],
       "next_check": "Bind this population, caller and evidence before assessing its positive outcomes.",
       "source_assessment": {
-        "vector": "??\u2013???",
+        "vector": "??–???",
         "evidence": [
           "reviewed-comparison"
         ],
@@ -7065,7 +7193,7 @@
       ],
       "next_check": "Bind this population, caller and evidence before assessing its positive outcomes.",
       "source_assessment": {
-        "vector": "??\u2013???",
+        "vector": "??–???",
         "evidence": [
           "reviewed-comparison"
         ],
@@ -7145,7 +7273,7 @@
       ],
       "next_check": "Bind this population, caller and evidence before assessing its positive outcomes.",
       "source_assessment": {
-        "vector": "SS\u2013SSS",
+        "vector": "SS–SSS",
         "evidence": [
           "reviewed-comparison"
         ],
@@ -7224,7 +7352,7 @@
       ],
       "next_check": "Bind this population, caller and evidence before assessing its positive outcomes.",
       "source_assessment": {
-        "vector": "SS\u2013PSS",
+        "vector": "SS–PSS",
         "evidence": [
           "reviewed-comparison"
         ],
@@ -7302,7 +7430,7 @@
       ],
       "next_check": "Bind this population, caller and evidence before assessing its positive outcomes.",
       "source_assessment": {
-        "vector": "??\u2013???",
+        "vector": "??–???",
         "evidence": [
           "reviewed-comparison"
         ],
@@ -7381,7 +7509,7 @@
       ],
       "next_check": "Bind this population, caller and evidence before assessing its positive outcomes.",
       "source_assessment": {
-        "vector": "SS\u2013SPS",
+        "vector": "SS–SPS",
         "evidence": [
           "reviewed-comparison"
         ],
@@ -7461,7 +7589,7 @@
       ],
       "next_check": "Bind this population, caller and evidence before assessing its positive outcomes.",
       "source_assessment": {
-        "vector": "PP\u2013SPP",
+        "vector": "PP–SPP",
         "evidence": [
           "reviewed-comparison"
         ],
@@ -7541,7 +7669,7 @@
       ],
       "next_check": "Bind this population, caller and evidence before assessing its positive outcomes.",
       "source_assessment": {
-        "vector": "UU\u2013UUU",
+        "vector": "UU–UUU",
         "evidence": [
           "reviewed-comparison"
         ],
@@ -7621,7 +7749,7 @@
       ],
       "next_check": "Bind this population, caller and evidence before assessing its positive outcomes.",
       "source_assessment": {
-        "vector": "PP\u2013PUP",
+        "vector": "PP–PUP",
         "evidence": [
           "reviewed-comparison"
         ],
@@ -7700,7 +7828,7 @@
       ],
       "next_check": "Bind this population, caller and evidence before assessing its positive outcomes.",
       "source_assessment": {
-        "vector": "PP\u2013P?P",
+        "vector": "PP–P?P",
         "evidence": [
           "reviewed-comparison"
         ],
@@ -7778,7 +7906,7 @@
       ],
       "next_check": "Bind this population, caller and evidence before assessing its positive outcomes.",
       "source_assessment": {
-        "vector": "PP\u2013?PP",
+        "vector": "PP–?PP",
         "evidence": [
           "reviewed-comparison"
         ],
@@ -7856,7 +7984,7 @@
       ],
       "next_check": "Bind this population, caller and evidence before assessing its positive outcomes.",
       "source_assessment": {
-        "vector": "UU\u2013UUU",
+        "vector": "UU–UUU",
         "evidence": [
           "reviewed-comparison"
         ],
@@ -7934,7 +8062,7 @@
       ],
       "next_check": "Bind this population, caller and evidence before assessing its positive outcomes.",
       "source_assessment": {
-        "vector": "??\u2013???",
+        "vector": "??–???",
         "evidence": [
           "reviewed-comparison"
         ],
@@ -8013,7 +8141,7 @@
       ],
       "next_check": "Bind this population, caller and evidence before assessing its positive outcomes.",
       "source_assessment": {
-        "vector": "??\u2013???",
+        "vector": "??–???",
         "evidence": [
           "reviewed-comparison"
         ],
@@ -8093,7 +8221,7 @@
       ],
       "next_check": "Bind this population, caller and evidence before assessing its positive outcomes.",
       "source_assessment": {
-        "vector": "UU\u2013PUU",
+        "vector": "UU–PUU",
         "evidence": [
           "reviewed-comparison"
         ],
@@ -8172,7 +8300,7 @@
       ],
       "next_check": "Bind this population, caller and evidence before assessing its positive outcomes.",
       "source_assessment": {
-        "vector": "??\u2013???",
+        "vector": "??–???",
         "evidence": [
           "reviewed-comparison"
         ],
@@ -8251,7 +8379,7 @@
       ],
       "next_check": "Bind this population, caller and evidence before assessing its positive outcomes.",
       "source_assessment": {
-        "vector": "PP\u2013P?P",
+        "vector": "PP–P?P",
         "evidence": [
           "reviewed-comparison"
         ],
@@ -8330,7 +8458,7 @@
       ],
       "next_check": "Bind this population, caller and evidence before assessing its positive outcomes.",
       "source_assessment": {
-        "vector": "??\u2013???",
+        "vector": "??–???",
         "evidence": [
           "reviewed-comparison"
         ],
@@ -8409,7 +8537,7 @@
       ],
       "next_check": "Bind this population, caller and evidence before assessing its positive outcomes.",
       "source_assessment": {
-        "vector": "??\u2013???",
+        "vector": "??–???",
         "evidence": [
           "reviewed-comparison"
         ],
@@ -8488,7 +8616,7 @@
       ],
       "next_check": "Bind this population, caller and evidence before assessing its positive outcomes.",
       "source_assessment": {
-        "vector": "??\u2013???",
+        "vector": "??–???",
         "evidence": [
           "reviewed-comparison"
         ],
@@ -8566,7 +8694,7 @@
       ],
       "next_check": "Bind this population, caller and evidence before assessing its positive outcomes.",
       "source_assessment": {
-        "vector": "??\u2013???",
+        "vector": "??–???",
         "evidence": [
           "reviewed-comparison"
         ],
@@ -8644,7 +8772,7 @@
       ],
       "next_check": "Bind this population, caller and evidence before assessing its positive outcomes.",
       "source_assessment": {
-        "vector": "PP\u2013PPP",
+        "vector": "PP–PPP",
         "evidence": [
           "reviewed-comparison"
         ],
@@ -8722,7 +8850,7 @@
       ],
       "next_check": "Bind this population, caller and evidence before assessing its positive outcomes.",
       "source_assessment": {
-        "vector": "PP\u2013PPP",
+        "vector": "PP–PPP",
         "evidence": [
           "reviewed-comparison"
         ],
@@ -8800,7 +8928,7 @@
       ],
       "next_check": "Bind this population, caller and evidence before assessing its positive outcomes.",
       "source_assessment": {
-        "vector": "UU\u2013UUU",
+        "vector": "UU–UUU",
         "evidence": [
           "reviewed-comparison"
         ],
@@ -8878,7 +9006,7 @@
       ],
       "next_check": "Bind this population, caller and evidence before assessing its positive outcomes.",
       "source_assessment": {
-        "vector": "UU\u2013UUU",
+        "vector": "UU–UUU",
         "evidence": [
           "reviewed-comparison"
         ],
@@ -8957,7 +9085,7 @@
       ],
       "next_check": "Bind this population, caller and evidence before assessing its positive outcomes.",
       "source_assessment": {
-        "vector": "PP\u2013P?P",
+        "vector": "PP–P?P",
         "evidence": [
           "reviewed-comparison"
         ],
@@ -9037,12 +9165,12 @@
       ],
       "next_check": "Bind this population, caller and evidence before assessing its positive outcomes.",
       "source_assessment": {
-        "vector": "PP\u2013P?P",
+        "vector": "PP–P?P",
         "evidence": [
           "reviewed-comparison"
         ],
         "limits": [
-          "Existing or created T3-owned threads; each connector\u2019s operations depend on its selected deployment.",
+          "Existing or created T3-owned threads; each connector’s operations depend on its selected deployment.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ]
       }
@@ -9082,7 +9210,7 @@
           "reviewed-comparison"
         ],
         "limits": [
-          "Existing or created T3-owned threads; each connector\u2019s operations depend on its selected deployment.",
+          "Existing or created T3-owned threads; each connector’s operations depend on its selected deployment.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ]
       }
@@ -9116,7 +9244,7 @@
       ],
       "next_check": "Bind this population, caller and evidence before assessing its positive outcomes.",
       "source_assessment": {
-        "vector": "PP\u2013P?P",
+        "vector": "PP–P?P",
         "evidence": [
           "reviewed-comparison"
         ],
@@ -9350,7 +9478,7 @@
       ],
       "next_check": "Bind this population, caller and evidence before assessing its positive outcomes.",
       "source_assessment": {
-        "vector": "UU\u2013UUU",
+        "vector": "UU–UUU",
         "evidence": [
           "reviewed-comparison"
         ],
@@ -9428,7 +9556,7 @@
       ],
       "next_check": "Bind this population, caller and evidence before assessing its positive outcomes.",
       "source_assessment": {
-        "vector": "UU\u2013PUU",
+        "vector": "UU–PUU",
         "evidence": [
           "reviewed-comparison"
         ],
@@ -10060,7 +10188,7 @@
           "reviewed-comparison"
         ],
         "limits": [
-          "T3-owned Codex thread \u2192 native thread \u2192 run mapping; read/resume/turn calls. Distinct subroute; no common operation vector assigned.",
+          "T3-owned Codex thread → native thread → run mapping; read/resume/turn calls. Distinct subroute; no common operation vector assigned.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ]
       }
@@ -10100,7 +10228,7 @@
           "reviewed-comparison"
         ],
         "limits": [
-          "T3-owned Codex thread \u2192 native thread \u2192 run mapping; read/resume/turn calls. Distinct subroute; no common operation vector assigned.",
+          "T3-owned Codex thread → native thread → run mapping; read/resume/turn calls. Distinct subroute; no common operation vector assigned.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ]
       }
@@ -10140,7 +10268,7 @@
           "reviewed-comparison"
         ],
         "limits": [
-          "T3-owned thread \u2192 SDK session mapping; query/resume, prompt queue, interrupt. Distinct subroute; no common operation vector assigned.",
+          "T3-owned thread → SDK session mapping; query/resume, prompt queue, interrupt. Distinct subroute; no common operation vector assigned.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ]
       }
@@ -10180,7 +10308,7 @@
           "reviewed-comparison"
         ],
         "limits": [
-          "T3-owned thread \u2192 SDK session mapping; query/resume, prompt queue, interrupt. Distinct subroute; no common operation vector assigned.",
+          "T3-owned thread → SDK session mapping; query/resume, prompt queue, interrupt. Distinct subroute; no common operation vector assigned.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ]
       }
@@ -10219,7 +10347,7 @@
           "reviewed-comparison"
         ],
         "limits": [
-          "T3-owned thread \u2192 Cursor SDK agent/run mapping; run and declared steer. Distinct subroute; no common operation vector assigned.",
+          "T3-owned thread → Cursor SDK agent/run mapping; run and declared steer. Distinct subroute; no common operation vector assigned.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ]
       }
@@ -10258,7 +10386,7 @@
           "reviewed-comparison"
         ],
         "limits": [
-          "T3-owned thread \u2192 Cursor SDK agent/run mapping; run and declared steer. Distinct subroute; no common operation vector assigned.",
+          "T3-owned thread → Cursor SDK agent/run mapping; run and declared steer. Distinct subroute; no common operation vector assigned.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ]
       }
@@ -11000,7 +11128,7 @@
           "reviewed-comparison"
         ],
         "limits": [
-          "Exact T3-owned threads through the connector\u2019s operation journal and selected server. Distinct subroute; no common operation vector assigned.",
+          "Exact T3-owned threads through the connector’s operation journal and selected server. Distinct subroute; no common operation vector assigned.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ]
       }
@@ -11040,7 +11168,7 @@
           "reviewed-comparison"
         ],
         "limits": [
-          "Exact T3-owned threads through the connector\u2019s operation journal and selected server. Distinct subroute; no common operation vector assigned.",
+          "Exact T3-owned threads through the connector’s operation journal and selected server. Distinct subroute; no common operation vector assigned.",
           "Dated source shorthand; positive outcomes require the confirmed operation contract and separate evidence."
         ]
       }
@@ -12492,7 +12620,7 @@
       ],
       "next_check": "Bind this population, caller and evidence before assessing its positive outcomes.",
       "source_assessment": {
-        "vector": "PP\u2013P?P",
+        "vector": "PP–P?P",
         "evidence": [
           "reviewed-comparison"
         ],
@@ -12570,7 +12698,7 @@
       ],
       "next_check": "Bind this population, caller and evidence before assessing its positive outcomes.",
       "source_assessment": {
-        "vector": "PP\u2013?PP",
+        "vector": "PP–?PP",
         "evidence": [
           "reviewed-comparison"
         ],
@@ -12648,7 +12776,7 @@
       ],
       "next_check": "Bind this population, caller and evidence before assessing its positive outcomes.",
       "source_assessment": {
-        "vector": "UU\u2013PUU",
+        "vector": "UU–PUU",
         "evidence": [
           "reviewed-comparison"
         ],
@@ -12726,7 +12854,7 @@
       ],
       "next_check": "Bind this population, caller and evidence before assessing its positive outcomes.",
       "source_assessment": {
-        "vector": "PP\u2013PPP",
+        "vector": "PP–PPP",
         "evidence": [
           "reviewed-comparison"
         ],
@@ -12804,7 +12932,7 @@
       ],
       "next_check": "Bind this population, caller and evidence before assessing its positive outcomes.",
       "source_assessment": {
-        "vector": "UU\u2013UUU",
+        "vector": "UU–UUU",
         "evidence": [
           "reviewed-comparison"
         ],
@@ -12882,7 +13010,7 @@
       ],
       "next_check": "Bind this population, caller and evidence before assessing its positive outcomes.",
       "source_assessment": {
-        "vector": "UU\u2013UUU",
+        "vector": "UU–UUU",
         "evidence": [
           "reviewed-comparison"
         ],
@@ -12960,7 +13088,7 @@
       ],
       "next_check": "Bind this population, caller and evidence before assessing its positive outcomes.",
       "source_assessment": {
-        "vector": "??\u2013???",
+        "vector": "??–???",
         "evidence": [
           "reviewed-comparison"
         ],
@@ -13038,7 +13166,7 @@
       ],
       "next_check": "Bind this population, caller and evidence before assessing its positive outcomes.",
       "source_assessment": {
-        "vector": "UU\u2013UUU",
+        "vector": "UU–UUU",
         "evidence": [
           "reviewed-comparison"
         ],
@@ -13116,7 +13244,7 @@
       ],
       "next_check": "Bind this population, caller and evidence before assessing its positive outcomes.",
       "source_assessment": {
-        "vector": "UU\u2013UUU",
+        "vector": "UU–UUU",
         "evidence": [
           "reviewed-comparison"
         ],
@@ -17554,6 +17682,54 @@
         "Actual operation and target binding remain unqualified."
       ],
       "next_check": "Prepare exact caller/owner/reader/settings binding under separate reviewed live scope."
+    },
+    {
+      "id": "rolecasting-claude-mcp-sender-existing-source",
+      "fabric": "rolecasting-claude-mcp-sender",
+      "channel": null,
+      "population": "existing",
+      "ownership": "Caller must establish actual receiver ownership and applicable original/transitive consent. Invented records do not prove it.",
+      "relationship": "Peer; actual native sender/receiver association still requires binding.",
+      "target_input": "exact-reference",
+      "input_semantics": "Explicitly peer-labelled provingkit-peer-message-v1 envelope. Preserve original sender, forwarding actor, message/exchange identity, obligation owner, authority reference, holds and unchanged payload; no new operator authority.",
+      "consent": {
+        "references": [
+          "https://github.com/nisavid/provingkit/issues/840",
+          "https://github.com/nisavid/provingkit/issues/844"
+        ],
+        "limits": [
+          "Source/test decisions provide no live grant. A caller nomination and serialized authority reference are not verified permission."
+        ]
+      },
+      "continuity": {
+        "idle": "Not qualified by the invented stdio fixture.",
+        "busy": "Not qualified; native admission, queue/hold/refusal and work continuity remain distinct.",
+        "restart": "No restart or pending-delivery recovery qualification."
+      },
+      "assurance": "Reviewed source implementation and explicitly assisted synthetic public-command application with independent parent checks; no actual native receiver operation.",
+      "claims": [
+        {
+          "operation": "notify",
+          "milestone": "submitted",
+          "stage": "implemented",
+          "coverage": "partial",
+          "evidence": [
+            "claude-mcp-sender-source-844",
+            "claude-mcp-sender-consumers-844",
+            "claude-mcp-sender-source-review-844"
+          ],
+          "limits": [
+            "Implemented tool-result submission path exercised with a disposable fake MCP server; no live caller/receiver binding or operation qualification.",
+            "Identical-invocation refusal and exact envelope/payload mapping observed; initial failed caller launch retained.",
+            "Submitted is not correlated receiver receipt, acknowledgment, handling or fulfillment."
+          ]
+        }
+      ],
+      "gaps": [
+        "Receipt/ACK/reply and the remaining six-operation milestones have no live proof from this batch.",
+        "Current launcher/tool schema, exact peer/authority, idle/busy behavior, recovery, runtime preservation and adoption remain unresolved."
+      ],
+      "next_check": "Prepare a concrete exact-target negotiation and notification/receipt case; keep live grants and stronger qualification profiles separate."
     }
   ],
   "channels": [
@@ -17620,7 +17796,8 @@
       "fabrics": [
         "claude-native-messaging",
         "claude-message-entrances",
-        "claude-desktop-tab-tools"
+        "claude-desktop-tab-tools",
+        "rolecasting-claude-mcp-sender"
       ],
       "profiles": [
         "claude-native-messaging-existing",
@@ -17628,19 +17805,24 @@
         "claude-message-entrances-existing",
         "claude-message-entrances-controlled",
         "claude-desktop-tab-tools-existing",
-        "claude-desktop-tab-tools-controlled"
+        "claude-desktop-tab-tools-controlled",
+        "rolecasting-claude-mcp-sender-existing-source"
       ],
       "caller_access": "Current callable schema/host route, consent, delivery, ACK and full accepted preservation profile remain open.",
       "target_binding": "R20 through R21 native sender or R19 tab tool if this caller truly exposes it; exact Desktop peer ID.",
       "evidence": [
-        "reviewed-comparison"
+        "reviewed-comparison",
+        "claude-mcp-sender-source-844",
+        "claude-mcp-sender-consumers-844",
+        "claude-mcp-sender-source-review-844"
       ],
       "gaps": [
         "Current callable schema/host route, consent, delivery, ACK and full accepted preservation profile remain open.",
         "All candidates remain conditional associations; neither population has live operation proof.",
-        "Broad legacy Desktop association has unresolved correspondence to the displayed local view; no local/SSH/WSL route qualification transfers."
+        "Broad legacy Desktop association has unresolved correspondence to the displayed local view; no local/SSH/WSL route qualification transfers.",
+        "Maintained stdio sender source and synthetic consumer evidence do not establish the actual GUI caller, server/build or receiver binding."
       ],
-      "next_check": "Prepare and review the exact caller/target/evidence binding under the selected cohort."
+      "next_check": "Consume the maintained sender/procedure in the exact current-consumer live-case proposal, preserving the separate stronger Desktop route."
     },
     {
       "id": "chatgpt-codex-gui-to-claude-cloud",
@@ -18293,13 +18475,13 @@
     "original_row_appearances": 91,
     "original_wave_one_endpoints": 5,
     "original_wave_one_pairs": 20,
-    "source_order_crosswalk": ", the initial **OpenAI** capability rows map in source order to R01, R02, R06, R03, R04, R05, R06, R07, R08, R09, R10, R11, R11, R12, R13, R14 (Slack/Teams), R14 (Linear), R14 (GitHub), R15, R16 (removed server), and R16 (MCP client). Its prose-only Work and helper/trigger leads map to R18 and R17. The initial **Claude** capability rows map in source order to R19, R20, R21 (MCP), R21 (socket), R22 (cloud CLI), R22 (cloud UI), R23, R24, R25, R26, R27, R28, R29 (Projects/Dispatch), and R30 (Agent View/teams). Its additional native rows map Remote Control R26; Channels and permission relay R27; Routine R28; Projects and Dispatch R29; Agent View, `--desktop`/resume and teams R30; observation R31; removed SDK V2 R25. Its five third-party rows map cc-dm R45b, Relay R45a, Intercom R39, Agent Bridge R38, and mcp-agents R40.\n\nThe initial **shared** tables map ACP v1/v2/CAP to R32, ACPX/codex-acp/claude-agent-acp to R33, MCP/A2A to R34; Codex plugin R15; T3 outside host and its three backends R35; OpenClaw Gateway/MCP/ACP/Codex supervision R36; Hermes HTTP/ACP/CLI-tools R37; Agent Bridge R38; Intercom R39; mcp-agents R40; Forge R41; AI Functions R42; the two T3 connectors R43; cross-agent_mcp R44; Claude Relay/cc-dm/cc-tap/tmux-ccm R45a\u2013d; claude-a2a, Hybro adapters/Hub, A2A Nexus and Superharness R46a\u2013e; react-agent-harness R47; AXI, Recensa and Rolecasting/app observers R48. These source-order crosswalks retain the first reports' overlaps; the plus marks in the registry specify which later corrections govern them.",
+    "source_order_crosswalk": ", the initial **OpenAI** capability rows map in source order to R01, R02, R06, R03, R04, R05, R06, R07, R08, R09, R10, R11, R11, R12, R13, R14 (Slack/Teams), R14 (Linear), R14 (GitHub), R15, R16 (removed server), and R16 (MCP client). Its prose-only Work and helper/trigger leads map to R18 and R17. The initial **Claude** capability rows map in source order to R19, R20, R21 (MCP), R21 (socket), R22 (cloud CLI), R22 (cloud UI), R23, R24, R25, R26, R27, R28, R29 (Projects/Dispatch), and R30 (Agent View/teams). Its additional native rows map Remote Control R26; Channels and permission relay R27; Routine R28; Projects and Dispatch R29; Agent View, `--desktop`/resume and teams R30; observation R31; removed SDK V2 R25. Its five third-party rows map cc-dm R45b, Relay R45a, Intercom R39, Agent Bridge R38, and mcp-agents R40.\n\nThe initial **shared** tables map ACP v1/v2/CAP to R32, ACPX/codex-acp/claude-agent-acp to R33, MCP/A2A to R34; Codex plugin R15; T3 outside host and its three backends R35; OpenClaw Gateway/MCP/ACP/Codex supervision R36; Hermes HTTP/ACP/CLI-tools R37; Agent Bridge R38; Intercom R39; mcp-agents R40; Forge R41; AI Functions R42; the two T3 connectors R43; cross-agent_mcp R44; Claude Relay/cc-dm/cc-tap/tmux-ccm R45a–d; claude-a2a, Hybro adapters/Hub, A2A Nexus and Superharness R46a–e; react-agent-harness R47; AXI, Recensa and Rolecasting/app observers R48. These source-order crosswalks retain the first reports' overlaps; the plus marks in the registry specify which later corrections govern them.",
     "source_vector_legend": {
       "S": "Source declares an operation-shaped call for its eligible population",
       "P": "Necessary component or narrower result",
       "?": "Not established by the reviewed packet",
       "U": "Unsuitable for claimed population",
-      "\u2013": "Creation inapplicable to existing addressed task"
+      "–": "Creation inapplicable to existing addressed task"
     },
     "source_scope_note": "Codex `rust-v0.162.1` resolves to `092d3acd`, while observed development main was `cc7ba336`; TypeScript and Python SDK published metadata named 0.162.1. Claude Code `v2.1.296` and Agent SDK `v0.3.296` are public releases; the previously assessed Desktop route used Code RC 2.1.284 and other distinct wrapper inputs. The Claude ACP adapter pinned SDK 0.3.293. T3 outside-caller claims came from main `5ce5a8f` and cannot be assigned to v0.0.45. OpenClaw claims use stable v2026.10.1, not the newer observed main. AI Functions behavior uses commit `145efc8` under an `openai-codex>=0.147.0` dependency, not an inferred 0.162.1 runtime. Public source revisions and mutable documentation access dates identify evidence, not installed executors or live account access.",
     "coverage_consumer": "https://github.com/nisavid/provingkit/issues/560",
@@ -18307,331 +18489,331 @@
     "archived_operation_vectors": [
       {
         "route": "R01 Desktop Codex chats",
-        "existing_vector": "SS\u2013SPS",
+        "existing_vector": "SS–SPS",
         "controlled_vector": "SSSSPS",
         "limits": "App-exposed caller only; reverse external route open."
       },
       {
         "route": "R02 native children",
-        "existing_vector": "UU\u2013UUU",
+        "existing_vector": "UU–UUU",
         "controlled_vector": "SSSSSS",
         "limits": "Native leader/child relationship only."
       },
       {
         "route": "R03 CLI/TUI",
-        "existing_vector": "PP\u2013PPS",
+        "existing_vector": "PP–PPS",
         "controlled_vector": "PSSSPS",
         "limits": "Interactive route, exact owner and automated caller open."
       },
       {
         "route": "R04 `codex exec`",
-        "existing_vector": "PP\u2013PUP",
+        "existing_vector": "PP–PUP",
         "controlled_vector": "SSSSPS",
         "limits": "Eligible stored CLI/native session only; independently opened active owner unproved."
       },
       {
         "route": "R05 App Server",
-        "existing_vector": "PP\u2013PPS",
+        "existing_vector": "PP–PPS",
         "controlled_vector": "SSSSPS",
         "limits": "Same owning server or eligible cold resume required."
       },
       {
         "route": "R06 queue",
-        "existing_vector": "PP\u2013P?P",
+        "existing_vector": "PP–P?P",
         "controlled_vector": "PP?P?P",
         "limits": "Admission/start only; no creation or return inbox."
       },
       {
         "route": "R07 ExternalMessage",
-        "existing_vector": "PP\u2013P?P",
+        "existing_vector": "PP–P?P",
         "controlled_vector": "PP?P?P",
         "limits": "Tool-content origin, not authenticated peer or reverse route."
       },
       {
         "route": "R08 raw injection",
-        "existing_vector": "UU\u2013UUP",
+        "existing_vector": "UU–UUP",
         "controlled_vector": "UU?UUP",
         "limits": "History edit is not notification."
       },
       {
         "route": "R09 TypeScript SDK",
-        "existing_vector": "PP\u2013PUP",
+        "existing_vector": "PP–PUP",
         "controlled_vector": "SSSSPS",
         "limits": "Own child `exec`; eligible stored native session resume, not active GUI attach."
       },
       {
         "route": "R10 Python SDK",
-        "existing_vector": "PP\u2013PUP",
+        "existing_vector": "PP–PUP",
         "controlled_vector": "SSSSPS",
         "limits": "Own stdio App Server; eligible stored native session resume, active owner unproved."
       },
       {
         "route": "R11 remote TUI/control/SSH",
-        "existing_vector": "PP\u2013P?P",
+        "existing_vector": "PP–P?P",
         "controlled_vector": "PP?P?P",
         "limits": "Transport needs owner and target binding."
       },
       {
         "route": "R12 Codex cloud CLI",
-        "existing_vector": "??\u2013S??",
+        "existing_vector": "??–S??",
         "controlled_vector": "?SSSP?",
         "limits": "Create/read; no inspected existing follow-up command."
       },
       {
         "route": "R13 Codex cloud UI",
-        "existing_vector": "SS\u2013SPS",
+        "existing_vector": "SS–SPS",
         "controlled_vector": "SSSSPS",
         "limits": "Human workflow, automated caller unproved."
       },
       {
         "route": "R14 service integrations",
-        "existing_vector": "??\u2013???",
+        "existing_vector": "??–???",
         "controlled_vector": "??????",
         "limits": "Separate Slack, Teams, Linear, and GitHub lifecycles; see subprofiles."
       },
       {
         "route": "R15 Codex Claude plugin",
-        "existing_vector": "PP\u2013SPP",
+        "existing_vector": "PP–SPP",
         "controlled_vector": "SSSSPS",
         "limits": "Eligible tracked/imported plugin-associated jobs only; boolean selector does not accept an arbitrary exact ID."
       },
       {
         "route": "R16 removed server / MCP client",
-        "existing_vector": "??\u2013???",
+        "existing_vector": "??–???",
         "controlled_vector": "??????",
         "limits": "Removed server unsuitable on inspected release; outgoing client has no receiver operation without a backend."
       },
       {
         "route": "R17 helpers/hooks/schedules",
-        "existing_vector": "??\u2013???",
+        "existing_vector": "??–???",
         "controlled_vector": "??????",
         "limits": "Trigger or transport only."
       },
       {
         "route": "R18 Work cloud mode",
-        "existing_vector": "??\u2013???",
+        "existing_vector": "??–???",
         "controlled_vector": "PSSSPP",
         "limits": "Adjacent identity, not interchangeable Cloud task."
       },
       {
         "route": "R19 Claude Desktop tabs",
-        "existing_vector": "SS\u2013SSS",
+        "existing_vector": "SS–SSS",
         "controlled_vector": "SSPSSS",
         "limits": "Eligible app-run tabs; creation is separate UI action."
       },
       {
         "route": "R20 native Claude messages",
-        "existing_vector": "SS\u2013PSS",
+        "existing_vector": "SS–PSS",
         "controlled_vector": "SS?PSS",
         "limits": "Admission/idle notice distinct from content ACK."
       },
       {
         "route": "R21 MCP serve/socket entrance",
-        "existing_vector": "??\u2013???",
+        "existing_vector": "??–???",
         "controlled_vector": "??????",
         "limits": "Distinct entrances to eligible Claude peers; current schema and raw external socket contract differ."
       },
       {
         "route": "R22 Claude cloud CLI/UI",
-        "existing_vector": "SS\u2013SPS",
+        "existing_vector": "SS–SPS",
         "controlled_vector": "SSSSPS",
         "limits": "CLI submit only; UI reader/result is separate."
       },
       {
         "route": "R23 browser transport",
-        "existing_vector": "PP\u2013SPP",
+        "existing_vector": "PP–SPP",
         "controlled_vector": "PP?SPP",
         "limits": "Active initialization; worker receipt is not result."
       },
       {
         "route": "R24 worker bridge",
-        "existing_vector": "UU\u2013UUU",
+        "existing_vector": "UU–UUU",
         "controlled_vector": "SSSSPS",
         "limits": "Owned worker registration, not passive attach."
       },
       {
         "route": "R25 main Claude SDK",
-        "existing_vector": "PP\u2013PUP",
+        "existing_vector": "PP–PUP",
         "controlled_vector": "SSSSPS",
         "limits": "Eligible stored SDK/Code session resume, not the currently held Desktop/cloud query."
       },
       {
         "route": "R26 Claude Remote Control",
-        "existing_vector": "PP\u2013P?P",
+        "existing_vector": "PP–P?P",
         "controlled_vector": "PP?P?P",
         "limits": "Opted-in local session and remote identity required."
       },
       {
         "route": "R27 Channels",
-        "existing_vector": "PP\u2013?PP",
+        "existing_vector": "PP–?PP",
         "controlled_vector": "PP??PP",
         "limits": "Configured session; optional reply and drop/hold semantics."
       },
       {
         "route": "R28 Routine API",
-        "existing_vector": "UU\u2013UUU",
+        "existing_vector": "UU–UUU",
         "controlled_vector": "PSSP??",
         "limits": "New cloud session only."
       },
       {
         "route": "R29 Projects/Dispatch",
-        "existing_vector": "??\u2013???",
+        "existing_vector": "??–???",
         "controlled_vector": "PSSSPP",
         "limits": "Product conversations; external exact-task API open."
       },
       {
         "route": "R30 Agent View/CLI/teams",
-        "existing_vector": "??\u2013???",
+        "existing_vector": "??–???",
         "controlled_vector": "??????",
         "limits": "Distinct local worker, UI/pane, and child populations; no common arbitrary Desktop/cloud route."
       },
       {
         "route": "R31 observation",
-        "existing_vector": "UU\u2013PUU",
+        "existing_vector": "UU–PUU",
         "controlled_vector": "UU?PUU",
         "limits": "Read evidence only, never actuator."
       },
       {
         "route": "R32 ACP v1/v2/CAP protocols",
-        "existing_vector": "??\u2013???",
+        "existing_vector": "??–???",
         "controlled_vector": "??????",
         "limits": "Protocol alone controls nothing."
       },
       {
         "route": "R33 ACPX with adapters",
-        "existing_vector": "PP\u2013P?P",
+        "existing_vector": "PP–P?P",
         "controlled_vector": "SSSSPS",
         "limits": "Adapter-owned sessions; reconnect may replace."
       },
       {
         "route": "R34 MCP tasks/A2A protocol",
-        "existing_vector": "??\u2013???",
+        "existing_vector": "??–???",
         "controlled_vector": "??????",
         "limits": "Service executor and native mapping required."
       },
       {
         "route": "R35 T3 host/adapters",
-        "existing_vector": "??\u2013???",
+        "existing_vector": "??–???",
         "controlled_vector": "??????",
         "limits": "Existing T3-owned threads and created T3 threads both have candidates; backend and caller profiles below."
       },
       {
         "route": "R36 OpenClaw routes",
-        "existing_vector": "??\u2013???",
+        "existing_vector": "??–???",
         "controlled_vector": "??????",
         "limits": "Existing Gateway sessions, channel bindings, and eligible paired-node native tasks are distinct; local branch creates."
       },
       {
         "route": "R37 Hermes routes",
-        "existing_vector": "??\u2013???",
+        "existing_vector": "??–???",
         "controlled_vector": "??????",
         "limits": "Existing Hermes-owned live Bot Chat has an HTTP candidate; ACP and history/tools have distinct limits."
       },
       {
         "route": "R38 Agent Bridge",
-        "existing_vector": "PP\u2013PPP",
+        "existing_vector": "PP–PPP",
         "controlled_vector": "PP?PPP",
         "limits": "Explicit binding; turn-start receipt, not semantic result."
       },
       {
         "route": "R39 Intercom",
-        "existing_vector": "PP\u2013PPP",
+        "existing_vector": "PP–PPP",
         "controlled_vector": "SSSSPS",
         "limits": "Registered peers; daemon ACK may precede turn."
       },
       {
         "route": "R40 mcp-agents",
-        "existing_vector": "UU\u2013UUU",
+        "existing_vector": "UU–UUU",
         "controlled_vector": "PSSSSP",
         "limits": "New one-shot workers and declared model fallback."
       },
       {
         "route": "R41 Forge",
-        "existing_vector": "UU\u2013UUU",
+        "existing_vector": "UU–UUU",
         "controlled_vector": "PPSSPP",
         "limits": "Terminal buffer is partial inspection."
       },
       {
         "route": "R42 AI Functions",
-        "existing_vector": "PP\u2013P?P",
+        "existing_vector": "PP–P?P",
         "controlled_vector": "SSSSPS",
         "limits": "Stored resume; idle notify buffers, no wake."
       },
       {
         "route": "R43 T3 connectors",
-        "existing_vector": "PP\u2013P?P",
+        "existing_vector": "PP–P?P",
         "controlled_vector": "PP?P?P",
-        "limits": "Existing or created T3-owned threads; each connector\u2019s operations depend on its selected deployment."
+        "limits": "Existing or created T3-owned threads; each connector’s operations depend on its selected deployment."
       },
       {
         "route": "R44 cross-agent_mcp",
-        "existing_vector": "PP\u2013P?P",
+        "existing_vector": "PP–P?P",
         "controlled_vector": "PP?P?P",
         "limits": "Transcript selection and resumed process are weaker than current owner."
       },
       {
         "route": "R45a Claude Relay",
-        "existing_vector": "PP\u2013P?P",
+        "existing_vector": "PP–P?P",
         "controlled_vector": "PP?P?P",
         "limits": "Registered labels and wake delegate; native delivery open."
       },
       {
         "route": "R45b cc-dm",
-        "existing_vector": "PP\u2013?PP",
+        "existing_vector": "PP–?PP",
         "controlled_vector": "PP??PP",
         "limits": "Configured CLI Channel, deleted bus row is transport return."
       },
       {
         "route": "R45c cc-tap",
-        "existing_vector": "UU\u2013PUU",
+        "existing_vector": "UU–PUU",
         "controlled_vector": "PP?P?P",
         "limits": "User-role event unsuitable for peer-origin claim."
       },
       {
         "route": "R45d tmux-ccm",
-        "existing_vector": "PP\u2013PPP",
+        "existing_vector": "PP–PPP",
         "controlled_vector": "PP?PPP",
         "limits": "Opted-in exact existing CLI pane/spool, not arbitrary Desktop/cloud; modal refusal."
       },
       {
         "route": "R46a claude-a2a",
-        "existing_vector": "UU\u2013UUU",
+        "existing_vector": "UU–UUU",
         "controlled_vector": "SSSSPS",
         "limits": "Service-managed Claude CLI context."
       },
       {
         "route": "R46b Hybro A2A adapters",
-        "existing_vector": "UU\u2013UUU",
+        "existing_vector": "UU–UUU",
         "controlled_vector": "SSSSPS",
         "limits": "Service/native mapping per backend."
       },
       {
         "route": "R46c Hybro Hub",
-        "existing_vector": "??\u2013???",
+        "existing_vector": "??–???",
         "controlled_vector": "PP?P?P",
         "limits": "Relay only; underlying adapter required."
       },
       {
         "route": "R46d A2A Nexus",
-        "existing_vector": "UU\u2013UUU",
+        "existing_vector": "UU–UUU",
         "controlled_vector": "PSSSPP",
         "limits": "Broker/worker tasks, not native inbox."
       },
       {
         "route": "R46e Superharness",
-        "existing_vector": "UU\u2013UUU",
+        "existing_vector": "UU–UUU",
         "controlled_vector": "PSSSPP",
         "limits": "Own queue/CLI dispatcher."
       },
       {
         "route": "R47 react-agent-harness",
-        "existing_vector": "UU\u2013UUU",
+        "existing_vector": "UU–UUU",
         "controlled_vector": "PSSSPP",
         "limits": "Own provider sessions, no native peer actuator."
       },
       {
         "route": "R48 AXI/Recensa/Rolecasting/observers",
-        "existing_vector": "UU\u2013PUU",
+        "existing_vector": "UU–PUU",
         "controlled_vector": "UU?PUU",
         "limits": "Presentation, observation or guidance only."
       }
@@ -21648,6 +21830,62 @@
             "Bind actual service ownership, endpoint, credentials, session/native identity and lifecycle without borrowing browser service evidence."
           ],
           "rationale": "Selected /sessions service class for DirectConnect, distinct from browser CCR session-service assumptions. No additional component requirement established beyond the declared finite source; no installed or operation claim."
+        },
+        {
+          "fabric": "rolecasting-claude-mcp-sender",
+          "crosswalk": [
+            "Maintained-source producer nisavid/provingkit#844; reviewed commit 61c17375c28e72db15a4c2898bfc90b251bd1deb"
+          ],
+          "mandatory_components": [
+            "rolecasting-peer-message-support",
+            "selected-claude-mcp-peer-server"
+          ],
+          "alternatives": [],
+          "grouping_only": null,
+          "binding_gaps": [
+            "Actual caller, nominated server/launcher, current tool schema, native peer and applicable authority still need binding.",
+            "Submission is not receipt, ACK, handling or fulfillment; idle/busy and recovery remain unqualified.",
+            "Narrow protocol/schema/result and outgoing-frame profile; request read/start/reap lack a complete total-time guarantee."
+          ],
+          "rationale": "Maintained Python stdio MCP command with one claimed mailbox attempt, shared versioned peer envelope, supported SendMessage(to,message), selected-result capture and owned-child closure. Source support establishes no authenticated peer or permission. Complete producer batch: published source61 imports, nominated-child command and procedure; docs/coordination/batches/2026-11-03-claude-mcp-sender.md"
+        },
+        {
+          "fabric": "rolecasting-peer-message-support",
+          "crosswalk": [
+            "Maintained-source producer nisavid/provingkit#844; reviewed commit 61c17375c28e72db15a4c2898bfc90b251bd1deb"
+          ],
+          "mandatory_components": [],
+          "alternatives": [],
+          "grouping_only": null,
+          "binding_gaps": [
+            "Local records and referenced grants do not authenticate authority or prove receiver delivery.",
+            "Store/locking, lifecycle and custody remain caller-bound conditions; installation and adoption are not established."
+          ],
+          "rationale": "Required local source package includes native_codex_mailbox.py and peer_message.py: retained immutable message/attempt obligations plus peer-labelled envelope serialization. These are separate functions in the same maintained helper layer, not another delivery queue. Complete producer batch: published source61 imports, nominated-child command and procedure; docs/coordination/batches/2026-11-03-claude-mcp-sender.md"
+        },
+        {
+          "fabric": "selected-claude-mcp-peer-server",
+          "crosswalk": [
+            "Maintained-source producer nisavid/provingkit#844; reviewed commit 61c17375c28e72db15a4c2898bfc90b251bd1deb"
+          ],
+          "mandatory_components": [
+            "claude-native-messaging"
+          ],
+          "alternatives": [
+            {
+              "source_components": [
+                "Claude CLI MCP serve"
+              ],
+              "component_ids": [
+                "claude-message-entrances-claude-mcp-serve"
+              ]
+            }
+          ],
+          "grouping_only": null,
+          "binding_gaps": [
+            "No exact actual launcher, current native tool inventory, peer binding or startup-effect assessment is supplied by this synthetic batch."
+          ],
+          "rationale": "Mandatory operating component class for the sender: a caller-selected stdio server exposing the documented native SendMessage profile. Its exact backend and deployment are unresolved; Claude MCP serve is a candidate, not a selected installed instance. Complete producer batch: published source61 imports, nominated-child command and procedure; docs/coordination/batches/2026-11-03-claude-mcp-sender.md"
         }
       ],
       "alternative_reference_shape": "Successor proposal: source_components retains producer labels; component_ids contains only declared fabric IDs. No alternative is an unconditional mandatory set.",
@@ -24218,6 +24456,23 @@
         "cohort-worker-cloud-model"
       ],
       "outstanding": "Exact caller/owner/reader/settings observations, real fabric prototypes and scoped live proof; separate reaction, review, publication and deployment gates in GitHub."
+    },
+    "claude_mcp_source_batch_844": {
+      "producer": "https://github.com/nisavid/provingkit/issues/844",
+      "source_revision": "61c17375c28e72db15a4c2898bfc90b251bd1deb",
+      "procedure_revision": "b3cb9a47de3f90a35d3c9fef1970baf81f9c299c",
+      "report": "docs/coordination/batches/2026-11-03-claude-mcp-sender.md",
+      "report_sha256": "bef9b854e4b406c5adda780472b6057f63c1d20062700533ca6cfe1b9797f51d",
+      "scope": "Shared source support and one existing intended ChatGPT-to-Desktop candidate association only; other callers/populations/reverse directions unchanged. Actual private evidence stays in its existing custody.",
+      "affected_fabrics": [
+        "rolecasting-claude-mcp-sender",
+        "rolecasting-peer-message-support",
+        "selected-claude-mcp-peer-server"
+      ],
+      "preserved_prior_fabrics": 160,
+      "original_failed_application_retained": true,
+      "positive_application_assisted": true,
+      "no_actual_operation_qualified": true
     }
   }
 }
