@@ -40440,11 +40440,11 @@
       ],
       "no_actual_operation_qualified": true,
       "preserved_prior_fabrics": 163,
-      "procedure_consumers": "pending",
+      "procedure_consumers": "Two ordinary synthetic consumers passed: one procedure application and one Claude-native discovery; no live qualification or release-evaluation attestation.",
       "procedure_revision": "5dc138b6d1c881f69d465620bd71377caab4c840",
       "producer": "https://github.com/nisavid/provingkit/issues/843",
       "report": "docs/coordination/batches/2026-11-03-codex-ipc-sender.md",
-      "report_sha256": "4827f9afb52aea40ada9fd7d94cd0191c39f60f3be83628a126e1891905726f7",
+      "report_sha256": "46650c492b57331e77130500b5e9169bd522fb6dea25daedd83ccf3a983f174e",
       "scope": "Shared busy-only existing-task source profile and one conditional Claude Desktop Code to ChatGPT Codex GUI association; other callers/populations/reverse directions unchanged.",
       "shared_helper_evidence": "Existing rolecasting-peer-message-support record retained unchanged; helper bytes identical between source61 and source94; no duplicate queue.",
       "source_revision": "94dc3ed7ba4fa8df4192a0c37db9c8dc734de9bc"
@@ -45362,5 +45362,5 @@
     "generated_at": "2026-11-03T16:44:42.156367+00:00",
     "revision": "codex-ipc-maintained-source"
   },
-  "source_sha256": "ae1de0dd6fc8f48525aa2d97d4a8cd5a508673231ff60ccef6430ea9ca4fb5dd"
+  "source_sha256": "954e6a7c43e06c6e4cbb5bcc30515a059968a6eea78d65609503741a686e3810"
 }

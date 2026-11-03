@@ -24696,7 +24696,7 @@
       "source_revision": "94dc3ed7ba4fa8df4192a0c37db9c8dc734de9bc",
       "procedure_revision": "5dc138b6d1c881f69d465620bd71377caab4c840",
       "report": "docs/coordination/batches/2026-11-03-codex-ipc-sender.md",
-      "report_sha256": "4827f9afb52aea40ada9fd7d94cd0191c39f60f3be83628a126e1891905726f7",
+      "report_sha256": "46650c492b57331e77130500b5e9169bd522fb6dea25daedd83ccf3a983f174e",
       "scope": "Shared busy-only existing-task source profile and one conditional Claude Desktop Code to ChatGPT Codex GUI association; other callers/populations/reverse directions unchanged.",
       "affected_fabrics": [
         "rolecasting-codex-ipc-sender",
@@ -24704,7 +24704,7 @@
       ],
       "preserved_prior_fabrics": 163,
       "shared_helper_evidence": "Existing rolecasting-peer-message-support record retained unchanged; helper bytes identical between source61 and source94; no duplicate queue.",
-      "procedure_consumers": "pending",
+      "procedure_consumers": "Two ordinary synthetic consumers passed: one procedure application and one Claude-native discovery; no live qualification or release-evaluation attestation.",
       "no_actual_operation_qualified": true
     }
   }
