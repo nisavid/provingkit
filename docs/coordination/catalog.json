@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
   "snapshot": {
-    "revision": "claude-mcp-maintained-source-and-consumers",
-    "generated_at": "2026-11-03T13:17:10.727308+00:00",
-    "coverage": "Dated source update over the retained first-cohort catalog. All160 earlier fabrics and unrelated records retained; 3 required sender/support components added, with one conditional existing-task source association. No actual fabric operation, installed release or deployment is qualified by this source batch."
+    "revision": "codex-ipc-maintained-source",
+    "generated_at": "2026-11-03T16:44:42.156367+00:00",
+    "coverage": "Dated source/synthetic update over the retained catalog: all 163 earlier fabrics, 310 profiles, 19 evidence records, 28 endpoints, 3 decisions and prior provenance preserved; 2 required sender/backend classes, 1 shared partial source profile and 4 evidence records added. Two ordinary procedure consumers passed. One conditional direction extended; no live operation, installed release, adoption or deployment qualified."
   },
   "decisions": [
     "https://github.com/nisavid/provingkit/issues/538#issuecomment-6112579765",
@@ -232,6 +232,49 @@
         "Summary of independent source critics and adjudication on commit61; root separately verified consumer artifacts. This is no live, installation or security-enforcement certification."
       ],
       "sha256": "bef9b854e4b406c5adda780472b6057f63c1d20062700533ca6cfe1b9797f51d"
+    },
+    {
+      "id": "codex-ipc-sender-source-843",
+      "kind": "source",
+      "uri": "https://github.com/nisavid/provingkit/blob/94dc3ed7ba4fa8df4192a0c37db9c8dc734de9bc/plugins/rolecasting/skills/delegating-cross-agent-work/scripts/codex_ipc_sender.py",
+      "observed_at": "2026-11-03T16:19:11.405346+00:00",
+      "limits": [
+        "Published reviewed source only; current backend, actual caller/receiver, authority and compatibility remain unassessed."
+      ],
+      "revision": "94dc3ed7ba4fa8df4192a0c37db9c8dc734de9bc"
+    },
+    {
+      "id": "codex-ipc-sender-command-synthetic-843",
+      "kind": "synthetic",
+      "uri": "docs/coordination/batches/2026-11-03-codex-ipc-sender.md",
+      "observed_at": "2026-11-03T15:53:16.342451+00:00",
+      "limits": [
+        "Producer command fixtures and owning verification, including 12 sender-command tests within 229 tests; not a procedure-consumer application or real receiver.",
+        "Synthetic native-server-linked receipt shapes establish source behavior only; no live receipt, acknowledgment, handling, fulfillment or work preservation."
+      ],
+      "sha256": "46650c492b57331e77130500b5e9169bd522fb6dea25daedd83ccf3a983f174e"
+    },
+    {
+      "id": "codex-ipc-sender-source-review-843",
+      "kind": "review",
+      "uri": "docs/coordination/batches/2026-11-03-codex-ipc-sender.md",
+      "observed_at": "2026-11-03T16:11:40.797963+00:00",
+      "limits": [
+        "Public summary of independent source critics, separate adjudication and architecture analysis on unchanged source94; not a review of this catalog candidate.",
+        "No live, installation, adoption, current-app compatibility, effective-model or security-enforcement attestation."
+      ],
+      "sha256": "46650c492b57331e77130500b5e9169bd522fb6dea25daedd83ccf3a983f174e"
+    },
+    {
+      "id": "codex-ipc-sender-consumers-843",
+      "kind": "synthetic",
+      "uri": "docs/coordination/batches/2026-11-03-codex-ipc-sender.md",
+      "observed_at": "2026-11-03T16:44:42.156367+00:00",
+      "sha256": "46650c492b57331e77130500b5e9169bd522fb6dea25daedd83ccf3a983f174e",
+      "limits": [
+        "Public summary of two controller-retained ordinary native procedure-consumer checks using invented fixtures and independently checked artifacts/traces. Requested Sol6.1Medium and cooperative source restrictions are not effective-model or isolation attestations.",
+        "One positive application establishes a fixture receipt and exact envelope preservation; nearby negative discovery selects native Claude child guidance without execution. No actual harness operation, installation, operating adoption or release-evaluation matrix."
+      ]
     }
   ],
   "endpoints": [
@@ -5810,6 +5853,73 @@
         "No exact actual launcher, current native tool inventory, peer binding or startup-effect assessment is supplied by this synthetic batch."
       ],
       "next_check": "Bind the actual server/build/tool schema and native peer in the live proposal before launching it."
+    },
+    {
+      "status": "discovered",
+      "parent": null,
+      "crosswalk": [
+        "Maintained-source producer nisavid/provingkit#843; reviewed published commit 94dc3ed7ba4fa8df4192a0c37db9c8dc734de9bc"
+      ],
+      "evidence": [
+        "codex-ipc-sender-source-843",
+        "codex-ipc-sender-command-synthetic-843",
+        "codex-ipc-sender-source-review-843",
+        "codex-ipc-sender-consumers-843"
+      ],
+      "compatibility": {
+        "status": "unassessed",
+        "scope": "Source mechanics and synthetic command behavior reviewed. Assess affected framing, owner/follow/state, busy steer, correlation/reconciliation and capture behavior with graduated checks; current native build, caller access and receiver remain unassessed. A new build alone proves no incompatibility.",
+        "evidence": []
+      },
+      "effort": {
+        "active_minutes": null,
+        "cost": null
+      },
+      "id": "rolecasting-codex-ipc-sender",
+      "name": "Rolecasting mailbox-backed Codex IPC sender",
+      "role": "actuator",
+      "dependencies": [
+        "rolecasting-peer-message-support",
+        "selected-codex-native-ipc-owner"
+      ],
+      "source_scope": "Maintained busy-only Unix IPC sender and original-attempt read-only reconciliation; immutable mailbox claim, peer envelope, intact owner/generation binding and create-only per-run captures. No new queue, automatic resend or idle-start fallback.",
+      "gaps": [
+        "Actual caller exposure, existing endpoint/access, current owner/build/peer and original authority/holds require binding.",
+        "Partial synthetic submission/receipt mechanics establish no live operation, ACK/reply, handling, fulfillment or work continuity.",
+        "Idle, restart/recovery, complete invocation/resource bounds, installation and adoption remain open."
+      ],
+      "next_check": "Bind a concrete caller, current existing owner/source profile, original authority and acquisition/closure limits under a separate reviewed live proposal; source consumers do not qualify that route."
+    },
+    {
+      "status": "discovered",
+      "parent": null,
+      "crosswalk": [
+        "Maintained-source producer nisavid/provingkit#843; reviewed published commit 94dc3ed7ba4fa8df4192a0c37db9c8dc734de9bc"
+      ],
+      "evidence": [
+        "codex-ipc-sender-source-843",
+        "codex-ipc-sender-command-synthetic-843",
+        "codex-ipc-sender-source-review-843"
+      ],
+      "compatibility": {
+        "status": "unassessed",
+        "scope": "Source mechanics and synthetic command behavior reviewed. Assess affected framing, owner/follow/state, busy steer, correlation/reconciliation and capture behavior with graduated checks; current native build, caller access and receiver remain unassessed. A new build alone proves no incompatibility.",
+        "evidence": []
+      },
+      "effort": {
+        "active_minutes": null,
+        "cost": null
+      },
+      "id": "selected-codex-native-ipc-owner",
+      "name": "Selected existing Codex native IPC owner backend",
+      "role": "support",
+      "dependencies": [],
+      "source_scope": "Required existing-owner Unix IPC source-profile backend: initialize, thread-owner-discovery, framed thread-stream following/state and busy thread-follower-steer-turn. Finite producer source/procedure/command evidence establishes no further independent fabric requirement; CPython/stdlib/SQLite/filesystem are working conditions, not new transports. Exact endpoint/access/current build/peer binding remains unknown.",
+      "gaps": [
+        "No exact selected endpoint, legitimate access, current owner/build or native peer is established by the synthetic fixtures.",
+        "Successful connection or discovery does not authenticate the target or establish authority. App Server, Queue and newly started servers are not substituted for this existing-owner class."
+      ],
+      "next_check": "Bind the actual existing owner and supported source profile, then assess affected native behavior and complete acquisition limits before any live operation."
     }
   ],
   "profiles": [
@@ -17730,6 +17840,73 @@
         "Current launcher/tool schema, exact peer/authority, idle/busy behavior, recovery, runtime preservation and adoption remain unresolved."
       ],
       "next_check": "Prepare a concrete exact-target negotiation and notification/receipt case; keep live grants and stronger qualification profiles separate."
+    },
+    {
+      "id": "rolecasting-codex-ipc-sender-existing-source",
+      "fabric": "rolecasting-codex-ipc-sender",
+      "channel": null,
+      "population": "existing",
+      "ownership": "Caller must verify actual receiver ownership and applicable original/transitive consent; stored references and cooperative scope declarations do not establish permission.",
+      "relationship": "Peer; actual current caller/native-owner/receiver association remains unbound.",
+      "target_input": "exact-reference",
+      "input_semantics": "Explicit provingkit-peer-message-v1 envelope; preserve original sender, forwarding actor, recipient, message/exchange identities, obligation owner, unchanged payload, original grants and holds. Immutable attempt correlation remains distinct from exchange correlation.",
+      "consent": {
+        "references": [
+          "https://github.com/nisavid/provingkit/issues/843"
+        ],
+        "limits": [
+          "Source/test decisions provide no live grant, receiver read, provider turn or installation authority. Original references and holds require verification."
+        ]
+      },
+      "continuity": {
+        "idle": "Refused by the maintained busy-only submission profile; separate idle prototype remains open and is not a fallback.",
+        "busy": "Source busy-turn selection/steer and original-attempt read-only reconcile exercised with synthetic peers only; actual admission, work continuity and live receipt remain unqualified.",
+        "restart": "No restart/recovery qualification; original attempt/RPC and saved owner/generation must remain intact for new acquisition."
+      },
+      "assurance": "Reviewed published source, producer synthetic public-command observations and two fresh ordinary native procedure-consumer checks; no actual operation outcome or live receiver.",
+      "claims": [
+        {
+          "operation": "notify",
+          "milestone": "submitted",
+          "stage": "implemented",
+          "coverage": "partial",
+          "evidence": [
+            "codex-ipc-sender-source-843",
+            "codex-ipc-sender-command-synthetic-843",
+            "codex-ipc-sender-source-review-843",
+            "codex-ipc-sender-consumers-843"
+          ],
+          "limits": [
+            "Source and synthetic command evidence only; no live caller/receiver binding or qualified operation.",
+            "Busy-only submission and intact saved owner/generation reconciliation are partial source capabilities. Unknown outcomes remain unknown; no automatic resend or idle start.",
+            "Original sender, forwarding actor, obligation owner, payload, grants and holds are preserved; referenced authority requires original-source verification.",
+            "An RPC result without correlated receiver evidence remains possible submission."
+          ]
+        },
+        {
+          "operation": "notify",
+          "milestone": "receipt",
+          "stage": "implemented",
+          "coverage": "partial",
+          "evidence": [
+            "codex-ipc-sender-source-843",
+            "codex-ipc-sender-command-synthetic-843",
+            "codex-ipc-sender-source-review-843",
+            "codex-ipc-sender-consumers-843"
+          ],
+          "limits": [
+            "Source and synthetic command evidence only; no live caller/receiver binding or qualified operation.",
+            "Busy-only submission and intact saved owner/generation reconciliation are partial source capabilities. Unknown outcomes remain unknown; no automatic resend or idle start.",
+            "Original sender, forwarding actor, obligation owner, payload, grants and holds are preserved; referenced authority requires original-source verification.",
+            "Synthetic peers produce a native-server-linked receipt shape; receipt is not ACK, handling, output, fulfillment or current complete history."
+          ]
+        }
+      ],
+      "gaps": [
+        "Idle, restart, direct ACK/reply, work continuity, current caller/owner/authority and full live qualification remain open.",
+        "Installation and ordinary adoption have no success evidence in this source/synthetic batch."
+      ],
+      "next_check": "Bind a concrete caller, current existing owner/source profile, original authority and acquisition/closure limits under a separate reviewed live proposal; source consumers do not qualify that route."
     }
   ],
   "channels": [
@@ -18096,7 +18273,9 @@
       "fabrics": [
         "codex-app-server",
         "codex-queue",
-        "desktop-chat-tools"
+        "desktop-chat-tools",
+        "rolecasting-codex-ipc-sender",
+        "selected-codex-native-ipc-owner"
       ],
       "profiles": [
         "codex-app-server-existing",
@@ -18104,7 +18283,8 @@
         "codex-queue-existing",
         "codex-queue-controlled",
         "desktop-chat-tools-existing",
-        "desktop-chat-tools-controlled"
+        "desktop-chat-tools-controlled",
+        "rolecasting-codex-ipc-sender-existing-source"
       ],
       "caller_access": "Desktop Code shell/plugin exposure and app-owner association unproved. R15 terminal plugin support cannot be imported.",
       "target_binding": "R05/R06 through reachable Codex owner, or R01 if externally exposed; exact Codex chat/thread ID.",
@@ -18114,15 +18294,20 @@
         "cohort-desktop-to-chatgpt-initial",
         "cohort-desktop-to-chatgpt-source-followup",
         "cohort-chatgpt-to-codex-terminal",
-        "cohort-desktop-to-codex-terminal"
+        "cohort-desktop-to-codex-terminal",
+        "codex-ipc-sender-source-843",
+        "codex-ipc-sender-command-synthetic-843",
+        "codex-ipc-sender-source-review-843",
+        "codex-ipc-sender-consumers-843"
       ],
       "gaps": [
         "Desktop Code shell/plugin exposure and app-owner association unproved. R15 terminal plugin support cannot be imported.",
         "All candidates remain conditional associations; neither population has live operation proof.",
         "Broad legacy Desktop association has unresolved correspondence to the displayed local view; no local/SSH/WSL route qualification transfers.",
-        "Current peer-source findings do not bind this caller to the actual owner or receiver evidence producer; Queue versus Steer and cold lifecycle remain distinct."
+        "Current peer-source findings do not bind this caller to the actual owner or receiver evidence producer; Queue versus Steer and cold lifecycle remain distinct.",
+        "Maintained busy-only Codex IPC source and synthetic command/procedure consumers add partial submission/receipt mechanics only; current caller/owner/access/authority and live qualification remain unproved."
       ],
-      "next_check": "Prepare and review the exact caller/target/evidence binding under the selected cohort."
+      "next_check": "Prepare and review the exact caller/target/evidence binding under the selected cohort. Bind the maintained sender existing-owner profile, actual acquisition/capture limits and closure before a separate live proposal."
     },
     {
       "id": "claude-desktop-code-to-codex-terminal",
@@ -21886,6 +22071,38 @@
             "No exact actual launcher, current native tool inventory, peer binding or startup-effect assessment is supplied by this synthetic batch."
           ],
           "rationale": "Mandatory operating component class for the sender: a caller-selected stdio server exposing the documented native SendMessage profile. Its exact backend and deployment are unresolved; Claude MCP serve is a candidate, not a selected installed instance. Complete producer batch: published source61 imports, nominated-child command and procedure; docs/coordination/batches/2026-11-03-claude-mcp-sender.md"
+        },
+        {
+          "fabric": "rolecasting-codex-ipc-sender",
+          "crosswalk": [
+            "Maintained-source producer nisavid/provingkit#843; reviewed published commit 94dc3ed7ba4fa8df4192a0c37db9c8dc734de9bc"
+          ],
+          "mandatory_components": [
+            "rolecasting-peer-message-support",
+            "selected-codex-native-ipc-owner"
+          ],
+          "alternatives": [],
+          "grouping_only": null,
+          "binding_gaps": [
+            "Actual caller exposure, existing endpoint/access, current owner/build/peer and original authority/holds require binding.",
+            "Partial synthetic submission/receipt mechanics establish no live operation, ACK/reply, handling, fulfillment or work continuity.",
+            "Idle, restart/recovery, complete invocation/resource bounds, installation and adoption remain open."
+          ],
+          "rationale": "Maintained busy-only Unix IPC sender and original-attempt read-only reconciliation; immutable mailbox claim, peer envelope, intact owner/generation binding and create-only per-run captures. No new queue, automatic resend or idle-start fallback. Complete finite producer evidence: published source94 core/transport/sender/capture and procedure; docs/coordination/batches/2026-11-03-codex-ipc-sender.md. Shared mailbox/envelope bytes equal source61, so existing helper evidence carries forward unchanged."
+        },
+        {
+          "fabric": "selected-codex-native-ipc-owner",
+          "crosswalk": [
+            "Maintained-source producer nisavid/provingkit#843; reviewed published commit 94dc3ed7ba4fa8df4192a0c37db9c8dc734de9bc"
+          ],
+          "mandatory_components": [],
+          "alternatives": [],
+          "grouping_only": null,
+          "binding_gaps": [
+            "No exact selected endpoint, legitimate access, current owner/build or native peer is established by the synthetic fixtures.",
+            "Successful connection or discovery does not authenticate the target or establish authority. App Server, Queue and newly started servers are not substituted for this existing-owner class."
+          ],
+          "rationale": "Required existing-owner Unix IPC source-profile backend: initialize, thread-owner-discovery, framed thread-stream following/state and busy thread-follower-steer-turn. Finite producer source/procedure/command evidence establishes no further independent fabric requirement; CPython/stdlib/SQLite/filesystem are working conditions, not new transports. Exact endpoint/access/current build/peer binding remains unknown. Complete finite producer evidence: published source94 core/transport/sender/capture and procedure; docs/coordination/batches/2026-11-03-codex-ipc-sender.md. Shared mailbox/envelope bytes equal source61, so existing helper evidence carries forward unchanged."
         }
       ],
       "alternative_reference_shape": "Successor proposal: source_components retains producer labels; component_ids contains only declared fabric IDs. No alternative is an unconditional mandatory set.",
@@ -24472,6 +24689,22 @@
       "preserved_prior_fabrics": 160,
       "original_failed_application_retained": true,
       "positive_application_assisted": true,
+      "no_actual_operation_qualified": true
+    },
+    "codex_ipc_source_batch_843": {
+      "producer": "https://github.com/nisavid/provingkit/issues/843",
+      "source_revision": "94dc3ed7ba4fa8df4192a0c37db9c8dc734de9bc",
+      "procedure_revision": "5dc138b6d1c881f69d465620bd71377caab4c840",
+      "report": "docs/coordination/batches/2026-11-03-codex-ipc-sender.md",
+      "report_sha256": "4827f9afb52aea40ada9fd7d94cd0191c39f60f3be83628a126e1891905726f7",
+      "scope": "Shared busy-only existing-task source profile and one conditional Claude Desktop Code to ChatGPT Codex GUI association; other callers/populations/reverse directions unchanged.",
+      "affected_fabrics": [
+        "rolecasting-codex-ipc-sender",
+        "selected-codex-native-ipc-owner"
+      ],
+      "preserved_prior_fabrics": 163,
+      "shared_helper_evidence": "Existing rolecasting-peer-message-support record retained unchanged; helper bytes identical between source61 and source94; no duplicate queue.",
+      "procedure_consumers": "pending",
       "no_actual_operation_qualified": true
     }
   }

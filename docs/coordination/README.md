@@ -8,7 +8,7 @@ blocking relationships in the [portfolio map](https://github.com/nisavid/proving
 `catalog.json` is the maintained source. The dated first-cohort snapshot
 integrates the [granular coverage investigation](https://github.com/nisavid/provingkit/issues/560)
 and eight published directional preparations. It contains 23 Wave 1 operational
-surface views, 28 across all waves, and 163 candidate/supporting fabric records.
+surface views, 28 across all waves, and 165 candidate/supporting fabric records.
 All 150 seed fabrics, their distinct source cohorts, unsuccessful/unsuitable
 leads, archived vectors and unresolved mappings remain discoverable.
 
@@ -26,6 +26,8 @@ not refresh unrelated deployed builds. The accepted operation outcomes remain
 [Choose Wave 1 operation and evidence contracts](https://github.com/nisavid/provingkit/issues/538#issuecomment-6112579765).
 
 The maintained Claude MCP sender source batch adds a mailbox-backed actuator and its required shared helper and selected-server layers. Its notification-submission path is implemented and exercised through an explicitly assisted synthetic public-command application; the initial failed caller launch remains retained. The selected server/backend and native peer remain unbound, and no actual receiver operation is qualified. See [the dated source and consumer report](batches/2026-11-03-claude-mcp-sender.md). The original first-cohort data and all unrelated records remain unchanged.
+
+The maintained Codex IPC sender source batch adds a busy-only actuator and its required existing-owner Unix IPC backend class, reusing the unchanged mailbox/envelope helpers. Its shared notification-submission and receipt profile is implemented with partial source and synthetic command coverage; exact caller/owner/access/authority and live receipt remain unbound. The catalog now contains 311 profiles and 23 evidence records. Two ordinary synthetic procedure consumers passed; final catalog review/publication, installation and adoption remain separate. See [the dated source report](batches/2026-11-03-codex-ipc-sender.md).
 
 ## Read the record
 
