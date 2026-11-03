@@ -44,6 +44,14 @@ a caller-nominated stdio child. Source support and synthetic consumer evidence
 do not establish live receiver compatibility, receipt, handling, installation,
 or operational adoption; startup and sending require separate authorization.
 
+The [Codex IPC sender procedure](skills/delegating-cross-agent-work/references/codex-ipc-sender.md)
+documents a conditional source profile for one busy-target submission and
+read-only reconciliation of its original attempt. It uses the same retained
+mailbox and peer envelope, with invocation-owned captures. The caller must
+independently bind the actual native owner and applicable authority; source
+and synthetic checks do not establish current GUI access, live receipt or
+operating adoption. Explicit idle-operation prototypes remain separate.
+
 It does not decide repository ownership, review disposition, publication, or
 pull-request work.
 
@@ -144,6 +152,7 @@ python3 -m unittest tests/plugins/test_rolecasting_native_codex.py
 python3 -m unittest tests/plugins/test_rolecasting_native_tree.py
 python3 -m unittest tests/plugins/test_rolecasting_native_mailbox.py
 python3 -m unittest tests/plugins/test_rolecasting_claude_mcp_sender.py
+python3 -m unittest tests/plugins/test_rolecasting_codex_ipc_sender.py
 python3 -m unittest tests/plugins/test_rolecasting_daybreak_routing.py
 ```
 
