@@ -23,10 +23,33 @@ SCRIPTS = (
 
 class CodexIdleSenderTests(unittest.TestCase):
     def test_explicit_idle_intent_retains_one_uncertain_original_submission(self):
-        with tempfile.TemporaryDirectory(prefix="codex-ipc-") as temporary:
-            root = Path(temporary)
+        self.exercise_idle_command()
+
+    def test_wrong_thread_kind_refuses_before_input(self):
+        self.exercise_idle_command({"threadStartKind": "review"}, "idle-profile-unavailable")
+
+    def test_missing_thread_kind_refuses_before_input(self):
+        self.exercise_idle_command({"threadStartKind": None}, "idle-profile-unavailable")
+
+    def test_wrong_thread_source_refuses_before_input(self):
+        self.exercise_idle_command({"threadSource": "agent"}, "idle-profile-unavailable")
+
+    def test_missing_thread_source_refuses_before_input(self):
+        self.exercise_idle_command({"threadSource": None}, "idle-profile-unavailable")
+
+    def test_coherent_busy_state_refuses_before_input(self):
+        self.exercise_idle_command({"threadRuntimeStatus": {"type": "active"},
+            "turns": [{"turnId": "active-turn", "status": "inProgress", "items": []}]}, "idle-intent-observed-busy")
+
+    def exercise_idle_command(self, snapshot_changes=None, refusal=None):
+        evidence = os.environ.get("IDLE_SLICE_EVIDENCE")
+        evidence = Path(evidence, self._testMethodName) if evidence else None
+        if evidence:
+            evidence.mkdir()
+        with tempfile.TemporaryDirectory(prefix="codex-ipc-", dir=os.environ.get("IDLE_FIXTURE_ROOT")) as temporary:
+            root = Path(os.path.relpath(temporary)) if os.environ.get("IDLE_FIXTURE_ROOT") else Path(temporary)
             store = root / "mailbox.sqlite3"
-            capture = root / "capture"
+            capture = (root / "capture").resolve()
             capture.mkdir()
             original = {
                 "message_id": "idle-message", "correlation_id": "shared-exchange",
@@ -60,9 +83,8 @@ class CodexIdleSenderTests(unittest.TestCase):
                 )
                 commands.append({"argv": completed.args, "exit": completed.returncode,
                                  "stdout": completed.stdout, "stderr": completed.stderr})
-                evidence = os.environ.get("IDLE_SLICE_EVIDENCE")
                 if evidence:
-                    Path(evidence, "commands.json").write_text(json.dumps(commands, indent=2))
+                    (evidence / "commands.json").write_text(json.dumps(commands, indent=2))
                 return completed
 
             def mailbox(*arguments):
@@ -152,7 +174,27 @@ class CodexIdleSenderTests(unittest.TestCase):
                                   "version": 1, "method": "thread-stream-following-changed",
                                   "params": {"hostId": "peer-host", "conversationId": "idle-peer", "following": True}}
                         self.assertEqual(receive(), follow)
-                        send(snapshot())
+                        observed = snapshot()
+                        state = observed["params"]["change"]["conversationState"]
+                        for key, value in (snapshot_changes or {}).items():
+                            if value is None:
+                                state.pop(key)
+                            else:
+                                state[key] = value
+                        send(observed)
+                        if refusal:
+                            follow["params"]["following"] = False
+                            cleanup = receive()
+                            if cleanup.get("method") in {"thread-follower-start-turn", "thread-follower-steer-turn"}:
+                                # Drain a counterfactual input too, so a failing refusal
+                                # assertion cannot strand the owned stream or peer.
+                                send({"type": "response", "requestId": cleanup["requestId"],
+                                      "resultType": "success", "method": cleanup["method"], "result": {}})
+                                cleanup = receive()
+                            self.assertEqual(cleanup, follow)
+                            self.assertEqual(connection.recv(1), b"")
+                            closed.set()
+                            return
                         start = receive()
                         # Inspect the public create-only capture before answering input.
                         prewrite.append((capture / "attempt.json").read_bytes())
@@ -199,16 +241,25 @@ class CodexIdleSenderTests(unittest.TestCase):
                         listener.close()
                         server.join(timeout=4)
                 self.assertFalse(server.is_alive(), "fixture server did not terminate")
+            if evidence:
+                shutil.copytree(capture, evidence / "capture")
+                (evidence / "wire.json").write_text(json.dumps(wire, indent=2))
+                (evidence / "closure.json").write_text(json.dumps({
+                    "eof_observed": closed.is_set(), "thread_alive": server.is_alive(),
+                    "original_child_exit": completed.returncode,
+                    "child_exits": [c["exit"] for c in commands],
+                    "fixture_errors": [repr(error) for error in errors],
+                }, indent=2))
             self.assertEqual(completed.returncode, 0, completed.stderr)
             self.assertEqual(completed.stderr, "")
             result = json.loads(completed.stdout)
-            self.assertEqual(result["peer_input"], "possible_submission", result)
+            self.assertEqual(result["peer_input"], "not_attempted" if refusal else "possible_submission", result)
             self.assertEqual(errors, [])
             self.assertTrue(closed.is_set())
             self.assertTrue(result["claimed"])
-            self.assertEqual(result["reason"], "rpc-success-effect-unconfirmed")
+            self.assertEqual(result["reason"], refusal or "rpc-success-effect-unconfirmed")
             self.assertEqual(result["owned_connection"], {"started": True, "closed": True})
-            self.assertEqual(result["projection"]["stage"], "possible-submission")
+            self.assertEqual(result["projection"]["stage"], "refused-before-write" if refusal else "possible-submission")
             recorded = mailbox("show", "idle-message")
             self.assertEqual({k: v for k, v in recorded.items() if k not in {"state", "attempts"}}, original)
             self.assertEqual(recorded["state"], "unknown")
@@ -221,6 +272,34 @@ class CodexIdleSenderTests(unittest.TestCase):
             self.assertFalse(attempt["completed"])
             self.assertEqual([o["kind"] for o in attempt["observations"]], ["unknown"])
             self.assertTrue(all(o["evidence_ref"] == "synthetic://idle-evidence" for o in attempt["observations"]))
+            if evidence:
+                (evidence / "mailbox-show.json").write_text(json.dumps(recorded, indent=2))
+            if refusal:
+                self.assertEqual(result["receipt"], "unknown")
+                self.assertEqual(result["projection"]["receipt"], "unknown")
+                self.assertEqual(result["projection"]["evidence"], [])
+                self.assertFalse((capture / "attempt.json").exists())
+                self.assertFalse((capture / "rpc.json").exists())
+                self.assertEqual([f["method"] for f in wire], ["initialize", "thread-owner-discovery",
+                    "thread-stream-following-changed", "thread-stream-following-changed"])
+                self.assertEqual(json.loads((capture / "outbound.json").read_bytes()), wire)
+                self.assertEqual(json.loads((capture / "projection.json").read_bytes()), result["projection"])
+                before = {p.name: p.read_bytes() for p in capture.iterdir()}
+                endpoint.unlink()
+                with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as duplicate_listener:
+                    duplicate_listener.bind(str(endpoint))
+                    duplicate_listener.listen(1)
+                    duplicate_listener.settimeout(0.15)
+                    repeated = command("codex_ipc_idle_sender.py", "--request", str(request_file))
+                    with self.assertRaises(TimeoutError):
+                        duplicate_listener.accept()
+                self.assertEqual(repeated.returncode, 0, repeated.stderr)
+                self.assertEqual(json.loads(repeated.stdout)["reason"], "claim_not_acquired")
+                self.assertFalse(json.loads(repeated.stdout)["claimed"])
+                self.assertEqual(json.loads(repeated.stdout)["owned_connection"], {"started": False, "closed": False})
+                self.assertEqual({p.name: p.read_bytes() for p in capture.iterdir()}, before)
+                self.assertEqual(mailbox("show", "idle-message"), recorded)
+                return
             pending = json.loads((capture / "attempt.json").read_bytes())
             self.assertEqual(prewrite, [(capture / "attempt.json").read_bytes()])
             self.assertEqual(pending["envelope"], wire[3])
@@ -267,14 +346,7 @@ class CodexIdleSenderTests(unittest.TestCase):
             self.assertEqual(json.loads(repeated.stdout)["reason"], "claim_not_acquired")
             self.assertEqual(mailbox("show", "idle-message"), recorded)
 
-            evidence = os.environ.get("IDLE_SLICE_EVIDENCE")
-            if evidence:
-                target = Path(evidence)
-                shutil.copytree(capture, target / "capture")
-                for name, value in {"mailbox-show.json": recorded, "wire.json": wire,
-                                    "closure.json": {"eof_observed": closed.is_set(), "thread_alive": server.is_alive(),
-                                                     "original_child_exit": completed.returncode}}.items():
-                    (target / name).write_text(json.dumps(value, indent=2))
+
 
 
 if __name__ == "__main__":
