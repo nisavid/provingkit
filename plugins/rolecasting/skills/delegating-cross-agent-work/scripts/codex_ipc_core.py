@@ -1,4 +1,4 @@
-"""Busy-only production operation extracted from the retained native sender.
+"""Finite IPC operation shared by explicit busy and observed-idle entries.
 
 Source native_peer_client.py SHA-256:
 abaf2dd6740c7b92abbd76ae8d05b51fc6a642e0ff88d8ec319816974ec09b6b.
@@ -38,7 +38,7 @@ def failure_record(exc):
 def encode(value):
     return json.dumps(value, sort_keys=True, separators=(",", ":")).encode()
 
-def _run_operation(case, directory, mode="submit", attempt_path=None, *, transport, clock, writer, request_input=None):
+def _run_operation(case, directory, mode="submit", attempt_path=None, *, transport, clock, writer, request_input=None, idle_intent=False):
     writer.require(directory)
     save = writer.write_json
     production = True
@@ -141,7 +141,7 @@ def _run_operation(case, directory, mode="submit", attempt_path=None, *, transpo
             revision = change["revision"]
             # Receipt observations belong to this snapshot, not the latest cache.
             # Keep selection invalidation and the finite receive lifecycle intact.
-            if possible or original is not None:
+            if (possible or original is not None) and not idle_intent:
                 if state.get("id") != binding["target"]:
                     raise Refusal("snapshot-target-mismatch")
                 if not 0 <= now() - observed_at <= transport.limits["maxAge"]:
@@ -235,6 +235,12 @@ def _run_operation(case, directory, mode="submit", attempt_path=None, *, transpo
             selected = "start"
         else:
             raise Refusal("state-conflict-or-unsupported")
+        if idle_intent:
+            if selected != "start":
+                raise Refusal("idle-intent-observed-busy")
+            if any(state.get(key) != expected for key, expected in (
+                    ("threadStartKind", "default"), ("threadSource", "user"))):
+                raise Refusal("idle-profile-unavailable")
         scope = case.get("scope", {})
         if not (scope.get("send") is True and scope.get("acquireLoaded") is True
                 and scope.get("holdsSatisfied") is True and case.get("authorityRefs")
@@ -253,7 +259,11 @@ def _run_operation(case, directory, mode="submit", attempt_path=None, *, transpo
             message_input = params.get("input")
         else:
             request = params.get("turnStart", {}).get("request", {})
-            if request.get("threadId") != binding["target"] or params.get("inheritThreadSettings") is not True:
+            inheritance = (params.get("turnStart", {}).get("context", {}).get("inheritThreadSettings")
+                           if idle_intent else params.get("inheritThreadSettings"))
+            if idle_intent and request.get("clientUserMessageId") != case["correlation"]:
+                raise Refusal("template-correlation-mismatch")
+            if request.get("threadId") != binding["target"] or inheritance is not True:
                 raise Refusal("start-settings-not-inherited")
             message_input = request.get("input")
         if message_input != [{"type": "text", "text": case["payload"], "text_elements": []}]:
@@ -268,6 +278,9 @@ def _run_operation(case, directory, mode="submit", attempt_path=None, *, transpo
             pending.update(declaredOrigin=case["declaredOrigin"], nominationRef=case["nominationRef"],
                            route=case["route"], scope=case["scope"], profile=transport.limits,
                            configuration=configuration(case))
+        if idle_intent:
+            pending.update(observedProfile={key: state[key] for key in ("mode", "threadStartKind", "threadSource") if key in state},
+                           observedRuntimeStatus=runtime, idle_observation_is_atomic=False)
         transport.pending_path = Path(directory) / "attempt.json"
         try:
             save(transport.pending_path, pending)
@@ -346,6 +359,9 @@ def _run_operation(case, directory, mode="submit", attempt_path=None, *, transpo
                   "limits": ["offline-injected-io-or-unqualified-live" if production else "synthetic-source-only", "pending-is-not-receipt", "absence-is-not-nondelivery"],
                   "observation": {"source": binding["owner"], "at": observed_at, "revision": revision,
                                              "host": binding["host"], "target": binding["target"], "generation": binding["generation"]}}
+    if idle_intent:
+        projection.update(receipt="unknown", idle_observation_is_atomic=False)
+        projection["limits"].append("idle-observation-not-atomic")
     if original is not None:
         projection.update(correlation=original["correlation"], originalAttemptSha256=attempt_digest,
                           originalActor=original["actor"], consumerActor=case["consumerActor"])
@@ -429,8 +445,7 @@ def configuration(request):
             "authority": "caller-declaration-only;separate-live-grant-required"}
 
 
-def run_sender(request, directory, *, connector=connect_unix, clock=time.monotonic,
-               mode="submit", attempt_path=None, writer):
+def _run_sender(request, directory, *, connector, clock, mode, attempt_path, writer, idle_intent):
     """Production operation seam. Connector and clock are injectable system IO.
 
     Request contains nomination/route and original scope records, never native
@@ -442,7 +457,11 @@ def run_sender(request, directory, *, connector=connect_unix, clock=time.monoton
         raise Refusal("case-byte-limit")
     if any(k in request for k in ("script", "now", "receiverEvidence", "binding", "templates")):
         raise Refusal("production-fixture-input-forbidden")
-    if request.get("scope", {}).get("busyOnly") is not True:
+    scope = request.get("scope", {})
+    if idle_intent:
+        if scope.get("idleStartIntent") is not True or "busyOnly" in scope or mode != "submit":
+            raise Refusal("explicit-idle-intent-required")
+    elif scope.get("busyOnly") is not True:
         raise Refusal("busy-only-required")
     route = request["route"]
     if not all(isinstance(route.get(k), str) and route[k] for k in ("endpoint", "host", "target")):
@@ -472,14 +491,35 @@ def run_sender(request, directory, *, connector=connect_unix, clock=time.monoton
     if mode == "submit":
         payload, correlation = request["payload"], request["correlation"]
         inp = [{"type": "text", "text": payload, "text_elements": []}]
-        case["templates"] = {
-            "steer": {"conversationId": route["target"], "input": inp, "attachments": [],
-                      "clientUserMessageId": correlation,
-                      "restoreMessage": {"id": correlation, "context": {"prompt": payload,
-                          "fileAttachments": [], "addedFiles": [], "imageAttachments": [],
-                          "pastedTextAttachments": [], "commentAttachments": [], "turnTrigger": "steer"}}},
-            "start": {"conversationId": route["target"], "inheritThreadSettings": True,
-                      "turnStart": {"request": {"threadId": route["target"], "input": inp}, "context": {}}}}
+        if idle_intent:
+            case["templates"] = {"start": {"conversationId": route["target"], "turnStart": {
+                "request": {"threadId": route["target"], "clientUserMessageId": correlation, "input": inp},
+                "context": {"inheritThreadSettings": True}}}}
+        else:
+            case["templates"] = {
+                "steer": {"conversationId": route["target"], "input": inp, "attachments": [],
+                          "clientUserMessageId": correlation,
+                          "restoreMessage": {"id": correlation, "context": {"prompt": payload,
+                              "fileAttachments": [], "addedFiles": [], "imageAttachments": [],
+                              "pastedTextAttachments": [], "commentAttachments": [], "turnTrigger": "steer"}}},
+                "start": {"conversationId": route["target"], "inheritThreadSettings": True,
+                          "turnStart": {"request": {"threadId": route["target"], "input": inp}, "context": {}}}}
     else:
         case["consumerActor"] = request["actor"]
-    return _run_operation(case, directory, mode, attempt_path, transport=transport, clock=clock, writer=writer, request_input=request)
+    return _run_operation(case, directory, mode, attempt_path, transport=transport, clock=clock, writer=writer, request_input=request, idle_intent=idle_intent)
+
+
+def run_sender(request, directory, *, connector=connect_unix, clock=time.monotonic,
+               mode="submit", attempt_path=None, writer):
+    """Send through the existing busy-only gate; never fall back to idle start."""
+    return _run_sender(request, directory, connector=connector, clock=clock,
+                       mode=mode, attempt_path=attempt_path, writer=writer, idle_intent=False)
+
+
+def run_idle_sender(request, directory, *, writer):
+    """Explicit cooperative idle intent; observed idle is not an atomic precondition.
+
+    This source prototype makes no opening-receipt or live compatibility claim.
+    """
+    return _run_sender(request, directory, connector=connect_unix, clock=time.monotonic,
+                       mode="submit", attempt_path=None, writer=writer, idle_intent=True)

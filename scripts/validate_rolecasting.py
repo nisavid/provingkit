@@ -1384,6 +1384,7 @@ def inspect_contract(root: Path) -> tuple[dict, set[str]]:
         "skills/delegating-cross-agent-work/scripts/peer_message.py",
         "skills/delegating-cross-agent-work/scripts/claude_mcp_sender.py",
         "skills/delegating-cross-agent-work/scripts/codex_ipc_sender.py",
+        "skills/delegating-cross-agent-work/scripts/codex_ipc_idle_sender.py",
         "skills/delegating-cross-agent-work/scripts/codex_ipc_core.py",
         "skills/delegating-cross-agent-work/scripts/codex_ipc_transport.py",
         "skills/delegating-cross-agent-work/scripts/codex_capture.py",

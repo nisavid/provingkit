@@ -50,7 +50,10 @@ read-only reconciliation of its original attempt. It uses the same retained
 mailbox and peer envelope, with invocation-owned captures. The caller must
 independently bind the actual native owner and applicable authority; source
 and synthetic checks do not establish current GUI access, live receipt or
-operating adoption. Explicit idle-operation prototypes remain separate.
+operating adoption. Its separately selected idle-intent prototype shares the
+mailbox, transport, and capture engine, while retaining unknown opening receipt
+and a non-atomic idle observation limit. It does not change the busy-only
+default or select an operating route.
 
 It does not decide repository ownership, review disposition, publication, or
 pull-request work.
@@ -153,6 +156,7 @@ python3 -m unittest tests/plugins/test_rolecasting_native_tree.py
 python3 -m unittest tests/plugins/test_rolecasting_native_mailbox.py
 python3 -m unittest tests/plugins/test_rolecasting_claude_mcp_sender.py
 python3 -m unittest tests/plugins/test_rolecasting_codex_ipc_sender.py
+python3 -m unittest tests/plugins/test_rolecasting_codex_idle_sender.py
 python3 -m unittest tests/plugins/test_rolecasting_daybreak_routing.py
 ```
 

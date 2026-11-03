@@ -17,11 +17,11 @@ import sys
 from native_codex_mailbox import Mailbox, MailboxError
 from peer_message import serialize_peer_message
 from codex_capture import CaptureWriter
-from codex_ipc_core import DEFAULTS, ArtifactFailure, Refusal, run_sender
+from codex_ipc_core import DEFAULTS, ArtifactFailure, Refusal, run_sender, run_idle_sender
 from codex_ipc_transport import ReceiveFailure
 
 
-def native_request(request, planned):
+def native_request(request, planned, *, idle_intent=False):
     if request.keys() != {"message_id", "attempt_id", "actor", "recipient", "evidence_ref", "native", "capture"}:
         raise Refusal("invalid_request")
     native = request["native"]
@@ -33,7 +33,11 @@ def native_request(request, planned):
     if (route["host"] != planned["recipient"]["host_id"]
             or route["target"] != planned["recipient"]["thread_id"]):
         raise Refusal("native_recipient_mismatch")
-    if native["scope"].get("busyOnly") is not True:
+    scope = native["scope"]
+    if idle_intent:
+        if scope.get("idleStartIntent") is not True or "busyOnly" in scope:
+            raise Refusal("explicit-idle-intent-required")
+    elif scope.get("busyOnly") is not True:
         raise Refusal("busy-only-required")
     message = {k: v for k, v in planned.items() if k not in {"state", "attempts"}}
     return {
@@ -116,8 +120,9 @@ def project(result, native):
         result["peer_input"] = "possible_submission"
 
 
-def main():
-    parser = argparse.ArgumentParser(description=__doc__)
+def main(*, idle_intent=False):
+    parser = argparse.ArgumentParser(description=("Explicit observed-idle source prototype; receipt unknown."
+                                                    if idle_intent else __doc__))
     parser.add_argument("--store", required=True)
     parser.add_argument("--request", required=True, help="explicit trusted local UTF-8 JSON request file path")
     parser.add_argument("--mode", choices=("submit", "reconcile"), default="submit")
@@ -128,6 +133,8 @@ def main():
         "reason": "invalid_request",
         "owned_connection": {"started": False, "closed": False},
     }
+    if idle_intent:
+        result["receipt"] = "unknown"
     mailbox = None
     try:
         if (arguments.mode == "reconcile") != (arguments.original_attempt is not None):
@@ -139,7 +146,9 @@ def main():
         if planned["recipient"] != request["recipient"]:
             result["reason"] = "recipient_mismatch"
         else:
-            native = native_request(request, planned)
+            if idle_intent and arguments.mode != "submit":
+                raise Refusal("idle-submit-only")
+            native = native_request(request, planned, idle_intent=idle_intent)
             if arguments.mode == "reconcile":
                 try:
                     outcome = reconcile(request, planned, native, arguments.original_attempt, result)
@@ -163,7 +172,8 @@ def main():
                 mailbox.observe(request["message_id"], request["attempt_id"], "unknown",
                                 request["evidence_ref"], json.dumps(native, sort_keys=True))
                 try:
-                    outcome = run_sender(native, writer.root, writer=writer)
+                    operation = run_idle_sender if idle_intent else run_sender
+                    outcome = operation(native, writer.root, writer=writer)
                 except ArtifactFailure as error:
                     project(result, error.result)
                     result["capture_failure"] = error.failure

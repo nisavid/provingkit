@@ -62,7 +62,7 @@ Batch small independent same-shape work into one dispatch and review its diff as
 
 Do local work before waiting; avoid short polling, use a bounded wait when idle, then reconcile live children and recover missed terminal results.
 
-Recovery: [mailbox](references/native-codex-mailbox.md). Claude: [MCP](references/claude-mcp-sender.md). Codex busy/reconciliation: [IPC](references/codex-ipc-sender.md).
+Recovery: [mailbox](references/native-codex-mailbox.md). Claude: [MCP](references/claude-mcp-sender.md). Codex: [IPC](references/codex-ipc-sender.md).
 
 ## Leader Integration
 

@@ -65,3 +65,25 @@ Retain the earliest diagnosis, completed prefix, rejected length/ceiling/offset 
 Report original foreground termination and actual owned connection closure. `closed` concerns this invocation's stream; it does not attest receiver termination, descendant control or an unfollow acknowledgment. Missing native/process closure remains an open resource obligation. Notification uncertainty can remain after verified owned closure under the owning proposal's explicit terms. No timeout, missing capture or absent message justifies a resend.
 
 Return the message/attempt identities, current invocation mode and actor, reached evidence stage, source/time/completeness limits, original artifact identities, actual exit/closure, and next owner for any unresolved obligation. Reconcile the affected catalog batch through `updating-cross-harness-catalog`; keep source correctness, live qualification, installation and release as separate outcomes.
+
+## Separate explicit idle-intent prototype
+
+The separate `codex_ipc_idle_sender.py` entry is a source/synthetic prototype. It does not change the ordinary busy-only command, select an operating fabric, or authorize a live operation. Load the same mailbox/capture/authority requirements before evaluating it.
+
+The request has the same outer shape as the busy sender, with `scope.idleStartIntent: true` and no `busyOnly` member. It supports submission only, not original-attempt reconciliation through this entry. The fresh exact-owner snapshot must identify idle runtime, no active turn, and explicit default/user thread kind/source. Conversation mode is observation metadata, not an invented default-mode eligibility rule. Unsupported or missing profile evidence remains a refusal; an earlier possible submission remains unknown.
+
+The entry sends at most one native start request. It places the immutable attempt ID in `turnStart.request.clientUserMessageId` and `inheritThreadSettings: true` in `turnStart.context`, with no caller model, permission, cwd/workspace, account, admission or service override. It never switches from a busy refusal or uncertain attempt to an idle start, sends a fallback steer, or retries. The native owner performs its own inherited preparation; this is not a measured runtime-preservation claim.
+
+An idle observation is not an atomic compare-and-start guard. The source profile excludes the inspected admission branch only under its observed default/user conditions; actual state can change before native dispatch, and the server’s busy-start semantics remain unqualified. A later concrete method/live decision must address that limit before any actual use.
+
+The prototype reports possible submission after the native write boundary and keeps receipt unknown even when the RPC succeeds. It retains actual RPC result bytes without inventing a turn ID. It does not use the steering receipt predicate to claim opening receipt, handling, ACK or reply. A later independently authorized native same-chat observation can supply those stages if it proves the relevant identity and correlation. No full-history acquisition is added automatically.
+
+Retain the exact original attempt, observed profile/revision/time, request/client correlation, RPC, captures, public mailbox state, foreground exit and owned closure. The same claimed attempt cannot connect or submit again; that invocation’s refusal does not establish nondelivery of the original. The current idle prototype has no resend or reconciliation escape hatch.
+
+From the reviewed source checkout, the synthetic invocation shape is:
+
+```sh
+python -B plugins/rolecasting/skills/delegating-cross-agent-work/scripts/codex_ipc_idle_sender.py --store "$peer_mailbox" --request "$idle_request"
+```
+
+This example selects no live peer. Installation, actual caller/owner binding, private acquisition, provider use, sending, receiver-app recovery and operational adoption remain separate gates.
