@@ -75,14 +75,23 @@ def encoded_frame(value):
     return data
 
 
+# Recognized literal profile only: never evaluate arbitrary schema patterns.
+DESTINATION_CONSTRAINTS = [
+    {"pattern": r"^[^\n\r]*$"},
+    {"pattern": r"^[\s\S]{0,300}$"},
+]
+
+
 def supports_sendmessage(tool):
     schema = tool["inputSchema"]
     properties = schema.get("properties")
     required = schema.get("required")
     if (
         not schema.keys() <= {
-            "type", "properties", "required", "additionalProperties", "title", "description",
+            "type", "properties", "required", "additionalProperties", "title", "description", "$schema",
         }
+        or schema.get("$schema", "https://json-schema.org/draft/2020-12/schema")
+        != "https://json-schema.org/draft/2020-12/schema"
         or schema.get("type") != "object"
         or not isinstance(properties, dict)
         or not {"to", "message"} <= properties.keys()
@@ -98,7 +107,11 @@ def supports_sendmessage(tool):
     ):
         return False
     return all(
-        properties[name].keys() <= {"type", "title", "description", "default"}
+        properties[name].keys() <= (
+            {"type", "title", "description", "default", "allOf"}
+            if name == "to" else {"type", "title", "description", "default"}
+        )
+        and ("allOf" not in properties[name] or properties[name]["allOf"] == DESTINATION_CONSTRAINTS)
         and properties[name].get("type") == "string"
         and all(
             annotation not in properties[name]
@@ -107,6 +120,17 @@ def supports_sendmessage(tool):
         )
         for name in ("to", "message")
     )
+
+
+def destination_violation(tool, target):
+    if "allOf" not in tool["inputSchema"]["properties"]["to"]:
+        return None
+    if "\r" in target or "\n" in target:
+        return "Destination contains CR/LF."
+    # Conservative source limit: astral characters consume two UTF-16 code units.
+    if sum(2 if ord(character) > 0xFFFF else 1 for character in target) > 300:
+        return "Destination exceeds the supported 300 UTF-16 code units."
+    return None
 
 
 def supported_tool_result(result):
@@ -307,6 +331,12 @@ def main():
                     "SendMessage schema is outside the supported to/message string profile; no tools/call was sent.",
                 )
                 result["reason"] = "unsupported_sendmessage_schema"
+            elif nominated and (violation := destination_violation(nominated[0], request["target"])):
+                mailbox.observe(
+                    request["message_id"], request["attempt_id"], "refused",
+                    request["evidence_ref"], violation + " No tools/call was sent.",
+                )
+                result["reason"] = "destination_constraint_violation"
             elif nominated:
                 message = {
                     key: value for key, value in planned.items()

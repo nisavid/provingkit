@@ -15,6 +15,24 @@ SCRIPTS = (
 )
 
 
+def retained_destination_catalog():
+    """Retained structural profile; annotations are synthetic, never instructions."""
+    return {"tools": [{"name": "SendMessage", "inputSchema": {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "type": "object",
+        "properties": {
+            "to": {
+                "type": "string", "description": "Synthetic destination.",
+                "allOf": [{"pattern": r"^[^\n\r]*$"}, {"pattern": r"^[\s\S]{0,300}$"}],
+            },
+            "message": {"type": "string", "default": ""},
+            "summary": {"type": "string", "maxLength": 200},
+            "notify_when_idle": {"type": "boolean"},
+        },
+        "required": ["to", "message"], "additionalProperties": False,
+    }}]}
+
+
 class ClaudeMcpSenderTests(unittest.TestCase):
     @contextmanager
     def failure_consumer(self, mode="lost_reply", catalog=None):
@@ -143,30 +161,32 @@ class ClaudeMcpSenderTests(unittest.TestCase):
             self.assertEqual(bookkeeping("show", "failure-1"), retained)
 
     def test_lost_reply_preserves_possible_submission_and_prevents_unreconciled_replay(self):
-        with self.failure_consumer() as (original, request, send, bookkeeping, trace):
-            result = send()
-            self.assertEqual(result["stage"], "call")
-            self.assertEqual(result["reason"], "stdout_eof")
-            self.assertEqual(result["peer_input"], "possible_submission")
-            self.assertTrue(result["claimed"])
-            self.assertEqual(result["owned_child"], {"started": True, "reaped": True, "exit_code": 23})
-            records = [json.loads(line) for line in trace.read_bytes().splitlines()]
-            self.assertGreater(records[0]["started_pid"], 0)
-            self.assertEqual([r["method"] for r in records if "method" in r], [
-                "initialize", "notifications/initialized", "tools/list", "tools/call",
-            ])
-            self.assertEqual(records[-1], {"stdin_eof": True})
-            retained = bookkeeping("show", "failure-1")
-            self.assert_no_receipt(retained, original)
-            self.assertEqual(retained["state"], "unknown")
-            self.assertEqual(len(retained["attempts"]), 1)
-            attempt = retained["attempts"][0]
-            self.assertEqual(attempt["actor"], request["actor"])
-            self.assertEqual([o["kind"] for o in attempt["observations"]], ["unknown", "unknown"])
-            self.assertEqual(json.loads(attempt["observations"][-1]["detail"]), {
-                "phase": "possible_submission", "target": "uds:/synthetic/selected-peer.sock",
-            })
-            self.assert_no_replay(request, send, bookkeeping, trace, retained)
+        for catalog in (None, retained_destination_catalog()):
+            with self.subTest(catalog=catalog):
+                with self.failure_consumer(catalog=catalog) as (original, request, send, bookkeeping, trace):
+                    result = send()
+                    self.assertEqual(result["stage"], "call")
+                    self.assertEqual(result["reason"], "stdout_eof")
+                    self.assertEqual(result["peer_input"], "possible_submission")
+                    self.assertTrue(result["claimed"])
+                    self.assertEqual(result["owned_child"], {"started": True, "reaped": True, "exit_code": 23})
+                    records = [json.loads(line) for line in trace.read_bytes().splitlines()]
+                    self.assertGreater(records[0]["started_pid"], 0)
+                    self.assertEqual([r["method"] for r in records if "method" in r], [
+                        "initialize", "notifications/initialized", "tools/list", "tools/call",
+                    ])
+                    self.assertEqual(records[-1], {"stdin_eof": True})
+                    retained = bookkeeping("show", "failure-1")
+                    self.assert_no_receipt(retained, original)
+                    self.assertEqual(retained["state"], "unknown")
+                    self.assertEqual(len(retained["attempts"]), 1)
+                    attempt = retained["attempts"][0]
+                    self.assertEqual(attempt["actor"], request["actor"])
+                    self.assertEqual([o["kind"] for o in attempt["observations"]], ["unknown", "unknown"])
+                    self.assertEqual(json.loads(attempt["observations"][-1]["detail"]), {
+                        "phase": "possible_submission", "target": "uds:/synthetic/selected-peer.sock",
+                    })
+                    self.assert_no_replay(request, send, bookkeeping, trace, retained)
 
     def test_recipient_mismatch_preserves_plan_without_claim_or_child(self):
         with self.failure_consumer() as (original, request, send, bookkeeping, trace):
@@ -472,7 +492,111 @@ class ClaudeMcpSenderTests(unittest.TestCase):
             with self.subTest(catalog=name):
                 self._assert_peer_envelope_submission(catalog)
 
-    def _assert_peer_envelope_submission(self, catalog):
+    def assert_catalog_refusal(self, catalog, target, reason, diagnosis=None):
+        with self.failure_consumer(mode="tool_success", catalog=catalog) as (
+            original, request, send, bookkeeping, trace,
+        ):
+            request["target"] = target
+            result = send()
+            self.assertEqual(result["stage"], "catalog")
+            self.assertEqual(result["reason"], reason)
+            self.assertEqual(result["peer_input"], "not_attempted")
+            self.assertTrue(result["claimed"])
+            self.assertEqual(result["owned_child"], {
+                "started": True, "reaped": True, "exit_code": 23,
+            })
+            records = [json.loads(line) for line in trace.read_bytes().splitlines()]
+            self.assertGreater(records[0]["started_pid"], 0)
+            self.assertEqual([r["method"] for r in records if "method" in r], [
+                "initialize", "notifications/initialized", "tools/list",
+            ])
+            self.assertEqual(records[-1], {"stdin_eof": True})
+            retained = bookkeeping("show", "failure-1")
+            self.assert_no_receipt(retained, original)
+            self.assertEqual(retained["state"], "refused")
+            self.assertEqual(len(retained["attempts"]), 1)
+            observations = retained["attempts"][0]["observations"]
+            self.assertEqual([o["kind"] for o in observations], ["unknown", "refused"])
+            self.assertEqual(json.loads(observations[0]["detail"])["target"], target)
+            if diagnosis is not None:
+                self.assertIn(diagnosis, observations[-1]["detail"])
+            self.assert_no_replay(request, send, bookkeeping, trace, retained)
+
+    def test_destination_cr_or_lf_refuses_before_possible_submission(self):
+        for target in ("uds:/synthetic/peer\r.sock", "uds:/synthetic/peer\n.sock"):
+            with self.subTest(target=target):
+                self.assert_catalog_refusal(
+                    retained_destination_catalog(), target,
+                    "destination_constraint_violation", "CR/LF",
+                )
+
+    def test_destination_above_300_code_units_refuses_before_possible_submission(self):
+        self.assert_catalog_refusal(
+            retained_destination_catalog(), "uds:" + "a" * 297,
+            "destination_constraint_violation", "300 UTF-16 code units",
+        )
+
+    def test_astral_destination_above_300_code_units_refuses(self):
+        self.assert_catalog_refusal(
+            retained_destination_catalog(), "uds:" + "a" * 295 + "\U0001f600",
+            "destination_constraint_violation", "300 UTF-16 code units",
+        )
+
+    def test_destination_at_300_code_units_preserves_the_supplied_target(self):
+        for target in (
+            "uds:" + "a" * 296,
+            "uds:" + "é" * 296,
+            "uds:" + "e\u0301" * 148,
+            "uds:" + "\U0001f600" * 148,
+        ):
+            with self.subTest(target=target):
+                self._assert_peer_envelope_submission(retained_destination_catalog(), target)
+
+    def test_unknown_dialects_and_constraints_keep_unsupported_schema_refusal(self):
+        mutations = (
+            ("unknown_dialect", lambda schema: schema.update({"$schema": "https://example.invalid/schema"})),
+            ("malformed_dialect", lambda schema: schema.update({"$schema": None})),
+            ("root_constraint", lambda schema: schema.update({"maxProperties": 2})),
+            ("direct_pattern", lambda schema: schema["properties"]["to"].update({"pattern": "^uds:"})),
+            ("changed_pattern", lambda schema: schema["properties"]["to"].update({
+                "allOf": [{"pattern": r"^[^\n\r]*$"}, {"pattern": r"^[\s\S]{0,301}$"}],
+            })),
+            ("extra_constraint", lambda schema: schema["properties"]["to"]["allOf"][0].update({"maxLength": 300})),
+            ("partial_constraints", lambda schema: schema["properties"]["to"]["allOf"].pop()),
+            ("malformed_constraints", lambda schema: schema["properties"]["to"].update({"allOf": {}})),
+            ("message_constraint", lambda schema: schema["properties"]["message"].update({"maxLength": 100})),
+            ("message_allof", lambda schema: schema["properties"]["message"].update({"allOf": []})),
+        )
+        for name, mutate in mutations:
+            with self.subTest(profile=name):
+                catalog = retained_destination_catalog()
+                mutate(catalog["tools"][0]["inputSchema"])
+                self.assert_catalog_refusal(
+                    catalog, "uds:/synthetic/peer.sock", "unsupported_sendmessage_schema",
+                )
+
+    def test_legacy_profile_keeps_unconstrained_destination_behavior(self):
+        catalog = retained_destination_catalog()
+        schema = catalog["tools"][0]["inputSchema"]
+        del schema["$schema"]
+        del schema["properties"]["to"]["allOf"]
+        schema["properties"]["to"]["default"] = "uds:/unused/default.sock"
+        schema["properties"]["message"]["default"] = "Unused default."
+        self._assert_peer_envelope_submission(catalog, "uds:" + "a" * 297 + "\r\n")
+
+    def test_known_destination_constraints_do_not_require_a_dialect_annotation(self):
+        catalog = retained_destination_catalog()
+        del catalog["tools"][0]["inputSchema"]["$schema"]
+        self._assert_peer_envelope_submission(catalog)
+        self.assert_catalog_refusal(
+            catalog, "uds:/synthetic/peer\n.sock",
+            "destination_constraint_violation", "CR/LF",
+        )
+
+    def test_retained_destination_profile_submits_the_exact_peer_envelope(self):
+        self._assert_peer_envelope_submission(retained_destination_catalog())
+
+    def _assert_peer_envelope_submission(self, catalog, target="uds:/synthetic/selected-peer.sock"):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             store = root / "mailbox.sqlite3"
@@ -555,7 +679,7 @@ class ClaudeMcpSenderTests(unittest.TestCase):
                 "attempt_id": "attempt-send",
                 "actor": actor,
                 "recipient": original["recipient"],
-                "target": "uds:/synthetic/selected-peer.sock",
+                "target": target,
                 "command": [
                     sys.executable, str(child), str(trace), str(mailbox), str(store),
                     str(catalog_file),
@@ -592,7 +716,7 @@ class ClaudeMcpSenderTests(unittest.TestCase):
             self.assertEqual(before["state"], "unknown")
             self.assertEqual(
                 json.loads(before["attempts"][0]["observations"][0]["detail"])["target"],
-                "uds:/synthetic/selected-peer.sock",
+                target,
             )
             requests = [record for record in records if "method" in record]
             self.assertEqual([record["method"] for record in requests], [
@@ -601,7 +725,7 @@ class ClaudeMcpSenderTests(unittest.TestCase):
             call = requests[-1]
             self.assertEqual(call["params"]["name"], "SendMessage")
             self.assertEqual(set(call["params"]["arguments"]), {"to", "message"})
-            self.assertEqual(call["params"]["arguments"]["to"], "uds:/synthetic/selected-peer.sock")
+            self.assertEqual(call["params"]["arguments"]["to"], target)
             prefix, encoded = call["params"]["arguments"]["message"].split("\n", 1)
             self.assertEqual(prefix, "Peer message (no new operator authority).")
             envelope = json.loads(encoded)
@@ -621,7 +745,7 @@ class ClaudeMcpSenderTests(unittest.TestCase):
             self.assertEqual(before_call["state"], "unknown")
             pending_detail = json.loads(before_call["attempts"][0]["observations"][-1]["detail"])
             self.assertEqual(pending_detail, {
-                "phase": "possible_submission", "target": "uds:/synthetic/selected-peer.sock",
+                "phase": "possible_submission", "target": target,
             })
             self.assertEqual(records[-1], {"stdin_eof": True})
             retained = bookkeeping("show", "send-1")
@@ -638,7 +762,7 @@ class ClaudeMcpSenderTests(unittest.TestCase):
             observation = attempt["observations"][-1]
             self.assertEqual(observation["evidence_ref"], "synthetic://evidence/send")
             self.assertEqual(json.loads(observation["detail"]), {
-                "target": "uds:/synthetic/selected-peer.sock",
+                "target": target,
                 "tool_result": {
                     "content": [{"type": "text", "text": "Unvalidated tool text."}],
                     "isError": False,
