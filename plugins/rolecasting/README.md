@@ -38,6 +38,12 @@ the native calls. This source support does not establish an installed release
 or qualified deployment, and leaves the strict native helper, Desktop/CLI
 requirements, and witnessed contracts intact.
 
+The [Claude MCP sender procedure](skills/delegating-cross-agent-work/references/claude-mcp-sender.md)
+documents a narrow source profile for submitting retained peer messages through
+a caller-nominated stdio child. Source support and synthetic consumer evidence
+do not establish live receiver compatibility, receipt, handling, installation,
+or operational adoption; startup and sending require separate authorization.
+
 It does not decide repository ownership, review disposition, publication, or
 pull-request work.
 
@@ -136,6 +142,8 @@ python3 -m unittest tests/test_rolecasting_eval_corpus.py
 python3 -m unittest tests/plugins/test_rolecasting_dispatch_evidence.py
 python3 -m unittest tests/plugins/test_rolecasting_native_codex.py
 python3 -m unittest tests/plugins/test_rolecasting_native_tree.py
+python3 -m unittest tests/plugins/test_rolecasting_native_mailbox.py
+python3 -m unittest tests/plugins/test_rolecasting_claude_mcp_sender.py
 python3 -m unittest tests/plugins/test_rolecasting_daybreak_routing.py
 ```
 
