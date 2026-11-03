@@ -27,7 +27,7 @@ not refresh unrelated deployed builds. The accepted operation outcomes remain
 
 The maintained Claude MCP sender source batch adds a mailbox-backed actuator and its required shared helper and selected-server layers. Its notification-submission path is implemented and exercised through an explicitly assisted synthetic public-command application; the initial failed caller launch remains retained. The selected server/backend and native peer remain unbound, and no actual receiver operation is qualified. See [the dated source and consumer report](batches/2026-11-03-claude-mcp-sender.md). The original first-cohort data and all unrelated records remain unchanged.
 
-The maintained Codex IPC sender source batch adds a busy-only actuator and its required existing-owner Unix IPC backend class, reusing the unchanged mailbox/envelope helpers. Its shared notification-submission and receipt profile is implemented with partial source and synthetic command coverage; exact caller/owner/access/authority and live receipt remain unbound. The catalog now contains 311 profiles and 23 evidence records. Two ordinary synthetic procedure consumers passed; final catalog review/publication, installation and adoption remain separate. See [the dated source report](batches/2026-11-03-codex-ipc-sender.md).
+The maintained Codex IPC sender source batch adds a busy-only actuator and its required existing-owner Unix IPC backend class, reusing the unchanged mailbox/envelope helpers. Its shared notification-submission and receipt profile is implemented with partial source and synthetic command coverage; exact caller/owner/access/authority and live receipt remain unbound. That source batch added a busy-only profile and its evidence. Two ordinary synthetic procedure consumers passed; installation and adoption remain separate. See [the dated source report](batches/2026-11-03-codex-ipc-sender.md).
 
 ## Read the record
 
@@ -52,6 +52,8 @@ Each profile can have several stages at once. Creation might be qualified
 while continuation has only a synthetic prototype and notification remains
 unknown. Inspect the claims and their limits; a highest-stage badge or source
 vector cannot summarize that combination honestly.
+
+The [explicit idle-intent batch](batches/2026-11-03-codex-idle-catalog.md) adds a separate prototyped profile to the existing IPC fabric. The snapshot has 312 profiles and 26 evidence records; the new submission/receipt outcomes remain unknown. It does not change the busy-only profile or qualify an actual operation.
 
 ## Validate and regenerate
 
