@@ -41,7 +41,6 @@ def encode(value):
 def _run_operation(case, directory, mode="submit", attempt_path=None, *, transport, clock, writer, request_input=None, idle_intent=False):
     writer.require(directory)
     save = writer.write_json
-    production = True
     now = clock
     binding = case["binding"]
     client = None
@@ -162,7 +161,7 @@ def _run_operation(case, directory, mode="submit", attempt_path=None, *, transpo
         if len(encode(case)) > DEFAULTS["caseBytes"]:
             raise Refusal("case-byte-limit")
         for key, value in case.get("limits", {}).items():
-            if key not in DEFAULTS or type(value) is not int or not 1 <= value <= (ACQUISITION_MAX.get(key, DEFAULTS[key]) if production else DEFAULTS[key]):
+            if key not in DEFAULTS or type(value) is not int or not 1 <= value <= ACQUISITION_MAX.get(key, DEFAULTS[key]):
                 raise Refusal("unsupported-limit-profile")
             transport.limits[key] = value
         if transport.limits["projectionBytes"] < 256:
@@ -201,19 +200,18 @@ def _run_operation(case, directory, mode="submit", attempt_path=None, *, transpo
                                    "params": {"hostId": binding["host"], "conversationId": binding["target"]}})
         matches = [m for _, m in response if m.get("type") == "response" and m.get("requestId") == "owner"
                    and m.get("resultType") == "success" and m.get("method") == "thread-owner-discovery"]
-        if production and len(matches) == 1 and matches[0].get("handledByClientId"):
+        if len(matches) == 1 and matches[0].get("handledByClientId"):
             binding["owner"] = matches[0]["handledByClientId"]
         if len(matches) != 1 or matches[0].get("handledByClientId") != binding["owner"]:
             raise Refusal("owner-mismatch")
-        if production:
-            observe(initial_records + response)
+        observe(initial_records + response)
         followed = True
         observe(exchange(follow(client, binding, True)))
         if dirty is not None:
             observe(exchange(follow(client, binding, True)))
         if state is None or dirty is not None:
             raise Refusal(dirty or "missing-state")
-        if production and transport.receiver.incomplete is not None:
+        if transport.receiver.incomplete is not None:
             raise Refusal("connection-incomplete-before-write")
         if not 0 <= now() - observed_at <= transport.limits["maxAge"]:
             raise Refusal("stale-state")
@@ -274,10 +272,9 @@ def _run_operation(case, directory, mode="submit", attempt_path=None, *, transpo
         pending = {k: case[k] for k in ("payload", "correlation", "actor", "purpose", "authorityRefs", "holdRefs", "binding")}
         pending.update(pending=True, envelope=envelope, selection=selected, revision=revision, observedAt=observed_at,
                        payloadSha256=hashlib.sha256(case["payload"].encode()).hexdigest())
-        if production:
-            pending.update(declaredOrigin=case["declaredOrigin"], nominationRef=case["nominationRef"],
-                           route=case["route"], scope=case["scope"], profile=transport.limits,
-                           configuration=configuration(case))
+        pending.update(declaredOrigin=case["declaredOrigin"], nominationRef=case["nominationRef"],
+                       route=case["route"], scope=case["scope"], profile=transport.limits,
+                       configuration=configuration(case))
         if idle_intent:
             pending.update(observedProfile={key: state[key] for key in ("mode", "threadStartKind", "threadSource") if key in state},
                            observedRuntimeStatus=runtime, idle_observation_is_atomic=False)
@@ -310,7 +307,7 @@ def _run_operation(case, directory, mode="submit", attempt_path=None, *, transpo
             cleanup_records = []
             try:
                 cleanup_records = exchange(follow(client, binding, False))
-                closure = "unfollow-sent-ack-unknown" if production else "unfollowed-and-fake-transport-closed"
+                closure = "unfollow-sent-ack-unknown"
             except ReceivePrefixFailure as exc:
                 primary_failure = primary_failure or failure_record(exc)
                 cleanup_records = exc.records
@@ -326,14 +323,13 @@ def _run_operation(case, directory, mode="submit", attempt_path=None, *, transpo
                 outcome_finished = False
                 reason = str(exc)
         else:
-            closure = "no-subscription" if production else "no-subscription;fake-transport-closed"
-        if production:
-            try:
-                transport.close()
-                closure += ";owned-connection-closed"
-            except OSError as exc:
-                primary_failure = primary_failure or failure_record(exc)
-                closure += ";owned-close-unknown:" + str(exc)
+            closure = "no-subscription"
+        try:
+            transport.close()
+            closure += ";owned-connection-closed"
+        except OSError as exc:
+            primary_failure = primary_failure or failure_record(exc)
+            closure += ";owned-close-unknown:" + str(exc)
     # Finalize only after the finite operation has processed cleanup evidence.
     # Reconciliation reads the saved original RPC and never writes it again.
     if possible:
@@ -356,7 +352,7 @@ def _run_operation(case, directory, mode="submit", attempt_path=None, *, transpo
     projection = {"stage": stage or ("reconcile-unknown" if original is not None else ("possible-submission" if possible else "refused-before-write")), "reason": reason, "closure": closure,
                   "acquisitionReason": terminal_reason,
                   "rpc": rpc, "historyComplete": complete, "evidence": evidence,
-                  "limits": ["offline-injected-io-or-unqualified-live" if production else "synthetic-source-only", "pending-is-not-receipt", "absence-is-not-nondelivery"],
+                  "limits": ["offline-injected-io-or-unqualified-live", "pending-is-not-receipt", "absence-is-not-nondelivery"],
                   "observation": {"source": binding["owner"], "at": observed_at, "revision": revision,
                                              "host": binding["host"], "target": binding["target"], "generation": binding["generation"]}}
     if idle_intent:
@@ -370,8 +366,7 @@ def _run_operation(case, directory, mode="submit", attempt_path=None, *, transpo
                       "reason": "projection-byte-limit", "incomplete": True, "rpc": rpc, "closure": closure}
         if len(encode(projection)) > transport.limits["projectionBytes"]:
             raise Refusal("projection-limit-cannot-represent-refusal")
-    if production:
-        capture("received.json", transport.retained)
+    capture("received.json", transport.retained)
     result = {"outbound": transport.outbound, "projection": projection, "writeBoundary": transport.write_boundary,
               "firstDiagnostic": primary_failure,
               "owned_connection": {"started": transport.stream is not None,
@@ -391,10 +386,10 @@ def _run_operation(case, directory, mode="submit", attempt_path=None, *, transpo
                                               "requestInputLocation": "request-input.json" if request_input is not None else None,
                                               "requestInputStatus": "retained-serialized-request" if request_input is not None else "not-a-production-request",
                                               "incomingBytesMeaning": "acquired-wire-bytes-including-headers",
-                                              "receivedRecordsLocation": "received.json" if production else None,
+                                              "receivedRecordsLocation": "received.json",
                                               "projectionLocation": "projection.json",
                                               "effectiveLimits": transport.limits,
-                                              "configuration": configuration(case) if production else None,
+                                              "configuration": configuration(case),
                                               "receiveStatus": getattr(transport, "receive_status", []),
                                               "connectionGeneration": getattr(transport, "generation", None),
                                               "captureWrites": writer.observations})

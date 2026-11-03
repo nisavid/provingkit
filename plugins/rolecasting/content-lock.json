@@ -88,7 +88,7 @@
     "skills/delegating-cross-agent-work/references/scarce-specialist-handoffs.md": "370b850d85903ce9fb136e389606256d0112686177e533b7d52acd76848e66cc",
     "skills/delegating-cross-agent-work/scripts/claude_mcp_sender.py": "6005a0d6d269309dd767def638e979089ad94da9119fa1a78fb1801cd50138c4",
     "skills/delegating-cross-agent-work/scripts/codex_capture.py": "1c1142f929394f03aeefdda901ddd151653a9e0681765642bb2b648bae474f2d",
-    "skills/delegating-cross-agent-work/scripts/codex_ipc_core.py": "bd41e5f41d04366ebecf5275eaf598515ba1bac6dedcac18379f6ae97f3b0ec9",
+    "skills/delegating-cross-agent-work/scripts/codex_ipc_core.py": "8b755da9d590c18c4f0076e7eaf8ddd2411899161deb4f34054e0c5a876c3837",
     "skills/delegating-cross-agent-work/scripts/codex_ipc_idle_sender.py": "b1cc049aaa73af5e6dc04ac032b807161dab8d380dbf80ddde8b166c3ee91e3d",
     "skills/delegating-cross-agent-work/scripts/codex_ipc_sender.py": "5d1557ac91f32a324d7fb34fb9c7ba02f69355326c0e7ee95f6ef0d5524446bd",
     "skills/delegating-cross-agent-work/scripts/codex_ipc_transport.py": "ef88555fbbc2a33bff960c410bf1cb5066b1b3da8c2677fea06950f0c51637c8",
