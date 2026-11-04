@@ -29,6 +29,8 @@ The maintained Claude MCP sender source batch adds a mailbox-backed actuator and
 
 The maintained Codex IPC sender source batch adds a busy-only actuator and its required existing-owner Unix IPC backend class, reusing the unchanged mailbox/envelope helpers. Its shared notification-submission and receipt profile is implemented with partial source and synthetic command coverage; exact caller/owner/access/authority and live receipt remain unbound. That source batch added a busy-only profile and its evidence. Two ordinary synthetic procedure consumers passed; installation and adoption remain separate. See [the dated source report](batches/2026-11-03-codex-ipc-sender.md).
 
+The [November 4 Lead exchange](batches/2026-11-04-lead-exchange-refusal.md) adds a refused existing-task work-request profile. The source stopped before peer-input submission after an incomplete-receive deadline; the owned connection closed and the planned Claude return was not exercised. Receipt, work and general compatibility remain unknown. A separate invented command/socket discriminator reproduces the refusal pattern without establishing its live cause or selecting a repair.
+
 ## Read the record
 
 - **Endpoints** identify a host and surface. A host-owned thread, a native GUI

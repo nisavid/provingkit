@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
   "snapshot": {
-    "revision": "codex-ipc-explicit-idle-source",
-    "generated_at": "2026-11-03T20:53:52.123740+00:00",
-    "coverage": "Dated source/prototype update: 165 fabrics, 312 profiles, 26 evidence records, 28 endpoints and 26 directed associations retained. One separate observed-idle source profile and three evidence records added; no new fabric, endpoint or directional association. No live operation, installation, adoption or deployment qualified by this batch."
+    "revision": "lead-exchange-refused-before-input-865",
+    "generated_at": "2026-11-04T18:38:43.007008+00:00",
+    "coverage": "Dated failed live-trial update: 165 fabrics, 313 profiles, 29 evidence records, 28 endpoints and 26 directed associations retained. One channel-bound existing-task work profile records refusal before input; receipt/fulfillment and the unexercised return remain unknown. Three evidence records add live refusal, independent retained readback and an invented discriminator. No actual operation, current build, installation, recovery, adoption or deployment qualified; unrelated records preserved."
   },
   "decisions": [
     "https://github.com/nisavid/provingkit/issues/538#issuecomment-6112579765",
@@ -306,6 +306,39 @@
       "limits": [
         "Public summary of three-scope prototype review at4154614b and focused Runtime review/separate adjudication of the named mechanical successor, plus the selected architecture cleanup; not this catalog candidate review.",
         "No live, installed, adoption, security, effective-model or permission-enforcement qualification."
+      ]
+    },
+    {
+      "id": "lead-exchange-live-refusal-865",
+      "kind": "live",
+      "uri": "docs/coordination/batches/2026-11-04-lead-exchange-refusal.md#live-observation",
+      "observed_at": "2026-11-04T17:55:39.057729+00:00",
+      "sha256": "eea54ba96b776781cc0c6a3ce9517fb42058f2a070f415e3a63770b68264e49e",
+      "limits": [
+        "One spent existing-task trial, actor-reported plus bounded retained-file readback; refused before peer input. No current GUI build authentication, idle eligibility, delivery, work, reply or preservation established.",
+        "observed_at is the retained Harness readback time, not the live invocation start."
+      ]
+    },
+    {
+      "id": "lead-exchange-independent-readback-865",
+      "kind": "review",
+      "uri": "docs/coordination/batches/2026-11-04-lead-exchange-refusal.md#independent-readback",
+      "observed_at": "2026-11-04T18:01:33+00:00",
+      "sha256": "eea54ba96b776781cc0c6a3ce9517fb42058f2a070f415e3a63770b68264e49e",
+      "limits": [
+        "Independent Setup exact-path readback/interpretation, not native invocation or product-authenticated runtime attestation. No delivery or adoption pass.",
+        "observed_at is completion of Setup’s original native handback, not a new live observation."
+      ]
+    },
+    {
+      "id": "lead-exchange-synthetic-discriminator-865",
+      "kind": "synthetic",
+      "uri": "docs/coordination/batches/2026-11-04-lead-exchange-refusal.md#synthetic-discriminator",
+      "observed_at": "2026-11-04T18:09:49+00:00",
+      "sha256": "eea54ba96b776781cc0c6a3ce9517fb42058f2a070f415e3a63770b68264e49e",
+      "limits": [
+        "Invented command/socket prototype, two three-case runs with closed owned fixtures; reproduces one refusal pattern, not a defect regression, live cause, fix or independently qualified transport.",
+        "observed_at is completion of the original native synthetic producer, not exact fixture-start or authenticated runtime time."
       ]
     }
   ],
@@ -5891,7 +5924,8 @@
       "parent": null,
       "crosswalk": [
         "Maintained-source producer nisavid/provingkit#843; reviewed published commit 94dc3ed7ba4fa8df4192a0c37db9c8dc734de9bc",
-        "Source prototype producer nisavid/provingkit#860; reviewed published commit 71e4d47d582f25373d8f91463bf2b785532d6798"
+        "Source prototype producer nisavid/provingkit#860; reviewed published commit 71e4d47d582f25373d8f91463bf2b785532d6798",
+        "Failed live-trial producer nisavid/provingkit#865; unchanged actuator source 46133eeca2f16a0e70ea5334481422c753ae84bc"
       ],
       "evidence": [
         "codex-ipc-sender-source-843",
@@ -5900,12 +5934,18 @@
         "codex-ipc-sender-consumers-843",
         "codex-ipc-idle-source-860",
         "codex-ipc-idle-command-synthetic-860",
-        "codex-ipc-idle-source-review-860"
+        "codex-ipc-idle-source-review-860",
+        "lead-exchange-live-refusal-865",
+        "lead-exchange-independent-readback-865",
+        "lead-exchange-synthetic-discriminator-865"
       ],
       "compatibility": {
         "status": "unassessed",
-        "scope": "Source mechanics and synthetic command behavior reviewed. Assess affected framing, owner/follow/state, busy steer, correlation/reconciliation and capture behavior with graduated checks; current native build, caller access and receiver remain unassessed. A new build alone proves no incompatibility. Idle-intent source and cooperative command examples are separately assessed; actual native compatibility remains unassessed and a changed version alone proves no incompatibility.",
-        "evidence": []
+        "scope": "Source mechanics and synthetic command behavior reviewed. Assess affected framing, owner/follow/state, busy steer, correlation/reconciliation and capture behavior with graduated checks; current native build, caller access and receiver remain unassessed. A new build alone proves no incompatibility. Idle-intent source and cooperative command examples are separately assessed; actual native compatibility remains unassessed and a changed version alone proves no incompatibility. November 4 one-shot acquisition matched a decoded bound state, then refused before peer input on an unfinished receive deadline. This function observation establishes neither complete current-build compatibility nor general incompatibility; unexercised idle eligibility/start, receipt and reverse MCP return remain unassessed.",
+        "evidence": [
+          "lead-exchange-live-refusal-865",
+          "lead-exchange-independent-readback-865"
+        ]
       },
       "effort": {
         "active_minutes": null,
@@ -5922,28 +5962,36 @@
       "gaps": [
         "Actual caller exposure, existing endpoint/access, current owner/build/peer and original authority/holds require binding.",
         "Partial synthetic submission/receipt mechanics establish no live operation, ACK/reply, handling, fulfillment or work continuity.",
-        "Live idle wake/opening receipt, restart/recovery, complete invocation/resource bounds, installation and adoption remain open."
+        "Live idle wake/opening receipt, restart/recovery, complete invocation/resource bounds, installation and adoption remain open.",
+        "The November 4 existing-task work trial refused before input after an incomplete-frame deadline; acquisition stopping/ordering/freshness needs a justified source/synthetic disposition."
       ],
-      "next_check": "Choose the explicit idle method and bind actual caller/owner/current source, authority, acquisition and independent receiver evidence in a reviewed live proposal; never fall back automatically from busy sending."
+      "next_check": "Settle and synthetically test the acquisition stopping and ordering/freshness contract; a proposed source change needs its own review and a new live grant before another actual connection."
     },
     {
       "status": "discovered",
       "parent": null,
       "crosswalk": [
         "Maintained-source producer nisavid/provingkit#843; reviewed published commit 94dc3ed7ba4fa8df4192a0c37db9c8dc734de9bc",
-        "Source prototype producer nisavid/provingkit#860; reviewed published commit 71e4d47d582f25373d8f91463bf2b785532d6798"
+        "Source prototype producer nisavid/provingkit#860; reviewed published commit 71e4d47d582f25373d8f91463bf2b785532d6798",
+        "Failed live-trial producer nisavid/provingkit#865; unchanged actuator source 46133eeca2f16a0e70ea5334481422c753ae84bc"
       ],
       "evidence": [
         "codex-ipc-sender-source-843",
         "codex-ipc-sender-command-synthetic-843",
         "codex-ipc-sender-source-review-843",
         "codex-ipc-idle-source-860",
-        "codex-ipc-idle-command-synthetic-860"
+        "codex-ipc-idle-command-synthetic-860",
+        "lead-exchange-live-refusal-865",
+        "lead-exchange-independent-readback-865",
+        "lead-exchange-synthetic-discriminator-865"
       ],
       "compatibility": {
         "status": "unassessed",
-        "scope": "Source mechanics and synthetic command behavior reviewed. Assess affected framing, owner/follow/state, busy steer, correlation/reconciliation and capture behavior with graduated checks; current native build, caller access and receiver remain unassessed. A new build alone proves no incompatibility. Idle-intent source and cooperative command examples are separately assessed; actual native compatibility remains unassessed and a changed version alone proves no incompatibility.",
-        "evidence": []
+        "scope": "Source mechanics and synthetic command behavior reviewed. Assess affected framing, owner/follow/state, busy steer, correlation/reconciliation and capture behavior with graduated checks; current native build, caller access and receiver remain unassessed. A new build alone proves no incompatibility. Idle-intent source and cooperative command examples are separately assessed; actual native compatibility remains unassessed and a changed version alone proves no incompatibility. November 4 one-shot acquisition matched a decoded bound state, then refused before peer input on an unfinished receive deadline. This function observation establishes neither complete current-build compatibility nor general incompatibility; unexercised idle eligibility/start, receipt and reverse MCP return remain unassessed.",
+        "evidence": [
+          "lead-exchange-live-refusal-865",
+          "lead-exchange-independent-readback-865"
+        ]
       },
       "effort": {
         "active_minutes": null,
@@ -5956,9 +6004,10 @@
       "source_scope": "Required existing-owner Unix IPC source-profile backend: initialize, thread-owner-discovery, framed thread-stream following/state and busy thread-follower-steer-turn. Finite producer source/procedure/command evidence establishes no further independent fabric requirement; CPython/stdlib/SQLite/filesystem are working conditions, not new transports. Exact endpoint/access/current build/peer binding remains unknown. The explicit idle profile additionally depends on the same owner’s versioned thread-follower-start-turn with client-message identity and inherited native context; live acceptance remains unproved.",
       "gaps": [
         "No exact selected endpoint, legitimate access, current owner/build or native peer is established by the synthetic fixtures.",
-        "Successful connection or discovery does not authenticate the target or establish authority. App Server, Queue and newly started servers are not substituted for this existing-owner class."
+        "Successful connection or discovery does not authenticate the target or establish authority. App Server, Queue and newly started servers are not substituted for this existing-owner class.",
+        "The November 4 existing-task work trial refused before input after an incomplete-frame deadline; acquisition stopping/ordering/freshness needs a justified source/synthetic disposition."
       ],
-      "next_check": "Bind the actual existing owner and supported source profile, then assess affected native behavior and complete acquisition limits before any live operation."
+      "next_check": "Settle and synthetically test the acquisition stopping and ordering/freshness contract; a proposed source change needs its own review and a new live grant before another actual connection."
     }
   ],
   "profiles": [
@@ -18012,6 +18061,90 @@
         "No fresh agent discovery/application of this added idle branch, installation or ordinary adoption is established."
       ],
       "next_check": "Choose the explicit idle method and bind actual caller/owner/current source, authority, acquisition and independent receiver evidence in a reviewed live proposal; never fall back automatically from busy sending."
+    },
+    {
+      "id": "claude-desktop-codex-idle-work-trial-865",
+      "fabric": "rolecasting-codex-ipc-sender",
+      "channel": "claude-desktop-code-to-chatgpt-codex-gui",
+      "population": "existing",
+      "ownership": "One explicitly granted existing-Lead experiment; role nomination and actor-origin host match do not authenticate an endpoint or establish routine caller access.",
+      "relationship": "Existing Claude Desktop Code caller to existing Codex GUI task; one acquisition reached a matching bound state but refused before peer input.",
+      "target_input": "exact-reference",
+      "input_semantics": "Intended explicitly peer-labelled work envelope through a separate idle native-start operation with inherited context. No native start or payload submission occurred; no new operator authority is created.",
+      "consent": {
+        "references": [
+          "https://github.com/nisavid/provingkit/issues/865"
+        ],
+        "limits": [
+          "The original one-shot grant is spent; this record and its issue confer no new read, provider turn, send, retry or ordinary adoption.",
+          "Actual future authority, account/route, owner/profile, holds and acquisition/closure must be bound again."
+        ]
+      },
+      "continuity": {
+        "idle": "Idle intent was selected for the trial, but the incomplete-connection guard stopped before live idle/profile eligibility or start; no wake proof.",
+        "busy": "Not qualified by this trial. The invented busy control refuses; non-atomic observation and ordinary busy-only support remain distinct.",
+        "restart": "Not attempted; no receiver-app recovery qualification."
+      },
+      "assurance": "Dated failed live trial at actor/source-level provenance, bounded Harness/Setup retained readback, plus a separate invented command/socket discriminator. No authenticated runtime, positive operation or current GUI-build qualification.",
+      "claims": [
+        {
+          "operation": "request-work",
+          "milestone": "submitted",
+          "stage": "prototyped",
+          "coverage": "unknown",
+          "outcome": "refused",
+          "evidence": [
+            "lead-exchange-live-refusal-865",
+            "lead-exchange-independent-readback-865",
+            "lead-exchange-synthetic-discriminator-865"
+          ],
+          "limits": [
+            "The one actual invocation stopped before peer-input submission; CLI exit 0 and an ended resource row prove no delivery or work.",
+            "A complete bound state record preceded a partial-receive deadline, but live idle/profile eligibility and complete history were not established.",
+            "The synthetic normal arm reaches possible submission only; the private live cause, remedy and Claude return remain unproved."
+          ]
+        },
+        {
+          "operation": "request-work",
+          "milestone": "receipt",
+          "stage": "prototyped",
+          "coverage": "unknown",
+          "outcome": "unknown",
+          "evidence": [
+            "lead-exchange-live-refusal-865",
+            "lead-exchange-independent-readback-865",
+            "lead-exchange-synthetic-discriminator-865"
+          ],
+          "limits": [
+            "The one actual invocation stopped before peer-input submission; CLI exit 0 and an ended resource row prove no delivery or work.",
+            "A complete bound state record preceded a partial-receive deadline, but live idle/profile eligibility and complete history were not established.",
+            "The synthetic normal arm reaches possible submission only; the private live cause, remedy and Claude return remain unproved."
+          ]
+        },
+        {
+          "operation": "request-work",
+          "milestone": "fulfilled",
+          "stage": "prototyped",
+          "coverage": "unknown",
+          "outcome": "unknown",
+          "evidence": [
+            "lead-exchange-live-refusal-865",
+            "lead-exchange-independent-readback-865",
+            "lead-exchange-synthetic-discriminator-865"
+          ],
+          "limits": [
+            "The one actual invocation stopped before peer-input submission; CLI exit 0 and an ended resource row prove no delivery or work.",
+            "A complete bound state record preceded a partial-receive deadline, but live idle/profile eligibility and complete history were not established.",
+            "The synthetic normal arm reaches possible submission only; the private live cause, remedy and Claude return remain unproved."
+          ]
+        }
+      ],
+      "gaps": [
+        "Acquire a usable current bound state without weakening refusal on unsafe/incomplete input; the real unfinished frame and remaining eligibility remain unknown.",
+        "No request submission, receiver receipt/handling, checked work or native Claude return was established.",
+        "Original authority, complete runtime preservation, current build/endpoint authentication, idle/busy continuity, recovery, installation and adoption remain separate."
+      ],
+      "next_check": "Settle and synthetically test the acquisition stopping and ordering/freshness contract; a proposed source change needs its own review and a new live grant before another actual connection."
     }
   ],
   "channels": [
@@ -18390,10 +18523,11 @@
         "desktop-chat-tools-existing",
         "desktop-chat-tools-controlled",
         "rolecasting-codex-ipc-sender-existing-source",
-        "rolecasting-codex-ipc-explicit-idle-source"
+        "rolecasting-codex-ipc-explicit-idle-source",
+        "claude-desktop-codex-idle-work-trial-865"
       ],
-      "caller_access": "Desktop Code shell/plugin exposure and app-owner association unproved. R15 terminal plugin support cannot be imported.",
-      "target_binding": "R05/R06 through reachable Codex owner, or R01 if externally exposed; exact Codex chat/thread ID.",
+      "caller_access": "Desktop Code shell/plugin exposure and app-owner association unproved. R15 terminal plugin support cannot be imported. One specifically granted Desktop Lead invoked the conditional source in the November 4 case; this is no routine native-tool/plugin or future access grant.",
+      "target_binding": "R05/R06 through reachable Codex owner, or R01 if externally exposed; exact Codex chat/thread ID. The case retained a matching owner/host/target/generation/state snapshot, at actor/source-level provenance; endpoint authentication and remaining live eligibility were not established.",
       "evidence": [
         "reviewed-comparison",
         "cohort-peers-source",
@@ -18407,7 +18541,10 @@
         "codex-ipc-sender-consumers-843",
         "codex-ipc-idle-source-860",
         "codex-ipc-idle-command-synthetic-860",
-        "codex-ipc-idle-source-review-860"
+        "codex-ipc-idle-source-review-860",
+        "lead-exchange-live-refusal-865",
+        "lead-exchange-independent-readback-865",
+        "lead-exchange-synthetic-discriminator-865"
       ],
       "gaps": [
         "Desktop Code shell/plugin exposure and app-owner association unproved. R15 terminal plugin support cannot be imported.",
@@ -18415,9 +18552,10 @@
         "Broad legacy Desktop association has unresolved correspondence to the displayed local view; no local/SSH/WSL route qualification transfers.",
         "Current peer-source findings do not bind this caller to the actual owner or receiver evidence producer; Queue versus Steer and cold lifecycle remain distinct.",
         "Maintained busy-only Codex IPC source and synthetic command/procedure consumers add partial submission/receipt mechanics only; current caller/owner/access/authority and live qualification remain unproved.",
-        "Separate explicit observed-idle IPC source prototype preserves unknown submission/receipt and its observation race; no real idle operation is qualified."
+        "Separate explicit observed-idle IPC source prototype preserves unknown submission/receipt and its observation race; no real idle operation is qualified.",
+        "One granted work-request trial is now recorded as refused before input, not qualified; the intended Claude return was never exercised."
       ],
-      "next_check": "Choose the explicit idle method and bind actual caller/owner/current source, authority, acquisition and independent receiver evidence in a reviewed live proposal; never fall back automatically from busy sending."
+      "next_check": "Settle and synthetically test the acquisition stopping and ordering/freshness contract; a proposed source change needs its own review and a new live grant before another actual connection."
     },
     {
       "id": "claude-desktop-code-to-codex-terminal",
@@ -22186,7 +22324,8 @@
           "fabric": "rolecasting-codex-ipc-sender",
           "crosswalk": [
             "Maintained-source producer nisavid/provingkit#843; reviewed published commit 94dc3ed7ba4fa8df4192a0c37db9c8dc734de9bc",
-            "Source prototype producer nisavid/provingkit#860; reviewed published commit 71e4d47d582f25373d8f91463bf2b785532d6798"
+            "Source prototype producer nisavid/provingkit#860; reviewed published commit 71e4d47d582f25373d8f91463bf2b785532d6798",
+            "Finite failed-trial batch nisavid/provingkit#865, docs/coordination/batches/2026-11-04-lead-exchange-refusal.md"
           ],
           "mandatory_components": [
             "rolecasting-peer-message-support",
@@ -22197,24 +22336,27 @@
           "binding_gaps": [
             "Actual caller exposure, existing endpoint/access, current owner/build/peer and original authority/holds require binding.",
             "Partial synthetic submission/receipt mechanics establish no live operation, ACK/reply, handling, fulfillment or work continuity.",
-            "Idle, restart/recovery, complete invocation/resource bounds, installation and adoption remain open."
+            "Idle, restart/recovery, complete invocation/resource bounds, installation and adoption remain open.",
+            "The failed live work trial stops before input; current safe acquisition completion/ordering/freshness and remaining operation evidence remain unresolved."
           ],
-          "rationale": "Maintained busy-only Unix IPC sender and original-attempt read-only reconciliation; immutable mailbox claim, peer envelope, intact owner/generation binding and create-only per-run captures. No new queue, automatic resend or idle-start fallback. Complete finite producer evidence: published source94 core/transport/sender/capture and procedure; docs/coordination/batches/2026-11-03-codex-ipc-sender.md. Shared mailbox/envelope bytes equal source61, so existing helper evidence carries forward unchanged. The complete idle source batch (https://github.com/nisavid/provingkit/blob/71e4d47d582f25373d8f91463bf2b785532d6798/docs/coordination/batches/2026-11-03-codex-idle-prototype.md) reuses the same mandatory components. Native start is another operation of the existing selected-owner class, not a new fabric; no additional mandatory component is established. Current binding/receipt/live gaps remain."
+          "rationale": "Maintained busy-only Unix IPC sender and original-attempt read-only reconciliation; immutable mailbox claim, peer envelope, intact owner/generation binding and create-only per-run captures. No new queue, automatic resend or idle-start fallback. Complete finite producer evidence: published source94 core/transport/sender/capture and procedure; docs/coordination/batches/2026-11-03-codex-ipc-sender.md. Shared mailbox/envelope bytes equal source61, so existing helper evidence carries forward unchanged. The complete idle source batch (https://github.com/nisavid/provingkit/blob/71e4d47d582f25373d8f91463bf2b785532d6798/docs/coordination/batches/2026-11-03-codex-idle-prototype.md) reuses the same mandatory components. Native start is another operation of the existing selected-owner class, not a new fabric; no additional mandatory component is established. Current binding/receipt/live gaps remain. The complete finite November 4 failed-trial/retained-readback/synthetic-discriminator batch establishes no additional component requirement. Existing mailbox/envelope and selected IPC-owner dependencies remain unchanged; the planned nomination/MCP return is case-specific and unexercised, not a new mandatory component of all IPC sends."
         },
         {
           "fabric": "selected-codex-native-ipc-owner",
           "crosswalk": [
             "Maintained-source producer nisavid/provingkit#843; reviewed published commit 94dc3ed7ba4fa8df4192a0c37db9c8dc734de9bc",
-            "Source prototype producer nisavid/provingkit#860; reviewed published commit 71e4d47d582f25373d8f91463bf2b785532d6798"
+            "Source prototype producer nisavid/provingkit#860; reviewed published commit 71e4d47d582f25373d8f91463bf2b785532d6798",
+            "Finite failed-trial batch nisavid/provingkit#865, docs/coordination/batches/2026-11-04-lead-exchange-refusal.md"
           ],
           "mandatory_components": [],
           "alternatives": [],
           "grouping_only": null,
           "binding_gaps": [
             "No exact selected endpoint, legitimate access, current owner/build or native peer is established by the synthetic fixtures.",
-            "Successful connection or discovery does not authenticate the target or establish authority. App Server, Queue and newly started servers are not substituted for this existing-owner class."
+            "Successful connection or discovery does not authenticate the target or establish authority. App Server, Queue and newly started servers are not substituted for this existing-owner class.",
+            "The failed live work trial stops before input; current safe acquisition completion/ordering/freshness and remaining operation evidence remain unresolved."
           ],
-          "rationale": "Required existing-owner Unix IPC source-profile backend: initialize, thread-owner-discovery, framed thread-stream following/state and busy thread-follower-steer-turn. Finite producer source/procedure/command evidence establishes no further independent fabric requirement; CPython/stdlib/SQLite/filesystem are working conditions, not new transports. Exact endpoint/access/current build/peer binding remains unknown. Complete finite producer evidence: published source94 core/transport/sender/capture and procedure; docs/coordination/batches/2026-11-03-codex-ipc-sender.md. Shared mailbox/envelope bytes equal source61, so existing helper evidence carries forward unchanged. The complete idle source batch (https://github.com/nisavid/provingkit/blob/71e4d47d582f25373d8f91463bf2b785532d6798/docs/coordination/batches/2026-11-03-codex-idle-prototype.md) reuses the same mandatory components. Native start is another operation of the existing selected-owner class, not a new fabric; no additional mandatory component is established. Current binding/receipt/live gaps remain."
+          "rationale": "Required existing-owner Unix IPC source-profile backend: initialize, thread-owner-discovery, framed thread-stream following/state and busy thread-follower-steer-turn. Finite producer source/procedure/command evidence establishes no further independent fabric requirement; CPython/stdlib/SQLite/filesystem are working conditions, not new transports. Exact endpoint/access/current build/peer binding remains unknown. Complete finite producer evidence: published source94 core/transport/sender/capture and procedure; docs/coordination/batches/2026-11-03-codex-ipc-sender.md. Shared mailbox/envelope bytes equal source61, so existing helper evidence carries forward unchanged. The complete idle source batch (https://github.com/nisavid/provingkit/blob/71e4d47d582f25373d8f91463bf2b785532d6798/docs/coordination/batches/2026-11-03-codex-idle-prototype.md) reuses the same mandatory components. Native start is another operation of the existing selected-owner class, not a new fabric; no additional mandatory component is established. Current binding/receipt/live gaps remain. The complete finite November 4 failed-trial/retained-readback/synthetic-discriminator batch establishes no additional component requirement. Existing mailbox/envelope and selected IPC-owner dependencies remain unchanged; the planned nomination/MCP return is case-specific and unexercised, not a new mandatory component of all IPC sends."
         }
       ],
       "alternative_reference_shape": "Successor proposal: source_components retains producer labels; component_ids contains only declared fabric IDs. No alternative is an unconditional mandatory set.",
