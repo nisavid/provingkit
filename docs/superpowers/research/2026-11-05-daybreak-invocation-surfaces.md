@@ -21,6 +21,13 @@ The verified sequence was:
 5. Match the response and obtain `result.result.turn.id`. Check native terminal
    output and that turn's persisted context, then recheck the Advisor and seed.
 
+The fork preserved the seed for this experiment. It is not a Daybreak
+prerequisite: the follower update/start handlers require the targeted
+conversation's owner, with no fork-ancestry condition. The same operations can
+target an existing owned thread, including the seed, subject to ordinary access
+and turn-state checks. That would change the seed and add a turn to its history;
+this experiment did not do so. [Follower handlers][ipc-manager]
+
 This verifies the observed internal-IPC route, not direct explicit selection
 through `create_thread`, a blank-history start, or independent provider-side
 attestation. The native creation wrapper rejected the explicit Daybreak fields.
@@ -99,6 +106,47 @@ resolves a turn program using model access-program metadata. The
 uses a separate `access_programs.cyber` value, including `daybreak_blue` for
 Daybreak Blue. Those are source contracts, not evidence that this account or a
 particular completed turn received the program.
+
+## First-turn Daybreak selection
+
+Daybreak can be selected for a thread's first turn. An exact-ID read-only check
+of the original operator-selected Daybreak conversation found one persisted
+`turn_context`: its first and only recorded turn used `gpt-6-sol`, `ultra`, and
+`cyber_access_program = daybreak_blue`. Its session metadata contained no fork
+origin. This existing observation establishes first-turn behavior on the desktop;
+it is separate from the Advisor's later child-dispatch experiment.
+The retained field-only record `daybreak-first-turn-observation.json` has
+SHA-256 `7e6fc0c4fcef698e3c18b6500070db32e6c324f2e838586e49d623b6a777a7d2`.
+
+The generated App Server protocol separates empty-thread creation from model
+execution. A persistent `thread/start` accepts `model: "gpt-6-sol"` and
+`daybreakEnabled: true`, with no prompt or model turn in that operation. Its
+returned thread ID can then be used in the first `turn/start`, with the desired
+input, model, effort, and `cyberAccessProgram: "daybreakBlue"`. No preliminary
+ordinary-model turn or fork is required by those protocol shapes. The saved
+choice and explicit turn program remain separate, and access checks still
+apply. Sources: generated `v2/ThreadStartParams.json`,
+`v2/ThreadStartResponse.json`, and `v2/TurnStartParams.json`.
+
+The desktop manager implements this ordering. Its `x0.createConversation`
+attaches the initial choice to supported persistent `thread/start` requests;
+`IX` saves the choice before preparing a first turn. With empty input and no
+tool output or attachments, `IX` instead returns
+`firstTurn.status: "not-requested"`. Sources: the installed
+`.vite/build/early-bootstrap-45-628adb74a9c47df1.js`, UTF-8 byte `1146613`
+(initial choice on thread creation), `1045507` (`IX`), and `1048620`
+(empty-input branch and first-turn preparation); its fingerprint is below.
+
+The remaining discovery gap is an externally callable fresh-thread creation
+route from this ordinary Advisor into that existing desktop manager. The
+inspected Unix IPC registration exposes owner discovery and follower operations
+on existing conversations, with no creation or generic App Server request
+handler identified. The native `create_thread` wrapper creates and starts the
+first turn together and rejects explicit Daybreak fields. Raw `thread/start`
+must not be assumed to work as a method on the desktop IPC socket. Sources:
+the `dQ` registration and native handler cited below. First-turn support is
+established; fresh-thread creation through the Advisor's tested IPC entry point
+has not been established.
 
 ## Desktop thread tools and existing-app IPC
 
@@ -303,7 +351,8 @@ names or public source URLs.
   `.vite/build/early-bootstrap-45-628adb74a9c47df1.js`, `Su` at byte `854848` and
   `applyThreadDaybreakEnabled` at byte `1117889`; the start-result wrapper is
   at byte `857670`, accepted-turn ID use at byte `1084198`, and unchanged
-  recovery-wrapper return at byte `1096008`.
+  recovery-wrapper return at byte `1096008`. `assertThreadFollowerOwner` at
+  byte `1245263` checks stream ownership without requiring fork ancestry.
 - <a id="ipc-preparation"></a>**Turn preparation:** same `early-bootstrap-45`
   bundle, `IY` at byte `1042898`, explicit program copy at byte `1067774`, `xS`
   preparation at byte `1074368`, and `Ty` at byte `1329122`.
