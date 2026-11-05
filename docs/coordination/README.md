@@ -31,6 +31,8 @@ The maintained Codex IPC sender source batch adds a busy-only actuator and its r
 
 The [November 4 Lead exchange](batches/2026-11-04-lead-exchange-refusal.md) adds a refused existing-task work-request profile. The source stopped before peer-input submission after an incomplete-receive deadline; the owned connection closed and the planned Claude return was not exercised. Receipt, work and general compatibility remain unknown. A separate invented command/socket discriminator reproduces the refusal pattern without establishing its live cause or selecting a repair.
 
+The [owner-admission source batch](batches/2026-11-05-owner-admission-source.md) adds a separate local v2 prototype on the same IPC fabric without follow/state prediction. Seven producer command/socket checks and independent source review support source mechanics; actual native branch, submission and receipt remain unknown. Ivan accepted the source experiment, adding no live authority. The snapshot now has 314 profiles and 32 evidence records. The next check prepares the selected live proposal; native App Server access stays separately unresolved/parked.
+
 ## Read the record
 
 - **Endpoints** identify a host and surface. A host-owned thread, a native GUI
@@ -55,7 +57,7 @@ while continuation has only a synthetic prototype and notification remains
 unknown. Inspect the claims and their limits; a highest-stage badge or source
 vector cannot summarize that combination honestly.
 
-The [explicit idle-intent batch](batches/2026-11-03-codex-idle-catalog.md) adds a separate prototyped profile to the existing IPC fabric. The snapshot has 312 profiles and 26 evidence records; the new submission/receipt outcomes remain unknown. It does not change the busy-only profile or qualify an actual operation.
+The [explicit idle-intent batch](batches/2026-11-03-codex-idle-catalog.md) added a separate prototyped profile to the existing IPC fabric, bringing that dated snapshot to 312 profiles and 26 evidence records. Its submission/receipt outcomes remain unknown. It does not change the busy-only profile or qualify an actual operation.
 
 ## Validate and regenerate
 

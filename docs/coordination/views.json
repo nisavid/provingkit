@@ -983,7 +983,10 @@
         "codex-ipc-idle-source-review-860",
         "lead-exchange-live-refusal-865",
         "lead-exchange-independent-readback-865",
-        "lead-exchange-synthetic-discriminator-865"
+        "lead-exchange-synthetic-discriminator-865",
+        "codex-owner-admission-source-869",
+        "codex-owner-admission-command-synthetic-869",
+        "codex-owner-admission-source-review-869"
       ],
       "fabrics": [
         "codex-app-server",
@@ -1002,7 +1005,7 @@
         "One granted work-request trial is now recorded as refused before input, not qualified; the intended Claude return was never exercised."
       ],
       "id": "claude-desktop-code-to-chatgpt-codex-gui",
-      "next_check": "Settle and synthetically test the acquisition stopping and ordering/freshness contract; a proposed source change needs its own review and a new live grant before another actual connection.",
+      "next_check": "Prepare the selected owner-admission live proposal: bind target/authority, current owner/backend and evidence for both reachable branches; obtain applicable review and a fresh grant before connection. Native App Server access stays separately unresolved/parked; unselected split-framing repair is not a prerequisite.",
       "profiles": [
         "codex-app-server-existing",
         "codex-app-server-controlled",
@@ -1012,7 +1015,8 @@
         "desktop-chat-tools-controlled",
         "rolecasting-codex-ipc-sender-existing-source",
         "rolecasting-codex-ipc-explicit-idle-source",
-        "claude-desktop-codex-idle-work-trial-865"
+        "claude-desktop-codex-idle-work-trial-865",
+        "rolecasting-codex-owner-admission-source"
       ],
       "source": "claude-desktop-code",
       "target": "chatgpt-codex-gui",
@@ -11848,6 +11852,39 @@
       "uri": "docs/coordination/batches/2026-11-03-codex-ipc-sender.md"
     },
     {
+      "id": "codex-owner-admission-command-synthetic-869",
+      "kind": "synthetic",
+      "limits": [
+        "Source owner observed seven public command/socket checks passing on the published revision; disposable fixtures, not rerun by catalog preparation.",
+        "Dated source intake, not exact execution time. Source-experiment acceptance adds no live authority, access/identity binding, preservation, agent discovery/application, installation or adoption."
+      ],
+      "observed_at": "2026-11-05T05:03:47.255095+00:00",
+      "sha256": "4fc785a6b671129ea4225bf7c2cf2b8d03bab228ae82cd062ea0ef86b0c62256",
+      "uri": "docs/coordination/batches/2026-11-05-owner-admission-source.md"
+    },
+    {
+      "id": "codex-owner-admission-source-869",
+      "kind": "source",
+      "limits": [
+        "Published local owner-admission source only; actual owner/backend/current version and operation remain unqualified.",
+        "Dated source intake, not exact execution time. Source-experiment acceptance adds no live authority, access/identity binding, preservation, agent discovery/application, installation or adoption."
+      ],
+      "observed_at": "2026-11-05T05:03:47.255095+00:00",
+      "revision": "bbf997b78676d69a1f69ffa37be88b594353dc7c",
+      "uri": "https://github.com/nisavid/provingkit/blob/bbf997b78676d69a1f69ffa37be88b594353dc7c/docs/superpowers/prototypes/codex-owner-admission/owner_admission_sender.py"
+    },
+    {
+      "id": "codex-owner-admission-source-review-869",
+      "kind": "review",
+      "limits": [
+        "Three independent source critics and distinct adjudicator found no current finding; architecture no Strong change. Not catalog-candidate review or live qualification.",
+        "Dated source intake, not exact execution time. Source-experiment acceptance adds no live authority, access/identity binding, preservation, agent discovery/application, installation or adoption."
+      ],
+      "observed_at": "2026-11-05T05:03:47.255095+00:00",
+      "sha256": "4fc785a6b671129ea4225bf7c2cf2b8d03bab228ae82cd062ea0ef86b0c62256",
+      "uri": "docs/coordination/batches/2026-11-05-owner-admission-source.md"
+    },
+    {
       "id": "cohort-chatgpt-to-codex-terminal",
       "kind": "source",
       "limits": [
@@ -16844,15 +16881,19 @@
       "compatibility": {
         "evidence": [
           "lead-exchange-live-refusal-865",
-          "lead-exchange-independent-readback-865"
+          "lead-exchange-independent-readback-865",
+          "codex-owner-admission-source-869",
+          "codex-owner-admission-command-synthetic-869",
+          "codex-owner-admission-source-review-869"
         ],
-        "scope": "Source mechanics and synthetic command behavior reviewed. Assess affected framing, owner/follow/state, busy steer, correlation/reconciliation and capture behavior with graduated checks; current native build, caller access and receiver remain unassessed. A new build alone proves no incompatibility. Idle-intent source and cooperative command examples are separately assessed; actual native compatibility remains unassessed and a changed version alone proves no incompatibility. November 4 one-shot acquisition matched a decoded bound state, then refused before peer input on an unfinished receive deadline. This function observation establishes neither complete current-build compatibility nor general incompatibility; unexercised idle eligibility/start, receipt and reverse MCP return remain unassessed.",
+        "scope": "Source mechanics and synthetic command behavior reviewed. Assess affected framing, owner/follow/state, busy steer, correlation/reconciliation and capture behavior with graduated checks; current native build, caller access and receiver remain unassessed. A new build alone proves no incompatibility. Idle-intent source and cooperative command examples are separately assessed; actual native compatibility remains unassessed and a changed version alone proves no incompatibility. November 4 one-shot acquisition matched a decoded bound state, then refused before peer input on an unfinished receive deadline. This function observation establishes neither complete current-build compatibility nor general incompatibility; unexercised idle eligibility/start, receipt and reverse MCP return remain unassessed. The separate owner-admission source/public fixtures assess only that new operation; unchanged split behavior and its failed trial retain their prior evidence. Actual owner/backend/current version, admission versus ordinary-start fallback, receipt/processing and preservation remain unassessed. Source-experiment acceptance adds no live authority.",
         "status": "unassessed"
       },
       "crosswalk": [
         "Maintained-source producer nisavid/provingkit#843; reviewed published commit 94dc3ed7ba4fa8df4192a0c37db9c8dc734de9bc",
         "Source prototype producer nisavid/provingkit#860; reviewed published commit 71e4d47d582f25373d8f91463bf2b785532d6798",
-        "Failed live-trial producer nisavid/provingkit#865; unchanged actuator source 46133eeca2f16a0e70ea5334481422c753ae84bc"
+        "Failed live-trial producer nisavid/provingkit#865; unchanged actuator source 46133eeca2f16a0e70ea5334481422c753ae84bc",
+        "Owner-admission source nisavid/provingkit#869; published commit bbf997b78676d69a1f69ffa37be88b594353dc7c"
       ],
       "dependencies": [
         "rolecasting-peer-message-support",
@@ -16872,7 +16913,10 @@
         "codex-ipc-idle-source-review-860",
         "lead-exchange-live-refusal-865",
         "lead-exchange-independent-readback-865",
-        "lead-exchange-synthetic-discriminator-865"
+        "lead-exchange-synthetic-discriminator-865",
+        "codex-owner-admission-source-869",
+        "codex-owner-admission-command-synthetic-869",
+        "codex-owner-admission-source-review-869"
       ],
       "gaps": [
         "Actual caller exposure, existing endpoint/access, current owner/build/peer and original authority/holds require binding.",
@@ -16882,10 +16926,10 @@
       ],
       "id": "rolecasting-codex-ipc-sender",
       "name": "Rolecasting mailbox-backed Codex IPC sender",
-      "next_check": "Settle and synthetically test the acquisition stopping and ordering/freshness contract; a proposed source change needs its own review and a new live grant before another actual connection.",
+      "next_check": "Prepare the selected owner-admission live proposal: bind target/authority, current owner/backend and evidence for both reachable branches; obtain applicable review and a fresh grant before connection. Native App Server access stays separately unresolved/parked; unselected split-framing repair is not a prerequisite.",
       "parent": null,
       "role": "actuator",
-      "source_scope": "Maintained busy-only Unix IPC sender and original-attempt read-only reconciliation; immutable mailbox claim, peer envelope, intact owner/generation binding and create-only per-run captures. No new queue, automatic resend or idle-start fallback. Separate explicitly selected observed-idle/default/user source prototype uses native start with inherited context; possible submission and unknown opening receipt, no atomic idle guarantee.",
+      "source_scope": "Maintained busy-only Unix IPC sender and original-attempt read-only reconciliation; immutable mailbox claim, peer envelope, intact owner/generation binding and create-only per-run captures. No new queue, automatic resend or idle-start fallback. Separate explicitly selected observed-idle/default/user source prototype uses native start with inherited context; possible submission and unknown opening receipt, no atomic idle guarantee. Separate local v2 owner-admission prototype reuses maintained transport/capture/mailbox/envelope and the same selected-owner class, without follow/state prediction. Both inheritance/admission flags are requested; one exact envelope, at most one submission, no resend/method switching. Ordinary-start fallback remains possible.",
       "status": "discovered"
     },
     {
@@ -16986,15 +17030,19 @@
       "compatibility": {
         "evidence": [
           "lead-exchange-live-refusal-865",
-          "lead-exchange-independent-readback-865"
+          "lead-exchange-independent-readback-865",
+          "codex-owner-admission-source-869",
+          "codex-owner-admission-command-synthetic-869",
+          "codex-owner-admission-source-review-869"
         ],
-        "scope": "Source mechanics and synthetic command behavior reviewed. Assess affected framing, owner/follow/state, busy steer, correlation/reconciliation and capture behavior with graduated checks; current native build, caller access and receiver remain unassessed. A new build alone proves no incompatibility. Idle-intent source and cooperative command examples are separately assessed; actual native compatibility remains unassessed and a changed version alone proves no incompatibility. November 4 one-shot acquisition matched a decoded bound state, then refused before peer input on an unfinished receive deadline. This function observation establishes neither complete current-build compatibility nor general incompatibility; unexercised idle eligibility/start, receipt and reverse MCP return remain unassessed.",
+        "scope": "Source mechanics and synthetic command behavior reviewed. Assess affected framing, owner/follow/state, busy steer, correlation/reconciliation and capture behavior with graduated checks; current native build, caller access and receiver remain unassessed. A new build alone proves no incompatibility. Idle-intent source and cooperative command examples are separately assessed; actual native compatibility remains unassessed and a changed version alone proves no incompatibility. November 4 one-shot acquisition matched a decoded bound state, then refused before peer input on an unfinished receive deadline. This function observation establishes neither complete current-build compatibility nor general incompatibility; unexercised idle eligibility/start, receipt and reverse MCP return remain unassessed. The separate owner-admission source/public fixtures assess only that new operation; unchanged split behavior and its failed trial retain their prior evidence. Actual owner/backend/current version, admission versus ordinary-start fallback, receipt/processing and preservation remain unassessed. Source-experiment acceptance adds no live authority.",
         "status": "unassessed"
       },
       "crosswalk": [
         "Maintained-source producer nisavid/provingkit#843; reviewed published commit 94dc3ed7ba4fa8df4192a0c37db9c8dc734de9bc",
         "Source prototype producer nisavid/provingkit#860; reviewed published commit 71e4d47d582f25373d8f91463bf2b785532d6798",
-        "Failed live-trial producer nisavid/provingkit#865; unchanged actuator source 46133eeca2f16a0e70ea5334481422c753ae84bc"
+        "Failed live-trial producer nisavid/provingkit#865; unchanged actuator source 46133eeca2f16a0e70ea5334481422c753ae84bc",
+        "Owner-admission source nisavid/provingkit#869; published commit bbf997b78676d69a1f69ffa37be88b594353dc7c"
       ],
       "dependencies": [],
       "effort": {
@@ -17009,7 +17057,10 @@
         "codex-ipc-idle-command-synthetic-860",
         "lead-exchange-live-refusal-865",
         "lead-exchange-independent-readback-865",
-        "lead-exchange-synthetic-discriminator-865"
+        "lead-exchange-synthetic-discriminator-865",
+        "codex-owner-admission-source-869",
+        "codex-owner-admission-command-synthetic-869",
+        "codex-owner-admission-source-review-869"
       ],
       "gaps": [
         "No exact selected endpoint, legitimate access, current owner/build or native peer is established by the synthetic fixtures.",
@@ -17018,10 +17069,10 @@
       ],
       "id": "selected-codex-native-ipc-owner",
       "name": "Selected existing Codex native IPC owner backend",
-      "next_check": "Settle and synthetically test the acquisition stopping and ordering/freshness contract; a proposed source change needs its own review and a new live grant before another actual connection.",
+      "next_check": "Prepare the selected owner-admission live proposal: bind target/authority, current owner/backend and evidence for both reachable branches; obtain applicable review and a fresh grant before connection. Native App Server access stays separately unresolved/parked; unselected split-framing repair is not a prerequisite.",
       "parent": null,
       "role": "support",
-      "source_scope": "Required existing-owner Unix IPC source-profile backend: initialize, thread-owner-discovery, framed thread-stream following/state and busy thread-follower-steer-turn. Finite producer source/procedure/command evidence establishes no further independent fabric requirement; CPython/stdlib/SQLite/filesystem are working conditions, not new transports. Exact endpoint/access/current build/peer binding remains unknown. The explicit idle profile additionally depends on the same owner\u2019s versioned thread-follower-start-turn with client-message identity and inherited native context; live acceptance remains unproved.",
+      "source_scope": "Required existing-owner Unix IPC source-profile backend: initialize, thread-owner-discovery, framed thread-stream following/state and busy thread-follower-steer-turn. Finite producer source/procedure/command evidence establishes no further independent fabric requirement; CPython/stdlib/SQLite/filesystem are working conditions, not new transports. Exact endpoint/access/current build/peer binding remains unknown. The explicit idle profile additionally depends on the same owner\u2019s versioned thread-follower-start-turn with client-message identity and inherited native context; live acceptance remains unproved. The same existing-owner class receives the separate local v2 request carrying inheritThreadSettings/useUserMessageAdmission and may reach native admission or ordinary-start fallback. The frontend prototype reuses maintained transport/capture/mailbox/envelope without requesting thread follow or predicting busy/idle state; actual backend behavior remains unqualified.",
       "status": "discovered"
     },
     {
@@ -38790,6 +38841,114 @@
       "target_input": "exact-reference"
     },
     {
+      "assurance": "Published source and seven producer command/socket checks; three independent critics and distinct adjudication clean for the source-only claim; architecture no Strong change. Source experiment accepted; no live or installed-procedure result.",
+      "channel": null,
+      "claims": [
+        {
+          "coverage": "unknown",
+          "evidence": [
+            "codex-owner-admission-source-869",
+            "codex-owner-admission-command-synthetic-869",
+            "codex-owner-admission-source-review-869"
+          ],
+          "limits": [
+            "Source and invented fixtures only; at most one submission with durable uncertainty and required pending capture, no automatic resend/method switching.",
+            "Generic RPC proves no native branch, receipt or processing; ordinary-start fallback and queued-unread ambiguity remain possible.",
+            "Both inheritance/admission flags are requested, not preservation or live compatibility evidence."
+          ],
+          "milestone": "submitted",
+          "operation": "notify",
+          "outcome": "unknown",
+          "stage": "prototyped"
+        },
+        {
+          "coverage": "unknown",
+          "evidence": [
+            "codex-owner-admission-source-869",
+            "codex-owner-admission-command-synthetic-869",
+            "codex-owner-admission-source-review-869"
+          ],
+          "limits": [
+            "Source and invented fixtures only; at most one submission with durable uncertainty and required pending capture, no automatic resend/method switching.",
+            "Generic RPC proves no native branch, receipt or processing; ordinary-start fallback and queued-unread ambiguity remain possible.",
+            "Both inheritance/admission flags are requested, not preservation or live compatibility evidence."
+          ],
+          "milestone": "receipt",
+          "operation": "notify",
+          "outcome": "unknown",
+          "stage": "prototyped"
+        }
+      ],
+      "consent": {
+        "limits": [
+          "Ivan accepted the source experiment in Harness chat; no live authority, provider turn, access, resend, installation or adoption follows. Original references and holds still require verification."
+        ],
+        "references": [
+          "https://github.com/nisavid/provingkit/issues/869"
+        ]
+      },
+      "continuity": {
+        "busy": "No caller busy/idle prediction; requested admission proves no native branch, receipt or work continuity.",
+        "idle": "Owner admission or ordinary-start fallback possible; actual eligibility/branch/receipt unqualified.",
+        "restart": "No restart/recovery qualification, automatic reclaim/resend or method switching; uncertainty retained."
+      },
+      "fabric": "rolecasting-codex-ipc-sender",
+      "gaps": [
+        "Actual caller/access/identity, owner/backend/current version and original authority/holds remain unbound.",
+        "Native branch, receipt, processing, ACK/reply, preservation, agent discovery/application, installation and adoption remain unproved."
+      ],
+      "id": "rolecasting-codex-owner-admission-source",
+      "input_semantics": "Exact provingkit-peer-message-v1 envelope preserves original sender, forwarding actor, recipient, obligation owner, payload, grants and holds. One local v2 request has matching conversation/thread IDs, one client message ID, one text input and inheritThreadSettings/useUserMessageAdmission=true; no follow/state prediction.",
+      "next_check": "Prepare the selected owner-admission live proposal: bind target/authority, current owner/backend and evidence for both reachable branches; obtain applicable review and a fresh grant before connection. Native App Server access stays separately unresolved/parked; unselected split-framing repair is not a prerequisite.",
+      "operations": {
+        "continue-task": [],
+        "create-task": [],
+        "inspect": [],
+        "notify": [
+          {
+            "coverage": "unknown",
+            "evidence": [
+              "codex-owner-admission-source-869",
+              "codex-owner-admission-command-synthetic-869",
+              "codex-owner-admission-source-review-869"
+            ],
+            "limits": [
+              "Source and invented fixtures only; at most one submission with durable uncertainty and required pending capture, no automatic resend/method switching.",
+              "Generic RPC proves no native branch, receipt or processing; ordinary-start fallback and queued-unread ambiguity remain possible.",
+              "Both inheritance/admission flags are requested, not preservation or live compatibility evidence."
+            ],
+            "milestone": "submitted",
+            "operation": "notify",
+            "outcome": "unknown",
+            "stage": "prototyped"
+          },
+          {
+            "coverage": "unknown",
+            "evidence": [
+              "codex-owner-admission-source-869",
+              "codex-owner-admission-command-synthetic-869",
+              "codex-owner-admission-source-review-869"
+            ],
+            "limits": [
+              "Source and invented fixtures only; at most one submission with durable uncertainty and required pending capture, no automatic resend/method switching.",
+              "Generic RPC proves no native branch, receipt or processing; ordinary-start fallback and queued-unread ambiguity remain possible.",
+              "Both inheritance/admission flags are requested, not preservation or live compatibility evidence."
+            ],
+            "milestone": "receipt",
+            "operation": "notify",
+            "outcome": "unknown",
+            "stage": "prototyped"
+          }
+        ],
+        "reply": [],
+        "request-work": []
+      },
+      "ownership": "Actual receiver ownership and original/transitive authority/holds require verification; cooperative records are no authentication or new grant.",
+      "population": "existing",
+      "relationship": "Peer; actual caller/native-owner/backend association remains unbound.",
+      "target_input": "exact-reference"
+    },
+    {
       "assurance": "Reviewed source assessment only; no live operation or runtime-preservation proof.",
       "channel": null,
       "claims": [],
@@ -45504,7 +45663,8 @@
           "crosswalk": [
             "Maintained-source producer nisavid/provingkit#843; reviewed published commit 94dc3ed7ba4fa8df4192a0c37db9c8dc734de9bc",
             "Source prototype producer nisavid/provingkit#860; reviewed published commit 71e4d47d582f25373d8f91463bf2b785532d6798",
-            "Finite failed-trial batch nisavid/provingkit#865, docs/coordination/batches/2026-11-04-lead-exchange-refusal.md"
+            "Finite failed-trial batch nisavid/provingkit#865, docs/coordination/batches/2026-11-04-lead-exchange-refusal.md",
+            "Owner-admission source nisavid/provingkit#869; published commit bbf997b78676d69a1f69ffa37be88b594353dc7c"
           ],
           "fabric": "rolecasting-codex-ipc-sender",
           "grouping_only": null,
@@ -45512,7 +45672,7 @@
             "rolecasting-peer-message-support",
             "selected-codex-native-ipc-owner"
           ],
-          "rationale": "Maintained busy-only Unix IPC sender and original-attempt read-only reconciliation; immutable mailbox claim, peer envelope, intact owner/generation binding and create-only per-run captures. No new queue, automatic resend or idle-start fallback. Complete finite producer evidence: published source94 core/transport/sender/capture and procedure; docs/coordination/batches/2026-11-03-codex-ipc-sender.md. Shared mailbox/envelope bytes equal source61, so existing helper evidence carries forward unchanged. The complete idle source batch (https://github.com/nisavid/provingkit/blob/71e4d47d582f25373d8f91463bf2b785532d6798/docs/coordination/batches/2026-11-03-codex-idle-prototype.md) reuses the same mandatory components. Native start is another operation of the existing selected-owner class, not a new fabric; no additional mandatory component is established. Current binding/receipt/live gaps remain. The complete finite November 4 failed-trial/retained-readback/synthetic-discriminator batch establishes no additional component requirement. Existing mailbox/envelope and selected IPC-owner dependencies remain unchanged; the planned nomination/MCP return is case-specific and unexercised, not a new mandatory component of all IPC sends."
+          "rationale": "Maintained busy-only Unix IPC sender and original-attempt read-only reconciliation; immutable mailbox claim, peer envelope, intact owner/generation binding and create-only per-run captures. No new queue, automatic resend or idle-start fallback. Complete finite producer evidence: published source94 core/transport/sender/capture and procedure; docs/coordination/batches/2026-11-03-codex-ipc-sender.md. Shared mailbox/envelope bytes equal source61, so existing helper evidence carries forward unchanged. The complete idle source batch (https://github.com/nisavid/provingkit/blob/71e4d47d582f25373d8f91463bf2b785532d6798/docs/coordination/batches/2026-11-03-codex-idle-prototype.md) reuses the same mandatory components. Native start is another operation of the existing selected-owner class, not a new fabric; no additional mandatory component is established. Current binding/receipt/live gaps remain. The complete finite November 4 failed-trial/retained-readback/synthetic-discriminator batch establishes no additional component requirement. Existing mailbox/envelope and selected IPC-owner dependencies remain unchanged; the planned nomination/MCP return is case-specific and unexercised, not a new mandatory component of all IPC sends. Complete finite owner-admission batch: published command/guide, seven public command/socket fixtures, three independent source critics, distinct adjudication and architecture result. Same mandatory mailbox/envelope and selected IPC-owner classes; no additional component/backend/framework requirement. CPython/stdlib/SQLite/local files remain working conditions. Actual binding remains unknown. The failed split trial is retained; its framing repair is not a prerequisite for the selected owner-admission live proposal. Native App Server access remains a separate unresolved/parked alternative."
         },
         {
           "alternatives": [],
@@ -45524,12 +45684,13 @@
           "crosswalk": [
             "Maintained-source producer nisavid/provingkit#843; reviewed published commit 94dc3ed7ba4fa8df4192a0c37db9c8dc734de9bc",
             "Source prototype producer nisavid/provingkit#860; reviewed published commit 71e4d47d582f25373d8f91463bf2b785532d6798",
-            "Finite failed-trial batch nisavid/provingkit#865, docs/coordination/batches/2026-11-04-lead-exchange-refusal.md"
+            "Finite failed-trial batch nisavid/provingkit#865, docs/coordination/batches/2026-11-04-lead-exchange-refusal.md",
+            "Owner-admission source nisavid/provingkit#869; published commit bbf997b78676d69a1f69ffa37be88b594353dc7c"
           ],
           "fabric": "selected-codex-native-ipc-owner",
           "grouping_only": null,
           "mandatory_components": [],
-          "rationale": "Required existing-owner Unix IPC source-profile backend: initialize, thread-owner-discovery, framed thread-stream following/state and busy thread-follower-steer-turn. Finite producer source/procedure/command evidence establishes no further independent fabric requirement; CPython/stdlib/SQLite/filesystem are working conditions, not new transports. Exact endpoint/access/current build/peer binding remains unknown. Complete finite producer evidence: published source94 core/transport/sender/capture and procedure; docs/coordination/batches/2026-11-03-codex-ipc-sender.md. Shared mailbox/envelope bytes equal source61, so existing helper evidence carries forward unchanged. The complete idle source batch (https://github.com/nisavid/provingkit/blob/71e4d47d582f25373d8f91463bf2b785532d6798/docs/coordination/batches/2026-11-03-codex-idle-prototype.md) reuses the same mandatory components. Native start is another operation of the existing selected-owner class, not a new fabric; no additional mandatory component is established. Current binding/receipt/live gaps remain. The complete finite November 4 failed-trial/retained-readback/synthetic-discriminator batch establishes no additional component requirement. Existing mailbox/envelope and selected IPC-owner dependencies remain unchanged; the planned nomination/MCP return is case-specific and unexercised, not a new mandatory component of all IPC sends."
+          "rationale": "Required existing-owner Unix IPC source-profile backend: initialize, thread-owner-discovery, framed thread-stream following/state and busy thread-follower-steer-turn. Finite producer source/procedure/command evidence establishes no further independent fabric requirement; CPython/stdlib/SQLite/filesystem are working conditions, not new transports. Exact endpoint/access/current build/peer binding remains unknown. Complete finite producer evidence: published source94 core/transport/sender/capture and procedure; docs/coordination/batches/2026-11-03-codex-ipc-sender.md. Shared mailbox/envelope bytes equal source61, so existing helper evidence carries forward unchanged. The complete idle source batch (https://github.com/nisavid/provingkit/blob/71e4d47d582f25373d8f91463bf2b785532d6798/docs/coordination/batches/2026-11-03-codex-idle-prototype.md) reuses the same mandatory components. Native start is another operation of the existing selected-owner class, not a new fabric; no additional mandatory component is established. Current binding/receipt/live gaps remain. The complete finite November 4 failed-trial/retained-readback/synthetic-discriminator batch establishes no additional component requirement. Existing mailbox/envelope and selected IPC-owner dependencies remain unchanged; the planned nomination/MCP return is case-specific and unexercised, not a new mandatory component of all IPC sends. The finite owner-admission source batch adds another operation of this existing-owner class. At the actuator composition level, the existing mailbox/envelope helper and selected-owner backend remain mandatory; this backend record establishes no further independently declared component requirement. Its own mandatory_components/dependencies stay empty. Actual access, owner/backend identity, native admission/fallback and receiver effects remain unbound. No additional backend or observation framework follows from the source flags."
         }
       ],
       "relations": [
@@ -45723,9 +45884,9 @@
   },
   "schema_version": 1,
   "snapshot": {
-    "coverage": "Dated failed live-trial update: 165 fabrics, 313 profiles, 29 evidence records, 28 endpoints and 26 directed associations retained. One channel-bound existing-task work profile records refusal before input; receipt/fulfillment and the unexercised return remain unknown. Three evidence records add live refusal, independent retained readback and an invented discriminator. No actual operation, current build, installation, recovery, adoption or deployment qualified; unrelated records preserved.",
-    "generated_at": "2026-11-04T18:38:43.007008+00:00",
-    "revision": "lead-exchange-refused-before-input-865"
+    "coverage": "Dated owner-admission source batch: 165 fabrics, 314 profiles, 32 evidence records, 28 endpoints and 26 directed associations. One shared existing-task prototype adds unknown notification submission/receipt; three source/synthetic/review records. Prior profiles, failed split trial and unrelated records retained. Source experiment accepted without live authority. No actual owner/backend/current version or operation qualified.",
+    "generated_at": "2026-11-05T05:03:47.255095+00:00",
+    "revision": "codex-owner-admission-source-869"
   },
-  "source_sha256": "fcc9ae3f5c9a5eef9ab2b691d8ff2d7001e2357c6717020ecc9d5652f1079015"
+  "source_sha256": "0fcbfe624d3f3bdfc7daaea92022e90ba3d4e8773fb3f9121cd47715556ebf3d"
 }
