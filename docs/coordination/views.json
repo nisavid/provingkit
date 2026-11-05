@@ -272,6 +272,21 @@
       "target_binding": "Unassessed"
     },
     {
+      "association": "unassessed",
+      "caller_access": "Unassessed",
+      "evidence": [],
+      "fabrics": [],
+      "gaps": [
+        "No direction-specific candidate association in this snapshot."
+      ],
+      "id": "unassessed:chatgpt-codex-gui:codex-desktop-local",
+      "next_check": "Research caller access and target binding before associating candidates.",
+      "profiles": [],
+      "source": "chatgpt-codex-gui",
+      "target": "codex-desktop-local",
+      "target_binding": "Unassessed"
+    },
+    {
       "association": "recorded",
       "caller_access": "Source-design caller entrance only; actual exposure, execution host and permissions unbound.",
       "evidence": [
@@ -750,6 +765,21 @@
       "profiles": [],
       "source": "claude-cloud",
       "target": "codex-cloud-cli-task",
+      "target_binding": "Unassessed"
+    },
+    {
+      "association": "unassessed",
+      "caller_access": "Unassessed",
+      "evidence": [],
+      "fabrics": [],
+      "gaps": [
+        "No direction-specific candidate association in this snapshot."
+      ],
+      "id": "unassessed:claude-cloud:codex-desktop-local",
+      "next_check": "Research caller access and target binding before associating candidates.",
+      "profiles": [],
+      "source": "claude-cloud",
+      "target": "codex-desktop-local",
       "target_binding": "Unassessed"
     },
     {
@@ -1261,6 +1291,28 @@
     },
     {
       "association": "recorded",
+      "caller_access": "Selected Claude administration executed local preflight; no IPC connection started.",
+      "evidence": [
+        "lead-link-codex-local-refusal-847"
+      ],
+      "fabrics": [
+        "rolecasting-codex-ipc-sender"
+      ],
+      "gaps": [
+        "Local capture directory was absent; receiver discovery and positive operation remain unexercised.",
+        "Native backend identity, branch, response, preservation and recovery remain unqualified."
+      ],
+      "id": "claude-desktop-code-to-codex-desktop-local",
+      "next_check": "Use existing capture-root procedure in fresh reviewed proposal; no automatic retry.",
+      "profiles": [
+        "claude-desktop-codex-owner-local-refusal-existing"
+      ],
+      "source": "claude-desktop-code",
+      "target": "codex-desktop-local",
+      "target_binding": "Intended exact native Codex Desktop Lead; no current in-connection owner evidence from this case."
+    },
+    {
+      "association": "recorded",
       "caller_access": "Source-design caller entrance only; actual exposure, execution host and permissions unbound.",
       "evidence": [
         "cohort-workers-source",
@@ -1709,6 +1761,21 @@
       "gaps": [
         "No direction-specific candidate association in this snapshot."
       ],
+      "id": "unassessed:claude-desktop-ssh:codex-desktop-local",
+      "next_check": "Research caller access and target binding before associating candidates.",
+      "profiles": [],
+      "source": "claude-desktop-ssh",
+      "target": "codex-desktop-local",
+      "target_binding": "Unassessed"
+    },
+    {
+      "association": "unassessed",
+      "caller_access": "Unassessed",
+      "evidence": [],
+      "fabrics": [],
+      "gaps": [
+        "No direction-specific candidate association in this snapshot."
+      ],
       "id": "unassessed:claude-desktop-ssh:codex-exec-task",
       "next_check": "Research caller access and target binding before associating candidates.",
       "profiles": [],
@@ -2104,6 +2171,21 @@
       "profiles": [],
       "source": "claude-desktop-wsl",
       "target": "codex-cloud-cli-task",
+      "target_binding": "Unassessed"
+    },
+    {
+      "association": "unassessed",
+      "caller_access": "Unassessed",
+      "evidence": [],
+      "fabrics": [],
+      "gaps": [
+        "No direction-specific candidate association in this snapshot."
+      ],
+      "id": "unassessed:claude-desktop-wsl:codex-desktop-local",
+      "next_check": "Research caller access and target binding before associating candidates.",
+      "profiles": [],
+      "source": "claude-desktop-wsl",
+      "target": "codex-desktop-local",
       "target_binding": "Unassessed"
     },
     {
@@ -2519,6 +2601,21 @@
       "gaps": [
         "No direction-specific candidate association in this snapshot."
       ],
+      "id": "unassessed:claude-headless:codex-desktop-local",
+      "next_check": "Research caller access and target binding before associating candidates.",
+      "profiles": [],
+      "source": "claude-headless",
+      "target": "codex-desktop-local",
+      "target_binding": "Unassessed"
+    },
+    {
+      "association": "unassessed",
+      "caller_access": "Unassessed",
+      "evidence": [],
+      "fabrics": [],
+      "gaps": [
+        "No direction-specific candidate association in this snapshot."
+      ],
       "id": "unassessed:claude-headless:codex-exec-task",
       "next_check": "Research caller access and target binding before associating candidates.",
       "profiles": [],
@@ -2914,6 +3011,21 @@
       "profiles": [],
       "source": "claude-parent-subagent",
       "target": "codex-cloud-cli-task",
+      "target_binding": "Unassessed"
+    },
+    {
+      "association": "unassessed",
+      "caller_access": "Unassessed",
+      "evidence": [],
+      "fabrics": [],
+      "gaps": [
+        "No direction-specific candidate association in this snapshot."
+      ],
+      "id": "unassessed:claude-parent-subagent:codex-desktop-local",
+      "next_check": "Research caller access and target binding before associating candidates.",
+      "profiles": [],
+      "source": "claude-parent-subagent",
+      "target": "codex-desktop-local",
       "target_binding": "Unassessed"
     },
     {
@@ -3329,6 +3441,21 @@
       "gaps": [
         "No direction-specific candidate association in this snapshot."
       ],
+      "id": "unassessed:claude-python-sdk-task:codex-desktop-local",
+      "next_check": "Research caller access and target binding before associating candidates.",
+      "profiles": [],
+      "source": "claude-python-sdk-task",
+      "target": "codex-desktop-local",
+      "target_binding": "Unassessed"
+    },
+    {
+      "association": "unassessed",
+      "caller_access": "Unassessed",
+      "evidence": [],
+      "fabrics": [],
+      "gaps": [
+        "No direction-specific candidate association in this snapshot."
+      ],
       "id": "unassessed:claude-python-sdk-task:codex-exec-task",
       "next_check": "Research caller access and target binding before associating candidates.",
       "profiles": [],
@@ -3724,6 +3851,21 @@
       "profiles": [],
       "source": "claude-sdk-task",
       "target": "codex-cloud-cli-task",
+      "target_binding": "Unassessed"
+    },
+    {
+      "association": "unassessed",
+      "caller_access": "Unassessed",
+      "evidence": [],
+      "fabrics": [],
+      "gaps": [
+        "No direction-specific candidate association in this snapshot."
+      ],
+      "id": "unassessed:claude-sdk-task:codex-desktop-local",
+      "next_check": "Research caller access and target binding before associating candidates.",
+      "profiles": [],
+      "source": "claude-sdk-task",
+      "target": "codex-desktop-local",
       "target_binding": "Unassessed"
     },
     {
@@ -4139,6 +4281,21 @@
       "gaps": [
         "No direction-specific candidate association in this snapshot."
       ],
+      "id": "unassessed:claude-team-teammate:codex-desktop-local",
+      "next_check": "Research caller access and target binding before associating candidates.",
+      "profiles": [],
+      "source": "claude-team-teammate",
+      "target": "codex-desktop-local",
+      "target_binding": "Unassessed"
+    },
+    {
+      "association": "unassessed",
+      "caller_access": "Unassessed",
+      "evidence": [],
+      "fabrics": [],
+      "gaps": [
+        "No direction-specific candidate association in this snapshot."
+      ],
       "id": "unassessed:claude-team-teammate:codex-exec-task",
       "next_check": "Research caller access and target binding before associating candidates.",
       "profiles": [],
@@ -4534,6 +4691,21 @@
       "profiles": [],
       "source": "claude-terminal",
       "target": "codex-cloud-cli-task",
+      "target_binding": "Unassessed"
+    },
+    {
+      "association": "unassessed",
+      "caller_access": "Unassessed",
+      "evidence": [],
+      "fabrics": [],
+      "gaps": [
+        "No direction-specific candidate association in this snapshot."
+      ],
+      "id": "unassessed:claude-terminal:codex-desktop-local",
+      "next_check": "Research caller access and target binding before associating candidates.",
+      "profiles": [],
+      "source": "claude-terminal",
+      "target": "codex-desktop-local",
       "target_binding": "Unassessed"
     },
     {
@@ -4949,6 +5121,21 @@
       "gaps": [
         "No direction-specific candidate association in this snapshot."
       ],
+      "id": "unassessed:claude-vscode:codex-desktop-local",
+      "next_check": "Research caller access and target binding before associating candidates.",
+      "profiles": [],
+      "source": "claude-vscode",
+      "target": "codex-desktop-local",
+      "target_binding": "Unassessed"
+    },
+    {
+      "association": "unassessed",
+      "caller_access": "Unassessed",
+      "evidence": [],
+      "fabrics": [],
+      "gaps": [
+        "No direction-specific candidate association in this snapshot."
+      ],
       "id": "unassessed:claude-vscode:codex-exec-task",
       "next_check": "Research caller access and target binding before associating candidates.",
       "profiles": [],
@@ -5344,6 +5531,21 @@
       "profiles": [],
       "source": "codex-app-server-task",
       "target": "codex-cloud-cli-task",
+      "target_binding": "Unassessed"
+    },
+    {
+      "association": "unassessed",
+      "caller_access": "Unassessed",
+      "evidence": [],
+      "fabrics": [],
+      "gaps": [
+        "No direction-specific candidate association in this snapshot."
+      ],
+      "id": "unassessed:codex-app-server-task:codex-desktop-local",
+      "next_check": "Research caller access and target binding before associating candidates.",
+      "profiles": [],
+      "source": "codex-app-server-task",
+      "target": "codex-desktop-local",
       "target_binding": "Unassessed"
     },
     {
@@ -5805,6 +6007,21 @@
       "gaps": [
         "No direction-specific candidate association in this snapshot."
       ],
+      "id": "unassessed:codex-cloud:codex-desktop-local",
+      "next_check": "Research caller access and target binding before associating candidates.",
+      "profiles": [],
+      "source": "codex-cloud",
+      "target": "codex-desktop-local",
+      "target_binding": "Unassessed"
+    },
+    {
+      "association": "unassessed",
+      "caller_access": "Unassessed",
+      "evidence": [],
+      "fabrics": [],
+      "gaps": [
+        "No direction-specific candidate association in this snapshot."
+      ],
       "id": "unassessed:codex-cloud:codex-exec-task",
       "next_check": "Research caller access and target binding before associating candidates.",
       "profiles": [],
@@ -6221,6 +6438,21 @@
       "gaps": [
         "No direction-specific candidate association in this snapshot."
       ],
+      "id": "unassessed:codex-cloud-cli-task:codex-desktop-local",
+      "next_check": "Research caller access and target binding before associating candidates.",
+      "profiles": [],
+      "source": "codex-cloud-cli-task",
+      "target": "codex-desktop-local",
+      "target_binding": "Unassessed"
+    },
+    {
+      "association": "unassessed",
+      "caller_access": "Unassessed",
+      "evidence": [],
+      "fabrics": [],
+      "gaps": [
+        "No direction-specific candidate association in this snapshot."
+      ],
       "id": "unassessed:codex-cloud-cli-task:codex-exec-task",
       "next_check": "Research caller access and target binding before associating candidates.",
       "profiles": [],
@@ -6405,6 +6637,435 @@
       "next_check": "Research caller access and target binding before associating candidates.",
       "profiles": [],
       "source": "codex-cloud-cli-task",
+      "target": "t3-cursor",
+      "target_binding": "Unassessed"
+    },
+    {
+      "association": "unassessed",
+      "caller_access": "Unassessed",
+      "evidence": [],
+      "fabrics": [],
+      "gaps": [
+        "No direction-specific candidate association in this snapshot."
+      ],
+      "id": "unassessed:codex-desktop-local:chatgpt-codex-gui",
+      "next_check": "Research caller access and target binding before associating candidates.",
+      "profiles": [],
+      "source": "codex-desktop-local",
+      "target": "chatgpt-codex-gui",
+      "target_binding": "Unassessed"
+    },
+    {
+      "association": "unassessed",
+      "caller_access": "Unassessed",
+      "evidence": [],
+      "fabrics": [],
+      "gaps": [
+        "No direction-specific candidate association in this snapshot."
+      ],
+      "id": "unassessed:codex-desktop-local:claude-cloud",
+      "next_check": "Research caller access and target binding before associating candidates.",
+      "profiles": [],
+      "source": "codex-desktop-local",
+      "target": "claude-cloud",
+      "target_binding": "Unassessed"
+    },
+    {
+      "association": "recorded",
+      "caller_access": "Operator relayed the sender instruction and direct permission into the existing native Codex Desktop task; one local native MCP transaction. Automatic caller activation unqualified.",
+      "evidence": [
+        "lead-link-claude-human-ack-851"
+      ],
+      "fabrics": [
+        "rolecasting-claude-mcp-sender"
+      ],
+      "gaps": [
+        "One operator-selected existing pair, manual operator relay of sender activation and direct permission in Codex user context; automatic dispatch and grant propagation unqualified.",
+        "Human-reported correlated same-chat ACK/inferred receipt; no native incoming-event or authenticated origin, known arrival time, continuous visibility or intervention-free/exclusive causation proof.",
+        "No explicit idle/busy, preservation, later reply, restart/recovery, broader coverage, release/deployment or ordinary adoption claim.",
+        "Owned direct child killed/reaped after shutdown deadline; no graceful/whole-provider termination claim."
+      ],
+      "id": "codex-desktop-local-to-claude-desktop-code",
+      "next_check": "Retain this limited profile and independently prepare full current-consumer state, authority, reply/recovery and adoption evidence.",
+      "profiles": [
+        "codex-desktop-claude-human-ack-existing"
+      ],
+      "source": "codex-desktop-local",
+      "target": "claude-desktop-code",
+      "target_binding": "Same completed nominated address and operator-selected Claude task, joined by a new correlated GUI ACK; no authenticated endpoint/build proof."
+    },
+    {
+      "association": "unassessed",
+      "caller_access": "Unassessed",
+      "evidence": [],
+      "fabrics": [],
+      "gaps": [
+        "No direction-specific candidate association in this snapshot."
+      ],
+      "id": "unassessed:codex-desktop-local:claude-desktop-ssh",
+      "next_check": "Research caller access and target binding before associating candidates.",
+      "profiles": [],
+      "source": "codex-desktop-local",
+      "target": "claude-desktop-ssh",
+      "target_binding": "Unassessed"
+    },
+    {
+      "association": "unassessed",
+      "caller_access": "Unassessed",
+      "evidence": [],
+      "fabrics": [],
+      "gaps": [
+        "No direction-specific candidate association in this snapshot."
+      ],
+      "id": "unassessed:codex-desktop-local:claude-desktop-wsl",
+      "next_check": "Research caller access and target binding before associating candidates.",
+      "profiles": [],
+      "source": "codex-desktop-local",
+      "target": "claude-desktop-wsl",
+      "target_binding": "Unassessed"
+    },
+    {
+      "association": "unassessed",
+      "caller_access": "Unassessed",
+      "evidence": [],
+      "fabrics": [],
+      "gaps": [
+        "No direction-specific candidate association in this snapshot."
+      ],
+      "id": "unassessed:codex-desktop-local:claude-headless",
+      "next_check": "Research caller access and target binding before associating candidates.",
+      "profiles": [],
+      "source": "codex-desktop-local",
+      "target": "claude-headless",
+      "target_binding": "Unassessed"
+    },
+    {
+      "association": "unassessed",
+      "caller_access": "Unassessed",
+      "evidence": [],
+      "fabrics": [],
+      "gaps": [
+        "No direction-specific candidate association in this snapshot."
+      ],
+      "id": "unassessed:codex-desktop-local:claude-parent-subagent",
+      "next_check": "Research caller access and target binding before associating candidates.",
+      "profiles": [],
+      "source": "codex-desktop-local",
+      "target": "claude-parent-subagent",
+      "target_binding": "Unassessed"
+    },
+    {
+      "association": "unassessed",
+      "caller_access": "Unassessed",
+      "evidence": [],
+      "fabrics": [],
+      "gaps": [
+        "No direction-specific candidate association in this snapshot."
+      ],
+      "id": "unassessed:codex-desktop-local:claude-python-sdk-task",
+      "next_check": "Research caller access and target binding before associating candidates.",
+      "profiles": [],
+      "source": "codex-desktop-local",
+      "target": "claude-python-sdk-task",
+      "target_binding": "Unassessed"
+    },
+    {
+      "association": "unassessed",
+      "caller_access": "Unassessed",
+      "evidence": [],
+      "fabrics": [],
+      "gaps": [
+        "No direction-specific candidate association in this snapshot."
+      ],
+      "id": "unassessed:codex-desktop-local:claude-sdk-task",
+      "next_check": "Research caller access and target binding before associating candidates.",
+      "profiles": [],
+      "source": "codex-desktop-local",
+      "target": "claude-sdk-task",
+      "target_binding": "Unassessed"
+    },
+    {
+      "association": "unassessed",
+      "caller_access": "Unassessed",
+      "evidence": [],
+      "fabrics": [],
+      "gaps": [
+        "No direction-specific candidate association in this snapshot."
+      ],
+      "id": "unassessed:codex-desktop-local:claude-team-teammate",
+      "next_check": "Research caller access and target binding before associating candidates.",
+      "profiles": [],
+      "source": "codex-desktop-local",
+      "target": "claude-team-teammate",
+      "target_binding": "Unassessed"
+    },
+    {
+      "association": "unassessed",
+      "caller_access": "Unassessed",
+      "evidence": [],
+      "fabrics": [],
+      "gaps": [
+        "No direction-specific candidate association in this snapshot."
+      ],
+      "id": "unassessed:codex-desktop-local:claude-terminal",
+      "next_check": "Research caller access and target binding before associating candidates.",
+      "profiles": [],
+      "source": "codex-desktop-local",
+      "target": "claude-terminal",
+      "target_binding": "Unassessed"
+    },
+    {
+      "association": "unassessed",
+      "caller_access": "Unassessed",
+      "evidence": [],
+      "fabrics": [],
+      "gaps": [
+        "No direction-specific candidate association in this snapshot."
+      ],
+      "id": "unassessed:codex-desktop-local:claude-vscode",
+      "next_check": "Research caller access and target binding before associating candidates.",
+      "profiles": [],
+      "source": "codex-desktop-local",
+      "target": "claude-vscode",
+      "target_binding": "Unassessed"
+    },
+    {
+      "association": "unassessed",
+      "caller_access": "Unassessed",
+      "evidence": [],
+      "fabrics": [],
+      "gaps": [
+        "No direction-specific candidate association in this snapshot."
+      ],
+      "id": "unassessed:codex-desktop-local:codex-app-server-task",
+      "next_check": "Research caller access and target binding before associating candidates.",
+      "profiles": [],
+      "source": "codex-desktop-local",
+      "target": "codex-app-server-task",
+      "target_binding": "Unassessed"
+    },
+    {
+      "association": "unassessed",
+      "caller_access": "Unassessed",
+      "evidence": [],
+      "fabrics": [],
+      "gaps": [
+        "No direction-specific candidate association in this snapshot."
+      ],
+      "id": "unassessed:codex-desktop-local:codex-cloud",
+      "next_check": "Research caller access and target binding before associating candidates.",
+      "profiles": [],
+      "source": "codex-desktop-local",
+      "target": "codex-cloud",
+      "target_binding": "Unassessed"
+    },
+    {
+      "association": "unassessed",
+      "caller_access": "Unassessed",
+      "evidence": [],
+      "fabrics": [],
+      "gaps": [
+        "No direction-specific candidate association in this snapshot."
+      ],
+      "id": "unassessed:codex-desktop-local:codex-cloud-cli-task",
+      "next_check": "Research caller access and target binding before associating candidates.",
+      "profiles": [],
+      "source": "codex-desktop-local",
+      "target": "codex-cloud-cli-task",
+      "target_binding": "Unassessed"
+    },
+    {
+      "association": "unassessed",
+      "caller_access": "Unassessed",
+      "evidence": [],
+      "fabrics": [],
+      "gaps": [
+        "No direction-specific candidate association in this snapshot."
+      ],
+      "id": "unassessed:codex-desktop-local:codex-exec-task",
+      "next_check": "Research caller access and target binding before associating candidates.",
+      "profiles": [],
+      "source": "codex-desktop-local",
+      "target": "codex-exec-task",
+      "target_binding": "Unassessed"
+    },
+    {
+      "association": "unassessed",
+      "caller_access": "Unassessed",
+      "evidence": [],
+      "fabrics": [],
+      "gaps": [
+        "No direction-specific candidate association in this snapshot."
+      ],
+      "id": "unassessed:codex-desktop-local:codex-ide",
+      "next_check": "Research caller access and target binding before associating candidates.",
+      "profiles": [],
+      "source": "codex-desktop-local",
+      "target": "codex-ide",
+      "target_binding": "Unassessed"
+    },
+    {
+      "association": "unassessed",
+      "caller_access": "Unassessed",
+      "evidence": [],
+      "fabrics": [],
+      "gaps": [
+        "No direction-specific candidate association in this snapshot."
+      ],
+      "id": "unassessed:codex-desktop-local:codex-native-child",
+      "next_check": "Research caller access and target binding before associating candidates.",
+      "profiles": [],
+      "source": "codex-desktop-local",
+      "target": "codex-native-child",
+      "target_binding": "Unassessed"
+    },
+    {
+      "association": "unassessed",
+      "caller_access": "Unassessed",
+      "evidence": [],
+      "fabrics": [],
+      "gaps": [
+        "No direction-specific candidate association in this snapshot."
+      ],
+      "id": "unassessed:codex-desktop-local:codex-python-task",
+      "next_check": "Research caller access and target binding before associating candidates.",
+      "profiles": [],
+      "source": "codex-desktop-local",
+      "target": "codex-python-task",
+      "target_binding": "Unassessed"
+    },
+    {
+      "association": "unassessed",
+      "caller_access": "Unassessed",
+      "evidence": [],
+      "fabrics": [],
+      "gaps": [
+        "No direction-specific candidate association in this snapshot."
+      ],
+      "id": "unassessed:codex-desktop-local:codex-terminal",
+      "next_check": "Research caller access and target binding before associating candidates.",
+      "profiles": [],
+      "source": "codex-desktop-local",
+      "target": "codex-terminal",
+      "target_binding": "Unassessed"
+    },
+    {
+      "association": "unassessed",
+      "caller_access": "Unassessed",
+      "evidence": [],
+      "fabrics": [],
+      "gaps": [
+        "No direction-specific candidate association in this snapshot."
+      ],
+      "id": "unassessed:codex-desktop-local:codex-typescript-task",
+      "next_check": "Research caller access and target binding before associating candidates.",
+      "profiles": [],
+      "source": "codex-desktop-local",
+      "target": "codex-typescript-task",
+      "target_binding": "Unassessed"
+    },
+    {
+      "association": "unassessed",
+      "caller_access": "Unassessed",
+      "evidence": [],
+      "fabrics": [],
+      "gaps": [
+        "No direction-specific candidate association in this snapshot."
+      ],
+      "id": "unassessed:codex-desktop-local:cursor-agent-terminal",
+      "next_check": "Research caller access and target binding before associating candidates.",
+      "profiles": [],
+      "source": "codex-desktop-local",
+      "target": "cursor-agent-terminal",
+      "target_binding": "Unassessed"
+    },
+    {
+      "association": "unassessed",
+      "caller_access": "Unassessed",
+      "evidence": [],
+      "fabrics": [],
+      "gaps": [
+        "No direction-specific candidate association in this snapshot."
+      ],
+      "id": "unassessed:codex-desktop-local:cursor-cloud",
+      "next_check": "Research caller access and target binding before associating candidates.",
+      "profiles": [],
+      "source": "codex-desktop-local",
+      "target": "cursor-cloud",
+      "target_binding": "Unassessed"
+    },
+    {
+      "association": "unassessed",
+      "caller_access": "Unassessed",
+      "evidence": [],
+      "fabrics": [],
+      "gaps": [
+        "No direction-specific candidate association in this snapshot."
+      ],
+      "id": "unassessed:codex-desktop-local:hermes",
+      "next_check": "Research caller access and target binding before associating candidates.",
+      "profiles": [],
+      "source": "codex-desktop-local",
+      "target": "hermes",
+      "target_binding": "Unassessed"
+    },
+    {
+      "association": "unassessed",
+      "caller_access": "Unassessed",
+      "evidence": [],
+      "fabrics": [],
+      "gaps": [
+        "No direction-specific candidate association in this snapshot."
+      ],
+      "id": "unassessed:codex-desktop-local:openclaw",
+      "next_check": "Research caller access and target binding before associating candidates.",
+      "profiles": [],
+      "source": "codex-desktop-local",
+      "target": "openclaw",
+      "target_binding": "Unassessed"
+    },
+    {
+      "association": "unassessed",
+      "caller_access": "Unassessed",
+      "evidence": [],
+      "fabrics": [],
+      "gaps": [
+        "No direction-specific candidate association in this snapshot."
+      ],
+      "id": "unassessed:codex-desktop-local:t3-claude",
+      "next_check": "Research caller access and target binding before associating candidates.",
+      "profiles": [],
+      "source": "codex-desktop-local",
+      "target": "t3-claude",
+      "target_binding": "Unassessed"
+    },
+    {
+      "association": "unassessed",
+      "caller_access": "Unassessed",
+      "evidence": [],
+      "fabrics": [],
+      "gaps": [
+        "No direction-specific candidate association in this snapshot."
+      ],
+      "id": "unassessed:codex-desktop-local:t3-codex",
+      "next_check": "Research caller access and target binding before associating candidates.",
+      "profiles": [],
+      "source": "codex-desktop-local",
+      "target": "t3-codex",
+      "target_binding": "Unassessed"
+    },
+    {
+      "association": "unassessed",
+      "caller_access": "Unassessed",
+      "evidence": [],
+      "fabrics": [],
+      "gaps": [
+        "No direction-specific candidate association in this snapshot."
+      ],
+      "id": "unassessed:codex-desktop-local:t3-cursor",
+      "next_check": "Research caller access and target binding before associating candidates.",
+      "profiles": [],
+      "source": "codex-desktop-local",
       "target": "t3-cursor",
       "target_binding": "Unassessed"
     },
@@ -6631,6 +7292,21 @@
       "profiles": [],
       "source": "codex-exec-task",
       "target": "codex-cloud-cli-task",
+      "target_binding": "Unassessed"
+    },
+    {
+      "association": "unassessed",
+      "caller_access": "Unassessed",
+      "evidence": [],
+      "fabrics": [],
+      "gaps": [
+        "No direction-specific candidate association in this snapshot."
+      ],
+      "id": "unassessed:codex-exec-task:codex-desktop-local",
+      "next_check": "Research caller access and target binding before associating candidates.",
+      "profiles": [],
+      "source": "codex-exec-task",
+      "target": "codex-desktop-local",
       "target_binding": "Unassessed"
     },
     {
@@ -7046,6 +7722,21 @@
       "gaps": [
         "No direction-specific candidate association in this snapshot."
       ],
+      "id": "unassessed:codex-ide:codex-desktop-local",
+      "next_check": "Research caller access and target binding before associating candidates.",
+      "profiles": [],
+      "source": "codex-ide",
+      "target": "codex-desktop-local",
+      "target_binding": "Unassessed"
+    },
+    {
+      "association": "unassessed",
+      "caller_access": "Unassessed",
+      "evidence": [],
+      "fabrics": [],
+      "gaps": [
+        "No direction-specific candidate association in this snapshot."
+      ],
       "id": "unassessed:codex-ide:codex-exec-task",
       "next_check": "Research caller access and target binding before associating candidates.",
       "profiles": [],
@@ -7451,6 +8142,21 @@
       "gaps": [
         "No direction-specific candidate association in this snapshot."
       ],
+      "id": "unassessed:codex-native-child:codex-desktop-local",
+      "next_check": "Research caller access and target binding before associating candidates.",
+      "profiles": [],
+      "source": "codex-native-child",
+      "target": "codex-desktop-local",
+      "target_binding": "Unassessed"
+    },
+    {
+      "association": "unassessed",
+      "caller_access": "Unassessed",
+      "evidence": [],
+      "fabrics": [],
+      "gaps": [
+        "No direction-specific candidate association in this snapshot."
+      ],
       "id": "unassessed:codex-native-child:codex-exec-task",
       "next_check": "Research caller access and target binding before associating candidates.",
       "profiles": [],
@@ -7846,6 +8552,21 @@
       "profiles": [],
       "source": "codex-python-task",
       "target": "codex-cloud-cli-task",
+      "target_binding": "Unassessed"
+    },
+    {
+      "association": "unassessed",
+      "caller_access": "Unassessed",
+      "evidence": [],
+      "fabrics": [],
+      "gaps": [
+        "No direction-specific candidate association in this snapshot."
+      ],
+      "id": "unassessed:codex-python-task:codex-desktop-local",
+      "next_check": "Research caller access and target binding before associating candidates.",
+      "profiles": [],
+      "source": "codex-python-task",
+      "target": "codex-desktop-local",
       "target_binding": "Unassessed"
     },
     {
@@ -8322,6 +9043,21 @@
       "gaps": [
         "No direction-specific candidate association in this snapshot."
       ],
+      "id": "unassessed:codex-terminal:codex-desktop-local",
+      "next_check": "Research caller access and target binding before associating candidates.",
+      "profiles": [],
+      "source": "codex-terminal",
+      "target": "codex-desktop-local",
+      "target_binding": "Unassessed"
+    },
+    {
+      "association": "unassessed",
+      "caller_access": "Unassessed",
+      "evidence": [],
+      "fabrics": [],
+      "gaps": [
+        "No direction-specific candidate association in this snapshot."
+      ],
       "id": "unassessed:codex-terminal:codex-exec-task",
       "next_check": "Research caller access and target binding before associating candidates.",
       "profiles": [],
@@ -8717,6 +9453,21 @@
       "profiles": [],
       "source": "codex-typescript-task",
       "target": "codex-cloud-cli-task",
+      "target_binding": "Unassessed"
+    },
+    {
+      "association": "unassessed",
+      "caller_access": "Unassessed",
+      "evidence": [],
+      "fabrics": [],
+      "gaps": [
+        "No direction-specific candidate association in this snapshot."
+      ],
+      "id": "unassessed:codex-typescript-task:codex-desktop-local",
+      "next_check": "Research caller access and target binding before associating candidates.",
+      "profiles": [],
+      "source": "codex-typescript-task",
+      "target": "codex-desktop-local",
       "target_binding": "Unassessed"
     },
     {
@@ -9132,6 +9883,21 @@
       "gaps": [
         "No direction-specific candidate association in this snapshot."
       ],
+      "id": "unassessed:cursor-agent-terminal:codex-desktop-local",
+      "next_check": "Research caller access and target binding before associating candidates.",
+      "profiles": [],
+      "source": "cursor-agent-terminal",
+      "target": "codex-desktop-local",
+      "target_binding": "Unassessed"
+    },
+    {
+      "association": "unassessed",
+      "caller_access": "Unassessed",
+      "evidence": [],
+      "fabrics": [],
+      "gaps": [
+        "No direction-specific candidate association in this snapshot."
+      ],
       "id": "unassessed:cursor-agent-terminal:codex-exec-task",
       "next_check": "Research caller access and target binding before associating candidates.",
       "profiles": [],
@@ -9527,6 +10293,21 @@
       "profiles": [],
       "source": "cursor-cloud",
       "target": "codex-cloud-cli-task",
+      "target_binding": "Unassessed"
+    },
+    {
+      "association": "unassessed",
+      "caller_access": "Unassessed",
+      "evidence": [],
+      "fabrics": [],
+      "gaps": [
+        "No direction-specific candidate association in this snapshot."
+      ],
+      "id": "unassessed:cursor-cloud:codex-desktop-local",
+      "next_check": "Research caller access and target binding before associating candidates.",
+      "profiles": [],
+      "source": "cursor-cloud",
+      "target": "codex-desktop-local",
       "target_binding": "Unassessed"
     },
     {
@@ -9942,6 +10723,21 @@
       "gaps": [
         "No direction-specific candidate association in this snapshot."
       ],
+      "id": "unassessed:hermes:codex-desktop-local",
+      "next_check": "Research caller access and target binding before associating candidates.",
+      "profiles": [],
+      "source": "hermes",
+      "target": "codex-desktop-local",
+      "target_binding": "Unassessed"
+    },
+    {
+      "association": "unassessed",
+      "caller_access": "Unassessed",
+      "evidence": [],
+      "fabrics": [],
+      "gaps": [
+        "No direction-specific candidate association in this snapshot."
+      ],
       "id": "unassessed:hermes:codex-exec-task",
       "next_check": "Research caller access and target binding before associating candidates.",
       "profiles": [],
@@ -10337,6 +11133,21 @@
       "profiles": [],
       "source": "openclaw",
       "target": "codex-cloud-cli-task",
+      "target_binding": "Unassessed"
+    },
+    {
+      "association": "unassessed",
+      "caller_access": "Unassessed",
+      "evidence": [],
+      "fabrics": [],
+      "gaps": [
+        "No direction-specific candidate association in this snapshot."
+      ],
+      "id": "unassessed:openclaw:codex-desktop-local",
+      "next_check": "Research caller access and target binding before associating candidates.",
+      "profiles": [],
+      "source": "openclaw",
+      "target": "codex-desktop-local",
       "target_binding": "Unassessed"
     },
     {
@@ -10752,6 +11563,21 @@
       "gaps": [
         "No direction-specific candidate association in this snapshot."
       ],
+      "id": "unassessed:t3-claude:codex-desktop-local",
+      "next_check": "Research caller access and target binding before associating candidates.",
+      "profiles": [],
+      "source": "t3-claude",
+      "target": "codex-desktop-local",
+      "target_binding": "Unassessed"
+    },
+    {
+      "association": "unassessed",
+      "caller_access": "Unassessed",
+      "evidence": [],
+      "fabrics": [],
+      "gaps": [
+        "No direction-specific candidate association in this snapshot."
+      ],
       "id": "unassessed:t3-claude:codex-exec-task",
       "next_check": "Research caller access and target binding before associating candidates.",
       "profiles": [],
@@ -11147,6 +11973,21 @@
       "profiles": [],
       "source": "t3-codex",
       "target": "codex-cloud-cli-task",
+      "target_binding": "Unassessed"
+    },
+    {
+      "association": "unassessed",
+      "caller_access": "Unassessed",
+      "evidence": [],
+      "fabrics": [],
+      "gaps": [
+        "No direction-specific candidate association in this snapshot."
+      ],
+      "id": "unassessed:t3-codex:codex-desktop-local",
+      "next_check": "Research caller access and target binding before associating candidates.",
+      "profiles": [],
+      "source": "t3-codex",
+      "target": "codex-desktop-local",
       "target_binding": "Unassessed"
     },
     {
@@ -11562,6 +12403,21 @@
       "gaps": [
         "No direction-specific candidate association in this snapshot."
       ],
+      "id": "unassessed:t3-cursor:codex-desktop-local",
+      "next_check": "Research caller access and target binding before associating candidates.",
+      "profiles": [],
+      "source": "t3-cursor",
+      "target": "codex-desktop-local",
+      "target_binding": "Unassessed"
+    },
+    {
+      "association": "unassessed",
+      "caller_access": "Unassessed",
+      "evidence": [],
+      "fabrics": [],
+      "gaps": [
+        "No direction-specific candidate association in this snapshot."
+      ],
       "id": "unassessed:t3-cursor:codex-exec-task",
       "next_check": "Research caller access and target binding before associating candidates.",
       "profiles": [],
@@ -11736,9 +12592,9 @@
     }
   ],
   "counts": {
-    "associated_channels": 26,
-    "endpoints": 28,
-    "potential_channels": 756
+    "associated_channels": 28,
+    "endpoints": 29,
+    "potential_channels": 812
   },
   "decisions": [
     "https://github.com/nisavid/provingkit/issues/538#issuecomment-6112579765",
@@ -12096,6 +12952,30 @@
       "observed_at": "2026-11-04T18:09:49+00:00",
       "sha256": "eea54ba96b776781cc0c6a3ce9517fb42058f2a070f415e3a63770b68264e49e",
       "uri": "docs/coordination/batches/2026-11-04-lead-exchange-refusal.md#synthetic-discriminator"
+    },
+    {
+      "id": "lead-link-claude-human-ack-851",
+      "kind": "live",
+      "limits": [
+        "Finite producer witness/actor-result intake dated November 5; not independently measured arrival or tool-start time.",
+        "Private text, endpoint values, task IDs and paths remain private; this public report and content identity supply provenance limits, not access.",
+        "Exact original sender summary and operator-reported correlated assistant ACK; no native incoming-event or authenticated endpoint proof. Timing/interventions, idle/busy, preservation, grant propagation, later reply/recovery and adoption remain unqualified. Forced child reap is not graceful shutdown."
+      ],
+      "observed_at": "2026-11-05T10:42:58.469605+00:00",
+      "sha256": "d87d4c760d2b6dbc7d12a4045fef006655f69f69f2dd7c4fc102810f369cbb49",
+      "uri": "docs/coordination/batches/2026-11-05-lead-link-first-results.md"
+    },
+    {
+      "id": "lead-link-codex-local-refusal-847",
+      "kind": "live",
+      "limits": [
+        "Finite producer witness/actor-result intake dated November 5; not independently measured arrival or tool-start time.",
+        "Private text, endpoint values, task IDs and paths remain private; this public report and content identity supply provenance limits, not access.",
+        "Actor report and bounded own-result/source/capture-path readback establish local refusal before claim/connection/input. No backend operation or compatibility verdict follows."
+      ],
+      "observed_at": "2026-11-05T10:42:58.469605+00:00",
+      "sha256": "d87d4c760d2b6dbc7d12a4045fef006655f69f69f2dd7c4fc102810f369cbb49",
+      "uri": "docs/coordination/batches/2026-11-05-lead-link-first-results.md"
     },
     {
       "id": "reviewed-comparison",
@@ -16844,12 +17724,15 @@
     },
     {
       "compatibility": {
-        "evidence": [],
-        "scope": "Source implementation and local synthetic mechanics reviewed; actual native-server build, caller route and receiver remain unassessed. A changed build is not demonstrated incompatibility.",
-        "status": "unassessed"
+        "evidence": [
+          "lead-link-claude-human-ack-851"
+        ],
+        "scope": "One source46133 transaction and human-visible correlated response observed for the declared existing native Desktop pair. Actual binary/backend authentication, automatic authority propagation, other states, preservation/recovery and general compatibility remain unassessed. Forced child reap observed, graceful shutdown unqualified. No changed-build incompatibility inferred.",
+        "status": "mixed"
       },
       "crosswalk": [
-        "Maintained-source producer nisavid/provingkit#844; reviewed commit 61c17375c28e72db15a4c2898bfc90b251bd1deb"
+        "Maintained-source producer nisavid/provingkit#844; reviewed commit 61c17375c28e72db15a4c2898bfc90b251bd1deb",
+        "Limited native Desktop to Claude live profile, nisavid/provingkit#851; docs/coordination/batches/2026-11-05-lead-link-first-results.md"
       ],
       "dependencies": [
         "rolecasting-peer-message-support",
@@ -16862,16 +17745,17 @@
       "evidence": [
         "claude-mcp-sender-source-844",
         "claude-mcp-sender-consumers-844",
-        "claude-mcp-sender-source-review-844"
+        "claude-mcp-sender-source-review-844",
+        "lead-link-claude-human-ack-851"
       ],
       "gaps": [
-        "Actual caller, nominated server/launcher, current tool schema, native peer and applicable authority still need binding.",
-        "Submission is not receipt, ACK, handling or fulfillment; idle/busy and recovery remain unqualified.",
-        "Narrow protocol/schema/result and outgoing-frame profile; request read/start/reap lack a complete total-time guarantee."
+        "One manually activated/human-observed existing-pair profile is recorded separately; automatic caller/grant propagation, authenticated server/build/peer and wider consent remain unqualified.",
+        "Native receipt, explicit idle/busy, full preservation, later reply and recovery remain open.",
+        "Forced shutdown after deadline observed; complete time/memory/provider guarantees and graceful shutdown remain unqualified."
       ],
       "id": "rolecasting-claude-mcp-sender",
       "name": "Rolecasting mailbox-backed Claude MCP sender",
-      "next_check": "Use the reviewed procedure in the scoped link-case proposal; qualify actual target and receipt under a separate live grant.",
+      "next_check": "Extend evidence only through concrete scoped profiles; preserve the limited human-observation result and all stronger gaps.",
       "parent": null,
       "role": "actuator",
       "source_scope": "Maintained Python stdio MCP command with one claimed mailbox attempt, shared versioned peer envelope, supported SendMessage(to,message), selected-result capture and owned-child closure. Source support establishes no authenticated peer or permission.",
@@ -16884,16 +17768,18 @@
           "lead-exchange-independent-readback-865",
           "codex-owner-admission-source-869",
           "codex-owner-admission-command-synthetic-869",
-          "codex-owner-admission-source-review-869"
+          "codex-owner-admission-source-review-869",
+          "lead-link-codex-local-refusal-847"
         ],
-        "scope": "Source mechanics and synthetic command behavior reviewed. Assess affected framing, owner/follow/state, busy steer, correlation/reconciliation and capture behavior with graduated checks; current native build, caller access and receiver remain unassessed. A new build alone proves no incompatibility. Idle-intent source and cooperative command examples are separately assessed; actual native compatibility remains unassessed and a changed version alone proves no incompatibility. November 4 one-shot acquisition matched a decoded bound state, then refused before peer input on an unfinished receive deadline. This function observation establishes neither complete current-build compatibility nor general incompatibility; unexercised idle eligibility/start, receipt and reverse MCP return remain unassessed. The separate owner-admission source/public fixtures assess only that new operation; unchanged split behavior and its failed trial retain their prior evidence. Actual owner/backend/current version, admission versus ordinary-start fallback, receipt/processing and preservation remain unassessed. Source-experiment acceptance adds no live authority.",
+        "scope": "Source mechanics and synthetic command behavior reviewed. Assess affected framing, owner/follow/state, busy steer, correlation/reconciliation and capture behavior with graduated checks; current native build, caller access and receiver remain unassessed. A new build alone proves no incompatibility. Idle-intent source and cooperative command examples are separately assessed; actual native compatibility remains unassessed and a changed version alone proves no incompatibility. November 4 one-shot acquisition matched a decoded bound state, then refused before peer input on an unfinished receive deadline. This function observation establishes neither complete current-build compatibility nor general incompatibility; unexercised idle eligibility/start, receipt and reverse MCP return remain unassessed. The separate owner-admission source/public fixtures assess only that new operation; unchanged split behavior and its failed trial retain their prior evidence. Actual owner/backend/current version, admission versus ordinary-start fallback, receipt/processing and preservation remain unassessed. Source-experiment acceptance adds no live authority. November5 owner-admission attempt stopped on missing caller capture root before claim/connection; this establishes no receiver compatibility or incompatibility.",
         "status": "unassessed"
       },
       "crosswalk": [
         "Maintained-source producer nisavid/provingkit#843; reviewed published commit 94dc3ed7ba4fa8df4192a0c37db9c8dc734de9bc",
         "Source prototype producer nisavid/provingkit#860; reviewed published commit 71e4d47d582f25373d8f91463bf2b785532d6798",
         "Failed live-trial producer nisavid/provingkit#865; unchanged actuator source 46133eeca2f16a0e70ea5334481422c753ae84bc",
-        "Owner-admission source nisavid/provingkit#869; published commit bbf997b78676d69a1f69ffa37be88b594353dc7c"
+        "Owner-admission source nisavid/provingkit#869; published commit bbf997b78676d69a1f69ffa37be88b594353dc7c",
+        "Finite pre-claim local refusal, nisavid/provingkit#847; docs/coordination/batches/2026-11-05-lead-link-first-results.md"
       ],
       "dependencies": [
         "rolecasting-peer-message-support",
@@ -16916,7 +17802,8 @@
         "lead-exchange-synthetic-discriminator-865",
         "codex-owner-admission-source-869",
         "codex-owner-admission-command-synthetic-869",
-        "codex-owner-admission-source-review-869"
+        "codex-owner-admission-source-review-869",
+        "lead-link-codex-local-refusal-847"
       ],
       "gaps": [
         "Actual caller exposure, existing endpoint/access, current owner/build/peer and original authority/holds require binding.",
@@ -17464,6 +18351,11 @@
         "target": "codex-cloud-cli-task"
       },
       {
+        "id": "unassessed:chatgpt-codex-gui:codex-desktop-local",
+        "source": "chatgpt-codex-gui",
+        "target": "codex-desktop-local"
+      },
+      {
         "id": "chatgpt-codex-gui-to-codex-exec-task",
         "source": "chatgpt-codex-gui",
         "target": "codex-exec-task"
@@ -17597,6 +18489,11 @@
         "id": "unassessed:claude-cloud:codex-cloud-cli-task",
         "source": "claude-cloud",
         "target": "codex-cloud-cli-task"
+      },
+      {
+        "id": "unassessed:claude-cloud:codex-desktop-local",
+        "source": "claude-cloud",
+        "target": "codex-desktop-local"
       },
       {
         "id": "unassessed:claude-cloud:codex-exec-task",
@@ -17734,6 +18631,11 @@
         "target": "codex-cloud-cli-task"
       },
       {
+        "id": "claude-desktop-code-to-codex-desktop-local",
+        "source": "claude-desktop-code",
+        "target": "codex-desktop-local"
+      },
+      {
         "id": "claude-desktop-code-to-codex-exec-task",
         "source": "claude-desktop-code",
         "target": "codex-exec-task"
@@ -17867,6 +18769,11 @@
         "id": "unassessed:claude-desktop-ssh:codex-cloud-cli-task",
         "source": "claude-desktop-ssh",
         "target": "codex-cloud-cli-task"
+      },
+      {
+        "id": "unassessed:claude-desktop-ssh:codex-desktop-local",
+        "source": "claude-desktop-ssh",
+        "target": "codex-desktop-local"
       },
       {
         "id": "unassessed:claude-desktop-ssh:codex-exec-task",
@@ -18004,6 +18911,11 @@
         "target": "codex-cloud-cli-task"
       },
       {
+        "id": "unassessed:claude-desktop-wsl:codex-desktop-local",
+        "source": "claude-desktop-wsl",
+        "target": "codex-desktop-local"
+      },
+      {
         "id": "unassessed:claude-desktop-wsl:codex-exec-task",
         "source": "claude-desktop-wsl",
         "target": "codex-exec-task"
@@ -18137,6 +19049,11 @@
         "id": "unassessed:claude-headless:codex-cloud-cli-task",
         "source": "claude-headless",
         "target": "codex-cloud-cli-task"
+      },
+      {
+        "id": "unassessed:claude-headless:codex-desktop-local",
+        "source": "claude-headless",
+        "target": "codex-desktop-local"
       },
       {
         "id": "unassessed:claude-headless:codex-exec-task",
@@ -18274,6 +19191,11 @@
         "target": "codex-cloud-cli-task"
       },
       {
+        "id": "unassessed:claude-parent-subagent:codex-desktop-local",
+        "source": "claude-parent-subagent",
+        "target": "codex-desktop-local"
+      },
+      {
         "id": "unassessed:claude-parent-subagent:codex-exec-task",
         "source": "claude-parent-subagent",
         "target": "codex-exec-task"
@@ -18407,6 +19329,11 @@
         "id": "unassessed:claude-python-sdk-task:codex-cloud-cli-task",
         "source": "claude-python-sdk-task",
         "target": "codex-cloud-cli-task"
+      },
+      {
+        "id": "unassessed:claude-python-sdk-task:codex-desktop-local",
+        "source": "claude-python-sdk-task",
+        "target": "codex-desktop-local"
       },
       {
         "id": "unassessed:claude-python-sdk-task:codex-exec-task",
@@ -18544,6 +19471,11 @@
         "target": "codex-cloud-cli-task"
       },
       {
+        "id": "unassessed:claude-sdk-task:codex-desktop-local",
+        "source": "claude-sdk-task",
+        "target": "codex-desktop-local"
+      },
+      {
         "id": "unassessed:claude-sdk-task:codex-exec-task",
         "source": "claude-sdk-task",
         "target": "codex-exec-task"
@@ -18677,6 +19609,11 @@
         "id": "unassessed:claude-team-teammate:codex-cloud-cli-task",
         "source": "claude-team-teammate",
         "target": "codex-cloud-cli-task"
+      },
+      {
+        "id": "unassessed:claude-team-teammate:codex-desktop-local",
+        "source": "claude-team-teammate",
+        "target": "codex-desktop-local"
       },
       {
         "id": "unassessed:claude-team-teammate:codex-exec-task",
@@ -18814,6 +19751,11 @@
         "target": "codex-cloud-cli-task"
       },
       {
+        "id": "unassessed:claude-terminal:codex-desktop-local",
+        "source": "claude-terminal",
+        "target": "codex-desktop-local"
+      },
+      {
         "id": "unassessed:claude-terminal:codex-exec-task",
         "source": "claude-terminal",
         "target": "codex-exec-task"
@@ -18947,6 +19889,11 @@
         "id": "unassessed:claude-vscode:codex-cloud-cli-task",
         "source": "claude-vscode",
         "target": "codex-cloud-cli-task"
+      },
+      {
+        "id": "unassessed:claude-vscode:codex-desktop-local",
+        "source": "claude-vscode",
+        "target": "codex-desktop-local"
       },
       {
         "id": "unassessed:claude-vscode:codex-exec-task",
@@ -19084,6 +20031,11 @@
         "target": "codex-cloud-cli-task"
       },
       {
+        "id": "unassessed:codex-app-server-task:codex-desktop-local",
+        "source": "codex-app-server-task",
+        "target": "codex-desktop-local"
+      },
+      {
         "id": "unassessed:codex-app-server-task:codex-exec-task",
         "source": "codex-app-server-task",
         "target": "codex-exec-task"
@@ -19217,6 +20169,11 @@
         "id": "unassessed:codex-cloud:codex-cloud-cli-task",
         "source": "codex-cloud",
         "target": "codex-cloud-cli-task"
+      },
+      {
+        "id": "unassessed:codex-cloud:codex-desktop-local",
+        "source": "codex-cloud",
+        "target": "codex-desktop-local"
       },
       {
         "id": "unassessed:codex-cloud:codex-exec-task",
@@ -19354,6 +20311,11 @@
         "target": "codex-cloud"
       },
       {
+        "id": "unassessed:codex-cloud-cli-task:codex-desktop-local",
+        "source": "codex-cloud-cli-task",
+        "target": "codex-desktop-local"
+      },
+      {
         "id": "unassessed:codex-cloud-cli-task:codex-exec-task",
         "source": "codex-cloud-cli-task",
         "target": "codex-exec-task"
@@ -19416,6 +20378,146 @@
       {
         "id": "unassessed:codex-cloud-cli-task:t3-cursor",
         "source": "codex-cloud-cli-task",
+        "target": "t3-cursor"
+      },
+      {
+        "id": "unassessed:codex-desktop-local:chatgpt-codex-gui",
+        "source": "codex-desktop-local",
+        "target": "chatgpt-codex-gui"
+      },
+      {
+        "id": "unassessed:codex-desktop-local:claude-cloud",
+        "source": "codex-desktop-local",
+        "target": "claude-cloud"
+      },
+      {
+        "id": "codex-desktop-local-to-claude-desktop-code",
+        "source": "codex-desktop-local",
+        "target": "claude-desktop-code"
+      },
+      {
+        "id": "unassessed:codex-desktop-local:claude-desktop-ssh",
+        "source": "codex-desktop-local",
+        "target": "claude-desktop-ssh"
+      },
+      {
+        "id": "unassessed:codex-desktop-local:claude-desktop-wsl",
+        "source": "codex-desktop-local",
+        "target": "claude-desktop-wsl"
+      },
+      {
+        "id": "unassessed:codex-desktop-local:claude-headless",
+        "source": "codex-desktop-local",
+        "target": "claude-headless"
+      },
+      {
+        "id": "unassessed:codex-desktop-local:claude-parent-subagent",
+        "source": "codex-desktop-local",
+        "target": "claude-parent-subagent"
+      },
+      {
+        "id": "unassessed:codex-desktop-local:claude-python-sdk-task",
+        "source": "codex-desktop-local",
+        "target": "claude-python-sdk-task"
+      },
+      {
+        "id": "unassessed:codex-desktop-local:claude-sdk-task",
+        "source": "codex-desktop-local",
+        "target": "claude-sdk-task"
+      },
+      {
+        "id": "unassessed:codex-desktop-local:claude-team-teammate",
+        "source": "codex-desktop-local",
+        "target": "claude-team-teammate"
+      },
+      {
+        "id": "unassessed:codex-desktop-local:claude-terminal",
+        "source": "codex-desktop-local",
+        "target": "claude-terminal"
+      },
+      {
+        "id": "unassessed:codex-desktop-local:claude-vscode",
+        "source": "codex-desktop-local",
+        "target": "claude-vscode"
+      },
+      {
+        "id": "unassessed:codex-desktop-local:codex-app-server-task",
+        "source": "codex-desktop-local",
+        "target": "codex-app-server-task"
+      },
+      {
+        "id": "unassessed:codex-desktop-local:codex-cloud",
+        "source": "codex-desktop-local",
+        "target": "codex-cloud"
+      },
+      {
+        "id": "unassessed:codex-desktop-local:codex-cloud-cli-task",
+        "source": "codex-desktop-local",
+        "target": "codex-cloud-cli-task"
+      },
+      {
+        "id": "unassessed:codex-desktop-local:codex-exec-task",
+        "source": "codex-desktop-local",
+        "target": "codex-exec-task"
+      },
+      {
+        "id": "unassessed:codex-desktop-local:codex-ide",
+        "source": "codex-desktop-local",
+        "target": "codex-ide"
+      },
+      {
+        "id": "unassessed:codex-desktop-local:codex-native-child",
+        "source": "codex-desktop-local",
+        "target": "codex-native-child"
+      },
+      {
+        "id": "unassessed:codex-desktop-local:codex-python-task",
+        "source": "codex-desktop-local",
+        "target": "codex-python-task"
+      },
+      {
+        "id": "unassessed:codex-desktop-local:codex-terminal",
+        "source": "codex-desktop-local",
+        "target": "codex-terminal"
+      },
+      {
+        "id": "unassessed:codex-desktop-local:codex-typescript-task",
+        "source": "codex-desktop-local",
+        "target": "codex-typescript-task"
+      },
+      {
+        "id": "unassessed:codex-desktop-local:cursor-agent-terminal",
+        "source": "codex-desktop-local",
+        "target": "cursor-agent-terminal"
+      },
+      {
+        "id": "unassessed:codex-desktop-local:cursor-cloud",
+        "source": "codex-desktop-local",
+        "target": "cursor-cloud"
+      },
+      {
+        "id": "unassessed:codex-desktop-local:hermes",
+        "source": "codex-desktop-local",
+        "target": "hermes"
+      },
+      {
+        "id": "unassessed:codex-desktop-local:openclaw",
+        "source": "codex-desktop-local",
+        "target": "openclaw"
+      },
+      {
+        "id": "unassessed:codex-desktop-local:t3-claude",
+        "source": "codex-desktop-local",
+        "target": "t3-claude"
+      },
+      {
+        "id": "unassessed:codex-desktop-local:t3-codex",
+        "source": "codex-desktop-local",
+        "target": "t3-codex"
+      },
+      {
+        "id": "unassessed:codex-desktop-local:t3-cursor",
+        "source": "codex-desktop-local",
         "target": "t3-cursor"
       },
       {
@@ -19492,6 +20594,11 @@
         "id": "unassessed:codex-exec-task:codex-cloud-cli-task",
         "source": "codex-exec-task",
         "target": "codex-cloud-cli-task"
+      },
+      {
+        "id": "unassessed:codex-exec-task:codex-desktop-local",
+        "source": "codex-exec-task",
+        "target": "codex-desktop-local"
       },
       {
         "id": "unassessed:codex-exec-task:codex-ide",
@@ -19629,6 +20736,11 @@
         "target": "codex-cloud-cli-task"
       },
       {
+        "id": "unassessed:codex-ide:codex-desktop-local",
+        "source": "codex-ide",
+        "target": "codex-desktop-local"
+      },
+      {
         "id": "unassessed:codex-ide:codex-exec-task",
         "source": "codex-ide",
         "target": "codex-exec-task"
@@ -19762,6 +20874,11 @@
         "id": "unassessed:codex-native-child:codex-cloud-cli-task",
         "source": "codex-native-child",
         "target": "codex-cloud-cli-task"
+      },
+      {
+        "id": "unassessed:codex-native-child:codex-desktop-local",
+        "source": "codex-native-child",
+        "target": "codex-desktop-local"
       },
       {
         "id": "unassessed:codex-native-child:codex-exec-task",
@@ -19899,6 +21016,11 @@
         "target": "codex-cloud-cli-task"
       },
       {
+        "id": "unassessed:codex-python-task:codex-desktop-local",
+        "source": "codex-python-task",
+        "target": "codex-desktop-local"
+      },
+      {
         "id": "unassessed:codex-python-task:codex-exec-task",
         "source": "codex-python-task",
         "target": "codex-exec-task"
@@ -20032,6 +21154,11 @@
         "id": "unassessed:codex-terminal:codex-cloud-cli-task",
         "source": "codex-terminal",
         "target": "codex-cloud-cli-task"
+      },
+      {
+        "id": "unassessed:codex-terminal:codex-desktop-local",
+        "source": "codex-terminal",
+        "target": "codex-desktop-local"
       },
       {
         "id": "unassessed:codex-terminal:codex-exec-task",
@@ -20169,6 +21296,11 @@
         "target": "codex-cloud-cli-task"
       },
       {
+        "id": "unassessed:codex-typescript-task:codex-desktop-local",
+        "source": "codex-typescript-task",
+        "target": "codex-desktop-local"
+      },
+      {
         "id": "unassessed:codex-typescript-task:codex-exec-task",
         "source": "codex-typescript-task",
         "target": "codex-exec-task"
@@ -20302,6 +21434,11 @@
         "id": "unassessed:cursor-agent-terminal:codex-cloud-cli-task",
         "source": "cursor-agent-terminal",
         "target": "codex-cloud-cli-task"
+      },
+      {
+        "id": "unassessed:cursor-agent-terminal:codex-desktop-local",
+        "source": "cursor-agent-terminal",
+        "target": "codex-desktop-local"
       },
       {
         "id": "unassessed:cursor-agent-terminal:codex-exec-task",
@@ -20439,6 +21576,11 @@
         "target": "codex-cloud-cli-task"
       },
       {
+        "id": "unassessed:cursor-cloud:codex-desktop-local",
+        "source": "cursor-cloud",
+        "target": "codex-desktop-local"
+      },
+      {
         "id": "unassessed:cursor-cloud:codex-exec-task",
         "source": "cursor-cloud",
         "target": "codex-exec-task"
@@ -20572,6 +21714,11 @@
         "id": "unassessed:hermes:codex-cloud-cli-task",
         "source": "hermes",
         "target": "codex-cloud-cli-task"
+      },
+      {
+        "id": "unassessed:hermes:codex-desktop-local",
+        "source": "hermes",
+        "target": "codex-desktop-local"
       },
       {
         "id": "unassessed:hermes:codex-exec-task",
@@ -20709,6 +21856,11 @@
         "target": "codex-cloud-cli-task"
       },
       {
+        "id": "unassessed:openclaw:codex-desktop-local",
+        "source": "openclaw",
+        "target": "codex-desktop-local"
+      },
+      {
         "id": "unassessed:openclaw:codex-exec-task",
         "source": "openclaw",
         "target": "codex-exec-task"
@@ -20842,6 +21994,11 @@
         "id": "unassessed:t3-claude:codex-cloud-cli-task",
         "source": "t3-claude",
         "target": "codex-cloud-cli-task"
+      },
+      {
+        "id": "unassessed:t3-claude:codex-desktop-local",
+        "source": "t3-claude",
+        "target": "codex-desktop-local"
       },
       {
         "id": "unassessed:t3-claude:codex-exec-task",
@@ -20979,6 +22136,11 @@
         "target": "codex-cloud-cli-task"
       },
       {
+        "id": "unassessed:t3-codex:codex-desktop-local",
+        "source": "t3-codex",
+        "target": "codex-desktop-local"
+      },
+      {
         "id": "unassessed:t3-codex:codex-exec-task",
         "source": "t3-codex",
         "target": "codex-exec-task"
@@ -21112,6 +22274,11 @@
         "id": "unassessed:t3-cursor:codex-cloud-cli-task",
         "source": "t3-cursor",
         "target": "codex-cloud-cli-task"
+      },
+      {
+        "id": "unassessed:t3-cursor:codex-desktop-local",
+        "source": "t3-cursor",
+        "target": "codex-desktop-local"
       },
       {
         "id": "unassessed:t3-cursor:codex-exec-task",
@@ -21396,6 +22563,22 @@
       },
       {
         "evidence": [
+          "lead-link-claude-human-ack-851",
+          "lead-link-codex-local-refusal-847"
+        ],
+        "host": "Codex Desktop",
+        "id": "codex-desktop-local",
+        "limits": [
+          "Explicit native local surface named by the actor and operator-selected task context; no authenticated backend or process identity.",
+          "Retain the broad ChatGPT Codex GUI entry separately; underlying population/display correspondence remains unresolved and no channel qualification transfers.",
+          "A catalog target and one limited profile do not establish general operational support."
+        ],
+        "name": "Codex Desktop native local main task",
+        "surface": "native local GUI",
+        "wave": 1
+      },
+      {
+        "evidence": [
           "reviewed-comparison",
           "cohort-granular-coverage"
         ],
@@ -21596,6 +22779,7 @@
       "codex-app-server-task",
       "codex-cloud",
       "codex-cloud-cli-task",
+      "codex-desktop-local",
       "codex-exec-task",
       "codex-ide",
       "codex-native-child",
@@ -21672,6 +22856,10 @@
           {
             "channel": "unassessed:chatgpt-codex-gui:codex-cloud-cli-task",
             "target": "codex-cloud-cli-task"
+          },
+          {
+            "channel": "unassessed:chatgpt-codex-gui:codex-desktop-local",
+            "target": "codex-desktop-local"
           },
           {
             "channel": "chatgpt-codex-gui-to-codex-exec-task",
@@ -21791,6 +22979,10 @@
             "target": "codex-cloud-cli-task"
           },
           {
+            "channel": "unassessed:claude-cloud:codex-desktop-local",
+            "target": "codex-desktop-local"
+          },
+          {
             "channel": "unassessed:claude-cloud:codex-exec-task",
             "target": "codex-exec-task"
           },
@@ -21906,6 +23098,10 @@
           {
             "channel": "unassessed:claude-desktop-code:codex-cloud-cli-task",
             "target": "codex-cloud-cli-task"
+          },
+          {
+            "channel": "claude-desktop-code-to-codex-desktop-local",
+            "target": "codex-desktop-local"
           },
           {
             "channel": "claude-desktop-code-to-codex-exec-task",
@@ -22025,6 +23221,10 @@
             "target": "codex-cloud-cli-task"
           },
           {
+            "channel": "unassessed:claude-desktop-ssh:codex-desktop-local",
+            "target": "codex-desktop-local"
+          },
+          {
             "channel": "unassessed:claude-desktop-ssh:codex-exec-task",
             "target": "codex-exec-task"
           },
@@ -22140,6 +23340,10 @@
           {
             "channel": "unassessed:claude-desktop-wsl:codex-cloud-cli-task",
             "target": "codex-cloud-cli-task"
+          },
+          {
+            "channel": "unassessed:claude-desktop-wsl:codex-desktop-local",
+            "target": "codex-desktop-local"
           },
           {
             "channel": "unassessed:claude-desktop-wsl:codex-exec-task",
@@ -22259,6 +23463,10 @@
             "target": "codex-cloud-cli-task"
           },
           {
+            "channel": "unassessed:claude-headless:codex-desktop-local",
+            "target": "codex-desktop-local"
+          },
+          {
             "channel": "unassessed:claude-headless:codex-exec-task",
             "target": "codex-exec-task"
           },
@@ -22374,6 +23582,10 @@
           {
             "channel": "unassessed:claude-parent-subagent:codex-cloud-cli-task",
             "target": "codex-cloud-cli-task"
+          },
+          {
+            "channel": "unassessed:claude-parent-subagent:codex-desktop-local",
+            "target": "codex-desktop-local"
           },
           {
             "channel": "unassessed:claude-parent-subagent:codex-exec-task",
@@ -22493,6 +23705,10 @@
             "target": "codex-cloud-cli-task"
           },
           {
+            "channel": "unassessed:claude-python-sdk-task:codex-desktop-local",
+            "target": "codex-desktop-local"
+          },
+          {
             "channel": "unassessed:claude-python-sdk-task:codex-exec-task",
             "target": "codex-exec-task"
           },
@@ -22608,6 +23824,10 @@
           {
             "channel": "unassessed:claude-sdk-task:codex-cloud-cli-task",
             "target": "codex-cloud-cli-task"
+          },
+          {
+            "channel": "unassessed:claude-sdk-task:codex-desktop-local",
+            "target": "codex-desktop-local"
           },
           {
             "channel": "unassessed:claude-sdk-task:codex-exec-task",
@@ -22727,6 +23947,10 @@
             "target": "codex-cloud-cli-task"
           },
           {
+            "channel": "unassessed:claude-team-teammate:codex-desktop-local",
+            "target": "codex-desktop-local"
+          },
+          {
             "channel": "unassessed:claude-team-teammate:codex-exec-task",
             "target": "codex-exec-task"
           },
@@ -22842,6 +24066,10 @@
           {
             "channel": "unassessed:claude-terminal:codex-cloud-cli-task",
             "target": "codex-cloud-cli-task"
+          },
+          {
+            "channel": "unassessed:claude-terminal:codex-desktop-local",
+            "target": "codex-desktop-local"
           },
           {
             "channel": "unassessed:claude-terminal:codex-exec-task",
@@ -22961,6 +24189,10 @@
             "target": "codex-cloud-cli-task"
           },
           {
+            "channel": "unassessed:claude-vscode:codex-desktop-local",
+            "target": "codex-desktop-local"
+          },
+          {
             "channel": "unassessed:claude-vscode:codex-exec-task",
             "target": "codex-exec-task"
           },
@@ -23076,6 +24308,10 @@
           {
             "channel": "unassessed:codex-app-server-task:codex-cloud-cli-task",
             "target": "codex-cloud-cli-task"
+          },
+          {
+            "channel": "unassessed:codex-app-server-task:codex-desktop-local",
+            "target": "codex-desktop-local"
           },
           {
             "channel": "unassessed:codex-app-server-task:codex-exec-task",
@@ -23195,6 +24431,10 @@
             "target": "codex-cloud-cli-task"
           },
           {
+            "channel": "unassessed:codex-cloud:codex-desktop-local",
+            "target": "codex-desktop-local"
+          },
+          {
             "channel": "unassessed:codex-cloud:codex-exec-task",
             "target": "codex-exec-task"
           },
@@ -23312,6 +24552,10 @@
             "target": "codex-cloud-cli-task"
           },
           {
+            "channel": "unassessed:codex-cloud-cli-task:codex-desktop-local",
+            "target": "codex-desktop-local"
+          },
+          {
             "channel": "unassessed:codex-cloud-cli-task:codex-exec-task",
             "target": "codex-exec-task"
           },
@@ -23365,6 +24609,127 @@
           }
         ],
         "source": "codex-cloud-cli-task"
+      },
+      {
+        "cells": [
+          {
+            "channel": "unassessed:codex-desktop-local:chatgpt-codex-gui",
+            "target": "chatgpt-codex-gui"
+          },
+          {
+            "channel": "unassessed:codex-desktop-local:claude-cloud",
+            "target": "claude-cloud"
+          },
+          {
+            "channel": "codex-desktop-local-to-claude-desktop-code",
+            "target": "claude-desktop-code"
+          },
+          {
+            "channel": "unassessed:codex-desktop-local:claude-desktop-ssh",
+            "target": "claude-desktop-ssh"
+          },
+          {
+            "channel": "unassessed:codex-desktop-local:claude-desktop-wsl",
+            "target": "claude-desktop-wsl"
+          },
+          {
+            "channel": "unassessed:codex-desktop-local:claude-headless",
+            "target": "claude-headless"
+          },
+          {
+            "channel": "unassessed:codex-desktop-local:claude-parent-subagent",
+            "target": "claude-parent-subagent"
+          },
+          {
+            "channel": "unassessed:codex-desktop-local:claude-python-sdk-task",
+            "target": "claude-python-sdk-task"
+          },
+          {
+            "channel": "unassessed:codex-desktop-local:claude-sdk-task",
+            "target": "claude-sdk-task"
+          },
+          {
+            "channel": "unassessed:codex-desktop-local:claude-team-teammate",
+            "target": "claude-team-teammate"
+          },
+          {
+            "channel": "unassessed:codex-desktop-local:claude-terminal",
+            "target": "claude-terminal"
+          },
+          {
+            "channel": "unassessed:codex-desktop-local:claude-vscode",
+            "target": "claude-vscode"
+          },
+          {
+            "channel": "unassessed:codex-desktop-local:codex-app-server-task",
+            "target": "codex-app-server-task"
+          },
+          {
+            "channel": "unassessed:codex-desktop-local:codex-cloud",
+            "target": "codex-cloud"
+          },
+          {
+            "channel": "unassessed:codex-desktop-local:codex-cloud-cli-task",
+            "target": "codex-cloud-cli-task"
+          },
+          {
+            "channel": null,
+            "target": "codex-desktop-local"
+          },
+          {
+            "channel": "unassessed:codex-desktop-local:codex-exec-task",
+            "target": "codex-exec-task"
+          },
+          {
+            "channel": "unassessed:codex-desktop-local:codex-ide",
+            "target": "codex-ide"
+          },
+          {
+            "channel": "unassessed:codex-desktop-local:codex-native-child",
+            "target": "codex-native-child"
+          },
+          {
+            "channel": "unassessed:codex-desktop-local:codex-python-task",
+            "target": "codex-python-task"
+          },
+          {
+            "channel": "unassessed:codex-desktop-local:codex-terminal",
+            "target": "codex-terminal"
+          },
+          {
+            "channel": "unassessed:codex-desktop-local:codex-typescript-task",
+            "target": "codex-typescript-task"
+          },
+          {
+            "channel": "unassessed:codex-desktop-local:cursor-agent-terminal",
+            "target": "cursor-agent-terminal"
+          },
+          {
+            "channel": "unassessed:codex-desktop-local:cursor-cloud",
+            "target": "cursor-cloud"
+          },
+          {
+            "channel": "unassessed:codex-desktop-local:hermes",
+            "target": "hermes"
+          },
+          {
+            "channel": "unassessed:codex-desktop-local:openclaw",
+            "target": "openclaw"
+          },
+          {
+            "channel": "unassessed:codex-desktop-local:t3-claude",
+            "target": "t3-claude"
+          },
+          {
+            "channel": "unassessed:codex-desktop-local:t3-codex",
+            "target": "t3-codex"
+          },
+          {
+            "channel": "unassessed:codex-desktop-local:t3-cursor",
+            "target": "t3-cursor"
+          }
+        ],
+        "source": "codex-desktop-local"
       },
       {
         "cells": [
@@ -23427,6 +24792,10 @@
           {
             "channel": "unassessed:codex-exec-task:codex-cloud-cli-task",
             "target": "codex-cloud-cli-task"
+          },
+          {
+            "channel": "unassessed:codex-exec-task:codex-desktop-local",
+            "target": "codex-desktop-local"
           },
           {
             "channel": null,
@@ -23546,6 +24915,10 @@
             "target": "codex-cloud-cli-task"
           },
           {
+            "channel": "unassessed:codex-ide:codex-desktop-local",
+            "target": "codex-desktop-local"
+          },
+          {
             "channel": "unassessed:codex-ide:codex-exec-task",
             "target": "codex-exec-task"
           },
@@ -23661,6 +25034,10 @@
           {
             "channel": "unassessed:codex-native-child:codex-cloud-cli-task",
             "target": "codex-cloud-cli-task"
+          },
+          {
+            "channel": "unassessed:codex-native-child:codex-desktop-local",
+            "target": "codex-desktop-local"
           },
           {
             "channel": "unassessed:codex-native-child:codex-exec-task",
@@ -23780,6 +25157,10 @@
             "target": "codex-cloud-cli-task"
           },
           {
+            "channel": "unassessed:codex-python-task:codex-desktop-local",
+            "target": "codex-desktop-local"
+          },
+          {
             "channel": "unassessed:codex-python-task:codex-exec-task",
             "target": "codex-exec-task"
           },
@@ -23895,6 +25276,10 @@
           {
             "channel": "unassessed:codex-terminal:codex-cloud-cli-task",
             "target": "codex-cloud-cli-task"
+          },
+          {
+            "channel": "unassessed:codex-terminal:codex-desktop-local",
+            "target": "codex-desktop-local"
           },
           {
             "channel": "unassessed:codex-terminal:codex-exec-task",
@@ -24014,6 +25399,10 @@
             "target": "codex-cloud-cli-task"
           },
           {
+            "channel": "unassessed:codex-typescript-task:codex-desktop-local",
+            "target": "codex-desktop-local"
+          },
+          {
             "channel": "unassessed:codex-typescript-task:codex-exec-task",
             "target": "codex-exec-task"
           },
@@ -24129,6 +25518,10 @@
           {
             "channel": "unassessed:cursor-agent-terminal:codex-cloud-cli-task",
             "target": "codex-cloud-cli-task"
+          },
+          {
+            "channel": "unassessed:cursor-agent-terminal:codex-desktop-local",
+            "target": "codex-desktop-local"
           },
           {
             "channel": "unassessed:cursor-agent-terminal:codex-exec-task",
@@ -24248,6 +25641,10 @@
             "target": "codex-cloud-cli-task"
           },
           {
+            "channel": "unassessed:cursor-cloud:codex-desktop-local",
+            "target": "codex-desktop-local"
+          },
+          {
             "channel": "unassessed:cursor-cloud:codex-exec-task",
             "target": "codex-exec-task"
           },
@@ -24363,6 +25760,10 @@
           {
             "channel": "unassessed:hermes:codex-cloud-cli-task",
             "target": "codex-cloud-cli-task"
+          },
+          {
+            "channel": "unassessed:hermes:codex-desktop-local",
+            "target": "codex-desktop-local"
           },
           {
             "channel": "unassessed:hermes:codex-exec-task",
@@ -24482,6 +25883,10 @@
             "target": "codex-cloud-cli-task"
           },
           {
+            "channel": "unassessed:openclaw:codex-desktop-local",
+            "target": "codex-desktop-local"
+          },
+          {
             "channel": "unassessed:openclaw:codex-exec-task",
             "target": "codex-exec-task"
           },
@@ -24597,6 +26002,10 @@
           {
             "channel": "unassessed:t3-claude:codex-cloud-cli-task",
             "target": "codex-cloud-cli-task"
+          },
+          {
+            "channel": "unassessed:t3-claude:codex-desktop-local",
+            "target": "codex-desktop-local"
           },
           {
             "channel": "unassessed:t3-claude:codex-exec-task",
@@ -24716,6 +26125,10 @@
             "target": "codex-cloud-cli-task"
           },
           {
+            "channel": "unassessed:t3-codex:codex-desktop-local",
+            "target": "codex-desktop-local"
+          },
+          {
             "channel": "unassessed:t3-codex:codex-exec-task",
             "target": "codex-exec-task"
           },
@@ -24831,6 +26244,10 @@
           {
             "channel": "unassessed:t3-cursor:codex-cloud-cli-task",
             "target": "codex-cloud-cli-task"
+          },
+          {
+            "channel": "unassessed:t3-cursor:codex-desktop-local",
+            "target": "codex-desktop-local"
           },
           {
             "channel": "unassessed:t3-cursor:codex-exec-task",
@@ -29321,6 +30738,75 @@
       "target_input": "exact-reference"
     },
     {
+      "assurance": "Matched local sender refusal, source precondition and requested capture-directory metadata; no actual owner/backend/receiver evidence.",
+      "channel": "claude-desktop-code-to-codex-desktop-local",
+      "claims": [
+        {
+          "coverage": "unknown",
+          "evidence": [
+            "lead-link-codex-local-refusal-847"
+          ],
+          "limits": [
+            "Capture root absent; existing-directory guard refused before claim, connection or peer input. Exit0 alone was not operation success.",
+            "No receipt, execution, checked result, native branch or general incompatibility verdict."
+          ],
+          "milestone": "submitted",
+          "operation": "request-work",
+          "outcome": "refused",
+          "stage": "prototyped"
+        }
+      ],
+      "consent": {
+        "limits": [
+          "Original one-shot case closed; no replay or new live permission follows."
+        ],
+        "references": [
+          "https://github.com/nisavid/provingkit/issues/866",
+          "https://github.com/nisavid/provingkit/issues/847#issuecomment-6652947884"
+        ]
+      },
+      "continuity": {
+        "busy": "Unexercised.",
+        "idle": "Unexercised.",
+        "restart": "Unexercised."
+      },
+      "fabric": "rolecasting-codex-ipc-sender",
+      "gaps": [
+        "Actual owner access/discovery/branch and checked response remain unproved.",
+        "Correct capture-parent preparation uses the existing procedure; later connection needs its applicable live grant."
+      ],
+      "id": "claude-desktop-codex-owner-local-refusal-existing",
+      "input_semantics": "Planned peer-labelled owner-admission work request; same mailbox/envelope helpers; source guard stopped before claim and connection.",
+      "next_check": "Prepare corrected case output parents under existing method, preserve the failed record, and return for a reviewed exact live scope; do not add a reader/component or raise limits from this local refusal.",
+      "operations": {
+        "continue-task": [],
+        "create-task": [],
+        "inspect": [],
+        "notify": [],
+        "reply": [],
+        "request-work": [
+          {
+            "coverage": "unknown",
+            "evidence": [
+              "lead-link-codex-local-refusal-847"
+            ],
+            "limits": [
+              "Capture root absent; existing-directory guard refused before claim, connection or peer input. Exit0 alone was not operation success.",
+              "No receipt, execution, checked result, native branch or general incompatibility verdict."
+            ],
+            "milestone": "submitted",
+            "operation": "request-work",
+            "outcome": "refused",
+            "stage": "prototyped"
+          }
+        ]
+      },
+      "ownership": "Operator-selected existing Claude and native Codex Desktop Leads; actual receiver operation never reached.",
+      "population": "existing",
+      "relationship": "Peer; one operator-relayed Claude administration; no receiver transport proof.",
+      "target_input": "exact-reference"
+    },
+    {
       "assurance": "Reviewed source assessment only; no live operation or runtime-preservation proof.",
       "channel": null,
       "claims": [],
@@ -32780,6 +34266,139 @@
         ],
         "vector": "SS\u2013SPS"
       },
+      "target_input": "exact-reference"
+    },
+    {
+      "assurance": "Human-visible correlated response plus matched own sender result, under cooperative actor reports. No native incoming-event/authenticated-origin, timing or full preservation proof.",
+      "channel": "codex-desktop-local-to-claude-desktop-code",
+      "claims": [
+        {
+          "coverage": "partial",
+          "evidence": [
+            "lead-link-claude-human-ack-851"
+          ],
+          "limits": [
+            "One operator-selected existing pair, manual operator relay of sender activation and direct permission in Codex user context; automatic dispatch and grant propagation unqualified.",
+            "Human-reported correlated same-chat ACK/inferred receipt; no native incoming-event or authenticated origin, known arrival time, continuous visibility or intervention-free/exclusive causation proof.",
+            "No explicit idle/busy, preservation, later reply, restart/recovery, broader coverage, release/deployment or ordinary adoption claim.",
+            "Owned direct child killed/reaped after shutdown deadline; no graceful/whole-provider termination claim."
+          ],
+          "milestone": "submitted",
+          "operation": "notify",
+          "stage": "qualified"
+        },
+        {
+          "coverage": "partial",
+          "evidence": [
+            "lead-link-claude-human-ack-851"
+          ],
+          "limits": [
+            "One operator-selected existing pair, manual operator relay of sender activation and direct permission in Codex user context; automatic dispatch and grant propagation unqualified.",
+            "Human-reported correlated same-chat ACK/inferred receipt; no native incoming-event or authenticated origin, known arrival time, continuous visibility or intervention-free/exclusive causation proof.",
+            "No explicit idle/busy, preservation, later reply, restart/recovery, broader coverage, release/deployment or ordinary adoption claim.",
+            "Owned direct child killed/reaped after shutdown deadline; no graceful/whole-provider termination claim."
+          ],
+          "milestone": "receipt",
+          "operation": "notify",
+          "stage": "qualified"
+        },
+        {
+          "coverage": "partial",
+          "evidence": [
+            "lead-link-claude-human-ack-851"
+          ],
+          "limits": [
+            "One operator-selected existing pair, manual operator relay of sender activation and direct permission in Codex user context; automatic dispatch and grant propagation unqualified.",
+            "Human-reported correlated same-chat ACK/inferred receipt; no native incoming-event or authenticated origin, known arrival time, continuous visibility or intervention-free/exclusive causation proof.",
+            "No explicit idle/busy, preservation, later reply, restart/recovery, broader coverage, release/deployment or ordinary adoption claim.",
+            "Owned direct child killed/reaped after shutdown deadline; no graceful/whole-provider termination claim."
+          ],
+          "milestone": "acknowledged",
+          "operation": "notify",
+          "stage": "qualified"
+        }
+      ],
+      "consent": {
+        "limits": [
+          "Historical one-shot grants are spent, not operating permission. Receiver did not verify authority_ref; automatic authority carryover remains unqualified."
+        ],
+        "references": [
+          "https://github.com/nisavid/provingkit/issues/867#issuecomment-6655121910",
+          "https://github.com/nisavid/provingkit/issues/851#issuecomment-6655557692"
+        ]
+      },
+      "continuity": {
+        "busy": "Not independently established; work continuity unqualified.",
+        "idle": "Not independently established; no pre-send idle profile claimed.",
+        "restart": "Unqualified; no recovery action performed."
+      },
+      "fabric": "rolecasting-claude-mcp-sender",
+      "gaps": [
+        "One operator-selected existing pair, manual operator relay of sender activation and direct permission in Codex user context; automatic dispatch and grant propagation unqualified.",
+        "Human-reported correlated same-chat ACK/inferred receipt; no native incoming-event or authenticated origin, known arrival time, continuous visibility or intervention-free/exclusive causation proof.",
+        "No explicit idle/busy, preservation, later reply, restart/recovery, broader coverage, release/deployment or ordinary adoption claim.",
+        "Owned direct child killed/reaped after shutdown deadline; no graceful/whole-provider termination claim."
+      ],
+      "id": "codex-desktop-claude-human-ack-existing",
+      "input_semantics": "Existing versioned peer envelope, unchanged payload/grants/holds; actual direct operator authorization in sender context. No new operator authority supplied by the envelope.",
+      "next_check": "Prepare separately scoped idle/busy, authority/preservation and recovery evidence; assess forced-shutdown cost without treating it as an open process. Full technical and adoption gates remain open.",
+      "operations": {
+        "continue-task": [],
+        "create-task": [],
+        "inspect": [],
+        "notify": [
+          {
+            "coverage": "partial",
+            "evidence": [
+              "lead-link-claude-human-ack-851"
+            ],
+            "limits": [
+              "One operator-selected existing pair, manual operator relay of sender activation and direct permission in Codex user context; automatic dispatch and grant propagation unqualified.",
+              "Human-reported correlated same-chat ACK/inferred receipt; no native incoming-event or authenticated origin, known arrival time, continuous visibility or intervention-free/exclusive causation proof.",
+              "No explicit idle/busy, preservation, later reply, restart/recovery, broader coverage, release/deployment or ordinary adoption claim.",
+              "Owned direct child killed/reaped after shutdown deadline; no graceful/whole-provider termination claim."
+            ],
+            "milestone": "submitted",
+            "operation": "notify",
+            "stage": "qualified"
+          },
+          {
+            "coverage": "partial",
+            "evidence": [
+              "lead-link-claude-human-ack-851"
+            ],
+            "limits": [
+              "One operator-selected existing pair, manual operator relay of sender activation and direct permission in Codex user context; automatic dispatch and grant propagation unqualified.",
+              "Human-reported correlated same-chat ACK/inferred receipt; no native incoming-event or authenticated origin, known arrival time, continuous visibility or intervention-free/exclusive causation proof.",
+              "No explicit idle/busy, preservation, later reply, restart/recovery, broader coverage, release/deployment or ordinary adoption claim.",
+              "Owned direct child killed/reaped after shutdown deadline; no graceful/whole-provider termination claim."
+            ],
+            "milestone": "receipt",
+            "operation": "notify",
+            "stage": "qualified"
+          },
+          {
+            "coverage": "partial",
+            "evidence": [
+              "lead-link-claude-human-ack-851"
+            ],
+            "limits": [
+              "One operator-selected existing pair, manual operator relay of sender activation and direct permission in Codex user context; automatic dispatch and grant propagation unqualified.",
+              "Human-reported correlated same-chat ACK/inferred receipt; no native incoming-event or authenticated origin, known arrival time, continuous visibility or intervention-free/exclusive causation proof.",
+              "No explicit idle/busy, preservation, later reply, restart/recovery, broader coverage, release/deployment or ordinary adoption claim.",
+              "Owned direct child killed/reaped after shutdown deadline; no graceful/whole-provider termination claim."
+            ],
+            "milestone": "acknowledged",
+            "operation": "notify",
+            "stage": "qualified"
+          }
+        ],
+        "reply": [],
+        "request-work": []
+      },
+      "ownership": "Independently existing operator-selected Codex Desktop and Claude Desktop Leads; public specimen identities only.",
+      "population": "existing",
+      "relationship": "Peer; caller administration manually relayed by the operator; receiver observed by operator in its selected GUI.",
       "target_input": "exact-reference"
     },
     {
@@ -45604,7 +47223,8 @@
             "Narrow protocol/schema/result and outgoing-frame profile; request read/start/reap lack a complete total-time guarantee."
           ],
           "crosswalk": [
-            "Maintained-source producer nisavid/provingkit#844; reviewed commit 61c17375c28e72db15a4c2898bfc90b251bd1deb"
+            "Maintained-source producer nisavid/provingkit#844; reviewed commit 61c17375c28e72db15a4c2898bfc90b251bd1deb",
+            "Finite paired Lead results: docs/coordination/batches/2026-11-05-lead-link-first-results.md"
           ],
           "fabric": "rolecasting-claude-mcp-sender",
           "grouping_only": null,
@@ -45612,7 +47232,7 @@
             "rolecasting-peer-message-support",
             "selected-claude-mcp-peer-server"
           ],
-          "rationale": "Maintained Python stdio MCP command with one claimed mailbox attempt, shared versioned peer envelope, supported SendMessage(to,message), selected-result capture and owned-child closure. Source support establishes no authenticated peer or permission. Complete producer batch: published source61 imports, nominated-child command and procedure; docs/coordination/batches/2026-11-03-claude-mcp-sender.md"
+          "rationale": "Maintained Python stdio MCP command with one claimed mailbox attempt, shared versioned peer envelope, supported SendMessage(to,message), selected-result capture and owned-child closure. Source support establishes no authenticated peer or permission. Complete producer batch: published source61 imports, nominated-child command and procedure; docs/coordination/batches/2026-11-03-claude-mcp-sender.md The finite November5 live results establish no additional mandatory component. Manual activation/direct authority and GUI observation are profile-specific ambient capabilities; an existing capture directory is an invocation input, not a new fabric. Same helper and selected-server/owner classes remain mandatory; actual broader binding gaps stay open."
         },
         {
           "alternatives": [],
@@ -45664,7 +47284,8 @@
             "Maintained-source producer nisavid/provingkit#843; reviewed published commit 94dc3ed7ba4fa8df4192a0c37db9c8dc734de9bc",
             "Source prototype producer nisavid/provingkit#860; reviewed published commit 71e4d47d582f25373d8f91463bf2b785532d6798",
             "Finite failed-trial batch nisavid/provingkit#865, docs/coordination/batches/2026-11-04-lead-exchange-refusal.md",
-            "Owner-admission source nisavid/provingkit#869; published commit bbf997b78676d69a1f69ffa37be88b594353dc7c"
+            "Owner-admission source nisavid/provingkit#869; published commit bbf997b78676d69a1f69ffa37be88b594353dc7c",
+            "Finite paired Lead results: docs/coordination/batches/2026-11-05-lead-link-first-results.md"
           ],
           "fabric": "rolecasting-codex-ipc-sender",
           "grouping_only": null,
@@ -45672,7 +47293,7 @@
             "rolecasting-peer-message-support",
             "selected-codex-native-ipc-owner"
           ],
-          "rationale": "Maintained busy-only Unix IPC sender and original-attempt read-only reconciliation; immutable mailbox claim, peer envelope, intact owner/generation binding and create-only per-run captures. No new queue, automatic resend or idle-start fallback. Complete finite producer evidence: published source94 core/transport/sender/capture and procedure; docs/coordination/batches/2026-11-03-codex-ipc-sender.md. Shared mailbox/envelope bytes equal source61, so existing helper evidence carries forward unchanged. The complete idle source batch (https://github.com/nisavid/provingkit/blob/71e4d47d582f25373d8f91463bf2b785532d6798/docs/coordination/batches/2026-11-03-codex-idle-prototype.md) reuses the same mandatory components. Native start is another operation of the existing selected-owner class, not a new fabric; no additional mandatory component is established. Current binding/receipt/live gaps remain. The complete finite November 4 failed-trial/retained-readback/synthetic-discriminator batch establishes no additional component requirement. Existing mailbox/envelope and selected IPC-owner dependencies remain unchanged; the planned nomination/MCP return is case-specific and unexercised, not a new mandatory component of all IPC sends. Complete finite owner-admission batch: published command/guide, seven public command/socket fixtures, three independent source critics, distinct adjudication and architecture result. Same mandatory mailbox/envelope and selected IPC-owner classes; no additional component/backend/framework requirement. CPython/stdlib/SQLite/local files remain working conditions. Actual binding remains unknown. The failed split trial is retained; its framing repair is not a prerequisite for the selected owner-admission live proposal. Native App Server access remains a separate unresolved/parked alternative."
+          "rationale": "Maintained busy-only Unix IPC sender and original-attempt read-only reconciliation; immutable mailbox claim, peer envelope, intact owner/generation binding and create-only per-run captures. No new queue, automatic resend or idle-start fallback. Complete finite producer evidence: published source94 core/transport/sender/capture and procedure; docs/coordination/batches/2026-11-03-codex-ipc-sender.md. Shared mailbox/envelope bytes equal source61, so existing helper evidence carries forward unchanged. The complete idle source batch (https://github.com/nisavid/provingkit/blob/71e4d47d582f25373d8f91463bf2b785532d6798/docs/coordination/batches/2026-11-03-codex-idle-prototype.md) reuses the same mandatory components. Native start is another operation of the existing selected-owner class, not a new fabric; no additional mandatory component is established. Current binding/receipt/live gaps remain. The complete finite November 4 failed-trial/retained-readback/synthetic-discriminator batch establishes no additional component requirement. Existing mailbox/envelope and selected IPC-owner dependencies remain unchanged; the planned nomination/MCP return is case-specific and unexercised, not a new mandatory component of all IPC sends. Complete finite owner-admission batch: published command/guide, seven public command/socket fixtures, three independent source critics, distinct adjudication and architecture result. Same mandatory mailbox/envelope and selected IPC-owner classes; no additional component/backend/framework requirement. CPython/stdlib/SQLite/local files remain working conditions. Actual binding remains unknown. The failed split trial is retained; its framing repair is not a prerequisite for the selected owner-admission live proposal. Native App Server access remains a separate unresolved/parked alternative. The finite November5 live results establish no additional mandatory component. Manual activation/direct authority and GUI observation are profile-specific ambient capabilities; an existing capture directory is an invocation input, not a new fabric. Same helper and selected-server/owner classes remain mandatory; actual broader binding gaps stay open."
         },
         {
           "alternatives": [],
@@ -45866,6 +47487,21 @@
       "source": "https://github.com/nisavid/provingkit/blob/61b99e73ebedf8afb33b28a531daea8089504394/docs/superpowers/research/2026-10-11-peer-portfolio-comparison.md"
     },
     "coverage_consumer": "https://github.com/nisavid/provingkit/issues/560",
+    "lead_link_first_results_20261105": {
+      "affected_fabrics": [
+        "rolecasting-claude-mcp-sender",
+        "rolecasting-codex-ipc-sender"
+      ],
+      "claims": "Narrow human-observed notification milestones partial; reverse request submission refused/unknown positive coverage.",
+      "dependency_reconciliation": "Same mandatory components; ambient human steps and capture directory not new components.",
+      "legacy_endpoint_mapping": "Preserved separately/unresolved; no qualification transfer.",
+      "new_endpoint_view": "codex-desktop-local",
+      "private_data": "No actual peer text/marker/correlation, endpoint value, task ID or machine-local path in public report/catalog.",
+      "procedure": "updating-cross-harness-catalog",
+      "procedure_revision": "caf455bcbc23a34f20c558d74135f38c3915f224",
+      "report": "docs/coordination/batches/2026-11-05-lead-link-first-results.md",
+      "report_sha256": "d87d4c760d2b6dbc7d12a4045fef006655f69f69f2dd7c4fc102810f369cbb49"
+    },
     "operation_decision": "https://github.com/nisavid/provingkit/issues/538#issuecomment-6112579765",
     "original_registry_entries": 48,
     "original_row_appearances": 91,
@@ -45884,9 +47520,9 @@
   },
   "schema_version": 1,
   "snapshot": {
-    "coverage": "Dated owner-admission source batch: 165 fabrics, 314 profiles, 32 evidence records, 28 endpoints and 26 directed associations. One shared existing-task prototype adds unknown notification submission/receipt; three source/synthetic/review records. Prior profiles, failed split trial and unrelated records retained. Source experiment accepted without live authority. No actual owner/backend/current version or operation qualified.",
-    "generated_at": "2026-11-05T05:03:47.255095+00:00",
-    "revision": "codex-owner-admission-source-869"
+    "coverage": "Dated paired Lead results: 29 endpoint views (24 Wave1), 165 fabrics, 316 profiles, 34 evidence records, 28 directed associations and812 potential pairs. Native local Codex Desktop is separate from broad legacy ChatGPT GUI. One manual/human-observed existing-pair notification profile has partial submission/receipt/ACK qualification; reverse local pre-claim refusal has positive coverage unknown. Full operations, both states, authority propagation/preservation, recovery, release/deployment and adoption remain open.",
+    "generated_at": "2026-11-05T10:42:58.469605+00:00",
+    "revision": "lead-link-first-results-20261105"
   },
-  "source_sha256": "0fcbfe624d3f3bdfc7daaea92022e90ba3d4e8773fb3f9121cd47715556ebf3d"
+  "source_sha256": "42f746d725a9a2ed4b672707f26464b52d592a13a216e6c4756184bbc3172232"
 }

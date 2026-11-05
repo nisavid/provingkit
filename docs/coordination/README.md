@@ -7,14 +7,15 @@ blocking relationships in the [portfolio map](https://github.com/nisavid/proving
 
 `catalog.json` is the maintained source. The dated first-cohort snapshot
 integrates the [granular coverage investigation](https://github.com/nisavid/provingkit/issues/560)
-and eight published directional preparations. It contains 23 Wave 1 operational
-surface views, 28 across all waves, and 165 candidate/supporting fabric records.
+and eight published directional preparations. It contains 24 Wave 1 operational
+surface views, 29 across all waves, and 165 candidate/supporting fabric records.
 All 150 seed fabrics, their distinct source cohorts, unsuccessful/unsuitable
 leads, archived vectors and unresolved mappings remain discoverable.
 
-The generated register has 756 potential directed view pairs and 26 explicit
-source-candidate associations. Those counts are neither unique native
-populations nor supported routes. No actual fabric operation is qualified.
+The generated register has 812 potential directed view pairs and 28 explicit
+associations. Those counts are neither unique native populations nor supported
+routes. One existing-pair notification profile has limited human-visible
+submission/receipt/ACK evidence; the full directional link remains unqualified.
 Pure invented Queue/Steer and worker/Cloud state models are separate synthetic
 evidence; they do not establish a working transport or backend capability.
 
@@ -32,6 +33,8 @@ The maintained Codex IPC sender source batch adds a busy-only actuator and its r
 The [November 4 Lead exchange](batches/2026-11-04-lead-exchange-refusal.md) adds a refused existing-task work-request profile. The source stopped before peer-input submission after an incomplete-receive deadline; the owned connection closed and the planned Claude return was not exercised. Receipt, work and general compatibility remain unknown. A separate invented command/socket discriminator reproduces the refusal pattern without establishing its live cause or selecting a repair.
 
 The [owner-admission source batch](batches/2026-11-05-owner-admission-source.md) adds a separate local v2 prototype on the same IPC fabric without follow/state prediction. Seven producer command/socket checks and independent source review support source mechanics; actual native branch, submission and receipt remain unknown. Ivan accepted the source experiment, adding no live authority. The snapshot now has 314 profiles and 32 evidence records. The next check prepares the selected live proposal; native App Server access stays separately unresolved/parked.
+
+The [first paired Lead results](batches/2026-11-05-lead-link-first-results.md) retain a pre-claim Codex setup refusal and one Codex Desktop → Claude human-observed correlated ACK. Native Codex Desktop has a separate surface record; the legacy ChatGPT GUI view receives no inferred qualification. The sender required direct operator authority and forced child reaping, and the profile leaves timing, idle/busy, native identity/receipt, preservation, recovery and adoption open. This snapshot has 316 profiles and 34 evidence records.
 
 ## Read the record
 

@@ -1,9 +1,9 @@
 {
   "schema_version": 1,
   "snapshot": {
-    "revision": "codex-owner-admission-source-869",
-    "generated_at": "2026-11-05T05:03:47.255095+00:00",
-    "coverage": "Dated owner-admission source batch: 165 fabrics, 314 profiles, 32 evidence records, 28 endpoints and 26 directed associations. One shared existing-task prototype adds unknown notification submission/receipt; three source/synthetic/review records. Prior profiles, failed split trial and unrelated records retained. Source experiment accepted without live authority. No actual owner/backend/current version or operation qualified."
+    "revision": "lead-link-first-results-20261105",
+    "generated_at": "2026-11-05T10:42:58.469605+00:00",
+    "coverage": "Dated paired Lead results: 29 endpoint views (24 Wave1), 165 fabrics, 316 profiles, 34 evidence records, 28 directed associations and812 potential pairs. Native local Codex Desktop is separate from broad legacy ChatGPT GUI. One manual/human-observed existing-pair notification profile has partial submission/receipt/ACK qualification; reverse local pre-claim refusal has positive coverage unknown. Full operations, both states, authority propagation/preservation, recovery, release/deployment and adoption remain open."
   },
   "decisions": [
     "https://github.com/nisavid/provingkit/issues/538#issuecomment-6112579765",
@@ -372,6 +372,30 @@
       "limits": [
         "Three independent source critics and distinct adjudicator found no current finding; architecture no Strong change. Not catalog-candidate review or live qualification.",
         "Dated source intake, not exact execution time. Source-experiment acceptance adds no live authority, access/identity binding, preservation, agent discovery/application, installation or adoption."
+      ]
+    },
+    {
+      "id": "lead-link-claude-human-ack-851",
+      "kind": "live",
+      "uri": "docs/coordination/batches/2026-11-05-lead-link-first-results.md",
+      "observed_at": "2026-11-05T10:42:58.469605+00:00",
+      "sha256": "d87d4c760d2b6dbc7d12a4045fef006655f69f69f2dd7c4fc102810f369cbb49",
+      "limits": [
+        "Finite producer witness/actor-result intake dated November 5; not independently measured arrival or tool-start time.",
+        "Private text, endpoint values, task IDs and paths remain private; this public report and content identity supply provenance limits, not access.",
+        "Exact original sender summary and operator-reported correlated assistant ACK; no native incoming-event or authenticated endpoint proof. Timing/interventions, idle/busy, preservation, grant propagation, later reply/recovery and adoption remain unqualified. Forced child reap is not graceful shutdown."
+      ]
+    },
+    {
+      "id": "lead-link-codex-local-refusal-847",
+      "kind": "live",
+      "uri": "docs/coordination/batches/2026-11-05-lead-link-first-results.md",
+      "observed_at": "2026-11-05T10:42:58.469605+00:00",
+      "sha256": "d87d4c760d2b6dbc7d12a4045fef006655f69f69f2dd7c4fc102810f369cbb49",
+      "limits": [
+        "Finite producer witness/actor-result intake dated November 5; not independently measured arrival or tool-start time.",
+        "Private text, endpoint values, task IDs and paths remain private; this public report and content identity supply provenance limits, not access.",
+        "Actor report and bounded own-result/source/capture-path readback establish local refusal before claim/connection/input. No backend operation or compatibility verdict follows."
       ]
     }
   ],
@@ -776,6 +800,22 @@
       "limits": [
         "Operational surface view; underlying native-population overlaps and exact owner/namespace association remain unresolved.",
         "Wave membership and potential direction counts establish no supported route. New surfaces inherit no caller access or reverse qualification."
+      ]
+    },
+    {
+      "id": "codex-desktop-local",
+      "name": "Codex Desktop native local main task",
+      "host": "Codex Desktop",
+      "surface": "native local GUI",
+      "wave": 1,
+      "evidence": [
+        "lead-link-claude-human-ack-851",
+        "lead-link-codex-local-refusal-847"
+      ],
+      "limits": [
+        "Explicit native local surface named by the actor and operator-selected task context; no authenticated backend or process identity.",
+        "Retain the broad ChatGPT Codex GUI entry separately; underlying population/display correspondence remains unresolved and no channel qualification transfers.",
+        "A catalog target and one limited profile do not establish general operational support."
       ]
     }
   ],
@@ -5858,17 +5898,21 @@
       "status": "discovered",
       "parent": null,
       "crosswalk": [
-        "Maintained-source producer nisavid/provingkit#844; reviewed commit 61c17375c28e72db15a4c2898bfc90b251bd1deb"
+        "Maintained-source producer nisavid/provingkit#844; reviewed commit 61c17375c28e72db15a4c2898bfc90b251bd1deb",
+        "Limited native Desktop to Claude live profile, nisavid/provingkit#851; docs/coordination/batches/2026-11-05-lead-link-first-results.md"
       ],
       "evidence": [
         "claude-mcp-sender-source-844",
         "claude-mcp-sender-consumers-844",
-        "claude-mcp-sender-source-review-844"
+        "claude-mcp-sender-source-review-844",
+        "lead-link-claude-human-ack-851"
       ],
       "compatibility": {
-        "status": "unassessed",
-        "scope": "Source implementation and local synthetic mechanics reviewed; actual native-server build, caller route and receiver remain unassessed. A changed build is not demonstrated incompatibility.",
-        "evidence": []
+        "status": "mixed",
+        "scope": "One source46133 transaction and human-visible correlated response observed for the declared existing native Desktop pair. Actual binary/backend authentication, automatic authority propagation, other states, preservation/recovery and general compatibility remain unassessed. Forced child reap observed, graceful shutdown unqualified. No changed-build incompatibility inferred.",
+        "evidence": [
+          "lead-link-claude-human-ack-851"
+        ]
       },
       "effort": {
         "active_minutes": null,
@@ -5883,11 +5927,11 @@
       ],
       "source_scope": "Maintained Python stdio MCP command with one claimed mailbox attempt, shared versioned peer envelope, supported SendMessage(to,message), selected-result capture and owned-child closure. Source support establishes no authenticated peer or permission.",
       "gaps": [
-        "Actual caller, nominated server/launcher, current tool schema, native peer and applicable authority still need binding.",
-        "Submission is not receipt, ACK, handling or fulfillment; idle/busy and recovery remain unqualified.",
-        "Narrow protocol/schema/result and outgoing-frame profile; request read/start/reap lack a complete total-time guarantee."
+        "One manually activated/human-observed existing-pair profile is recorded separately; automatic caller/grant propagation, authenticated server/build/peer and wider consent remain unqualified.",
+        "Native receipt, explicit idle/busy, full preservation, later reply and recovery remain open.",
+        "Forced shutdown after deadline observed; complete time/memory/provider guarantees and graceful shutdown remain unqualified."
       ],
-      "next_check": "Use the reviewed procedure in the scoped link-case proposal; qualify actual target and receipt under a separate live grant."
+      "next_check": "Extend evidence only through concrete scoped profiles; preserve the limited human-observation result and all stronger gaps."
     },
     {
       "status": "discovered",
@@ -5959,7 +6003,8 @@
         "Maintained-source producer nisavid/provingkit#843; reviewed published commit 94dc3ed7ba4fa8df4192a0c37db9c8dc734de9bc",
         "Source prototype producer nisavid/provingkit#860; reviewed published commit 71e4d47d582f25373d8f91463bf2b785532d6798",
         "Failed live-trial producer nisavid/provingkit#865; unchanged actuator source 46133eeca2f16a0e70ea5334481422c753ae84bc",
-        "Owner-admission source nisavid/provingkit#869; published commit bbf997b78676d69a1f69ffa37be88b594353dc7c"
+        "Owner-admission source nisavid/provingkit#869; published commit bbf997b78676d69a1f69ffa37be88b594353dc7c",
+        "Finite pre-claim local refusal, nisavid/provingkit#847; docs/coordination/batches/2026-11-05-lead-link-first-results.md"
       ],
       "evidence": [
         "codex-ipc-sender-source-843",
@@ -5974,17 +6019,19 @@
         "lead-exchange-synthetic-discriminator-865",
         "codex-owner-admission-source-869",
         "codex-owner-admission-command-synthetic-869",
-        "codex-owner-admission-source-review-869"
+        "codex-owner-admission-source-review-869",
+        "lead-link-codex-local-refusal-847"
       ],
       "compatibility": {
         "status": "unassessed",
-        "scope": "Source mechanics and synthetic command behavior reviewed. Assess affected framing, owner/follow/state, busy steer, correlation/reconciliation and capture behavior with graduated checks; current native build, caller access and receiver remain unassessed. A new build alone proves no incompatibility. Idle-intent source and cooperative command examples are separately assessed; actual native compatibility remains unassessed and a changed version alone proves no incompatibility. November 4 one-shot acquisition matched a decoded bound state, then refused before peer input on an unfinished receive deadline. This function observation establishes neither complete current-build compatibility nor general incompatibility; unexercised idle eligibility/start, receipt and reverse MCP return remain unassessed. The separate owner-admission source/public fixtures assess only that new operation; unchanged split behavior and its failed trial retain their prior evidence. Actual owner/backend/current version, admission versus ordinary-start fallback, receipt/processing and preservation remain unassessed. Source-experiment acceptance adds no live authority.",
+        "scope": "Source mechanics and synthetic command behavior reviewed. Assess affected framing, owner/follow/state, busy steer, correlation/reconciliation and capture behavior with graduated checks; current native build, caller access and receiver remain unassessed. A new build alone proves no incompatibility. Idle-intent source and cooperative command examples are separately assessed; actual native compatibility remains unassessed and a changed version alone proves no incompatibility. November 4 one-shot acquisition matched a decoded bound state, then refused before peer input on an unfinished receive deadline. This function observation establishes neither complete current-build compatibility nor general incompatibility; unexercised idle eligibility/start, receipt and reverse MCP return remain unassessed. The separate owner-admission source/public fixtures assess only that new operation; unchanged split behavior and its failed trial retain their prior evidence. Actual owner/backend/current version, admission versus ordinary-start fallback, receipt/processing and preservation remain unassessed. Source-experiment acceptance adds no live authority. November5 owner-admission attempt stopped on missing caller capture root before claim/connection; this establishes no receiver compatibility or incompatibility.",
         "evidence": [
           "lead-exchange-live-refusal-865",
           "lead-exchange-independent-readback-865",
           "codex-owner-admission-source-869",
           "codex-owner-admission-command-synthetic-869",
-          "codex-owner-admission-source-review-869"
+          "codex-owner-admission-source-review-869",
+          "lead-link-codex-local-refusal-847"
         ]
       },
       "effort": {
@@ -18257,6 +18304,131 @@
         "Native branch, receipt, processing, ACK/reply, preservation, agent discovery/application, installation and adoption remain unproved."
       ],
       "next_check": "Prepare the selected owner-admission live proposal: bind target/authority, current owner/backend and evidence for both reachable branches; obtain applicable review and a fresh grant before connection. Native App Server access stays separately unresolved/parked; unselected split-framing repair is not a prerequisite."
+    },
+    {
+      "id": "codex-desktop-claude-human-ack-existing",
+      "fabric": "rolecasting-claude-mcp-sender",
+      "channel": "codex-desktop-local-to-claude-desktop-code",
+      "population": "existing",
+      "ownership": "Independently existing operator-selected Codex Desktop and Claude Desktop Leads; public specimen identities only.",
+      "relationship": "Peer; caller administration manually relayed by the operator; receiver observed by operator in its selected GUI.",
+      "target_input": "exact-reference",
+      "input_semantics": "Existing versioned peer envelope, unchanged payload/grants/holds; actual direct operator authorization in sender context. No new operator authority supplied by the envelope.",
+      "consent": {
+        "references": [
+          "https://github.com/nisavid/provingkit/issues/867#issuecomment-6655121910",
+          "https://github.com/nisavid/provingkit/issues/851#issuecomment-6655557692"
+        ],
+        "limits": [
+          "Historical one-shot grants are spent, not operating permission. Receiver did not verify authority_ref; automatic authority carryover remains unqualified."
+        ]
+      },
+      "continuity": {
+        "idle": "Not independently established; no pre-send idle profile claimed.",
+        "busy": "Not independently established; work continuity unqualified.",
+        "restart": "Unqualified; no recovery action performed."
+      },
+      "assurance": "Human-visible correlated response plus matched own sender result, under cooperative actor reports. No native incoming-event/authenticated-origin, timing or full preservation proof.",
+      "claims": [
+        {
+          "operation": "notify",
+          "milestone": "submitted",
+          "stage": "qualified",
+          "coverage": "partial",
+          "evidence": [
+            "lead-link-claude-human-ack-851"
+          ],
+          "limits": [
+            "One operator-selected existing pair, manual operator relay of sender activation and direct permission in Codex user context; automatic dispatch and grant propagation unqualified.",
+            "Human-reported correlated same-chat ACK/inferred receipt; no native incoming-event or authenticated origin, known arrival time, continuous visibility or intervention-free/exclusive causation proof.",
+            "No explicit idle/busy, preservation, later reply, restart/recovery, broader coverage, release/deployment or ordinary adoption claim.",
+            "Owned direct child killed/reaped after shutdown deadline; no graceful/whole-provider termination claim."
+          ]
+        },
+        {
+          "operation": "notify",
+          "milestone": "receipt",
+          "stage": "qualified",
+          "coverage": "partial",
+          "evidence": [
+            "lead-link-claude-human-ack-851"
+          ],
+          "limits": [
+            "One operator-selected existing pair, manual operator relay of sender activation and direct permission in Codex user context; automatic dispatch and grant propagation unqualified.",
+            "Human-reported correlated same-chat ACK/inferred receipt; no native incoming-event or authenticated origin, known arrival time, continuous visibility or intervention-free/exclusive causation proof.",
+            "No explicit idle/busy, preservation, later reply, restart/recovery, broader coverage, release/deployment or ordinary adoption claim.",
+            "Owned direct child killed/reaped after shutdown deadline; no graceful/whole-provider termination claim."
+          ]
+        },
+        {
+          "operation": "notify",
+          "milestone": "acknowledged",
+          "stage": "qualified",
+          "coverage": "partial",
+          "evidence": [
+            "lead-link-claude-human-ack-851"
+          ],
+          "limits": [
+            "One operator-selected existing pair, manual operator relay of sender activation and direct permission in Codex user context; automatic dispatch and grant propagation unqualified.",
+            "Human-reported correlated same-chat ACK/inferred receipt; no native incoming-event or authenticated origin, known arrival time, continuous visibility or intervention-free/exclusive causation proof.",
+            "No explicit idle/busy, preservation, later reply, restart/recovery, broader coverage, release/deployment or ordinary adoption claim.",
+            "Owned direct child killed/reaped after shutdown deadline; no graceful/whole-provider termination claim."
+          ]
+        }
+      ],
+      "gaps": [
+        "One operator-selected existing pair, manual operator relay of sender activation and direct permission in Codex user context; automatic dispatch and grant propagation unqualified.",
+        "Human-reported correlated same-chat ACK/inferred receipt; no native incoming-event or authenticated origin, known arrival time, continuous visibility or intervention-free/exclusive causation proof.",
+        "No explicit idle/busy, preservation, later reply, restart/recovery, broader coverage, release/deployment or ordinary adoption claim.",
+        "Owned direct child killed/reaped after shutdown deadline; no graceful/whole-provider termination claim."
+      ],
+      "next_check": "Prepare separately scoped idle/busy, authority/preservation and recovery evidence; assess forced-shutdown cost without treating it as an open process. Full technical and adoption gates remain open."
+    },
+    {
+      "id": "claude-desktop-codex-owner-local-refusal-existing",
+      "fabric": "rolecasting-codex-ipc-sender",
+      "channel": "claude-desktop-code-to-codex-desktop-local",
+      "population": "existing",
+      "ownership": "Operator-selected existing Claude and native Codex Desktop Leads; actual receiver operation never reached.",
+      "relationship": "Peer; one operator-relayed Claude administration; no receiver transport proof.",
+      "target_input": "exact-reference",
+      "input_semantics": "Planned peer-labelled owner-admission work request; same mailbox/envelope helpers; source guard stopped before claim and connection.",
+      "consent": {
+        "references": [
+          "https://github.com/nisavid/provingkit/issues/866",
+          "https://github.com/nisavid/provingkit/issues/847#issuecomment-6652947884"
+        ],
+        "limits": [
+          "Original one-shot case closed; no replay or new live permission follows."
+        ]
+      },
+      "continuity": {
+        "idle": "Unexercised.",
+        "busy": "Unexercised.",
+        "restart": "Unexercised."
+      },
+      "assurance": "Matched local sender refusal, source precondition and requested capture-directory metadata; no actual owner/backend/receiver evidence.",
+      "claims": [
+        {
+          "operation": "request-work",
+          "milestone": "submitted",
+          "stage": "prototyped",
+          "coverage": "unknown",
+          "outcome": "refused",
+          "evidence": [
+            "lead-link-codex-local-refusal-847"
+          ],
+          "limits": [
+            "Capture root absent; existing-directory guard refused before claim, connection or peer input. Exit0 alone was not operation success.",
+            "No receipt, execution, checked result, native branch or general incompatibility verdict."
+          ]
+        }
+      ],
+      "gaps": [
+        "Actual owner access/discovery/branch and checked response remain unproved.",
+        "Correct capture-parent preparation uses the existing procedure; later connection needs its applicable live grant."
+      ],
+      "next_check": "Prepare corrected case output parents under existing method, preserve the failed record, and return for a reviewed exact live scope; do not add a reader/component or raise limits from this local refusal."
     }
   ],
   "channels": [
@@ -19017,6 +19189,50 @@
         "Source candidate association only; no directed live qualification."
       ],
       "next_check": "Resolve actual caller/owner/evidence paths in the reviewed fixture packet and scoped grants."
+    },
+    {
+      "id": "codex-desktop-local-to-claude-desktop-code",
+      "source": "codex-desktop-local",
+      "target": "claude-desktop-code",
+      "fabrics": [
+        "rolecasting-claude-mcp-sender"
+      ],
+      "profiles": [
+        "codex-desktop-claude-human-ack-existing"
+      ],
+      "caller_access": "Operator relayed the sender instruction and direct permission into the existing native Codex Desktop task; one local native MCP transaction. Automatic caller activation unqualified.",
+      "target_binding": "Same completed nominated address and operator-selected Claude task, joined by a new correlated GUI ACK; no authenticated endpoint/build proof.",
+      "evidence": [
+        "lead-link-claude-human-ack-851"
+      ],
+      "gaps": [
+        "One operator-selected existing pair, manual operator relay of sender activation and direct permission in Codex user context; automatic dispatch and grant propagation unqualified.",
+        "Human-reported correlated same-chat ACK/inferred receipt; no native incoming-event or authenticated origin, known arrival time, continuous visibility or intervention-free/exclusive causation proof.",
+        "No explicit idle/busy, preservation, later reply, restart/recovery, broader coverage, release/deployment or ordinary adoption claim.",
+        "Owned direct child killed/reaped after shutdown deadline; no graceful/whole-provider termination claim."
+      ],
+      "next_check": "Retain this limited profile and independently prepare full current-consumer state, authority, reply/recovery and adoption evidence."
+    },
+    {
+      "id": "claude-desktop-code-to-codex-desktop-local",
+      "source": "claude-desktop-code",
+      "target": "codex-desktop-local",
+      "fabrics": [
+        "rolecasting-codex-ipc-sender"
+      ],
+      "profiles": [
+        "claude-desktop-codex-owner-local-refusal-existing"
+      ],
+      "caller_access": "Selected Claude administration executed local preflight; no IPC connection started.",
+      "target_binding": "Intended exact native Codex Desktop Lead; no current in-connection owner evidence from this case.",
+      "evidence": [
+        "lead-link-codex-local-refusal-847"
+      ],
+      "gaps": [
+        "Local capture directory was absent; receiver discovery and positive operation remain unexercised.",
+        "Native backend identity, branch, response, preservation and recovery remain unqualified."
+      ],
+      "next_check": "Use existing capture-root procedure in fresh reviewed proposal; no automatic retry."
     }
   ],
   "provenance": {
@@ -22383,7 +22599,8 @@
         {
           "fabric": "rolecasting-claude-mcp-sender",
           "crosswalk": [
-            "Maintained-source producer nisavid/provingkit#844; reviewed commit 61c17375c28e72db15a4c2898bfc90b251bd1deb"
+            "Maintained-source producer nisavid/provingkit#844; reviewed commit 61c17375c28e72db15a4c2898bfc90b251bd1deb",
+            "Finite paired Lead results: docs/coordination/batches/2026-11-05-lead-link-first-results.md"
           ],
           "mandatory_components": [
             "rolecasting-peer-message-support",
@@ -22396,7 +22613,7 @@
             "Submission is not receipt, ACK, handling or fulfillment; idle/busy and recovery remain unqualified.",
             "Narrow protocol/schema/result and outgoing-frame profile; request read/start/reap lack a complete total-time guarantee."
           ],
-          "rationale": "Maintained Python stdio MCP command with one claimed mailbox attempt, shared versioned peer envelope, supported SendMessage(to,message), selected-result capture and owned-child closure. Source support establishes no authenticated peer or permission. Complete producer batch: published source61 imports, nominated-child command and procedure; docs/coordination/batches/2026-11-03-claude-mcp-sender.md"
+          "rationale": "Maintained Python stdio MCP command with one claimed mailbox attempt, shared versioned peer envelope, supported SendMessage(to,message), selected-result capture and owned-child closure. Source support establishes no authenticated peer or permission. Complete producer batch: published source61 imports, nominated-child command and procedure; docs/coordination/batches/2026-11-03-claude-mcp-sender.md The finite November5 live results establish no additional mandatory component. Manual activation/direct authority and GUI observation are profile-specific ambient capabilities; an existing capture directory is an invocation input, not a new fabric. Same helper and selected-server/owner classes remain mandatory; actual broader binding gaps stay open."
         },
         {
           "fabric": "rolecasting-peer-message-support",
@@ -22442,7 +22659,8 @@
             "Maintained-source producer nisavid/provingkit#843; reviewed published commit 94dc3ed7ba4fa8df4192a0c37db9c8dc734de9bc",
             "Source prototype producer nisavid/provingkit#860; reviewed published commit 71e4d47d582f25373d8f91463bf2b785532d6798",
             "Finite failed-trial batch nisavid/provingkit#865, docs/coordination/batches/2026-11-04-lead-exchange-refusal.md",
-            "Owner-admission source nisavid/provingkit#869; published commit bbf997b78676d69a1f69ffa37be88b594353dc7c"
+            "Owner-admission source nisavid/provingkit#869; published commit bbf997b78676d69a1f69ffa37be88b594353dc7c",
+            "Finite paired Lead results: docs/coordination/batches/2026-11-05-lead-link-first-results.md"
           ],
           "mandatory_components": [
             "rolecasting-peer-message-support",
@@ -22456,7 +22674,7 @@
             "Idle, restart/recovery, complete invocation/resource bounds, installation and adoption remain open.",
             "The failed live work trial stops before input; current safe acquisition completion/ordering/freshness and remaining operation evidence remain unresolved."
           ],
-          "rationale": "Maintained busy-only Unix IPC sender and original-attempt read-only reconciliation; immutable mailbox claim, peer envelope, intact owner/generation binding and create-only per-run captures. No new queue, automatic resend or idle-start fallback. Complete finite producer evidence: published source94 core/transport/sender/capture and procedure; docs/coordination/batches/2026-11-03-codex-ipc-sender.md. Shared mailbox/envelope bytes equal source61, so existing helper evidence carries forward unchanged. The complete idle source batch (https://github.com/nisavid/provingkit/blob/71e4d47d582f25373d8f91463bf2b785532d6798/docs/coordination/batches/2026-11-03-codex-idle-prototype.md) reuses the same mandatory components. Native start is another operation of the existing selected-owner class, not a new fabric; no additional mandatory component is established. Current binding/receipt/live gaps remain. The complete finite November 4 failed-trial/retained-readback/synthetic-discriminator batch establishes no additional component requirement. Existing mailbox/envelope and selected IPC-owner dependencies remain unchanged; the planned nomination/MCP return is case-specific and unexercised, not a new mandatory component of all IPC sends. Complete finite owner-admission batch: published command/guide, seven public command/socket fixtures, three independent source critics, distinct adjudication and architecture result. Same mandatory mailbox/envelope and selected IPC-owner classes; no additional component/backend/framework requirement. CPython/stdlib/SQLite/local files remain working conditions. Actual binding remains unknown. The failed split trial is retained; its framing repair is not a prerequisite for the selected owner-admission live proposal. Native App Server access remains a separate unresolved/parked alternative."
+          "rationale": "Maintained busy-only Unix IPC sender and original-attempt read-only reconciliation; immutable mailbox claim, peer envelope, intact owner/generation binding and create-only per-run captures. No new queue, automatic resend or idle-start fallback. Complete finite producer evidence: published source94 core/transport/sender/capture and procedure; docs/coordination/batches/2026-11-03-codex-ipc-sender.md. Shared mailbox/envelope bytes equal source61, so existing helper evidence carries forward unchanged. The complete idle source batch (https://github.com/nisavid/provingkit/blob/71e4d47d582f25373d8f91463bf2b785532d6798/docs/coordination/batches/2026-11-03-codex-idle-prototype.md) reuses the same mandatory components. Native start is another operation of the existing selected-owner class, not a new fabric; no additional mandatory component is established. Current binding/receipt/live gaps remain. The complete finite November 4 failed-trial/retained-readback/synthetic-discriminator batch establishes no additional component requirement. Existing mailbox/envelope and selected IPC-owner dependencies remain unchanged; the planned nomination/MCP return is case-specific and unexercised, not a new mandatory component of all IPC sends. Complete finite owner-admission batch: published command/guide, seven public command/socket fixtures, three independent source critics, distinct adjudication and architecture result. Same mandatory mailbox/envelope and selected IPC-owner classes; no additional component/backend/framework requirement. CPython/stdlib/SQLite/local files remain working conditions. Actual binding remains unknown. The failed split trial is retained; its framing repair is not a prerequisite for the selected owner-admission live proposal. Native App Server access remains a separate unresolved/parked alternative. The finite November5 live results establish no additional mandatory component. Manual activation/direct authority and GUI observation are profile-specific ambient capabilities; an existing capture directory is an invocation input, not a new fabric. Same helper and selected-server/owner classes remain mandatory; actual broader binding gaps stay open."
         },
         {
           "fabric": "selected-codex-native-ipc-owner",
@@ -25086,6 +25304,21 @@
       "procedure_revision": "4c8c0e5d0a6bd411ededc8e1bc000abb36942eac",
       "procedure": "updating-cross-harness-catalog",
       "limits": "Producer source/synthetic evidence only, no new operation or adoption; original busy profile and unrelated records preserved."
+    },
+    "lead_link_first_results_20261105": {
+      "procedure": "updating-cross-harness-catalog",
+      "procedure_revision": "caf455bcbc23a34f20c558d74135f38c3915f224",
+      "report": "docs/coordination/batches/2026-11-05-lead-link-first-results.md",
+      "report_sha256": "d87d4c760d2b6dbc7d12a4045fef006655f69f69f2dd7c4fc102810f369cbb49",
+      "affected_fabrics": [
+        "rolecasting-claude-mcp-sender",
+        "rolecasting-codex-ipc-sender"
+      ],
+      "new_endpoint_view": "codex-desktop-local",
+      "legacy_endpoint_mapping": "Preserved separately/unresolved; no qualification transfer.",
+      "claims": "Narrow human-observed notification milestones partial; reverse request submission refused/unknown positive coverage.",
+      "dependency_reconciliation": "Same mandatory components; ambient human steps and capture directory not new components.",
+      "private_data": "No actual peer text/marker/correlation, endpoint value, task ID or machine-local path in public report/catalog."
     }
   }
 }
