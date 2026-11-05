@@ -36,6 +36,8 @@ The [owner-admission source batch](batches/2026-11-05-owner-admission-source.md)
 
 The [first paired Lead results](batches/2026-11-05-lead-link-first-results.md) retain a pre-claim Codex setup refusal and one Codex Desktop → Claude human-observed correlated ACK. Native Codex Desktop has a separate surface record; the legacy ChatGPT GUI view receives no inferred qualification. The sender required direct operator authority and forced child reaping, and the profile leaves timing, idle/busy, native identity/receipt, preservation, recovery and adoption open. This snapshot has 316 profiles and 34 evidence records.
 
+The [owner-discovery result](batches/2026-11-05-owner-discovery-refusal.md) records a later connected attempt that initialized, then received `no-client-found` for owner discovery and refused before peer input. Its new existing-task profile retains positive coverage as unknown and preserves the earlier local refusal. The snapshot now has 317 profiles and 35 evidence records; endpoint, fabric and association counts are unchanged. Current handling-client attachment is the next gap; no unchanged retry or broader qualification follows.
+
 ## Read the record
 
 - **Endpoints** identify a host and surface. A host-owned thread, a native GUI
