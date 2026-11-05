@@ -1,0 +1,17 @@
+# A checked response from Codex
+
+One authorized request from Claude Desktop to an existing native Codex Desktop chat produced an assistant ACK and arithmetic result reported by the operator. The reported reply matched the fresh correlation and returned count 3, sum 61 for `[11,19,31]`, and a receiver-chosen marker absent from the outgoing payload and envelope. The caller’s declared literal checks passed. The catalog records a qualified partial profile for this operator-assisted observation.
+
+The unchanged sender at `bbf997b78676d69a1f69ffa37be88b594353dc7c` made one IPC connection and one owner-admission request. It reported RPC success and possible submission; native admission versus ordinary turn start remains unknown. The actor reported command exit 0 and direct connection closure, which match the saved result. No native Bash invocation reference was exposed. The whole-case resource obligation closed under the accepted owned-operation and residual-residency terms; neither Lead nor its provider or GUI cache was claimed terminated or reclaimed.
+
+One baseline and two approved latest-message observations returned other text without surfacing the ACK. They establish no nondelivery and do not explain the visibility difference. The operator’s quoted response supplies the result evidence. ACK arrival and first-seen times are unknown; the evidence timestamp records the producer’s result-recording time. No third observation, history read, raw-frame diagnostic inspection, resend, or second connection followed.
+
+The operator was instructed to keep the existing Codex chat selected while using Claude. The user-relayed actor handback records confirmation of selection without intervention. That attribution is separate from an independent continuous GUI witness. The earlier unopened-chat discovery refusal remains distinct; opening the chat is a changed fixture, not a proved cause.
+
+The first post-send observation preceded a fresh Root post-phase check. Its original clearance and actor-reported fresh entry were retained; the separate Root check preceded the second observation and saved-file readback. This omission remains part of the record and does not qualify the full operating procedure.
+
+The 3 GiB memory and 192 MiB storage forecasts were estimates, not caps. Actual cost and active time remain partly unmetered. Source ceilings remain 64 KiB per frame, 256 KiB wire, 64 events, and 8 MiB controlled capture. The one-shot grant is spent.
+
+The profile covers partial notification submission, inferred receipt and acknowledgment, and the arithmetic request’s submission, inferred receipt, returned output and checked fulfillment. Accepted/executing transitions, automated result retrieval, later reply, task creation and continuation remain unknown. Both receiver states, authenticated origin/backend/authority, full context/model/permissions/worktree preservation, recovery and adoption remain unqualified. Manual activation and GUI reporting are profile-specific ambient capabilities; the two affected fabrics retain their existing dependencies.
+
+Prepare bounded result inspection alongside the remaining state, authority/preservation and recovery cases, using existing observers before adding components. See the [grant](https://github.com/nisavid/provingkit/issues/875#issuecomment-6665509436) and [actual operation result](https://github.com/nisavid/provingkit/issues/847#issuecomment-6666066176).

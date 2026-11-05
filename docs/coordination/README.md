@@ -38,6 +38,9 @@ The [first paired Lead results](batches/2026-11-05-lead-link-first-results.md) r
 
 The [owner-discovery result](batches/2026-11-05-owner-discovery-refusal.md) records a later connected attempt that initialized, then received `no-client-found` for owner discovery and refused before peer input. Its new existing-task profile retains positive coverage as unknown and preserves the earlier local refusal. The snapshot now has 317 profiles and 35 evidence records; endpoint, fabric and association counts are unchanged. Current handling-client attachment is the next gap; no unchanged retry or broader qualification follows.
 
+
+The [opened-existing Codex receiver check](batches/2026-11-05-codex-opened-human-response.md) adds a partial human-observed Claude-to-Codex ACK and checked arithmetic response. The operator reported the correlated same-chat reply; two automated latest-message observations returned other text. This snapshot has 318 profiles and 36 evidence records. Native branch, arrival time, both states, authenticated binding, authority/preservation, recovery and ordinary adoption remain unqualified. Earlier refusals remain distinct; this result grants no further live action.
+
 ## Read the record
 
 - **Endpoints** identify a host and surface. A host-owned thread, a native GUI

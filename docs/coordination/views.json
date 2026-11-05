@@ -1291,27 +1291,30 @@
     },
     {
       "association": "recorded",
-      "caller_access": "Existing Claude actor opened one local IPC connection and initialized; owner discovery returned no-client-found before peer input. Earlier pre-claim refusal remains a separate profile.",
+      "caller_access": "One opened-existing actor reports one IPC connection/one owner-admission request, RPC success/possible submission and exit0/connection closure; human-reported fresh ACK supports partial inferred delivery. Prior local/discovery refusals remain separate.",
       "evidence": [
         "lead-link-codex-local-refusal-847",
-        "codex-owner-discovery-refusal-847"
+        "codex-owner-discovery-refusal-847",
+        "codex-opened-human-response-847"
       ],
       "fabrics": [
         "rolecasting-codex-ipc-sender"
       ],
       "gaps": [
-        "Actual selected-conversation handling-client attachment remains unresolved after explicit no-client-found discovery error.",
-        "No submitted input, native admission branch, checked response, preservation, both-state behavior or recovery qualified."
+        "Earlier no-client-found refusal remains unexplained; opened GUI is a changed fixture, not proven cause.",
+        "One opened-existing pair has partial operator-reported checked response; automated latest-message retrieval missed it. Cause, native branch, authenticated binding, both-state behavior, full preservation, authority and recovery remain unresolved.",
+        "Automatic dispatch/return/authority propagation, accepted/executing transitions, full procedure qualification, preservation, recovery, release/deployment/adoption remain unqualified."
       ],
       "id": "claude-desktop-code-to-codex-desktop-local",
-      "next_check": "Resolve the actual handling-client attachment/registration gap from retained source and a discriminating separately scoped observation; no unchanged blind retry.",
+      "next_check": "Prepare bounded result-inspection alongside remaining state, authority/preservation and recovery cases, using existing observers before adding components. No third observation, replay or continuing live grant follows from this batch.",
       "profiles": [
         "claude-desktop-codex-owner-local-refusal-existing",
-        "claude-desktop-codex-owner-discovery-refusal-existing"
+        "claude-desktop-codex-owner-discovery-refusal-existing",
+        "claude-desktop-codex-opened-human-response-existing"
       ],
       "source": "claude-desktop-code",
       "target": "codex-desktop-local",
-      "target_binding": "Exact intended native Codex Desktop task, but this attempt obtained no successful handling-client binding. The native baseline notLoaded label does not establish the cause."
+      "target_binding": "Operator-selected existing native Codex chat; operator directly reported its correlated assistant ACK. User-relayed actor handback reports selection/no intervention. No independent authenticated backend or continuous witness; automated latest-message observations did not surface ACK."
     },
     {
       "association": "recorded",
@@ -12710,6 +12713,20 @@
       "uri": "docs/coordination/batches/2026-11-03-codex-ipc-sender.md"
     },
     {
+      "id": "codex-opened-human-response-847",
+      "kind": "live",
+      "limits": [
+        "Producer result-recording timestamp only; actual ACK arrival and first-seen times are unknown.",
+        "Operator-reported ACK with Root literal checks; automated latest-message calls missed it. Cooperative actor exit0/connection closure, native Bash references absent.",
+        "No private identifiers/correlation/marker/endpoint/conversations/captures. Provenance is not access/authority.",
+        "First post observation preceded fresh post-phase Root gate; omission retained, no retroactive approval/full procedure qualification.",
+        "Partial human-observed existing pair only; branch/timing/both states/authenticated binding/authority/preservation/recovery/adoption unknown."
+      ],
+      "observed_at": "2026-11-05T18:29:40.753233+00:00",
+      "sha256": "3cabf986a8b1f3a09cb076766baa1cefa453aebcd4a6ebca620375e21a9e3703",
+      "uri": "docs/coordination/batches/2026-11-05-codex-opened-human-response.md"
+    },
+    {
       "id": "codex-owner-admission-command-synthetic-869",
       "kind": "synthetic",
       "limits": [
@@ -17784,10 +17801,11 @@
           "codex-owner-admission-command-synthetic-869",
           "codex-owner-admission-source-review-869",
           "lead-link-codex-local-refusal-847",
-          "codex-owner-discovery-refusal-847"
+          "codex-owner-discovery-refusal-847",
+          "codex-opened-human-response-847"
         ],
-        "scope": "Source mechanics and synthetic command behavior reviewed. Assess affected framing, owner/follow/state, busy steer, correlation/reconciliation and capture behavior with graduated checks; current native build, caller access and receiver remain unassessed. A new build alone proves no incompatibility. Idle-intent source and cooperative command examples are separately assessed; actual native compatibility remains unassessed and a changed version alone proves no incompatibility. November 4 one-shot acquisition matched a decoded bound state, then refused before peer input on an unfinished receive deadline. This function observation establishes neither complete current-build compatibility nor general incompatibility; unexercised idle eligibility/start, receipt and reverse MCP return remain unassessed. The separate owner-admission source/public fixtures assess only that new operation; unchanged split behavior and its failed trial retain their prior evidence. Actual owner/backend/current version, admission versus ordinary-start fallback, receipt/processing and preservation remain unassessed. Source-experiment acceptance adds no live authority. November5 owner-admission attempt stopped on missing caller capture root before claim/connection; this establishes no receiver compatibility or incompatibility. A separately authorized later existing-pair attempt initialized successfully but received no-client-found for owner discovery and submitted no input. This does not establish why attachment failed, complete current compatibility or general incompatibility.",
-        "status": "unassessed"
+        "scope": "Source mechanics and synthetic command behavior reviewed. Assess affected framing, owner/follow/state, busy steer, correlation/reconciliation and capture behavior with graduated checks; current native build, caller access and receiver remain unassessed. A new build alone proves no incompatibility. Idle-intent source and cooperative command examples are separately assessed; actual native compatibility remains unassessed and a changed version alone proves no incompatibility. November 4 one-shot acquisition matched a decoded bound state, then refused before peer input on an unfinished receive deadline. This function observation establishes neither complete current-build compatibility nor general incompatibility; unexercised idle eligibility/start, receipt and reverse MCP return remain unassessed. The separate owner-admission source/public fixtures assess only that new operation; unchanged split behavior and its failed trial retain their prior evidence. Actual owner/backend/current version, admission versus ordinary-start fallback, receipt/processing and preservation remain unassessed. Source-experiment acceptance adds no live authority. November5 owner-admission attempt stopped on missing caller capture root before claim/connection; this establishes no receiver compatibility or incompatibility. A separately authorized later existing-pair attempt initialized successfully but received no-client-found for owner discovery and submitted no input. This does not establish why attachment failed, complete current compatibility or general incompatibility. Finite opened-existing-receiver batch: one owner-admission request and operator-reported same-chat ACK passed Root correlation/count/sum/fresh-marker checks; automated latest-message observations did not retrieve ACK. This is partial human-observed existing-pair evidence only. Native branch/authenticated backend, both states, authority/preservation, recovery and adoption remain unassessed; prior refusals remain distinct.",
+        "status": "mixed"
       },
       "crosswalk": [
         "Maintained-source producer nisavid/provingkit#843; reviewed published commit 94dc3ed7ba4fa8df4192a0c37db9c8dc734de9bc",
@@ -17795,7 +17813,8 @@
         "Failed live-trial producer nisavid/provingkit#865; unchanged actuator source 46133eeca2f16a0e70ea5334481422c753ae84bc",
         "Owner-admission source nisavid/provingkit#869; published commit bbf997b78676d69a1f69ffa37be88b594353dc7c",
         "Finite pre-claim local refusal, nisavid/provingkit#847; docs/coordination/batches/2026-11-05-lead-link-first-results.md",
-        "Finite owner-discovery refusal, nisavid/provingkit#847; docs/coordination/batches/2026-11-05-owner-discovery-refusal.md"
+        "Finite owner-discovery refusal, nisavid/provingkit#847; docs/coordination/batches/2026-11-05-owner-discovery-refusal.md",
+        "Finite opened-existing human response: docs/coordination/batches/2026-11-05-codex-opened-human-response.md"
       ],
       "dependencies": [
         "rolecasting-peer-message-support",
@@ -17820,21 +17839,22 @@
         "codex-owner-admission-command-synthetic-869",
         "codex-owner-admission-source-review-869",
         "lead-link-codex-local-refusal-847",
-        "codex-owner-discovery-refusal-847"
+        "codex-owner-discovery-refusal-847",
+        "codex-opened-human-response-847"
       ],
       "gaps": [
         "Actual caller exposure, existing endpoint/access, current owner/build/peer and original authority/holds require binding.",
         "Partial synthetic submission/receipt mechanics establish no live operation, ACK/reply, handling, fulfillment or work continuity.",
         "Live idle wake/opening receipt, restart/recovery, complete invocation/resource bounds, installation and adoption remain open.",
         "The November 4 existing-task work trial refused before input after an incomplete-frame deadline; acquisition stopping/ordering/freshness needs a justified source/synthetic disposition.",
-        "Latest exact-route owner discovery returned no-client-found; actual handling-client registration/access needs a discriminating observation before another live input attempt."
+        "Prior discovery refusal remains unexplained. One opened-existing pair has partial operator-reported checked response; automated latest-message retrieval missed it. Cause, native branch, authenticated binding, both-state behavior, full preservation, authority and recovery remain unresolved."
       ],
       "id": "rolecasting-codex-ipc-sender",
       "name": "Rolecasting mailbox-backed Codex IPC sender",
-      "next_check": "Resolve the actual handling-client attachment/registration gap from retained source and a discriminating separately scoped observation; no unchanged blind retry.",
+      "next_check": "Resolve the human-visible/automated-observation discrepancy under separate scope; independently qualify states, authority/preservation and recovery before broader use.",
       "parent": null,
       "role": "actuator",
-      "source_scope": "Maintained busy-only Unix IPC sender and original-attempt read-only reconciliation; immutable mailbox claim, peer envelope, intact owner/generation binding and create-only per-run captures. No new queue, automatic resend or idle-start fallback. Separate explicitly selected observed-idle/default/user source prototype uses native start with inherited context; possible submission and unknown opening receipt, no atomic idle guarantee. Separate local v2 owner-admission prototype reuses maintained transport/capture/mailbox/envelope and the same selected-owner class, without follow/state prediction. Both inheritance/admission flags are requested; one exact envelope, at most one submission, no resend/method switching. Ordinary-start fallback remains possible.",
+      "source_scope": "Maintained busy-only Unix IPC sender and original-attempt read-only reconciliation; immutable mailbox claim, peer envelope, intact owner/generation binding and create-only per-run captures. No new queue, automatic resend or idle-start fallback. Separate explicitly selected observed-idle/default/user source prototype uses native start with inherited context; possible submission and unknown opening receipt, no atomic idle guarantee. Separate local v2 owner-admission prototype reuses maintained transport/capture/mailbox/envelope and the same selected-owner class, without follow/state prediction. Both inheritance/admission flags are requested; one exact envelope, at most one submission, no resend/method switching. Ordinary-start fallback remains possible. One opened-existing profile adds partial human-observed ACK/arithmetic evidence; source mechanics and dependencies unchanged.",
       "status": "discovered"
     },
     {
@@ -17938,16 +17958,18 @@
           "lead-exchange-independent-readback-865",
           "codex-owner-admission-source-869",
           "codex-owner-admission-command-synthetic-869",
-          "codex-owner-admission-source-review-869"
+          "codex-owner-admission-source-review-869",
+          "codex-opened-human-response-847"
         ],
-        "scope": "Source mechanics and synthetic command behavior reviewed. Assess affected framing, owner/follow/state, busy steer, correlation/reconciliation and capture behavior with graduated checks; current native build, caller access and receiver remain unassessed. A new build alone proves no incompatibility. Idle-intent source and cooperative command examples are separately assessed; actual native compatibility remains unassessed and a changed version alone proves no incompatibility. November 4 one-shot acquisition matched a decoded bound state, then refused before peer input on an unfinished receive deadline. This function observation establishes neither complete current-build compatibility nor general incompatibility; unexercised idle eligibility/start, receipt and reverse MCP return remain unassessed. The separate owner-admission source/public fixtures assess only that new operation; unchanged split behavior and its failed trial retain their prior evidence. Actual owner/backend/current version, admission versus ordinary-start fallback, receipt/processing and preservation remain unassessed. Source-experiment acceptance adds no live authority.",
-        "status": "unassessed"
+        "scope": "Source mechanics and synthetic command behavior reviewed. Assess affected framing, owner/follow/state, busy steer, correlation/reconciliation and capture behavior with graduated checks; current native build, caller access and receiver remain unassessed. A new build alone proves no incompatibility. Idle-intent source and cooperative command examples are separately assessed; actual native compatibility remains unassessed and a changed version alone proves no incompatibility. November 4 one-shot acquisition matched a decoded bound state, then refused before peer input on an unfinished receive deadline. This function observation establishes neither complete current-build compatibility nor general incompatibility; unexercised idle eligibility/start, receipt and reverse MCP return remain unassessed. The separate owner-admission source/public fixtures assess only that new operation; unchanged split behavior and its failed trial retain their prior evidence. Actual owner/backend/current version, admission versus ordinary-start fallback, receipt/processing and preservation remain unassessed. Source-experiment acceptance adds no live authority. Finite opened-existing-receiver batch: one owner-admission request and operator-reported same-chat ACK passed Root correlation/count/sum/fresh-marker checks; automated latest-message observations did not retrieve ACK. This is partial human-observed existing-pair evidence only. Native branch/authenticated backend, both states, authority/preservation, recovery and adoption remain unassessed; prior refusals remain distinct.",
+        "status": "mixed"
       },
       "crosswalk": [
         "Maintained-source producer nisavid/provingkit#843; reviewed published commit 94dc3ed7ba4fa8df4192a0c37db9c8dc734de9bc",
         "Source prototype producer nisavid/provingkit#860; reviewed published commit 71e4d47d582f25373d8f91463bf2b785532d6798",
         "Failed live-trial producer nisavid/provingkit#865; unchanged actuator source 46133eeca2f16a0e70ea5334481422c753ae84bc",
-        "Owner-admission source nisavid/provingkit#869; published commit bbf997b78676d69a1f69ffa37be88b594353dc7c"
+        "Owner-admission source nisavid/provingkit#869; published commit bbf997b78676d69a1f69ffa37be88b594353dc7c",
+        "Finite opened-existing human response: docs/coordination/batches/2026-11-05-codex-opened-human-response.md"
       ],
       "dependencies": [],
       "effort": {
@@ -17966,20 +17988,21 @@
         "codex-owner-admission-source-869",
         "codex-owner-admission-command-synthetic-869",
         "codex-owner-admission-source-review-869",
-        "codex-owner-discovery-refusal-847"
+        "codex-owner-discovery-refusal-847",
+        "codex-opened-human-response-847"
       ],
       "gaps": [
         "No exact selected endpoint, legitimate access, current owner/build or native peer is established by the synthetic fixtures.",
         "Successful connection or discovery does not authenticate the target or establish authority. App Server, Queue and newly started servers are not substituted for this existing-owner class.",
         "The November 4 existing-task work trial refused before input after an incomplete-frame deadline; acquisition stopping/ordering/freshness needs a justified source/synthetic disposition.",
-        "One selected existing-pair discovery returned no-client-found; current handling client remains unbound."
+        "Prior discovery refusal remains unexplained. One opened-existing pair has partial operator-reported checked response; automated latest-message retrieval missed it. Cause, native branch, authenticated binding, both-state behavior, full preservation, authority and recovery remain unresolved."
       ],
       "id": "selected-codex-native-ipc-owner",
       "name": "Selected existing Codex native IPC owner backend",
-      "next_check": "Resolve the actual handling-client attachment/registration gap from retained source and a discriminating separately scoped observation; no unchanged blind retry.",
+      "next_check": "Keep actual backend/authenticated attachment and branch unresolved; investigate visibility discrepancy only under separately approved scope, without replay.",
       "parent": null,
       "role": "support",
-      "source_scope": "Required existing-owner Unix IPC source-profile backend: initialize, thread-owner-discovery, framed thread-stream following/state and busy thread-follower-steer-turn. Finite producer source/procedure/command evidence establishes no further independent fabric requirement; CPython/stdlib/SQLite/filesystem are working conditions, not new transports. Exact endpoint/access/current build/peer binding remains unknown. The explicit idle profile additionally depends on the same owner\u2019s versioned thread-follower-start-turn with client-message identity and inherited native context; live acceptance remains unproved. The same existing-owner class receives the separate local v2 request carrying inheritThreadSettings/useUserMessageAdmission and may reach native admission or ordinary-start fallback. The frontend prototype reuses maintained transport/capture/mailbox/envelope without requesting thread follow or predicting busy/idle state; actual backend behavior remains unqualified.",
+      "source_scope": "Required existing-owner Unix IPC source-profile backend: initialize, thread-owner-discovery, framed thread-stream following/state and busy thread-follower-steer-turn. Finite producer source/procedure/command evidence establishes no further independent fabric requirement; CPython/stdlib/SQLite/filesystem are working conditions, not new transports. Exact endpoint/access/current build/peer binding remains unknown. The explicit idle profile additionally depends on the same owner\u2019s versioned thread-follower-start-turn with client-message identity and inherited native context; live acceptance remains unproved. The same existing-owner class receives the separate local v2 request carrying inheritThreadSettings/useUserMessageAdmission and may reach native admission or ordinary-start fallback. The frontend prototype reuses maintained transport/capture/mailbox/envelope without requesting thread follow or predicting busy/idle state; actual backend behavior remains unqualified. The new operator-observed response profile does not resolve the underlying native admission branch or full backend behavior.",
       "status": "discovered"
     },
     {
@@ -30755,6 +30778,223 @@
       "ownership": "One explicitly granted existing-Lead experiment; role nomination and actor-origin host match do not authenticate an endpoint or establish routine caller access.",
       "population": "existing",
       "relationship": "Existing Claude Desktop Code caller to existing Codex GUI task; one acquisition reached a matching bound state but refused before peer input.",
+      "target_input": "exact-reference"
+    },
+    {
+      "assurance": "Partial human-observed existing-pair response with Root literal checks plus cooperative actor command/connection report. Automated latest-message observations did not retrieve ACK. Native branch, authenticated origin/backend and timing unknown.",
+      "channel": "claude-desktop-code-to-codex-desktop-local",
+      "claims": [
+        {
+          "coverage": "partial",
+          "evidence": [
+            "codex-opened-human-response-847"
+          ],
+          "limits": [
+            "Source reports RPC success/possible submission; qualified partial inference rests on the human-reported correlated response, not exact-wire/native-branch proof. One human-reported existing pair only; profile/report limits apply. No automatic retrieval, authenticated origin or both-state qualification."
+          ],
+          "milestone": "submitted",
+          "operation": "notify",
+          "stage": "qualified"
+        },
+        {
+          "coverage": "partial",
+          "evidence": [
+            "codex-opened-human-response-847"
+          ],
+          "limits": [
+            "Receipt inferred from operator-reported fresh same-chat ACK. Automated latest-message observations missed it; arrival time and continuous visibility unknown. One human-reported existing pair only; profile/report limits apply. No automatic retrieval, authenticated origin or both-state qualification."
+          ],
+          "milestone": "receipt",
+          "operation": "notify",
+          "stage": "qualified"
+        },
+        {
+          "coverage": "partial",
+          "evidence": [
+            "codex-opened-human-response-847"
+          ],
+          "limits": [
+            "Operator-reported new assistant ACK passed Root correlation/count/sum/fresh-marker checks; automated native retrieval did not surface it. One human-reported existing pair only; profile/report limits apply. No automatic retrieval, authenticated origin or both-state qualification."
+          ],
+          "milestone": "acknowledged",
+          "operation": "notify",
+          "stage": "qualified"
+        },
+        {
+          "coverage": "partial",
+          "evidence": [
+            "codex-opened-human-response-847"
+          ],
+          "limits": [
+            "Source reports RPC success/possible submission; qualified partial inference rests on the human-reported correlated response, not exact-wire/native-branch proof. One human-reported existing pair only; profile/report limits apply. No automatic retrieval, authenticated origin or both-state qualification."
+          ],
+          "milestone": "submitted",
+          "operation": "request-work",
+          "stage": "qualified"
+        },
+        {
+          "coverage": "partial",
+          "evidence": [
+            "codex-opened-human-response-847"
+          ],
+          "limits": [
+            "Receipt inferred from operator-reported fresh same-chat ACK. Automated latest-message observations missed it; arrival time and continuous visibility unknown. One human-reported existing pair only; profile/report limits apply. No automatic retrieval, authenticated origin or both-state qualification."
+          ],
+          "milestone": "receipt",
+          "operation": "request-work",
+          "stage": "qualified"
+        },
+        {
+          "coverage": "partial",
+          "evidence": [
+            "codex-opened-human-response-847"
+          ],
+          "limits": [
+            "Root literal checks passed correlation, count 3, sum 61 and receiver-chosen marker absent from outgoing payload/envelope; only this arithmetic response is covered. One human-reported existing pair only; profile/report limits apply. No automatic retrieval, authenticated origin or both-state qualification."
+          ],
+          "milestone": "output",
+          "operation": "request-work",
+          "stage": "qualified"
+        },
+        {
+          "coverage": "partial",
+          "evidence": [
+            "codex-opened-human-response-847"
+          ],
+          "limits": [
+            "Root literal checks passed correlation, count 3, sum 61 and receiver-chosen marker absent from outgoing payload/envelope; only this arithmetic response is covered. One human-reported existing pair only; profile/report limits apply. No automatic retrieval, authenticated origin or both-state qualification."
+          ],
+          "milestone": "fulfilled",
+          "operation": "request-work",
+          "stage": "qualified"
+        }
+      ],
+      "consent": {
+        "limits": [
+          "Historical one-shot operation completed; references describe its scope/result, not continuing authority. No retry/resend/general adoption grant. Automatic receiver verification/propagation of original authority unqualified."
+        ],
+        "references": [
+          "https://github.com/nisavid/provingkit/issues/875#issuecomment-6665509436",
+          "https://github.com/nisavid/provingkit/issues/847"
+        ]
+      },
+      "continuity": {
+        "busy": "Not independently established; no busy-state or work-continuity qualification.",
+        "idle": "Not independently established; opening/loading a GUI does not prove idle.",
+        "restart": "Unexercised; recovery unqualified."
+      },
+      "fabric": "rolecasting-codex-ipc-sender",
+      "gaps": [
+        "One operator-selected existing pair; manual sender activation/direct permission and human GUI response reporting, not automatic dispatch or authority propagation.",
+        "Source reports RPC success/possible submission; partial submission/receipt is inferred from the operator-reported fresh same-chat ACK, not authenticated incoming-event or exact-wire proof. Native branch remains unknown.",
+        "Root checked exact fresh correlation, count 3, sum 61 and receiver-chosen marker absent from outgoing payload/envelope. Arrival/observation time, continuous visibility and exclusive causation are unknown.",
+        "One baseline/two latest-message observations did not surface the ACK; they prove no nondelivery. Response evidence is the operator quote, not automated retrieval.",
+        "Selection/no-intervention confirmation is attributed to the user-relayed actor handback, not an independent witness. Prior unopened refusal remains distinct; no causal conclusion.",
+        "First post-send observation preceded fresh post-phase Root gate; original clearance/actor entry supported it, separate gate preceded second/readback. No retroactive approval/full procedure qualification.",
+        "Idle/busy, authenticated origin/backend/authority, full preservation, continuation, recovery, release/deployment and adoption remain unqualified. Historical grant spent; no resend.",
+        "No claims for request-work accepted/executing, inspect, reply synchronous-return/later-reply, create-task or continue-task. Those milestones remain unknown.",
+        "Original actor exit0/direct-connection closure have attributable report but no native Bash references. Full 3 GiB obligation closed under accepted owned-operation/residual terms; no whole provider/GUI shutdown claim. Forecast 3 GiB/192 MiB not caps; actual effort/cost partly unmetered."
+      ],
+      "id": "claude-desktop-codex-opened-human-response-existing",
+      "input_semantics": "Unchanged owner-admission source bbf997b78676d69a1f69ffa37be88b594353dc7c and versioned envelope; one connection/one request for same-chat ACK, count/sum and fresh receiver-chosen marker. Envelope conveys no new authority.",
+      "next_check": "Prepare bounded result-inspection alongside remaining state, authority/preservation and recovery cases, using existing observers before adding components. No third observation, replay or continuing live grant follows from this batch.",
+      "operations": {
+        "continue-task": [],
+        "create-task": [],
+        "inspect": [],
+        "notify": [
+          {
+            "coverage": "partial",
+            "evidence": [
+              "codex-opened-human-response-847"
+            ],
+            "limits": [
+              "Source reports RPC success/possible submission; qualified partial inference rests on the human-reported correlated response, not exact-wire/native-branch proof. One human-reported existing pair only; profile/report limits apply. No automatic retrieval, authenticated origin or both-state qualification."
+            ],
+            "milestone": "submitted",
+            "operation": "notify",
+            "stage": "qualified"
+          },
+          {
+            "coverage": "partial",
+            "evidence": [
+              "codex-opened-human-response-847"
+            ],
+            "limits": [
+              "Receipt inferred from operator-reported fresh same-chat ACK. Automated latest-message observations missed it; arrival time and continuous visibility unknown. One human-reported existing pair only; profile/report limits apply. No automatic retrieval, authenticated origin or both-state qualification."
+            ],
+            "milestone": "receipt",
+            "operation": "notify",
+            "stage": "qualified"
+          },
+          {
+            "coverage": "partial",
+            "evidence": [
+              "codex-opened-human-response-847"
+            ],
+            "limits": [
+              "Operator-reported new assistant ACK passed Root correlation/count/sum/fresh-marker checks; automated native retrieval did not surface it. One human-reported existing pair only; profile/report limits apply. No automatic retrieval, authenticated origin or both-state qualification."
+            ],
+            "milestone": "acknowledged",
+            "operation": "notify",
+            "stage": "qualified"
+          }
+        ],
+        "reply": [],
+        "request-work": [
+          {
+            "coverage": "partial",
+            "evidence": [
+              "codex-opened-human-response-847"
+            ],
+            "limits": [
+              "Source reports RPC success/possible submission; qualified partial inference rests on the human-reported correlated response, not exact-wire/native-branch proof. One human-reported existing pair only; profile/report limits apply. No automatic retrieval, authenticated origin or both-state qualification."
+            ],
+            "milestone": "submitted",
+            "operation": "request-work",
+            "stage": "qualified"
+          },
+          {
+            "coverage": "partial",
+            "evidence": [
+              "codex-opened-human-response-847"
+            ],
+            "limits": [
+              "Receipt inferred from operator-reported fresh same-chat ACK. Automated latest-message observations missed it; arrival time and continuous visibility unknown. One human-reported existing pair only; profile/report limits apply. No automatic retrieval, authenticated origin or both-state qualification."
+            ],
+            "milestone": "receipt",
+            "operation": "request-work",
+            "stage": "qualified"
+          },
+          {
+            "coverage": "partial",
+            "evidence": [
+              "codex-opened-human-response-847"
+            ],
+            "limits": [
+              "Root literal checks passed correlation, count 3, sum 61 and receiver-chosen marker absent from outgoing payload/envelope; only this arithmetic response is covered. One human-reported existing pair only; profile/report limits apply. No automatic retrieval, authenticated origin or both-state qualification."
+            ],
+            "milestone": "output",
+            "operation": "request-work",
+            "stage": "qualified"
+          },
+          {
+            "coverage": "partial",
+            "evidence": [
+              "codex-opened-human-response-847"
+            ],
+            "limits": [
+              "Root literal checks passed correlation, count 3, sum 61 and receiver-chosen marker absent from outgoing payload/envelope; only this arithmetic response is covered. One human-reported existing pair only; profile/report limits apply. No automatic retrieval, authenticated origin or both-state qualification."
+            ],
+            "milestone": "fulfilled",
+            "operation": "request-work",
+            "stage": "qualified"
+          }
+        ]
+      },
+      "ownership": "Operator-selected independently existing Claude Desktop and native Codex Desktop Leads; public specimen identities only.",
+      "population": "existing",
+      "relationship": "Peer; operator-relayed sender administration/direct permission; operator-reported response in selected receiver GUI.",
       "target_input": "exact-reference"
     },
     {
@@ -47380,7 +47620,8 @@
             "Actual caller exposure, existing endpoint/access, current owner/build/peer and original authority/holds require binding.",
             "Partial synthetic submission/receipt mechanics establish no live operation, ACK/reply, handling, fulfillment or work continuity.",
             "Idle, restart/recovery, complete invocation/resource bounds, installation and adoption remain open.",
-            "The failed live work trial stops before input; current safe acquisition completion/ordering/freshness and remaining operation evidence remain unresolved."
+            "The failed live work trial stops before input; current safe acquisition completion/ordering/freshness and remaining operation evidence remain unresolved.",
+            "One opened-existing pair has partial operator-reported checked response; automated latest-message retrieval missed it. Cause, native branch, authenticated binding, both-state behavior, full preservation, authority and recovery remain unresolved."
           ],
           "crosswalk": [
             "Maintained-source producer nisavid/provingkit#843; reviewed published commit 94dc3ed7ba4fa8df4192a0c37db9c8dc734de9bc",
@@ -47388,7 +47629,8 @@
             "Finite failed-trial batch nisavid/provingkit#865, docs/coordination/batches/2026-11-04-lead-exchange-refusal.md",
             "Owner-admission source nisavid/provingkit#869; published commit bbf997b78676d69a1f69ffa37be88b594353dc7c",
             "Finite paired Lead results: docs/coordination/batches/2026-11-05-lead-link-first-results.md",
-            "Finite owner-discovery refusal: docs/coordination/batches/2026-11-05-owner-discovery-refusal.md"
+            "Finite owner-discovery refusal: docs/coordination/batches/2026-11-05-owner-discovery-refusal.md",
+            "Finite opened-existing human response: docs/coordination/batches/2026-11-05-codex-opened-human-response.md"
           ],
           "fabric": "rolecasting-codex-ipc-sender",
           "grouping_only": null,
@@ -47396,26 +47638,28 @@
             "rolecasting-peer-message-support",
             "selected-codex-native-ipc-owner"
           ],
-          "rationale": "Maintained busy-only Unix IPC sender and original-attempt read-only reconciliation; immutable mailbox claim, peer envelope, intact owner/generation binding and create-only per-run captures. No new queue, automatic resend or idle-start fallback. Complete finite producer evidence: published source94 core/transport/sender/capture and procedure; docs/coordination/batches/2026-11-03-codex-ipc-sender.md. Shared mailbox/envelope bytes equal source61, so existing helper evidence carries forward unchanged. The complete idle source batch (https://github.com/nisavid/provingkit/blob/71e4d47d582f25373d8f91463bf2b785532d6798/docs/coordination/batches/2026-11-03-codex-idle-prototype.md) reuses the same mandatory components. Native start is another operation of the existing selected-owner class, not a new fabric; no additional mandatory component is established. Current binding/receipt/live gaps remain. The complete finite November 4 failed-trial/retained-readback/synthetic-discriminator batch establishes no additional component requirement. Existing mailbox/envelope and selected IPC-owner dependencies remain unchanged; the planned nomination/MCP return is case-specific and unexercised, not a new mandatory component of all IPC sends. Complete finite owner-admission batch: published command/guide, seven public command/socket fixtures, three independent source critics, distinct adjudication and architecture result. Same mandatory mailbox/envelope and selected IPC-owner classes; no additional component/backend/framework requirement. CPython/stdlib/SQLite/local files remain working conditions. Actual binding remains unknown. The failed split trial is retained; its framing repair is not a prerequisite for the selected owner-admission live proposal. Native App Server access remains a separate unresolved/parked alternative. The finite November5 live results establish no additional mandatory component. Manual activation/direct authority and GUI observation are profile-specific ambient capabilities; an existing capture directory is an invocation input, not a new fabric. Same helper and selected-server/owner classes remain mandatory; actual broader binding gaps stay open. The finite initialized/discovery-error batch adds no required component: mailbox/envelope and selected IPC-owner classes remain unchanged; actual handling-client binding remains unresolved. Read-only admission-control refresh is case administration, not a communication fabric."
+          "rationale": "Maintained busy-only Unix IPC sender and original-attempt read-only reconciliation; immutable mailbox claim, peer envelope, intact owner/generation binding and create-only per-run captures. No new queue, automatic resend or idle-start fallback. Complete finite producer evidence: published source94 core/transport/sender/capture and procedure; docs/coordination/batches/2026-11-03-codex-ipc-sender.md. Shared mailbox/envelope bytes equal source61, so existing helper evidence carries forward unchanged. The complete idle source batch (https://github.com/nisavid/provingkit/blob/71e4d47d582f25373d8f91463bf2b785532d6798/docs/coordination/batches/2026-11-03-codex-idle-prototype.md) reuses the same mandatory components. Native start is another operation of the existing selected-owner class, not a new fabric; no additional mandatory component is established. Current binding/receipt/live gaps remain. The complete finite November 4 failed-trial/retained-readback/synthetic-discriminator batch establishes no additional component requirement. Existing mailbox/envelope and selected IPC-owner dependencies remain unchanged; the planned nomination/MCP return is case-specific and unexercised, not a new mandatory component of all IPC sends. Complete finite owner-admission batch: published command/guide, seven public command/socket fixtures, three independent source critics, distinct adjudication and architecture result. Same mandatory mailbox/envelope and selected IPC-owner classes; no additional component/backend/framework requirement. CPython/stdlib/SQLite/local files remain working conditions. Actual binding remains unknown. The failed split trial is retained; its framing repair is not a prerequisite for the selected owner-admission live proposal. Native App Server access remains a separate unresolved/parked alternative. The finite November5 live results establish no additional mandatory component. Manual activation/direct authority and GUI observation are profile-specific ambient capabilities; an existing capture directory is an invocation input, not a new fabric. Same helper and selected-server/owner classes remain mandatory; actual broader binding gaps stay open. The finite initialized/discovery-error batch adds no required component: mailbox/envelope and selected IPC-owner classes remain unchanged; actual handling-client binding remains unresolved. Read-only admission-control refresh is case administration, not a communication fabric. Complete normalized opened-response batch adds no component: actuator keeps mailbox/envelope helper and selected IPC-owner; owner has no further component. Manual activation/direct authority/GUI observation are profile-specific ambient capabilities. General backend/both states/refusal causes remain unresolved; report retains closure/procedure/visibility/resource limits."
         },
         {
           "alternatives": [],
           "binding_gaps": [
             "No exact selected endpoint, legitimate access, current owner/build or native peer is established by the synthetic fixtures.",
             "Successful connection or discovery does not authenticate the target or establish authority. App Server, Queue and newly started servers are not substituted for this existing-owner class.",
-            "The failed live work trial stops before input; current safe acquisition completion/ordering/freshness and remaining operation evidence remain unresolved."
+            "The failed live work trial stops before input; current safe acquisition completion/ordering/freshness and remaining operation evidence remain unresolved.",
+            "One opened-existing pair has partial operator-reported checked response; automated latest-message retrieval missed it. Cause, native branch, authenticated binding, both-state behavior, full preservation, authority and recovery remain unresolved."
           ],
           "crosswalk": [
             "Maintained-source producer nisavid/provingkit#843; reviewed published commit 94dc3ed7ba4fa8df4192a0c37db9c8dc734de9bc",
             "Source prototype producer nisavid/provingkit#860; reviewed published commit 71e4d47d582f25373d8f91463bf2b785532d6798",
             "Finite failed-trial batch nisavid/provingkit#865, docs/coordination/batches/2026-11-04-lead-exchange-refusal.md",
             "Owner-admission source nisavid/provingkit#869; published commit bbf997b78676d69a1f69ffa37be88b594353dc7c",
-            "Finite owner-discovery refusal: docs/coordination/batches/2026-11-05-owner-discovery-refusal.md"
+            "Finite owner-discovery refusal: docs/coordination/batches/2026-11-05-owner-discovery-refusal.md",
+            "Finite opened-existing human response: docs/coordination/batches/2026-11-05-codex-opened-human-response.md"
           ],
           "fabric": "selected-codex-native-ipc-owner",
           "grouping_only": null,
           "mandatory_components": [],
-          "rationale": "Required existing-owner Unix IPC source-profile backend: initialize, thread-owner-discovery, framed thread-stream following/state and busy thread-follower-steer-turn. Finite producer source/procedure/command evidence establishes no further independent fabric requirement; CPython/stdlib/SQLite/filesystem are working conditions, not new transports. Exact endpoint/access/current build/peer binding remains unknown. Complete finite producer evidence: published source94 core/transport/sender/capture and procedure; docs/coordination/batches/2026-11-03-codex-ipc-sender.md. Shared mailbox/envelope bytes equal source61, so existing helper evidence carries forward unchanged. The complete idle source batch (https://github.com/nisavid/provingkit/blob/71e4d47d582f25373d8f91463bf2b785532d6798/docs/coordination/batches/2026-11-03-codex-idle-prototype.md) reuses the same mandatory components. Native start is another operation of the existing selected-owner class, not a new fabric; no additional mandatory component is established. Current binding/receipt/live gaps remain. The complete finite November 4 failed-trial/retained-readback/synthetic-discriminator batch establishes no additional component requirement. Existing mailbox/envelope and selected IPC-owner dependencies remain unchanged; the planned nomination/MCP return is case-specific and unexercised, not a new mandatory component of all IPC sends. The finite owner-admission source batch adds another operation of this existing-owner class. At the actuator composition level, the existing mailbox/envelope helper and selected-owner backend remain mandatory; this backend record establishes no further independently declared component requirement. Its own mandatory_components/dependencies stay empty. Actual access, owner/backend identity, native admission/fallback and receiver effects remain unbound. No additional backend or observation framework follows from the source flags. The finite initialized/discovery-error batch adds no required component: mailbox/envelope and selected IPC-owner classes remain unchanged; actual handling-client binding remains unresolved. Read-only admission-control refresh is case administration, not a communication fabric."
+          "rationale": "Required existing-owner Unix IPC source-profile backend: initialize, thread-owner-discovery, framed thread-stream following/state and busy thread-follower-steer-turn. Finite producer source/procedure/command evidence establishes no further independent fabric requirement; CPython/stdlib/SQLite/filesystem are working conditions, not new transports. Exact endpoint/access/current build/peer binding remains unknown. Complete finite producer evidence: published source94 core/transport/sender/capture and procedure; docs/coordination/batches/2026-11-03-codex-ipc-sender.md. Shared mailbox/envelope bytes equal source61, so existing helper evidence carries forward unchanged. The complete idle source batch (https://github.com/nisavid/provingkit/blob/71e4d47d582f25373d8f91463bf2b785532d6798/docs/coordination/batches/2026-11-03-codex-idle-prototype.md) reuses the same mandatory components. Native start is another operation of the existing selected-owner class, not a new fabric; no additional mandatory component is established. Current binding/receipt/live gaps remain. The complete finite November 4 failed-trial/retained-readback/synthetic-discriminator batch establishes no additional component requirement. Existing mailbox/envelope and selected IPC-owner dependencies remain unchanged; the planned nomination/MCP return is case-specific and unexercised, not a new mandatory component of all IPC sends. The finite owner-admission source batch adds another operation of this existing-owner class. At the actuator composition level, the existing mailbox/envelope helper and selected-owner backend remain mandatory; this backend record establishes no further independently declared component requirement. Its own mandatory_components/dependencies stay empty. Actual access, owner/backend identity, native admission/fallback and receiver effects remain unbound. No additional backend or observation framework follows from the source flags. The finite initialized/discovery-error batch adds no required component: mailbox/envelope and selected IPC-owner classes remain unchanged; actual handling-client binding remains unresolved. Read-only admission-control refresh is case administration, not a communication fabric. Complete normalized opened-response batch adds no component: actuator keeps mailbox/envelope helper and selected IPC-owner; owner has no further component. Manual activation/direct authority/GUI observation are profile-specific ambient capabilities. General backend/both states/refusal causes remain unresolved; report retains closure/procedure/visibility/resource limits."
         }
       ],
       "relations": [
@@ -47624,9 +47868,9 @@
   },
   "schema_version": 1,
   "snapshot": {
-    "coverage": "Dated owner-discovery refusal added: 29 endpoint views (24 Wave1), 165 fabrics, 317 profiles, 35 evidence records, 28 associations and812 potential pairs. Explicit no-client-found discovery response before peer input; positive coverage remains unknown. Earlier local refusal and narrow human-visible Claude ACK remain distinct. Full directional operations, current attachment/compatibility, both states, authority/preservation, recovery, release/deployment and adoption stay open.",
-    "generated_at": "2026-11-05T16:10:53.809550+00:00",
-    "revision": "owner-discovery-refusal-20261105"
+    "coverage": "Opened-existing human response added: 29 endpoint views (24 Wave1), 165 fabrics, 318 profiles, 36 evidence records, 28 associations and 812 potential pairs. One Claude-to-Codex existing pair has partial human-observed ACK and checked arithmetic response; native branch/timing remain unknown and automated response retrieval remains unqualified. Earlier refusals and reverse human ACK remain distinct. Both states, authenticated binding/authority, full preservation/procedure, recovery, release/deployment and adoption stay open.",
+    "generated_at": "2026-11-05T18:47:09.752515+00:00",
+    "revision": "opened-codex-human-response-20261105"
   },
-  "source_sha256": "2e41e4ec5ec69fc6e26892b46818eec060f6f93f02a6c62a662b24468ed995fb"
+  "source_sha256": "a9ff4b3cf1dca68cba080b935576740d5226ae438dc5bd7281b2ead38293b025"
 }
