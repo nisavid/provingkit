@@ -59,7 +59,7 @@ Start a new chat or Codex session after installation. If the plugin was uploaded
 
 **Coming from the older preview:** its guide registered a local marketplace. These web controls manage an account upload, so use the new-plugin steps if you choose that delivery route. They do not establish migration of your local installation or which same-named copy your client selects. Keep the existing installation and configuration until you have confirmed the Alpha 6 version and skills in a fresh session; if you cannot establish which copy loaded, stop before removing either copy.
 
-The first-upload navigation follows a firsthand walkthrough recorded on November 3, 2026. Account and workspace controls can differ. Replacement and rollback behavior have not been verified across accounts; these instructions do not use the separate public plugin-submission portal.
+The first-upload navigation follows a firsthand walkthrough recorded on November 3, 2026. On November 6, the update route above produced Alpha 6 saved versions and Installed entries for all six plugins across four personal ChatGPT accounts. Those observations do not establish fresh-session loading, complete preservation, or rollback. Account and workspace controls can differ; these instructions do not use the separate public plugin-submission portal.
 
 ## Claude account plugins
 
@@ -74,7 +74,7 @@ Anthropic documents ZIP uploads containing one `.claude-plugin/plugin.json` and 
 
 For Claude Code account sync, use a terminal session signed in to the same Claude account with version 2.1.273 or later. Sync runs at startup; use `/reload-plugins` after a sync notification or start another session. Check the selected origin: an enabled local plugin with the same manifest name can take precedence over the synced copy. [Claude Code’s loading guide](https://code.claude.com/docs/en/plugins/loading#synced-plugins) covers sign-in restrictions, sync timing, and name conflicts.
 
-For an existing personally uploaded plugin, the checked documentation does not establish a replacement or rollback procedure. Keep its archive and configuration, and follow the account’s current controls rather than assuming another same-name upload replaces it. Marketplace update controls apply to marketplace installations, not automatically to uploaded ZIPs.
+**Update an earlier personal upload:** upload the matching checked Claude ZIP. When **Replace existing plugin?** identifies the intended plugin, choose **Replace**, then reopen its details and check the saved version and enabled state. Stop if the named plugin is wrong or the replacement control is absent. This same-name route produced Alpha 6 saved versions and enabled entries for all six plugins across three personal Claude accounts on November 6, 2026. Keep the previous archive and configuration: those observations do not establish preserved backend identifiers or all contents, fresh-session loading, or rollback. Marketplace update controls apply to marketplace installations, not automatically to uploaded ZIPs.
 
 ## Confirm the installation
 
