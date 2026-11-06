@@ -19,8 +19,7 @@ SCRIPTS = (
 sys.path.insert(0, str(SCRIPTS))
 
 from codex_capture import CaptureWriter
-from codex_ipc_core import DEFAULTS, Refusal, encode, failure_record
-from codex_ipc_sender import bounded_bytes, print_result
+from codex_ipc_core import DEFAULTS, Refusal, bounded_bytes, encode, failure_record, print_result
 from codex_ipc_transport import CliTransport, ReceiveFailure
 from native_codex_mailbox import Mailbox, MailboxError, text
 from peer_message import serialize_peer_message

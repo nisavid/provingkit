@@ -38,6 +38,20 @@ def failure_record(exc):
 def encode(value):
     return json.dumps(value, sort_keys=True, separators=(",", ":")).encode()
 
+def bounded_bytes(path, reason):
+    ceiling = DEFAULTS["caseBytes"]
+    with path.open("rb") as source:
+        data = source.read(ceiling + 1)
+    if len(data) > ceiling:
+        raise Refusal(reason)
+    return data
+
+
+def print_result(result):
+    print(json.dumps(result, ensure_ascii=True, sort_keys=True))
+    return 0
+
+
 def _run_operation(case, directory, mode="submit", attempt_path=None, *, transport, clock, writer, request_input=None, idle_intent=False):
     writer.require(directory)
     save = writer.write_json

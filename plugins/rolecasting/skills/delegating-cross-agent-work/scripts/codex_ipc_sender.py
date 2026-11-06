@@ -17,7 +17,7 @@ import sys
 from native_codex_mailbox import Mailbox, MailboxError
 from peer_message import serialize_peer_message
 from codex_capture import CaptureWriter
-from codex_ipc_core import DEFAULTS, ArtifactFailure, Refusal, run_sender, run_idle_sender
+from codex_ipc_core import ArtifactFailure, Refusal, bounded_bytes, print_result, run_sender, run_idle_sender
 from codex_ipc_transport import ReceiveFailure
 
 
@@ -46,15 +46,6 @@ def native_request(request, planned, *, idle_intent=False):
         # A native receipt identifies this immutable attempt, not the exchange.
         "correlation": request["attempt_id"],
     }
-
-
-def bounded_bytes(path, reason):
-    ceiling = DEFAULTS["caseBytes"]
-    with path.open("rb") as source:
-        data = source.read(ceiling + 1)
-    if len(data) > ceiling:
-        raise Refusal(reason)
-    return data
 
 
 def compact_original(path):
@@ -196,11 +187,6 @@ def main(*, idle_intent=False):
         if mailbox is not None:
             mailbox.close()
     return print_result(result)
-
-
-def print_result(result):
-    print(json.dumps(result, ensure_ascii=True, sort_keys=True))
-    return 0
 
 
 if __name__ == "__main__":
