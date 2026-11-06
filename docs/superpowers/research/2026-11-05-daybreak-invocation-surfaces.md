@@ -1,12 +1,17 @@
 # Daybreak invocation surfaces
 
-An ordinary-model Advisor invoked a separate child with `gpt-6-sol`, medium
-reasoning, and Daybreak Blue through its existing desktop App Server manager.
-The child completed the exact sentinel response, and its newly persisted turn
-context recorded `cyber_access_program = daybreak_blue`. The Advisor stayed on
-`gpt-6-astra` with its saved Daybreak choice unset.
+An ordinary-model Advisor created a fresh chat through the existing desktop
+manager, then ran an explicitly selected `gpt-6-sol` / medium / Daybreak Blue
+turn in that chat. The November 6 test used a harmless first-turn sentinel,
+followed by the explicit Blue turn; both completed, and the second turn's
+persisted context recorded `cyber_access_program = daybreak_blue`. The new chat
+had no fork origin. The Advisor stayed on `gpt-6-astra` with Daybreak unset.
 
-The verified sequence was:
+This verifies a two-turn fresh-worker bootstrap. Daybreak on the first turn
+from an ordinary Advisor remains unqualified. The exact creation and subsequent
+turn sequence is recorded below under [Fresh worker bootstrap](#fresh-worker-bootstrap).
+
+The original November 5 isolated-turn experiment used this sequence:
 
 1. Fork the existing harmless legacy probe using native `fork_thread` with
    `environment: {type: "same-directory"}`. Use the returned child ID; this fork
@@ -28,8 +33,9 @@ target an existing owned thread, including the seed, subject to ordinary access
 and turn-state checks. That would change the seed and add a turn to its history;
 this experiment did not do so. [Follower handlers][ipc-manager]
 
-This verifies the observed internal-IPC route, not direct explicit selection
-through `create_thread`, a blank-history start, or independent provider-side
+That original experiment verified the internal-IPC turn route. The later
+bootstrap adds fresh native creation; neither observation establishes direct
+explicit Daybreak selection through `create_thread` or independent provider-side
 attestation. The native creation wrapper rejected the explicit Daybreak fields.
 
 This research records source, schema, and bounded runtime observations made on
@@ -137,8 +143,8 @@ tool output or attachments, `IX` instead returns
 (initial choice on thread creation), `1045507` (`IX`), and `1048620`
 (empty-input branch and first-turn preparation); its fingerprint is below.
 
-The remaining discovery gap is an externally callable fresh-thread creation
-route from this ordinary Advisor into that existing desktop manager. The
+The remaining discovery gap is an externally callable route that creates an
+empty chat or selects Blue before the first turn from this ordinary Advisor. The
 inspected Unix IPC registration exposes owner discovery and follower operations
 on existing conversations, with no creation or generic App Server request
 handler identified. The native `create_thread` wrapper creates and starts the
@@ -146,7 +152,91 @@ first turn together and rejects explicit Daybreak fields. Raw `thread/start`
 must not be assumed to work as a method on the desktop IPC socket. Sources:
 the `dQ` registration and native handler cited below. First-turn support is
 established; fresh-thread creation through the Advisor's tested IPC entry point
-has not been established.
+has not been established. Native creation followed by an explicit second turn
+is verified in the next section.
+
+## Fresh worker bootstrap
+
+The ordinary Advisor called native `create_thread` directly with this request:
+
+```json
+{
+  "model": "gpt-6-sol",
+  "title": "Fresh Daybreak worker bootstrap probe · 2026-11-06",
+  "target": {
+    "type": "projectless",
+    "directoryName": "daybreak-fresh-bootstrap-probe-20261106"
+  },
+  "prompt": "Use no tools and do no other work. Reply with exactly this single line: DAYBREAK_FRESH_CREATION_20261106"
+}
+```
+
+`thinking` was omitted. This call returned a new local thread ID. Its first turn
+completed the exact sentinel, with `gpt-6-sol` and `medium` recorded and no
+`cyber_access_program` field. Readback found one session record and no fork
+origin. There was no executed tool call in the first turn; its native delegated
+input was represented as a function-call output.
+
+After that terminal, the Advisor used the returned ID with the existing
+follower IPC:
+
+1. Discover its owner and read its model settings.
+2. Call `thread-follower-update-daybreak` with `daybreakEnabled: true` and read
+   the saved setting back.
+3. Call `thread-follower-start-turn`, using the returned child ID as both
+   `conversationId` and `request.threadId`, with `context: {}` and this request:
+
+```json
+{
+  "threadId": "RETURNED_CHILD_ID",
+  "model": "gpt-6-sol",
+  "effort": "medium",
+  "cyberAccessProgram": "daybreakBlue",
+  "input": [{
+    "type": "text",
+    "text": "Use no tools and do no other work. Reply with exactly this single line: DAYBREAK_FRESH_EXPLICIT_BLUE_20261106",
+    "text_elements": []
+  }],
+  "collaborationMode": {
+    "mode": "default",
+    "settings": {
+      "model": "gpt-6-sol",
+      "reasoning_effort": "medium",
+      "developer_instructions": null
+    }
+  }
+}
+```
+
+The matched start response returned a turn ID. That exact turn completed the
+second sentinel, used no tools, and persisted `gpt-6-sol`, `medium`, and
+`daybreak_blue`. Both terminals were observed within the 120-second
+request bound. No retry or interrupt occurred. The child was idle afterward,
+its saved choice was true, and the ordinary Advisor's saved choice remained
+unset. The creation and follower calls used the already-running desktop manager;
+no server was started.
+
+For a worker request that permits a preliminary harmless turn, this supplies a
+tested creation path without a fork. Keep the preliminary turn free of task
+work, and place the authorized worker task in the explicit Blue request. Match
+its returned turn ID and observe its terminal before accepting the result. A
+caller that requires Blue on the first turn still needs the separate empty-create
+or eligible-inheritance path. Do not substitute a native continuation based only
+on the saved toggle; the next section records why that is unqualified on the old
+probe.
+
+This is a recipe for the observed internal interface and package, not an
+installed automation or public compatibility contract. A maintained caller must
+bind its own authority, admission, request, version, and terminal observation.
+
+Retained runtime evidence:
+
+- `fresh-bootstrap-native-observation-20261106.json`, SHA-256
+  `5214ebe76c445bef1b5bc0f19642618a75a9a3a8ce8862c0638ea137e0822f2c`.
+- `fresh-bootstrap-context-verification-20261106.json`, SHA-256
+  `f48c80836d62aa5797cf29b385d29f50d1ae47680716d58c4247597c6e46734e`.
+- `fresh-bootstrap-ipc-20261106.jsonl`, SHA-256
+  `cc362a6811aad1ff7caedfcf8d1e987494300a1e93a1266095c3c5a9927c0cad`.
 
 ## November 6 native creation observation
 
@@ -202,7 +292,7 @@ Retained runtime evidence:
 
 These findings distinguish three boundaries: explicit follower-IPC turns are
 verified; native selection through saved settings is not qualified on the old
-probe; fresh first-turn creation from the ordinary Advisor remains unresolved.
+probe; first-turn Blue selection from the ordinary Advisor remains unresolved.
 They do not justify waiting solely for the advertised schema to change.
 
 Primary source: installed `webview/assets/async/105345.737be374bd.js`, UTF-8
@@ -551,7 +641,7 @@ retains the separate exposed-wrapper question. This successful internal route
 does not establish a public external-client compatibility contract, a maintained
 installed procedure, or support for arbitrary models or accounts.
 
-The [next research increment](https://github.com/nisavid/provingkit/issues/873),
+The [surface research](https://github.com/nisavid/provingkit/issues/873),
 CLI, and cross-harness decisions retain their own version, account, authority,
 and capability checks. There is no basis for a universal legacy deprecation
 claim or a blanket replacement of historical selectors. This research note
