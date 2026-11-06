@@ -1291,7 +1291,7 @@
     },
     {
       "association": "recorded",
-      "caller_access": "Earlier local/discovery refusals and human-observed response remain separate. A later manually prepared opened pair completed an initial A request and distinct final B return through two IPC connections, with direct permissions and narrowly approved procedural corrections; automatic dispatch/adoption remain unqualified. The later Concierge case adds one configured registered opening and a three-message assisted exchange; background/nonintrusive activation and ordinary permission discovery remain open.",
+      "caller_access": "Earlier local/discovery refusals and human-observed response remain separate. A later manually prepared opened pair completed an initial A request and distinct final B return through two IPC connections, with direct permissions and narrowly approved procedural corrections; automatic dispatch/adoption remain unqualified. The later Concierge case adds one configured registered opening and a three-message assisted exchange; background/nonintrusive activation and ordinary permission discovery remain open. Later finite checkpointed case used an already loaded existing pair, direct complete-role intakes and reviewed canonical checks, without an opener. Full intervention-free/ordinary caller access remains unqualified.",
       "evidence": [
         "lead-link-codex-local-refusal-847",
         "codex-owner-discovery-refusal-847",
@@ -1299,7 +1299,9 @@
         "combined-lead-exchange-20261105",
         "combined-lead-codex-continuity-gap-20261105",
         "concierge-registered-exchange-20261106",
-        "concierge-focus-continuity-gap-20261106"
+        "concierge-focus-continuity-gap-20261106",
+        "concierge-checkpoint-work-20261106",
+        "concierge-checkpoint-entry-recovery-20261106"
       ],
       "fabrics": [
         "rolecasting-codex-ipc-sender",
@@ -1311,20 +1313,26 @@
         "One opened-existing pair has partial operator-reported checked response; automated latest-message retrieval missed it. Cause, native branch, authenticated binding, both-state behavior, full preservation, authority and recovery remain unresolved.",
         "Beyond the recorded composed case: Automatic dispatch/return/authority propagation, accepted/executing transitions, full procedure qualification, preservation, recovery, release/deployment/adoption remain unqualified.",
         "The combined profile adds checked work and direct-return evidence for one opened pair. Exact native branch, automatic retrieval, full authority/settings/work preservation and general states remain unqualified. Operator UI and later native status observations have unjoined timing; Codex continuity/usability remains unresolved.",
-        "Current Concierge case: shared payload exchange was retained but A/B envelope correlation differed. Assisted middle, focus intrusion, repeated child shutdown deadline and UI/native turn-state discrepancy remain; no broad state/work/recovery/adoption qualification."
+        "Earlier registered-opening Concierge case: shared payload exchange was retained but A/B envelope correlation differed. Assisted middle, focus intrusion, repeated child shutdown deadline and UI/native turn-state discrepancy remain; no broad state/work/recovery/adoption qualification.",
+        "Post-exchange GUI entry failed and required same-ID defib; native and operator GUI recovery checks passed, with no durable-reliability proof.",
+        "Native admission/start/steer branch, exact busy/idle arrival state, authenticated backend/account and full inherited settings remain unqualified.",
+        "Cumulative source/host-budget accounting and full operator intervention/focus details are incomplete; blanket procedure compliance or unassisted operation is not claimed.",
+        "Receiver-app restart/reentry, pending/uncertain obligation recovery, ordinary adoption, release and deployment remain open.",
+        "Owned MCP child was killed/reaped after shutdown deadline; graceful and whole-process-tree closure are not established."
       ],
       "id": "claude-desktop-code-to-codex-desktop-local",
-      "next_check": "Supply explicit shared correlation and exact procedure/permission intake before immutable planning. Investigate graceful MCP shutdown through a non-sending child lifecycle seam, and investigate the GUI/native turn-state discrepancy with a correlated original-work continuation witness. Do not resend this completed exchange or treat another successful routing round trip as those missing observations. Receiver-app recovery and ordinary adoption remain open.",
+      "next_check": "Resolve the recurring receiver-entry defect through an owned durable repair or explicitly selected/qualified workaround, then close the actual remaining state/preservation, app-recovery and adoption obligations. Reuse the checked task evidence; do not resend it for bookkeeping. Graceful MCP shutdown remains a separate follow-up unless it blocks the accepted outcome.",
       "profiles": [
         "claude-desktop-codex-owner-local-refusal-existing",
         "claude-desktop-codex-owner-discovery-refusal-existing",
         "claude-desktop-codex-opened-human-response-existing",
         "claude-desktop-codex-combined-work-return-existing",
-        "claude-desktop-codex-concierge-registered-return-existing"
+        "claude-desktop-codex-concierge-registered-return-existing",
+        "claude-desktop-codex-checkpoint-work-existing"
       ],
       "source": "claude-desktop-code",
       "target": "codex-desktop-local",
-      "target_binding": "Operator-selected independently existing native Codex task. The finite producer reports actual incoming A and final B contexts and Root checks of complete received envelopes and original references. This is bounded correlation evidence, not authenticated account/backend binding or general unopened reach. Native Codex Concierge A/B and final validation plus original Claude middle handling supply limited existing-pair evidence; no authenticated app/profile/backend binding follows."
+      "target_binding": "Operator-selected independently existing native Codex task. The finite producer reports actual incoming A and final B contexts and Root checks of complete received envelopes and original references. This is bounded correlation evidence, not authenticated account/backend binding or general unopened reach. Native Codex Concierge A/B and final validation plus original Claude middle handling supply limited existing-pair evidence; no authenticated app/profile/backend binding follows. Later Root native/retained-work observations plus Claude original handback join the same declared checkpoint/task/update; authenticated app/backend/account binding remains unqualified."
     },
     {
       "association": "recorded",
@@ -6687,13 +6695,15 @@
     },
     {
       "association": "recorded",
-      "caller_access": "Earlier operator-relayed activation and human ACK remain separate. A later manually prepared opened pair used one Codex-owned native MCP child for a new A-return/B-request message, with direct permissions and narrowly approved procedural corrections; automatic caller activation/adoption remain unqualified. The later Concierge case adds one configured registered opening and a three-message assisted exchange; background/nonintrusive activation and ordinary permission discovery remain open.",
+      "caller_access": "Earlier operator-relayed activation and human ACK remain separate. A later manually prepared opened pair used one Codex-owned native MCP child for a new A-return/B-request message, with direct permissions and narrowly approved procedural corrections; automatic caller activation/adoption remain unqualified. The later Concierge case adds one configured registered opening and a three-message assisted exchange; background/nonintrusive activation and ordinary permission discovery remain open. Later finite checkpointed case used an already loaded existing pair, direct complete-role intakes and reviewed canonical checks, without an opener. Full intervention-free/ordinary caller access remains unqualified.",
       "evidence": [
         "lead-link-claude-human-ack-851",
         "combined-lead-exchange-20261105",
         "combined-lead-codex-continuity-gap-20261105",
         "concierge-registered-exchange-20261106",
-        "concierge-focus-continuity-gap-20261106"
+        "concierge-focus-continuity-gap-20261106",
+        "concierge-checkpoint-work-20261106",
+        "concierge-checkpoint-entry-recovery-20261106"
       ],
       "fabrics": [
         "rolecasting-claude-mcp-sender",
@@ -6706,18 +6716,24 @@
         "Earlier profile scope: No explicit idle/busy, preservation, later reply, restart/recovery, broader coverage, release/deployment or ordinary adoption claim.",
         "Owned direct child killed/reaped after shutdown deadline; no graceful/whole-provider termination claim.",
         "The combined profile adds checked B work and a distinct A later reply for one opened pair. General states, automatic retrieval/adoption, full authority/settings/work preservation and recovery remain unqualified. The MCP child was killed/reaped after its shutdown deadline; Codex return-side continuity/usability remains unresolved.",
-        "Current Concierge case: shared payload exchange was retained but A/B envelope correlation differed. Assisted middle, focus intrusion, repeated child shutdown deadline and UI/native turn-state discrepancy remain; no broad state/work/recovery/adoption qualification."
+        "Earlier registered-opening Concierge case: shared payload exchange was retained but A/B envelope correlation differed. Assisted middle, focus intrusion, repeated child shutdown deadline and UI/native turn-state discrepancy remain; no broad state/work/recovery/adoption qualification.",
+        "Post-exchange GUI entry failed and required same-ID defib; native and operator GUI recovery checks passed, with no durable-reliability proof.",
+        "Native admission/start/steer branch, exact busy/idle arrival state, authenticated backend/account and full inherited settings remain unqualified.",
+        "Cumulative source/host-budget accounting and full operator intervention/focus details are incomplete; blanket procedure compliance or unassisted operation is not claimed.",
+        "Receiver-app restart/reentry, pending/uncertain obligation recovery, ordinary adoption, release and deployment remain open.",
+        "Owned MCP child was killed/reaped after shutdown deadline; graceful and whole-process-tree closure are not established."
       ],
       "id": "codex-desktop-local-to-claude-desktop-code",
-      "next_check": "Supply explicit shared correlation and exact procedure/permission intake before immutable planning. Investigate graceful MCP shutdown through a non-sending child lifecycle seam, and investigate the GUI/native turn-state discrepancy with a correlated original-work continuation witness. Do not resend this completed exchange or treat another successful routing round trip as those missing observations. Receiver-app recovery and ordinary adoption remain open.",
+      "next_check": "Resolve the recurring receiver-entry defect through an owned durable repair or explicitly selected/qualified workaround, then close the actual remaining state/preservation, app-recovery and adoption obligations. Reuse the checked task evidence; do not resend it for bookkeeping. Graceful MCP shutdown remains a separate follow-up unless it blocks the accepted outcome.",
       "profiles": [
         "codex-desktop-claude-human-ack-existing",
         "codex-desktop-claude-combined-work-return-existing",
-        "codex-desktop-claude-concierge-registered-return-existing"
+        "codex-desktop-claude-concierge-registered-return-existing",
+        "codex-desktop-claude-checkpoint-update-existing"
       ],
       "source": "codex-desktop-local",
       "target": "claude-desktop-code",
-      "target_binding": "Operator-selected independently existing Claude task. Claude's original handback reports the actual incoming middle message, matching complete envelope/payload and original references, checked A and independently computed B. Actor provenance is not authenticated endpoint/backend proof. Native Codex Concierge A/B and final validation plus original Claude middle handling supply limited existing-pair evidence; no authenticated app/profile/backend binding follows."
+      "target_binding": "Operator-selected independently existing Claude task. Claude's original handback reports the actual incoming middle message, matching complete envelope/payload and original references, checked A and independently computed B. Actor provenance is not authenticated endpoint/backend proof. Native Codex Concierge A/B and final validation plus original Claude middle handling supply limited existing-pair evidence; no authenticated app/profile/backend binding follows. Later Root native/retained-work observations plus Claude original handback join the same declared checkpoint/task/update; authenticated app/backend/account binding remains unqualified."
     },
     {
       "association": "unassessed",
@@ -12624,7 +12640,9 @@
   "decisions": [
     "https://github.com/nisavid/provingkit/issues/538#issuecomment-6112579765",
     "https://github.com/nisavid/provingkit/issues/539#issuecomment-6113361923",
-    "https://github.com/nisavid/provingkit/issues/540#issuecomment-6119910041"
+    "https://github.com/nisavid/provingkit/issues/540#issuecomment-6119910041",
+    "https://github.com/nisavid/provingkit/issues/882#issuecomment-6686845329",
+    "https://github.com/nisavid/provingkit/issues/882#issuecomment-6689325553"
   ],
   "evidence": [
     {
@@ -13000,6 +13018,35 @@
       "uri": "docs/coordination/batches/2026-11-05-combined-lead-exchange.md"
     },
     {
+      "id": "concierge-checkpoint-entry-recovery-20261106",
+      "kind": "live",
+      "limits": [
+        "One finite existing Concierge pair; timestamp/digest bind retained producer intake, not arrival latency or public access to private records.",
+        "Live case source14 stayed at bbf997b78676d69a1f69ffa37be88b594353dc7c; no new-version, authenticated backend/account/model/settings, release or adoption claim.",
+        "Operator demonstrated GUI cannot-steer-without-active-turn-id after the checked result while a native read reported completed/idle; cause remains unknown.",
+        "Foreman performed one same-ID archive/unarchive preserving history/workspace/pin/checkpoint/result; native recovery ACK and operator GUI recovery ACK succeeded. These were separate recovery checks, not peer-message retries.",
+        "This exact receiver was restored; no durable repair, full app restart or reliable future operation is established. All original clients ended; no graceful MCP or whole-tree/resource-reclamation claim.",
+        "Approximate source-read/host-budget accounting and temporarily0644 metadata corrected to0600 prevent a blanket procedure-compliance claim; exchange focus/intervention details remain incomplete."
+      ],
+      "observed_at": "2026-11-06T17:10:39.547755+00:00",
+      "sha256": "be964d61f046660e20de67fa897b2597eddd7f4198e62a35927778fa66eb6a80",
+      "uri": "docs/coordination/batches/2026-11-06-concierge-checkpoint-continuation.md"
+    },
+    {
+      "id": "concierge-checkpoint-work-20261106",
+      "kind": "live",
+      "limits": [
+        "One finite existing Concierge pair; timestamp/digest bind retained producer intake, not arrival latency or public access to private records.",
+        "Live case source14 stayed at bbf997b78676d69a1f69ffa37be88b594353dc7c; no new-version, authenticated backend/account/model/settings, release or adoption claim.",
+        "Root verified checkpoint r1/r2, retained r3/r4 and literal full table after actual correlated r4 change. Native Codex incoming/final context and original Claude handback are distinct receipt evidence.",
+        "The final table was checked in receiving Codex by Root; no fourth full-table reply to Claude or general automatic retrieval was requested.",
+        "Recorded turn ordering/outstanding sender alone does not prove native busy admission. The GUI failure and recovery are retained in the separate entry-recovery evidence."
+      ],
+      "observed_at": "2026-11-06T17:10:39.547755+00:00",
+      "sha256": "be964d61f046660e20de67fa897b2597eddd7f4198e62a35927778fa66eb6a80",
+      "uri": "docs/coordination/batches/2026-11-06-concierge-checkpoint-continuation.md"
+    },
+    {
       "id": "concierge-focus-continuity-gap-20261106",
       "kind": "live",
       "limits": [
@@ -13024,6 +13071,39 @@
       "observed_at": "2026-11-06T11:23:26.960587+00:00",
       "sha256": "daa1cf46215754ee97d8d7203641b055ffe6989964da40a2bf90a1a5e4962bae",
       "uri": "docs/coordination/batches/2026-11-06-concierge-registered-exchange.md"
+    },
+    {
+      "id": "ipc-command-policy-review-20261106",
+      "kind": "review",
+      "limits": [
+        "Independent final-commit Runtime critic and separate adjudicator found no unresolved actions; preserved wording erratum was validated.",
+        "Ordinary same-leader assurance, no portable/product/effective-model attestation. This is source-review evidence, not catalog-candidate review or live qualification."
+      ],
+      "observed_at": "2026-11-06T17:10:39.547755+00:00",
+      "sha256": "06e926017159932b006f7d1242f62eb656dcc9ec4cc2eb45bb600d2ff39fa575",
+      "uri": "docs/coordination/batches/2026-11-06-concierge-checkpoint-continuation.md"
+    },
+    {
+      "id": "ipc-command-policy-source-20261106",
+      "kind": "source",
+      "limits": [
+        "Exact published helper movement, imports and generated lock; unchanged public interfaces/bodies. No new component or capability.",
+        "This new commit was not consumed by the live case. Current native compatibility, instruction discovery/application, installation and adoption are not qualified by source publication."
+      ],
+      "observed_at": "2026-11-06T17:10:39.547755+00:00",
+      "revision": "699365c7245edd249e3c6fd36c9479d9e5843351",
+      "uri": "https://github.com/nisavid/provingkit/blob/699365c7245edd249e3c6fd36c9479d9e5843351/docs/superpowers/prototypes/codex-owner-admission/owner_admission_sender.py"
+    },
+    {
+      "id": "ipc-command-policy-synthetic-20261106",
+      "kind": "synthetic",
+      "limits": [
+        "Root observed baseline25 CLI tests and post-refactor245 owning+5package tests, owning/disposition validators and final diff check. Original discovery gap preserved/completed separately.",
+        "Invented disposable peers exercise source commands only; no actual app/backend compatibility, delivery, source-procedure consumer or adoption claim."
+      ],
+      "observed_at": "2026-11-06T17:10:39.547755+00:00",
+      "sha256": "be49be7b8eb1a95b45497f671393a2bce15e2876560fe076c7e5052455f81348",
+      "uri": "docs/coordination/batches/2026-11-06-concierge-checkpoint-continuation.md"
     },
     {
       "id": "lead-exchange-independent-readback-865",
@@ -17423,14 +17503,17 @@
       "compatibility": {
         "evidence": [
           "combined-lead-exchange-20261105",
-          "combined-lead-codex-continuity-gap-20261105"
+          "combined-lead-codex-continuity-gap-20261105",
+          "concierge-checkpoint-work-20261106",
+          "concierge-checkpoint-entry-recovery-20261106"
         ],
-        "scope": "Partial checked work and direct returns observed for one manually prepared opened pair using ordinary source14 at bbf997b78676d69a1f69ffa37be88b594353dc7c. Native Codex A/final-B contexts and the original Claude middle-message handback support the bounded result. UI/native observation timing is unjoined, current new send failure/cause is unestablished, and continuity/usability and broader states remain unresolved.",
+        "scope": "Partial checked work and direct returns observed for one manually prepared opened pair using ordinary source14 at bbf997b78676d69a1f69ffa37be88b594353dc7c. Native Codex A/final-B contexts and the original Claude middle-message handback support the bounded result. UI/native observation timing is unjoined, current new send failure/cause is unestablished, and continuity/usability and broader states remain unresolved. This later finite source14 case at bbf997b78676d69a1f69ffa37be88b594353dc7c preserves two completed rows and completes the checked table after the actual bounded peer update. GUI input subsequently failed despite native completed/idle and required same-ID defib, after which native and operator GUI recovery checks passed. The cause and native admission branch remain unknown; no durable reliability or general compatibility/incompatibility is inferred.",
         "status": "mixed"
       },
       "crosswalk": [
         "Finite three-message Lead exchange: docs/coordination/batches/2026-11-05-combined-lead-exchange.md",
-        "Finite controlled Concierge exchange: docs/coordination/batches/2026-11-06-concierge-registered-exchange.md"
+        "Finite controlled Concierge exchange: docs/coordination/batches/2026-11-06-concierge-registered-exchange.md",
+        "Finite checkpointed Concierge case: docs/coordination/batches/2026-11-06-concierge-checkpoint-continuation.md"
       ],
       "dependencies": [
         "rolecasting-claude-mcp-sender",
@@ -17444,17 +17527,20 @@
         "combined-lead-exchange-20261105",
         "combined-lead-codex-continuity-gap-20261105",
         "concierge-registered-exchange-20261106",
-        "concierge-focus-continuity-gap-20261106"
+        "concierge-focus-continuity-gap-20261106",
+        "concierge-checkpoint-work-20261106",
+        "concierge-checkpoint-entry-recovery-20261106"
       ],
       "gaps": [
         "Manual setup, direct permissions and two procedural corrections were required; ordinary invocation/adoption and current Concierge coverage remain unqualified.",
         "Unopened reach, general idle/busy work continuity, full inherited settings/authority enforcement, authenticated backend/origin and receiver-app restart/recovery remain unqualified.",
         "Codex Thinking/stop and native idle/completed observations are not time-aligned; functional future reachability and cause remain unresolved.",
-        "Direct MCP child was killed and reaped after its shutdown deadline; no graceful or full process-tree closure claim."
+        "Direct MCP child was killed and reaped after its shutdown deadline; no graceful or full process-tree closure claim.",
+        "Checkpointed work passed, but subsequent GUI entry required same-ID recovery; durable ordinary use, general states/settings/authentication and app recovery remain unqualified."
       ],
       "id": "mcp-owner-admission-request-return",
       "name": "Native MCP and owner-admission IPC request/return composition",
-      "next_check": "Continue the next genuinely needed, separately authorized operation with actual receipt/handling evidence. Use a time-aligned status comparison only to investigate the display discrepancy; it is not a prerequisite to useful work. Reconcile interruption/attachment effects and concrete authority before selecting mitigation. Remaining state, preservation, recovery and consumer adoption claims stay open.",
+      "next_check": "Resolve the recurring receiver-entry defect through an owned durable repair or explicitly selected/qualified workaround, then close the actual remaining state/preservation, app-recovery and adoption obligations. Reuse the checked task evidence; do not resend it for bookkeeping. Graceful MCP shutdown remains a separate follow-up unless it blocks the accepted outcome.",
       "parent": null,
       "role": "protocol",
       "source_scope": "Catalog composition for the recorded three-message request/return case: IPC carries A and final B, while MCP carries A return plus new request B. Both existing actuators are required for this composed case. The record adds no program, queue, broker, plugin component or installed procedure. Separate single-actuator profiles retain their own scope.",
@@ -17949,16 +18035,19 @@
         "evidence": [
           "lead-link-claude-human-ack-851",
           "combined-lead-exchange-20261105",
-          "combined-lead-codex-continuity-gap-20261105"
+          "combined-lead-codex-continuity-gap-20261105",
+          "concierge-checkpoint-work-20261106",
+          "concierge-checkpoint-entry-recovery-20261106"
         ],
-        "scope": "One source46133 transaction and human-visible correlated response observed for the declared existing native Desktop pair. Actual binary/backend authentication, automatic authority propagation, other states, preservation/recovery and general compatibility remain unassessed. Forced child reap observed, graceful shutdown unqualified. No changed-build incompatibility inferred. The later combined batch reports one new MCP middle message carrying checked A output and request B, actual Claude receipt and a checked distinct B return, using unchanged ordinary source14 at bbf997b78676d69a1f69ffa37be88b594353dc7c. This supports the declared opened-pair behavior only. The Codex-owned child reached its shutdown deadline and was killed/reaped with exit -9; graceful and full process-tree closure remain unqualified. Authenticated backend/build, model/settings inheritance, automatic authority propagation, general states and recovery remain unassessed. The separate Codex continuity/usability gap supplies no general fabric-incompatibility or root-cause conclusion.",
+        "scope": "One source46133 transaction and human-visible correlated response observed for the declared existing native Desktop pair. Actual binary/backend authentication, automatic authority propagation, other states, preservation/recovery and general compatibility remain unassessed. Forced child reap observed, graceful shutdown unqualified. No changed-build incompatibility inferred. The later combined batch reports one new MCP middle message carrying checked A output and request B, actual Claude receipt and a checked distinct B return, using unchanged ordinary source14 at bbf997b78676d69a1f69ffa37be88b594353dc7c. This supports the declared opened-pair behavior only. The Codex-owned child reached its shutdown deadline and was killed/reaped with exit -9; graceful and full process-tree closure remain unqualified. Authenticated backend/build, model/settings inheritance, automatic authority propagation, general states and recovery remain unassessed. The separate Codex continuity/usability gap supplies no general fabric-incompatibility or root-cause conclusion. This later finite source14 case at bbf997b78676d69a1f69ffa37be88b594353dc7c preserves two completed rows and completes the checked table after the actual bounded peer update. GUI input subsequently failed despite native completed/idle and required same-ID defib, after which native and operator GUI recovery checks passed. The cause and native admission branch remain unknown; no durable reliability or general compatibility/incompatibility is inferred.",
         "status": "mixed"
       },
       "crosswalk": [
         "Maintained-source producer nisavid/provingkit#844; reviewed commit 61c17375c28e72db15a4c2898bfc90b251bd1deb",
         "Limited native Desktop to Claude live profile, nisavid/provingkit#851; docs/coordination/batches/2026-11-05-lead-link-first-results.md",
         "Finite combined Lead work/direct-return batch: docs/coordination/batches/2026-11-05-combined-lead-exchange.md; unchanged ordinary source14 at bbf997b78676d69a1f69ffa37be88b594353dc7c",
-        "Finite controlled Concierge exchange: docs/coordination/batches/2026-11-06-concierge-registered-exchange.md"
+        "Finite controlled Concierge exchange: docs/coordination/batches/2026-11-06-concierge-registered-exchange.md",
+        "Finite checkpointed Concierge case: docs/coordination/batches/2026-11-06-concierge-checkpoint-continuation.md"
       ],
       "dependencies": [
         "rolecasting-peer-message-support",
@@ -17976,18 +18065,21 @@
         "combined-lead-exchange-20261105",
         "combined-lead-codex-continuity-gap-20261105",
         "concierge-registered-exchange-20261106",
-        "concierge-focus-continuity-gap-20261106"
+        "concierge-focus-continuity-gap-20261106",
+        "concierge-checkpoint-work-20261106",
+        "concierge-checkpoint-entry-recovery-20261106"
       ],
       "gaps": [
         "One manually activated/human-observed existing-pair profile is recorded separately; automatic caller/grant propagation, authenticated server/build/peer and wider consent remain unqualified.",
         "Native receipt, explicit idle/busy, full preservation, later reply and recovery remain open.",
         "Forced shutdown after deadline observed; complete time/memory/provider guarantees and graceful shutdown remain unqualified.",
         "A separate combined profile supports partial checked work and later return for one opened pair; authenticated backend/origin, automatic retrieval/adoption, full authority/settings/work preservation, general states and receiver-app restart remain unqualified.",
-        "Codex return-side continuity/usability remains unresolved; forced MCP child reaping establishes neither graceful shutdown nor full process-tree closure."
+        "Codex return-side continuity/usability remains unresolved; forced MCP child reaping establishes neither graceful shutdown nor full process-tree closure.",
+        "Checkpointed work passed, but subsequent GUI entry required same-ID recovery; durable ordinary use, general states/settings/authentication and app recovery remain unqualified."
       ],
       "id": "rolecasting-claude-mcp-sender",
       "name": "Rolecasting mailbox-backed Claude MCP sender",
-      "next_check": "Continue the next genuinely needed, separately authorized operation with actual receipt/handling evidence. Use a time-aligned status comparison only to investigate the display discrepancy; it is not a prerequisite to useful work. Reconcile interruption/attachment effects and concrete authority before selecting mitigation. Remaining state, preservation, recovery and consumer adoption claims stay open.",
+      "next_check": "Resolve the recurring receiver-entry defect through an owned durable repair or explicitly selected/qualified workaround, then close the actual remaining state/preservation, app-recovery and adoption obligations. Reuse the checked task evidence; do not resend it for bookkeeping. Graceful MCP shutdown remains a separate follow-up unless it blocks the accepted outcome.",
       "parent": null,
       "role": "actuator",
       "source_scope": "Maintained Python stdio MCP command with one claimed mailbox attempt, shared versioned peer envelope, supported SendMessage(to,message), selected-result capture and owned-child closure. Source support establishes no authenticated peer or permission.",
@@ -18005,9 +18097,13 @@
           "codex-owner-discovery-refusal-847",
           "codex-opened-human-response-847",
           "combined-lead-exchange-20261105",
-          "combined-lead-codex-continuity-gap-20261105"
+          "combined-lead-codex-continuity-gap-20261105",
+          "concierge-checkpoint-work-20261106",
+          "concierge-checkpoint-entry-recovery-20261106",
+          "ipc-command-policy-synthetic-20261106",
+          "ipc-command-policy-review-20261106"
         ],
-        "scope": "Source mechanics and synthetic command behavior reviewed. Assess affected framing, owner/follow/state, busy steer, correlation/reconciliation and capture behavior with graduated checks; current native build, caller access and receiver remain unassessed. A new build alone proves no incompatibility. Idle-intent source and cooperative command examples are separately assessed; actual native compatibility remains unassessed and a changed version alone proves no incompatibility. November 4 one-shot acquisition matched a decoded bound state, then refused before peer input on an unfinished receive deadline. This function observation establishes neither complete current-build compatibility nor general incompatibility; unexercised idle eligibility/start, receipt and reverse MCP return remain unassessed. The separate owner-admission source/public fixtures assess only that new operation; unchanged split behavior and its failed trial retain their prior evidence. Actual owner/backend/current version, admission versus ordinary-start fallback, receipt/processing and preservation remain unassessed. Source-experiment acceptance adds no live authority. November5 owner-admission attempt stopped on missing caller capture root before claim/connection; this establishes no receiver compatibility or incompatibility. A separately authorized later existing-pair attempt initialized successfully but received no-client-found for owner discovery and submitted no input. This does not establish why attachment failed, complete current compatibility or general incompatibility. Finite opened-existing-receiver batch: one owner-admission request and operator-reported same-chat ACK passed Root correlation/count/sum/fresh-marker checks; automated latest-message observations did not retrieve ACK. This is partial human-observed existing-pair evidence only. Native branch/authenticated backend, both states, authority/preservation, recovery and adoption remain unassessed; prior refusals remain distinct. The later combined batch reports two successful IPC legs within one opened existing pair, checked A/B work and a distinct final return, using unchanged ordinary source14 at bbf997b78676d69a1f69ffa37be88b594353dc7c. Installed Desktop version 26.1029.61003 was observed; this identifies the fixture and does not establish authenticated native/backend compatibility or model/settings inheritance. Exact admission/start/steer branch remains unknown. Operator-visible Thinking/stop and a later native idle/completed observation have unjoined timing; continuity/usability remains unresolved. No new failed-send/ID error, same-cause proof, general incompatibility or cosmetic explanation is established.",
+        "scope": "Source mechanics and synthetic command behavior reviewed. Assess affected framing, owner/follow/state, busy steer, correlation/reconciliation and capture behavior with graduated checks; current native build, caller access and receiver remain unassessed. A new build alone proves no incompatibility. Idle-intent source and cooperative command examples are separately assessed; actual native compatibility remains unassessed and a changed version alone proves no incompatibility. November 4 one-shot acquisition matched a decoded bound state, then refused before peer input on an unfinished receive deadline. This function observation establishes neither complete current-build compatibility nor general incompatibility; unexercised idle eligibility/start, receipt and reverse MCP return remain unassessed. The separate owner-admission source/public fixtures assess only that new operation; unchanged split behavior and its failed trial retain their prior evidence. Actual owner/backend/current version, admission versus ordinary-start fallback, receipt/processing and preservation remain unassessed. Source-experiment acceptance adds no live authority. November5 owner-admission attempt stopped on missing caller capture root before claim/connection; this establishes no receiver compatibility or incompatibility. A separately authorized later existing-pair attempt initialized successfully but received no-client-found for owner discovery and submitted no input. This does not establish why attachment failed, complete current compatibility or general incompatibility. Finite opened-existing-receiver batch: one owner-admission request and operator-reported same-chat ACK passed Root correlation/count/sum/fresh-marker checks; automated latest-message observations did not retrieve ACK. This is partial human-observed existing-pair evidence only. Native branch/authenticated backend, both states, authority/preservation, recovery and adoption remain unassessed; prior refusals remain distinct. The later combined batch reports two successful IPC legs within one opened existing pair, checked A/B work and a distinct final return, using unchanged ordinary source14 at bbf997b78676d69a1f69ffa37be88b594353dc7c. Installed Desktop version 26.1029.61003 was observed; this identifies the fixture and does not establish authenticated native/backend compatibility or model/settings inheritance. Exact admission/start/steer branch remains unknown. Operator-visible Thinking/stop and a later native idle/completed observation have unjoined timing; continuity/usability remains unresolved. No new failed-send/ID error, same-cause proof, general incompatibility or cosmetic explanation is established. This later finite source14 case at bbf997b78676d69a1f69ffa37be88b594353dc7c preserves two completed rows and completes the checked table after the actual bounded peer update. GUI input subsequently failed despite native completed/idle and required same-ID defib, after which native and operator GUI recovery checks passed. The cause and native admission branch remain unknown; no durable reliability or general compatibility/incompatibility is inferred. Separate synthetic command regression and clean review assess literal helper movement at 699365c7245edd249e3c6fd36c9479d9e5843351; new-source live qualification is not inferred from the old-source case.",
         "status": "mixed"
       },
       "crosswalk": [
@@ -18019,7 +18115,9 @@
         "Finite owner-discovery refusal, nisavid/provingkit#847; docs/coordination/batches/2026-11-05-owner-discovery-refusal.md",
         "Finite opened-existing human response: docs/coordination/batches/2026-11-05-codex-opened-human-response.md",
         "Finite combined Lead work/direct-return batch: docs/coordination/batches/2026-11-05-combined-lead-exchange.md; unchanged ordinary source14 at bbf997b78676d69a1f69ffa37be88b594353dc7c",
-        "Finite controlled Concierge exchange: docs/coordination/batches/2026-11-06-concierge-registered-exchange.md"
+        "Finite controlled Concierge exchange: docs/coordination/batches/2026-11-06-concierge-registered-exchange.md",
+        "Finite checkpointed Concierge case: docs/coordination/batches/2026-11-06-concierge-checkpoint-continuation.md",
+        "Separate unchanged-interface helper refactor at 699365c7245edd249e3c6fd36c9479d9e5843351; docs/coordination/batches/2026-11-06-concierge-checkpoint-continuation.md"
       ],
       "dependencies": [
         "rolecasting-peer-message-support",
@@ -18049,7 +18147,12 @@
         "combined-lead-exchange-20261105",
         "combined-lead-codex-continuity-gap-20261105",
         "concierge-registered-exchange-20261106",
-        "concierge-focus-continuity-gap-20261106"
+        "concierge-focus-continuity-gap-20261106",
+        "concierge-checkpoint-work-20261106",
+        "concierge-checkpoint-entry-recovery-20261106",
+        "ipc-command-policy-source-20261106",
+        "ipc-command-policy-synthetic-20261106",
+        "ipc-command-policy-review-20261106"
       ],
       "gaps": [
         "Actual caller exposure, existing endpoint/access, current owner/build/peer and original authority/holds require binding.",
@@ -18058,25 +18161,30 @@
         "The November 4 existing-task work trial refused before input after an incomplete-frame deadline; acquisition stopping/ordering/freshness needs a justified source/synthetic disposition.",
         "Prior discovery refusal remains unexplained. One opened-existing pair has partial operator-reported checked response; automated latest-message retrieval missed it. Cause, native branch, authenticated binding, both-state behavior, full preservation, authority and recovery remain unresolved.",
         "A separate combined profile supports partial checked work and later return for one opened pair; it does not resolve earlier refusal causes, general idle/busy behavior, exact native branch, authenticated binding, automatic retrieval/adoption, full authority/settings/work preservation or receiver-app restart.",
-        "Codex UI/native-state observations are not time-aligned. Current send failure and root cause are unestablished; continuity/usability remains unresolved."
+        "Codex UI/native-state observations are not time-aligned. Current send failure and root cause are unestablished; continuity/usability remains unresolved.",
+        "Checkpointed work passed, but subsequent GUI entry required same-ID recovery; durable ordinary use, general states/settings/authentication and app recovery remain unqualified."
       ],
       "id": "rolecasting-codex-ipc-sender",
       "name": "Rolecasting mailbox-backed Codex IPC sender",
-      "next_check": "Continue the next genuinely needed, separately authorized operation with actual receipt/handling evidence. Use a time-aligned status comparison only to investigate the display discrepancy; it is not a prerequisite to useful work. Reconcile interruption/attachment effects and concrete authority before selecting mitigation. Remaining state, preservation, recovery and consumer adoption claims stay open.",
+      "next_check": "Resolve the recurring receiver-entry defect through an owned durable repair or explicitly selected/qualified workaround, then close the actual remaining state/preservation, app-recovery and adoption obligations. Reuse the checked task evidence; do not resend it for bookkeeping. Graceful MCP shutdown remains a separate follow-up unless it blocks the accepted outcome.",
       "parent": null,
       "role": "actuator",
-      "source_scope": "Maintained busy-only Unix IPC sender and original-attempt read-only reconciliation; immutable mailbox claim, peer envelope, intact owner/generation binding and create-only per-run captures. No new queue, automatic resend or idle-start fallback. Separate explicitly selected observed-idle/default/user source prototype uses native start with inherited context; possible submission and unknown opening receipt, no atomic idle guarantee. Separate local v2 owner-admission prototype reuses maintained transport/capture/mailbox/envelope and the same selected-owner class, without follow/state prediction. Both inheritance/admission flags are requested; one exact envelope, at most one submission, no resend/method switching. Ordinary-start fallback remains possible. One opened-existing profile adds partial human-observed ACK/arithmetic evidence; source mechanics and dependencies unchanged.",
+      "source_scope": "Maintained busy-only Unix IPC sender and original-attempt read-only reconciliation; immutable mailbox claim, peer envelope, intact owner/generation binding and create-only per-run captures. No new queue, automatic resend or idle-start fallback. Separate explicitly selected observed-idle/default/user source prototype uses native start with inherited context; possible submission and unknown opening receipt, no atomic idle guarantee. Separate local v2 owner-admission prototype reuses maintained transport/capture/mailbox/envelope and the same selected-owner class, without follow/state prediction. Both inheritance/admission flags are requested; one exact envelope, at most one submission, no resend/method switching. Ordinary-start fallback remains possible. One opened-existing profile adds partial human-observed ACK/arithmetic evidence; source mechanics and dependencies unchanged. Source-only helper ownership refactor at 699365c7245edd249e3c6fd36c9479d9e5843351 moves unchanged bounded input/result policy into existing shared IPC core; no new dependency class, protocol or capability. The live case did not consume that revision.",
       "status": "discovered"
     },
     {
       "compatibility": {
-        "evidence": [],
-        "scope": "Source implementation and local synthetic mechanics reviewed; actual native-server build, caller route and receiver remain unassessed. A changed build is not demonstrated incompatibility.",
-        "status": "unassessed"
+        "evidence": [
+          "concierge-checkpoint-work-20261106",
+          "concierge-checkpoint-entry-recovery-20261106"
+        ],
+        "scope": "Source implementation and local synthetic mechanics reviewed; actual native-server build, caller route and receiver remain unassessed. A changed build is not demonstrated incompatibility. This later finite source14 case at bbf997b78676d69a1f69ffa37be88b594353dc7c preserves two completed rows and completes the checked table after the actual bounded peer update. GUI input subsequently failed despite native completed/idle and required same-ID defib, after which native and operator GUI recovery checks passed. The cause and native admission branch remain unknown; no durable reliability or general compatibility/incompatibility is inferred.",
+        "status": "mixed"
       },
       "crosswalk": [
         "Maintained-source producer nisavid/provingkit#844; reviewed commit 61c17375c28e72db15a4c2898bfc90b251bd1deb",
-        "Finite controlled Concierge exchange: docs/coordination/batches/2026-11-06-concierge-registered-exchange.md"
+        "Finite controlled Concierge exchange: docs/coordination/batches/2026-11-06-concierge-registered-exchange.md",
+        "Finite checkpointed Concierge case: docs/coordination/batches/2026-11-06-concierge-checkpoint-continuation.md"
       ],
       "dependencies": [],
       "effort": {
@@ -18086,15 +18194,18 @@
       "evidence": [
         "claude-mcp-sender-source-844",
         "claude-mcp-sender-consumers-844",
-        "claude-mcp-sender-source-review-844"
+        "claude-mcp-sender-source-review-844",
+        "concierge-checkpoint-work-20261106",
+        "concierge-checkpoint-entry-recovery-20261106"
       ],
       "gaps": [
         "Local records and referenced grants do not authenticate authority or prove receiver delivery.",
-        "Store/locking, lifecycle and custody remain caller-bound conditions; installation and adoption are not established."
+        "Store/locking, lifecycle and custody remain caller-bound conditions; installation and adoption are not established.",
+        "Checkpointed work passed, but subsequent GUI entry required same-ID recovery; durable ordinary use, general states/settings/authentication and app recovery remain unqualified."
       ],
       "id": "rolecasting-peer-message-support",
       "name": "Rolecasting peer mailbox and envelope helpers",
-      "next_check": "Carry the same reviewed helper revision into each maintained adapter and assess affected source/runtime changes.",
+      "next_check": "Resolve the recurring receiver-entry defect through an owned durable repair or explicitly selected/qualified workaround, then close the actual remaining state/preservation, app-recovery and adoption obligations. Reuse the checked task evidence; do not resend it for bookkeeping. Graceful MCP shutdown remains a separate follow-up unless it blocks the accepted outcome.",
       "parent": null,
       "role": "support",
       "source_scope": "Required local source package includes native_codex_mailbox.py and peer_message.py: retained immutable message/attempt obligations plus peer-labelled envelope serialization. These are separate functions in the same maintained helper layer, not another delivery queue.",
@@ -18102,13 +18213,17 @@
     },
     {
       "compatibility": {
-        "evidence": [],
-        "scope": "Source implementation and local synthetic mechanics reviewed; actual native-server build, caller route and receiver remain unassessed. A changed build is not demonstrated incompatibility.",
-        "status": "unassessed"
+        "evidence": [
+          "concierge-checkpoint-work-20261106",
+          "concierge-checkpoint-entry-recovery-20261106"
+        ],
+        "scope": "Source implementation and local synthetic mechanics reviewed; actual native-server build, caller route and receiver remain unassessed. A changed build is not demonstrated incompatibility. This later finite source14 case at bbf997b78676d69a1f69ffa37be88b594353dc7c preserves two completed rows and completes the checked table after the actual bounded peer update. GUI input subsequently failed despite native completed/idle and required same-ID defib, after which native and operator GUI recovery checks passed. The cause and native admission branch remain unknown; no durable reliability or general compatibility/incompatibility is inferred.",
+        "status": "mixed"
       },
       "crosswalk": [
         "Maintained-source producer nisavid/provingkit#844; reviewed commit 61c17375c28e72db15a4c2898bfc90b251bd1deb",
-        "Finite controlled Concierge exchange: docs/coordination/batches/2026-11-06-concierge-registered-exchange.md"
+        "Finite controlled Concierge exchange: docs/coordination/batches/2026-11-06-concierge-registered-exchange.md",
+        "Finite checkpointed Concierge case: docs/coordination/batches/2026-11-06-concierge-checkpoint-continuation.md"
       ],
       "dependencies": [
         "claude-native-messaging"
@@ -18122,14 +18237,17 @@
         "claude-mcp-sender-consumers-844",
         "claude-mcp-sender-source-review-844",
         "concierge-registered-exchange-20261106",
-        "concierge-focus-continuity-gap-20261106"
+        "concierge-focus-continuity-gap-20261106",
+        "concierge-checkpoint-work-20261106",
+        "concierge-checkpoint-entry-recovery-20261106"
       ],
       "gaps": [
-        "No exact actual launcher, current native tool inventory, peer binding or startup-effect assessment is supplied by this synthetic batch."
+        "No exact actual launcher, current native tool inventory, peer binding or startup-effect assessment is supplied by this synthetic batch.",
+        "Checkpointed work passed, but subsequent GUI entry required same-ID recovery; durable ordinary use, general states/settings/authentication and app recovery remain unqualified."
       ],
       "id": "selected-claude-mcp-peer-server",
       "name": "Selected native Claude stdio MCP peer server",
-      "next_check": "Bind the actual server/build/tool schema and native peer in the live proposal before launching it.",
+      "next_check": "Resolve the recurring receiver-entry defect through an owned durable repair or explicitly selected/qualified workaround, then close the actual remaining state/preservation, app-recovery and adoption obligations. Reuse the checked task evidence; do not resend it for bookkeeping. Graceful MCP shutdown remains a separate follow-up unless it blocks the accepted outcome.",
       "parent": null,
       "role": "support",
       "source_scope": "Mandatory operating component class for the sender: a caller-selected stdio server exposing the documented native SendMessage profile. Its exact backend and deployment are unresolved; Claude MCP serve is a candidate, not a selected installed instance.",
@@ -18174,9 +18292,11 @@
           "codex-owner-admission-source-869",
           "codex-owner-admission-command-synthetic-869",
           "codex-owner-admission-source-review-869",
-          "codex-opened-human-response-847"
+          "codex-opened-human-response-847",
+          "concierge-checkpoint-work-20261106",
+          "concierge-checkpoint-entry-recovery-20261106"
         ],
-        "scope": "Source mechanics and synthetic command behavior reviewed. Assess affected framing, owner/follow/state, busy steer, correlation/reconciliation and capture behavior with graduated checks; current native build, caller access and receiver remain unassessed. A new build alone proves no incompatibility. Idle-intent source and cooperative command examples are separately assessed; actual native compatibility remains unassessed and a changed version alone proves no incompatibility. November 4 one-shot acquisition matched a decoded bound state, then refused before peer input on an unfinished receive deadline. This function observation establishes neither complete current-build compatibility nor general incompatibility; unexercised idle eligibility/start, receipt and reverse MCP return remain unassessed. The separate owner-admission source/public fixtures assess only that new operation; unchanged split behavior and its failed trial retain their prior evidence. Actual owner/backend/current version, admission versus ordinary-start fallback, receipt/processing and preservation remain unassessed. Source-experiment acceptance adds no live authority. Finite opened-existing-receiver batch: one owner-admission request and operator-reported same-chat ACK passed Root correlation/count/sum/fresh-marker checks; automated latest-message observations did not retrieve ACK. This is partial human-observed existing-pair evidence only. Native branch/authenticated backend, both states, authority/preservation, recovery and adoption remain unassessed; prior refusals remain distinct.",
+        "scope": "Source mechanics and synthetic command behavior reviewed. Assess affected framing, owner/follow/state, busy steer, correlation/reconciliation and capture behavior with graduated checks; current native build, caller access and receiver remain unassessed. A new build alone proves no incompatibility. Idle-intent source and cooperative command examples are separately assessed; actual native compatibility remains unassessed and a changed version alone proves no incompatibility. November 4 one-shot acquisition matched a decoded bound state, then refused before peer input on an unfinished receive deadline. This function observation establishes neither complete current-build compatibility nor general incompatibility; unexercised idle eligibility/start, receipt and reverse MCP return remain unassessed. The separate owner-admission source/public fixtures assess only that new operation; unchanged split behavior and its failed trial retain their prior evidence. Actual owner/backend/current version, admission versus ordinary-start fallback, receipt/processing and preservation remain unassessed. Source-experiment acceptance adds no live authority. Finite opened-existing-receiver batch: one owner-admission request and operator-reported same-chat ACK passed Root correlation/count/sum/fresh-marker checks; automated latest-message observations did not retrieve ACK. This is partial human-observed existing-pair evidence only. Native branch/authenticated backend, both states, authority/preservation, recovery and adoption remain unassessed; prior refusals remain distinct. This later finite source14 case at bbf997b78676d69a1f69ffa37be88b594353dc7c preserves two completed rows and completes the checked table after the actual bounded peer update. GUI input subsequently failed despite native completed/idle and required same-ID defib, after which native and operator GUI recovery checks passed. The cause and native admission branch remain unknown; no durable reliability or general compatibility/incompatibility is inferred.",
         "status": "mixed"
       },
       "crosswalk": [
@@ -18185,7 +18305,8 @@
         "Failed live-trial producer nisavid/provingkit#865; unchanged actuator source 46133eeca2f16a0e70ea5334481422c753ae84bc",
         "Owner-admission source nisavid/provingkit#869; published commit bbf997b78676d69a1f69ffa37be88b594353dc7c",
         "Finite opened-existing human response: docs/coordination/batches/2026-11-05-codex-opened-human-response.md",
-        "Finite controlled Concierge exchange: docs/coordination/batches/2026-11-06-concierge-registered-exchange.md"
+        "Finite controlled Concierge exchange: docs/coordination/batches/2026-11-06-concierge-registered-exchange.md",
+        "Finite checkpointed Concierge case: docs/coordination/batches/2026-11-06-concierge-checkpoint-continuation.md"
       ],
       "dependencies": [],
       "effort": {
@@ -18207,17 +18328,20 @@
         "codex-owner-discovery-refusal-847",
         "codex-opened-human-response-847",
         "concierge-registered-exchange-20261106",
-        "concierge-focus-continuity-gap-20261106"
+        "concierge-focus-continuity-gap-20261106",
+        "concierge-checkpoint-work-20261106",
+        "concierge-checkpoint-entry-recovery-20261106"
       ],
       "gaps": [
         "No exact selected endpoint, legitimate access, current owner/build or native peer is established by the synthetic fixtures.",
         "Successful connection or discovery does not authenticate the target or establish authority. App Server, Queue and newly started servers are not substituted for this existing-owner class.",
         "The November 4 existing-task work trial refused before input after an incomplete-frame deadline; acquisition stopping/ordering/freshness needs a justified source/synthetic disposition.",
-        "Prior discovery refusal remains unexplained. One opened-existing pair has partial operator-reported checked response; automated latest-message retrieval missed it. Cause, native branch, authenticated binding, both-state behavior, full preservation, authority and recovery remain unresolved."
+        "Prior discovery refusal remains unexplained. One opened-existing pair has partial operator-reported checked response; automated latest-message retrieval missed it. Cause, native branch, authenticated binding, both-state behavior, full preservation, authority and recovery remain unresolved.",
+        "Checkpointed work passed, but subsequent GUI entry required same-ID recovery; durable ordinary use, general states/settings/authentication and app recovery remain unqualified."
       ],
       "id": "selected-codex-native-ipc-owner",
       "name": "Selected existing Codex native IPC owner backend",
-      "next_check": "Keep actual backend/authenticated attachment and branch unresolved; investigate visibility discrepancy only under separately approved scope, without replay.",
+      "next_check": "Resolve the recurring receiver-entry defect through an owned durable repair or explicitly selected/qualified workaround, then close the actual remaining state/preservation, app-recovery and adoption obligations. Reuse the checked task evidence; do not resend it for bookkeeping. Graceful MCP shutdown remains a separate follow-up unless it blocks the accepted outcome.",
       "parent": null,
       "role": "support",
       "source_scope": "Required existing-owner Unix IPC source-profile backend: initialize, thread-owner-discovery, framed thread-stream following/state and busy thread-follower-steer-turn. Finite producer source/procedure/command evidence establishes no further independent fabric requirement; CPython/stdlib/SQLite/filesystem are working conditions, not new transports. Exact endpoint/access/current build/peer binding remains unknown. The explicit idle profile additionally depends on the same owner\u2019s versioned thread-follower-start-turn with client-message identity and inherited native context; live acceptance remains unproved. The same existing-owner class receives the separate local v2 request carrying inheritThreadSettings/useUserMessageAdmission and may reach native admission or ordinary-start fallback. The frontend prototype reuses maintained transport/capture/mailbox/envelope without requesting thread follow or predicting busy/idle state; actual backend behavior remains unqualified. The new operator-observed response profile does not resolve the underlying native admission branch or full backend behavior.",
@@ -30887,6 +31011,222 @@
       "target_input": "creation-contract"
     },
     {
+      "assurance": "Root checked exact native Codex incoming/final context and retained checkpoint/result against independent literal expectations; original Claude handback joins actual middle reception. Foreman recovery record plus direct operator GUI result supports limited restoration. Ordinary correlated evidence only, not authenticated backend/origin, effective-model/settings, exhaustive procedure conformance or full process-tree attestation.",
+      "channel": "claude-desktop-code-to-codex-desktop-local",
+      "claims": [
+        {
+          "coverage": "partial",
+          "evidence": [
+            "concierge-checkpoint-work-20261106"
+          ],
+          "limits": [
+            "Actual original Codex context and checked work support this one finite submission; RPC success alone does not."
+          ],
+          "milestone": "submitted",
+          "operation": "request-work",
+          "stage": "qualified"
+        },
+        {
+          "coverage": "partial",
+          "evidence": [
+            "concierge-checkpoint-work-20261106"
+          ],
+          "limits": [
+            "Root observed the actual original work request in the existing Codex context; backend authentication and exact admission branch remain unknown."
+          ],
+          "milestone": "receipt",
+          "operation": "request-work",
+          "stage": "qualified"
+        },
+        {
+          "coverage": "partial",
+          "evidence": [
+            "concierge-checkpoint-work-20261106"
+          ],
+          "limits": [
+            "Complete four-row output is present in receiving Codex chat and matches retained result; no automatic caller-side retrieval is established."
+          ],
+          "milestone": "output",
+          "operation": "request-work",
+          "stage": "qualified"
+        },
+        {
+          "coverage": "partial",
+          "evidence": [
+            "concierge-checkpoint-work-20261106"
+          ],
+          "limits": [
+            "Root independently checked the literal full table, preserved checkpoint/fields and bounded r4 change. This declared fixture completion is separate from post-exchange GUI usability."
+          ],
+          "milestone": "fulfilled",
+          "operation": "request-work",
+          "stage": "qualified"
+        },
+        {
+          "coverage": "partial",
+          "evidence": [
+            "concierge-checkpoint-work-20261106"
+          ],
+          "limits": [
+            "The actual correlated peer update reached the same nominated Codex task under the original permission; no additional task or message was requested."
+          ],
+          "milestone": "submitted",
+          "operation": "continue-task",
+          "stage": "qualified"
+        },
+        {
+          "coverage": "partial",
+          "evidence": [
+            "concierge-checkpoint-work-20261106"
+          ],
+          "limits": [
+            "r1/r2 remained complete, r3/r4 were retained and the original table completed after the actual update. Scope is this explicit checkpointed work, not all native history/settings, native busy branch or uninterrupted GUI usability."
+          ],
+          "milestone": "same-task-context",
+          "operation": "continue-task",
+          "stage": "qualified"
+        },
+        {
+          "coverage": "partial",
+          "evidence": [
+            "concierge-checkpoint-work-20261106"
+          ],
+          "limits": [
+            "Claude returned the requested bounded change directly to Codex, using the actual received checkpoint marker. It was a distinct later message, not a synchronous IPC return."
+          ],
+          "milestone": "later-reply",
+          "operation": "reply",
+          "stage": "qualified"
+        }
+      ],
+      "consent": {
+        "limits": [
+          "The completed finite grants are spent; records describe scope, not permission for another operation.",
+          "Complete role permissions were supplied by direct operator intake; peer text added no authority. General automatic grant discovery/propagation remains unqualified."
+        ],
+        "references": [
+          "https://github.com/nisavid/provingkit/issues/882#issuecomment-6686845329",
+          "https://github.com/nisavid/provingkit/issues/882#issuecomment-6689325553",
+          "https://github.com/nisavid/provingkit/issues/840"
+        ]
+      },
+      "continuity": {
+        "busy": "A correlated update follows the checkpoint within one recorded original work turn and correct full completion. Native busy admission is unproved; later GUI entry failed and required same-ID recovery.",
+        "idle": "Receiver preloaded through intake; exact idle-at-arrival and general idle behavior not established.",
+        "restart": "Only same-ID archive/unarchive restoration observed, with preserved work and native/GUI ACKs. Receiver-app Quit/relaunch and pending/uncertain recovery remain unqualified."
+      },
+      "fabric": "mcp-owner-admission-request-return",
+      "gaps": [
+        "Post-exchange GUI entry failed and required same-ID defib; native and operator GUI recovery checks passed, with no durable-reliability proof.",
+        "Native admission/start/steer branch, exact busy/idle arrival state, authenticated backend/account and full inherited settings remain unqualified.",
+        "Cumulative source/host-budget accounting and full operator intervention/focus details are incomplete; blanket procedure compliance or unassisted operation is not claimed.",
+        "Receiver-app restart/reentry, pending/uncertain obligation recovery, ordinary adoption, release and deployment remain open.",
+        "Owned MCP child was killed/reaped after shutdown deadline; graceful and whole-process-tree closure are not established."
+      ],
+      "id": "claude-desktop-codex-checkpoint-work-existing",
+      "input_semantics": "One original work request and one distinct direct peer update reach the existing Codex task. The update changes only r4.kind; completed rows, original IDs/tags/order and remaining task are preserved.",
+      "next_check": "Resolve the recurring receiver-entry defect through an owned durable repair or explicitly selected/qualified workaround, then close the actual remaining state/preservation, app-recovery and adoption obligations. Reuse the checked task evidence; do not resend it for bookkeeping. Graceful MCP shutdown remains a separate follow-up unless it blocks the accepted outcome.",
+      "operations": {
+        "continue-task": [
+          {
+            "coverage": "partial",
+            "evidence": [
+              "concierge-checkpoint-work-20261106"
+            ],
+            "limits": [
+              "The actual correlated peer update reached the same nominated Codex task under the original permission; no additional task or message was requested."
+            ],
+            "milestone": "submitted",
+            "operation": "continue-task",
+            "stage": "qualified"
+          },
+          {
+            "coverage": "partial",
+            "evidence": [
+              "concierge-checkpoint-work-20261106"
+            ],
+            "limits": [
+              "r1/r2 remained complete, r3/r4 were retained and the original table completed after the actual update. Scope is this explicit checkpointed work, not all native history/settings, native busy branch or uninterrupted GUI usability."
+            ],
+            "milestone": "same-task-context",
+            "operation": "continue-task",
+            "stage": "qualified"
+          }
+        ],
+        "create-task": [],
+        "inspect": [],
+        "notify": [],
+        "reply": [
+          {
+            "coverage": "partial",
+            "evidence": [
+              "concierge-checkpoint-work-20261106"
+            ],
+            "limits": [
+              "Claude returned the requested bounded change directly to Codex, using the actual received checkpoint marker. It was a distinct later message, not a synchronous IPC return."
+            ],
+            "milestone": "later-reply",
+            "operation": "reply",
+            "stage": "qualified"
+          }
+        ],
+        "request-work": [
+          {
+            "coverage": "partial",
+            "evidence": [
+              "concierge-checkpoint-work-20261106"
+            ],
+            "limits": [
+              "Actual original Codex context and checked work support this one finite submission; RPC success alone does not."
+            ],
+            "milestone": "submitted",
+            "operation": "request-work",
+            "stage": "qualified"
+          },
+          {
+            "coverage": "partial",
+            "evidence": [
+              "concierge-checkpoint-work-20261106"
+            ],
+            "limits": [
+              "Root observed the actual original work request in the existing Codex context; backend authentication and exact admission branch remain unknown."
+            ],
+            "milestone": "receipt",
+            "operation": "request-work",
+            "stage": "qualified"
+          },
+          {
+            "coverage": "partial",
+            "evidence": [
+              "concierge-checkpoint-work-20261106"
+            ],
+            "limits": [
+              "Complete four-row output is present in receiving Codex chat and matches retained result; no automatic caller-side retrieval is established."
+            ],
+            "milestone": "output",
+            "operation": "request-work",
+            "stage": "qualified"
+          },
+          {
+            "coverage": "partial",
+            "evidence": [
+              "concierge-checkpoint-work-20261106"
+            ],
+            "limits": [
+              "Root independently checked the literal full table, preserved checkpoint/fields and bounded r4 change. This declared fixture completion is separate from post-exchange GUI usability."
+            ],
+            "milestone": "fulfilled",
+            "operation": "request-work",
+            "stage": "qualified"
+          }
+        ]
+      },
+      "ownership": "Independently existing operator-selected Claude and native Codex Desktop Concierges; public specimen identities only, no project custody transfer.",
+      "population": "existing",
+      "relationship": "Peer; finite manual source/permission intakes and reviewed canonical-snapshot continuation, no registered opening.",
+      "target_input": "exact-reference"
+    },
+    {
       "assurance": "Finite producer intake reports native Codex receipt contexts for A and final B, Claude's original incoming-middle-message handback, and Root checks of literal results, original references and complete received envelopes. The coordinator checked native Codex A/final-B contexts; the original Claude handback supplies middle-message provenance. Authenticated backend/origin and executed-model attestation remain unavailable.",
       "channel": "claude-desktop-code-to-codex-desktop-local",
       "claims": [
@@ -35185,6 +35525,173 @@
         ],
         "vector": "SS\u2013SPS"
       },
+      "target_input": "exact-reference"
+    },
+    {
+      "assurance": "Root checked exact native Codex incoming/final context and retained checkpoint/result against independent literal expectations; original Claude handback joins actual middle reception. Foreman recovery record plus direct operator GUI result supports limited restoration. Ordinary correlated evidence only, not authenticated backend/origin, effective-model/settings, exhaustive procedure conformance or full process-tree attestation.",
+      "channel": "codex-desktop-local-to-claude-desktop-code",
+      "claims": [
+        {
+          "coverage": "partial",
+          "evidence": [
+            "concierge-checkpoint-work-20261106"
+          ],
+          "limits": [
+            "Original Claude handback and actual direct update support the one MCP request; wrapper exit0 alone is insufficient."
+          ],
+          "milestone": "submitted",
+          "operation": "request-work",
+          "stage": "qualified"
+        },
+        {
+          "coverage": "partial",
+          "evidence": [
+            "concierge-checkpoint-work-20261106"
+          ],
+          "limits": [
+            "Claude original handback reports the matching middle context, references and marker. No sender file substitutes for receipt; no native Claude invocation attestation supplied."
+          ],
+          "milestone": "receipt",
+          "operation": "request-work",
+          "stage": "qualified"
+        },
+        {
+          "coverage": "partial",
+          "evidence": [
+            "concierge-checkpoint-work-20261106"
+          ],
+          "limits": [
+            "The direct update changes only r4.kind and carries the original checkpoint marker; it is observed in Codex native context."
+          ],
+          "milestone": "output",
+          "operation": "request-work",
+          "stage": "qualified"
+        },
+        {
+          "coverage": "partial",
+          "evidence": [
+            "concierge-checkpoint-work-20261106"
+          ],
+          "limits": [
+            "Codex receives and applies the literal bounded change, with Root checking the complete original table. Scope is the requested update, not broad continuity or receiver usability."
+          ],
+          "milestone": "fulfilled",
+          "operation": "request-work",
+          "stage": "qualified"
+        },
+        {
+          "coverage": "partial",
+          "evidence": [
+            "concierge-checkpoint-work-20261106"
+          ],
+          "limits": [
+            "The middle MCP message returns a correlated interim checkpoint and requests the update. It does not return the final whole table to Claude or establish general result retrieval."
+          ],
+          "milestone": "later-reply",
+          "operation": "reply",
+          "stage": "qualified"
+        }
+      ],
+      "consent": {
+        "limits": [
+          "The completed finite grants are spent; records describe scope, not permission for another operation.",
+          "Complete role permissions were supplied by direct operator intake; peer text added no authority. General automatic grant discovery/propagation remains unqualified."
+        ],
+        "references": [
+          "https://github.com/nisavid/provingkit/issues/882#issuecomment-6686845329",
+          "https://github.com/nisavid/provingkit/issues/882#issuecomment-6689325553",
+          "https://github.com/nisavid/provingkit/issues/840"
+        ]
+      },
+      "continuity": {
+        "busy": "A correlated update follows the checkpoint within one recorded original work turn and correct full completion. Native busy admission is unproved; later GUI entry failed and required same-ID recovery.",
+        "idle": "Receiver preloaded through intake; exact idle-at-arrival and general idle behavior not established.",
+        "restart": "Only same-ID archive/unarchive restoration observed, with preserved work and native/GUI ACKs. Receiver-app Quit/relaunch and pending/uncertain recovery remain unqualified."
+      },
+      "fabric": "mcp-owner-admission-request-return",
+      "gaps": [
+        "Post-exchange GUI entry failed and required same-ID defib; native and operator GUI recovery checks passed, with no durable-reliability proof.",
+        "Native admission/start/steer branch, exact busy/idle arrival state, authenticated backend/account and full inherited settings remain unqualified.",
+        "Cumulative source/host-budget accounting and full operator intervention/focus details are incomplete; blanket procedure compliance or unassisted operation is not claimed.",
+        "Receiver-app restart/reentry, pending/uncertain obligation recovery, ordinary adoption, release and deployment remain open.",
+        "Owned MCP child was killed/reaped after shutdown deadline; graceful and whole-process-tree closure are not established."
+      ],
+      "id": "codex-desktop-claude-checkpoint-update-existing",
+      "input_semantics": "One middle MCP message reports the actual checkpoint and requests one bounded change. Claude uses its actual incoming marker and returns only the authorized change directly to originating Codex.",
+      "next_check": "Resolve the recurring receiver-entry defect through an owned durable repair or explicitly selected/qualified workaround, then close the actual remaining state/preservation, app-recovery and adoption obligations. Reuse the checked task evidence; do not resend it for bookkeeping. Graceful MCP shutdown remains a separate follow-up unless it blocks the accepted outcome.",
+      "operations": {
+        "continue-task": [],
+        "create-task": [],
+        "inspect": [],
+        "notify": [],
+        "reply": [
+          {
+            "coverage": "partial",
+            "evidence": [
+              "concierge-checkpoint-work-20261106"
+            ],
+            "limits": [
+              "The middle MCP message returns a correlated interim checkpoint and requests the update. It does not return the final whole table to Claude or establish general result retrieval."
+            ],
+            "milestone": "later-reply",
+            "operation": "reply",
+            "stage": "qualified"
+          }
+        ],
+        "request-work": [
+          {
+            "coverage": "partial",
+            "evidence": [
+              "concierge-checkpoint-work-20261106"
+            ],
+            "limits": [
+              "Original Claude handback and actual direct update support the one MCP request; wrapper exit0 alone is insufficient."
+            ],
+            "milestone": "submitted",
+            "operation": "request-work",
+            "stage": "qualified"
+          },
+          {
+            "coverage": "partial",
+            "evidence": [
+              "concierge-checkpoint-work-20261106"
+            ],
+            "limits": [
+              "Claude original handback reports the matching middle context, references and marker. No sender file substitutes for receipt; no native Claude invocation attestation supplied."
+            ],
+            "milestone": "receipt",
+            "operation": "request-work",
+            "stage": "qualified"
+          },
+          {
+            "coverage": "partial",
+            "evidence": [
+              "concierge-checkpoint-work-20261106"
+            ],
+            "limits": [
+              "The direct update changes only r4.kind and carries the original checkpoint marker; it is observed in Codex native context."
+            ],
+            "milestone": "output",
+            "operation": "request-work",
+            "stage": "qualified"
+          },
+          {
+            "coverage": "partial",
+            "evidence": [
+              "concierge-checkpoint-work-20261106"
+            ],
+            "limits": [
+              "Codex receives and applies the literal bounded change, with Root checking the complete original table. Scope is the requested update, not broad continuity or receiver usability."
+            ],
+            "milestone": "fulfilled",
+            "operation": "request-work",
+            "stage": "qualified"
+          }
+        ]
+      },
+      "ownership": "Independently existing operator-selected Claude and native Codex Desktop Concierges; public specimen identities only, no project custody transfer.",
+      "population": "existing",
+      "relationship": "Peer; finite manual source/permission intakes and reviewed canonical-snapshot continuation, no registered opening.",
       "target_input": "exact-reference"
     },
     {
@@ -48668,6 +49175,119 @@
             "mcp-owner-admission-request-return"
           ],
           "rationale": "Required combination for the one initially unopened Concierge fixture: one configured opening, two existing IPC sends and one MCP send. The existing request/return composition retains its own two actuator dependencies. This adds no broker, queue, runtime program or universal opposite-direction requirement."
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Post-exchange GUI entry failed and required same-ID defib; native and operator GUI recovery checks passed, with no durable-reliability proof.",
+            "Native admission/start/steer branch, exact busy/idle arrival state, authenticated backend/account and full inherited settings remain unqualified.",
+            "Cumulative source/host-budget accounting and full operator intervention/focus details are incomplete; blanket procedure compliance or unassisted operation is not claimed.",
+            "Receiver-app restart/reentry, pending/uncertain obligation recovery, ordinary adoption, release and deployment remain open.",
+            "Owned MCP child was killed/reaped after shutdown deadline; graceful and whole-process-tree closure are not established."
+          ],
+          "crosswalk": [
+            "Finite checkpointed Concierge case: docs/coordination/batches/2026-11-06-concierge-checkpoint-continuation.md"
+          ],
+          "fabric": "rolecasting-claude-mcp-sender",
+          "grouping_only": null,
+          "mandatory_components": [
+            "rolecasting-peer-message-support",
+            "selected-claude-mcp-peer-server"
+          ],
+          "rationale": "Finite producer confirms the existing composition/support requirements only. Same two actuators, shared mailbox/envelope and selected server/owner classes remain; no extra program, broker, queue, native component or opener is required. Empty support dependency lists mean no further component class was established within this explicit source/operation scope, not a proof from absence. Endpoint/backend binding stays limited. The separate helper refactor reuses the already-required IPC implementation and adds no component edge."
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Post-exchange GUI entry failed and required same-ID defib; native and operator GUI recovery checks passed, with no durable-reliability proof.",
+            "Native admission/start/steer branch, exact busy/idle arrival state, authenticated backend/account and full inherited settings remain unqualified.",
+            "Cumulative source/host-budget accounting and full operator intervention/focus details are incomplete; blanket procedure compliance or unassisted operation is not claimed.",
+            "Receiver-app restart/reentry, pending/uncertain obligation recovery, ordinary adoption, release and deployment remain open.",
+            "Owned MCP child was killed/reaped after shutdown deadline; graceful and whole-process-tree closure are not established."
+          ],
+          "crosswalk": [
+            "Finite checkpointed Concierge case: docs/coordination/batches/2026-11-06-concierge-checkpoint-continuation.md"
+          ],
+          "fabric": "rolecasting-peer-message-support",
+          "grouping_only": null,
+          "mandatory_components": [],
+          "rationale": "Finite producer confirms the existing composition/support requirements only. Same two actuators, shared mailbox/envelope and selected server/owner classes remain; no extra program, broker, queue, native component or opener is required. Empty support dependency lists mean no further component class was established within this explicit source/operation scope, not a proof from absence. Endpoint/backend binding stays limited. The separate helper refactor reuses the already-required IPC implementation and adds no component edge."
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Post-exchange GUI entry failed and required same-ID defib; native and operator GUI recovery checks passed, with no durable-reliability proof.",
+            "Native admission/start/steer branch, exact busy/idle arrival state, authenticated backend/account and full inherited settings remain unqualified.",
+            "Cumulative source/host-budget accounting and full operator intervention/focus details are incomplete; blanket procedure compliance or unassisted operation is not claimed.",
+            "Receiver-app restart/reentry, pending/uncertain obligation recovery, ordinary adoption, release and deployment remain open.",
+            "Owned MCP child was killed/reaped after shutdown deadline; graceful and whole-process-tree closure are not established."
+          ],
+          "crosswalk": [
+            "Finite checkpointed Concierge case: docs/coordination/batches/2026-11-06-concierge-checkpoint-continuation.md"
+          ],
+          "fabric": "selected-claude-mcp-peer-server",
+          "grouping_only": null,
+          "mandatory_components": [
+            "claude-native-messaging"
+          ],
+          "rationale": "Finite producer confirms the existing composition/support requirements only. Same two actuators, shared mailbox/envelope and selected server/owner classes remain; no extra program, broker, queue, native component or opener is required. Empty support dependency lists mean no further component class was established within this explicit source/operation scope, not a proof from absence. Endpoint/backend binding stays limited. The separate helper refactor reuses the already-required IPC implementation and adds no component edge."
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Post-exchange GUI entry failed and required same-ID defib; native and operator GUI recovery checks passed, with no durable-reliability proof.",
+            "Native admission/start/steer branch, exact busy/idle arrival state, authenticated backend/account and full inherited settings remain unqualified.",
+            "Cumulative source/host-budget accounting and full operator intervention/focus details are incomplete; blanket procedure compliance or unassisted operation is not claimed.",
+            "Receiver-app restart/reentry, pending/uncertain obligation recovery, ordinary adoption, release and deployment remain open.",
+            "Owned MCP child was killed/reaped after shutdown deadline; graceful and whole-process-tree closure are not established."
+          ],
+          "crosswalk": [
+            "Finite checkpointed Concierge case: docs/coordination/batches/2026-11-06-concierge-checkpoint-continuation.md"
+          ],
+          "fabric": "rolecasting-codex-ipc-sender",
+          "grouping_only": null,
+          "mandatory_components": [
+            "rolecasting-peer-message-support",
+            "selected-codex-native-ipc-owner"
+          ],
+          "rationale": "Finite producer confirms the existing composition/support requirements only. Same two actuators, shared mailbox/envelope and selected server/owner classes remain; no extra program, broker, queue, native component or opener is required. Empty support dependency lists mean no further component class was established within this explicit source/operation scope, not a proof from absence. Endpoint/backend binding stays limited. The separate helper refactor reuses the already-required IPC implementation and adds no component edge."
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Post-exchange GUI entry failed and required same-ID defib; native and operator GUI recovery checks passed, with no durable-reliability proof.",
+            "Native admission/start/steer branch, exact busy/idle arrival state, authenticated backend/account and full inherited settings remain unqualified.",
+            "Cumulative source/host-budget accounting and full operator intervention/focus details are incomplete; blanket procedure compliance or unassisted operation is not claimed.",
+            "Receiver-app restart/reentry, pending/uncertain obligation recovery, ordinary adoption, release and deployment remain open.",
+            "Owned MCP child was killed/reaped after shutdown deadline; graceful and whole-process-tree closure are not established."
+          ],
+          "crosswalk": [
+            "Finite checkpointed Concierge case: docs/coordination/batches/2026-11-06-concierge-checkpoint-continuation.md"
+          ],
+          "fabric": "selected-codex-native-ipc-owner",
+          "grouping_only": null,
+          "mandatory_components": [],
+          "rationale": "Finite producer confirms the existing composition/support requirements only. Same two actuators, shared mailbox/envelope and selected server/owner classes remain; no extra program, broker, queue, native component or opener is required. Empty support dependency lists mean no further component class was established within this explicit source/operation scope, not a proof from absence. Endpoint/backend binding stays limited. The separate helper refactor reuses the already-required IPC implementation and adds no component edge."
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Post-exchange GUI entry failed and required same-ID defib; native and operator GUI recovery checks passed, with no durable-reliability proof.",
+            "Native admission/start/steer branch, exact busy/idle arrival state, authenticated backend/account and full inherited settings remain unqualified.",
+            "Cumulative source/host-budget accounting and full operator intervention/focus details are incomplete; blanket procedure compliance or unassisted operation is not claimed.",
+            "Receiver-app restart/reentry, pending/uncertain obligation recovery, ordinary adoption, release and deployment remain open.",
+            "Owned MCP child was killed/reaped after shutdown deadline; graceful and whole-process-tree closure are not established."
+          ],
+          "crosswalk": [
+            "Finite checkpointed Concierge case: docs/coordination/batches/2026-11-06-concierge-checkpoint-continuation.md"
+          ],
+          "fabric": "mcp-owner-admission-request-return",
+          "grouping_only": null,
+          "mandatory_components": [
+            "rolecasting-claude-mcp-sender",
+            "rolecasting-codex-ipc-sender"
+          ],
+          "rationale": "Finite producer confirms the existing composition/support requirements only. Same two actuators, shared mailbox/envelope and selected server/owner classes remain; no extra program, broker, queue, native component or opener is required. Empty support dependency lists mean no further component class was established within this explicit source/operation scope, not a proof from absence. Endpoint/backend binding stays limited. The separate helper refactor reuses the already-required IPC implementation and adds no component edge."
         }
       ],
       "relations": [
@@ -48884,9 +49504,9 @@
   },
   "schema_version": 1,
   "snapshot": {
-    "coverage": "Finite assisted Concierge round trip: 29 endpoint views (24 Wave1), 169 fabrics, 322 profiles, 40 evidence records,28 associations and812 potential pairs. One operator-reported unopened target used configured KDE6 activation, two IPC sends and one MCP send. Native Codex A/B and final validation plus Claude original middle handback support partial functional work/return claims; uniform envelope correlation deviated and full procedure compliance remains unverified. Operator focus/Thinking reports, native completed/idle discrepancy and forced MCP child reaping remain explicit. All earlier profiles remain. Reliable ordinary messaging, general states/work/settings preservation, recovery and adoption remain unqualified; unfinished work moved to alpha7.",
-    "generated_at": "2026-11-06T11:32:26.603217+00:00",
-    "revision": "concierge-registered-exchange-20261106"
+    "coverage": "One finite checkpointed work/update case on an existing loaded Concierge pair, with preserved r1/r2 and checked full four-row completion. Post-exchange GUI entry failed, then same-ID defib and separate native/operator GUI recovery ACKs restored this fixture. All old records remain. Native busy/admission branch, durable reliability, complete settings/authority/source-compliance, app recovery and ordinary adoption remain unqualified. Separate source-only helper refactor 699365c7245edd249e3c6fd36c9479d9e5843351 has synthetic command/review evidence and no transferred live qualification.",
+    "generated_at": "2026-11-06T17:10:39.547755+00:00",
+    "revision": "concierge-checkpoint-continuation-20261106"
   },
-  "source_sha256": "0396a8d04fdff09cc5f0687b497f77c9956b07a27d644103e75379c2b93b55cf"
+  "source_sha256": "36f6f91e08e585e3d2ded82586a1bec8e93837ed7faf5a8c9eb9ebb248fd94ff"
 }

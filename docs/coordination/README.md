@@ -45,6 +45,8 @@ The [combined Lead exchange](batches/2026-11-05-combined-lead-exchange.md) adds 
 
 The [controlled Concierge exchange](batches/2026-11-06-concierge-registered-exchange.md) adds one configured registered-opening composition and two partial assisted request/return profiles. Native A/B and final validation support the limited functional result; correlation omission, direct human authorization, intrusive focus and unresolved Thinking/native-state behavior remain visible. Both IPC connections closed and the MCP child required deadline kill/reap. This snapshot has 169 fabrics, 322 profiles, and 40 evidence records. Reliable ordinary correspondence, state/work preservation, recovery and adoption remain alpha.7 work.
 
+The [checkpointed Concierge case](batches/2026-11-06-concierge-checkpoint-continuation.md) adds two partial existing-task profiles: two completed rows were preserved and the full table incorporated the direct bounded peer update. GUI entry then failed and required same-ID defib; native and operator GUI recovery checks passed, with durable reliability still open. The independent shared-helper refactor has source/synthetic/review evidence at its own revision and was not used by this live case. Endpoint/fabric/association counts are unchanged; this snapshot has 324 profiles and 45 evidence records.
+
 ## Read the record
 
 - **Endpoints** identify a host and surface. A host-owned thread, a native GUI
