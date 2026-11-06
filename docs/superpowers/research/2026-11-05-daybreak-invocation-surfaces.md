@@ -33,7 +33,7 @@ through `create_thread`, a blank-history start, or independent provider-side
 attestation. The native creation wrapper rejected the explicit Daybreak fields.
 
 This research records source, schema, and bounded runtime observations made on
-November 5, 2026. It supports the
+November 5–6, 2026. It supports the
 [Daybreak invocation migration map](https://github.com/nisavid/provingkit/issues/871)
 and its
 [initial dispatch decision](https://github.com/nisavid/provingkit/issues/872).
@@ -147,6 +147,71 @@ must not be assumed to work as a method on the desktop IPC socket. Sources:
 the `dQ` registration and native handler cited below. First-turn support is
 established; fresh-thread creation through the Advisor's tested IPC entry point
 has not been established.
+
+## November 6 native creation observation
+
+A bounded native continuation asked the enabled probe chat to call
+`create_thread` once with `model: "gpt-6-sol"`, `thinking: "medium"`, and a
+no-tools sentinel prompt. The continuation completed. Its single creation call
+returned this error before creating a chat:
+
+```text
+create_thread could not validate reasoning effort "medium" for model "gpt-6-sol". Use a model and reasoning combination listed in the tool description, or omit thinking.
+```
+
+No child ID was returned, and the caller did not retry. The wrapper lacked a
+model-catalog entry with which to validate the requested effort; this does not
+establish that `medium` is unsupported. It is separate from the earlier strict
+schema rejection of explicit Daybreak fields. Omitting `thinking` permits
+continuation when the catalog is unavailable; if a returned catalog lacks
+`gpt-6-sol`, the wrapper instead rejects the model. Neither case qualifies fresh
+Daybreak creation.
+
+The continuation's persisted context recorded `gpt-6-sol` and `medium`, with no
+`cyber_access_program` field. A targeted snapshot from the live manager recorded
+`daybreakEnabled: true` and `daybreakProgramPropagationEnrolled: false`. The saved
+toggle therefore did not establish an explicit Blue request on that native
+continuation. The missing field does not establish provider-side treatment.
+The earlier explicit follower-IPC request and completed Blue turn remain valid.
+
+The native creation helper (`eYlV.Nw`) can carry a calling chat's saved choice,
+model, and program into fresh creation and first-turn preparation. Its `Q`
+helper requires propagation support, source enrollment, a release gate, and the
+target capability. A saved toggle alone is insufficient. Because this probe
+chat was observed unenrolled, another inheritance attempt from it would not
+test the eligible path.
+
+Source inspection identifies a renderer helper (`eYlV.Cn`) that supplies empty
+input to the existing manager. Successful creation through that path returns
+`firstTurn.status: "not-requested"`; this investigation has not invoked it.
+The existing app-host service exposes that manager through
+`appServerManagers.open("local").manager.startConversation`. This service uses
+trusted Electron MessagePort RPC. It is not a method on `ipc/ipc.sock`; no
+externally callable adapter to this empty-creation helper has been established.
+A whitespace native prompt does not reach the empty branch: delegated creation
+still supplies a text envelope or a non-null tool output.
+
+Retained runtime evidence:
+
+- `fresh-first-turn-create-response-20261106.json`, SHA-256
+  `62300814576a9e7a02bc39884fe99098d10b46690d8a998e8529d0e6c5b6ddc9`.
+- `fresh-first-turn-attempt-1-20261106.json`, SHA-256
+  `9b50c3df9d5184bdc58be2feca606adc763e664ff42dea5a5aa5303530f922b0`.
+- `fresh-source-stream-selection-20261106.json`, SHA-256
+  `4d7d202508b986184f8b2d505cb8ed4c32458cef89f408dfcff510f14806afec`.
+
+These findings distinguish three boundaries: explicit follower-IPC turns are
+verified; native selection through saved settings is not qualified on the old
+probe; fresh first-turn creation from the ordinary Advisor remains unresolved.
+They do not justify waiting solely for the advertised schema to change.
+
+Primary source: installed `webview/assets/async/105345.737be374bd.js`, UTF-8
+bytes `2928` (empty helper), `3297` (native helper), `6812` (inheritance),
+`8656` (creation), and `19300` (feature check), SHA-256
+`47ccdd168f7772ad28751029406fb67a463d1a483a2cbe9f581f4b5772c6e382`.
+Manager source: `early-bootstrap-45-628adb74a9c47df1.js`, bytes `633947`
+(manager facade), `1524370` (manager service), `4152448` (app-host creation),
+and `4530111` (MessagePort registration), with the fingerprint below.
 
 ## Desktop thread tools and existing-app IPC
 
