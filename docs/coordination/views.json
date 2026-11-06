@@ -1291,30 +1291,35 @@
     },
     {
       "association": "recorded",
-      "caller_access": "One opened-existing actor reports one IPC connection/one owner-admission request, RPC success/possible submission and exit0/connection closure; human-reported fresh ACK supports partial inferred delivery. Prior local/discovery refusals remain separate.",
+      "caller_access": "Earlier local/discovery refusals and human-observed response remain separate. A later manually prepared opened pair completed an initial A request and distinct final B return through two IPC connections, with direct permissions and narrowly approved procedural corrections; automatic dispatch/adoption remain unqualified.",
       "evidence": [
         "lead-link-codex-local-refusal-847",
         "codex-owner-discovery-refusal-847",
-        "codex-opened-human-response-847"
+        "codex-opened-human-response-847",
+        "combined-lead-exchange-20261105",
+        "combined-lead-codex-continuity-gap-20261105"
       ],
       "fabrics": [
-        "rolecasting-codex-ipc-sender"
+        "rolecasting-codex-ipc-sender",
+        "mcp-owner-admission-request-return"
       ],
       "gaps": [
         "Earlier no-client-found refusal remains unexplained; opened GUI is a changed fixture, not proven cause.",
         "One opened-existing pair has partial operator-reported checked response; automated latest-message retrieval missed it. Cause, native branch, authenticated binding, both-state behavior, full preservation, authority and recovery remain unresolved.",
-        "Automatic dispatch/return/authority propagation, accepted/executing transitions, full procedure qualification, preservation, recovery, release/deployment/adoption remain unqualified."
+        "Beyond the recorded composed case: Automatic dispatch/return/authority propagation, accepted/executing transitions, full procedure qualification, preservation, recovery, release/deployment/adoption remain unqualified.",
+        "The combined profile adds checked work and direct-return evidence for one opened pair. Exact native branch, automatic retrieval, full authority/settings/work preservation and general states remain unqualified. Operator UI and later native status observations have unjoined timing; Codex continuity/usability remains unresolved."
       ],
       "id": "claude-desktop-code-to-codex-desktop-local",
-      "next_check": "Prepare bounded result-inspection alongside remaining state, authority/preservation and recovery cases, using existing observers before adding components. No third observation, replay or continuing live grant follows from this batch.",
+      "next_check": "Continue the next genuinely needed, separately authorized operation with actual receipt/handling evidence. Use a time-aligned status comparison only to investigate the display discrepancy; it is not a prerequisite to useful work. Reconcile interruption/attachment effects and concrete authority before selecting mitigation. Remaining state, preservation, recovery and consumer adoption claims stay open.",
       "profiles": [
         "claude-desktop-codex-owner-local-refusal-existing",
         "claude-desktop-codex-owner-discovery-refusal-existing",
-        "claude-desktop-codex-opened-human-response-existing"
+        "claude-desktop-codex-opened-human-response-existing",
+        "claude-desktop-codex-combined-work-return-existing"
       ],
       "source": "claude-desktop-code",
       "target": "codex-desktop-local",
-      "target_binding": "Operator-selected existing native Codex chat; operator directly reported its correlated assistant ACK. User-relayed actor handback reports selection/no intervention. No independent authenticated backend or continuous witness; automated latest-message observations did not surface ACK."
+      "target_binding": "Operator-selected independently existing native Codex task. The finite producer reports actual incoming A and final B contexts and Root checks of complete received envelopes and original references. This is bounded correlation evidence, not authenticated account/backend binding or general unopened reach."
     },
     {
       "association": "recorded",
@@ -6677,27 +6682,32 @@
     },
     {
       "association": "recorded",
-      "caller_access": "Operator relayed the sender instruction and direct permission into the existing native Codex Desktop task; one local native MCP transaction. Automatic caller activation unqualified.",
+      "caller_access": "Earlier operator-relayed activation and human ACK remain separate. A later manually prepared opened pair used one Codex-owned native MCP child for a new A-return/B-request message, with direct permissions and narrowly approved procedural corrections; automatic caller activation/adoption remain unqualified.",
       "evidence": [
-        "lead-link-claude-human-ack-851"
+        "lead-link-claude-human-ack-851",
+        "combined-lead-exchange-20261105",
+        "combined-lead-codex-continuity-gap-20261105"
       ],
       "fabrics": [
-        "rolecasting-claude-mcp-sender"
+        "rolecasting-claude-mcp-sender",
+        "mcp-owner-admission-request-return"
       ],
       "gaps": [
         "One operator-selected existing pair, manual operator relay of sender activation and direct permission in Codex user context; automatic dispatch and grant propagation unqualified.",
-        "Human-reported correlated same-chat ACK/inferred receipt; no native incoming-event or authenticated origin, known arrival time, continuous visibility or intervention-free/exclusive causation proof.",
-        "No explicit idle/busy, preservation, later reply, restart/recovery, broader coverage, release/deployment or ordinary adoption claim.",
-        "Owned direct child killed/reaped after shutdown deadline; no graceful/whole-provider termination claim."
+        "Earlier profile scope: Human-reported correlated same-chat ACK/inferred receipt; no native incoming-event or authenticated origin, known arrival time, continuous visibility or intervention-free/exclusive causation proof.",
+        "Earlier profile scope: No explicit idle/busy, preservation, later reply, restart/recovery, broader coverage, release/deployment or ordinary adoption claim.",
+        "Owned direct child killed/reaped after shutdown deadline; no graceful/whole-provider termination claim.",
+        "The combined profile adds checked B work and a distinct A later reply for one opened pair. General states, automatic retrieval/adoption, full authority/settings/work preservation and recovery remain unqualified. The MCP child was killed/reaped after its shutdown deadline; Codex return-side continuity/usability remains unresolved."
       ],
       "id": "codex-desktop-local-to-claude-desktop-code",
-      "next_check": "Retain this limited profile and independently prepare full current-consumer state, authority, reply/recovery and adoption evidence.",
+      "next_check": "Continue the next genuinely needed, separately authorized operation with actual receipt/handling evidence. Use a time-aligned status comparison only to investigate the display discrepancy; it is not a prerequisite to useful work. Reconcile interruption/attachment effects and concrete authority before selecting mitigation. Remaining state, preservation, recovery and consumer adoption claims stay open.",
       "profiles": [
-        "codex-desktop-claude-human-ack-existing"
+        "codex-desktop-claude-human-ack-existing",
+        "codex-desktop-claude-combined-work-return-existing"
       ],
       "source": "codex-desktop-local",
       "target": "claude-desktop-code",
-      "target_binding": "Same completed nominated address and operator-selected Claude task, joined by a new correlated GUI ACK; no authenticated endpoint/build proof."
+      "target_binding": "Operator-selected independently existing Claude task. Claude's original handback reports the actual incoming middle message, matching complete envelope/payload and original references, checked A and independently computed B. Actor provenance is not authenticated endpoint/backend proof."
     },
     {
       "association": "unassessed",
@@ -12952,6 +12962,34 @@
       "uri": "https://github.com/nisavid/provingkit/blob/3b0c946c9d4d85ccfabc83c8209b0238f4a8a831/docs/superpowers/research/codex-worker-preparation-2026-10-13/README.md"
     },
     {
+      "id": "combined-lead-codex-continuity-gap-20261105",
+      "kind": "live",
+      "limits": [
+        "Timestamp records the discrepancy record. The operator report, image capture and subsequent native observation are distinct; capture time is unknown and their timing has not been aligned.",
+        "The operator reported B arriving while Codex was responding, followed by Thinking without apparent activity. The retained image description reports Thinking and the stop control; a subsequent native reader reports idle/completed and all reported commands completed exit 0.",
+        "No new failed-send or thread/turn-ID error was established. Historical Dispatch error and archive/restore recovery are precedents only; no same-cause proof, recovery action or new probe is supplied by this batch.",
+        "Codex continuity and ordinary usability remain unresolved. The evidence establishes neither fabric incompatibility nor a cosmetic explanation, active inference, routing failure or root cause."
+      ],
+      "observed_at": "2026-11-05T23:22:28.105683+00:00",
+      "sha256": "385674bc4f7cb50d7c4f65bcdced55608543d22950561111f555f9484281dfd9",
+      "uri": "docs/coordination/batches/2026-11-05-combined-lead-exchange.md"
+    },
+    {
+      "id": "combined-lead-exchange-20261105",
+      "kind": "live",
+      "limits": [
+        "Timestamp records the producer result, not measured message arrival or latency. Digest identifies the retained private normalized operation result; the public report supplies scope and provenance without private access.",
+        "One operator-selected opened existing pair, with manual setup, direct permissions and two narrowly approved procedural corrections. The result does not qualify ordinary dispatch or adoption.",
+        "Producer records report actual incoming contexts and Root checks of literal A3/73 and B4/140, original references and complete received envelopes. Native Codex incoming A/final-B contexts were checked by the coordinator; Claude middle-message context is supported by the original operator-forwarded actor handback. Neither supplies authenticated origin/backend or executed-model attestation.",
+        "Three peer messages, two IPC connections and one Codex-owned MCP child. Three sender commands exited 0; both IPC connections closed. The MCP child reached its shutdown deadline and was killed and reaped with exit -9; graceful or full process-tree closure is not established.",
+        "No sender retry, resend, extra connection or operator copying of peer results is reported. The original writer reports the whole-case resource reservation closed; this does not terminate either Lead or establish resource reclamation.",
+        "Exact Codex admission/start/steer branch, authenticated origin/backend, automatic result retrieval/adoption, current Concierge, unopened reach, full inherited settings/authority/work preservation, general idle/busy behavior and receiver-app restart coverage remain unqualified."
+      ],
+      "observed_at": "2026-11-05T23:26:34.829231+00:00",
+      "sha256": "97aeb719051416ffa8d6b65f823597ea53b8c28d32f33ba836c790b6afe45a74",
+      "uri": "docs/coordination/batches/2026-11-05-combined-lead-exchange.md"
+    },
+    {
       "id": "lead-exchange-independent-readback-865",
       "kind": "review",
       "limits": [
@@ -17346,6 +17384,44 @@
     },
     {
       "compatibility": {
+        "evidence": [
+          "combined-lead-exchange-20261105",
+          "combined-lead-codex-continuity-gap-20261105"
+        ],
+        "scope": "Partial checked work and direct returns observed for one manually prepared opened pair using ordinary source14 at bbf997b78676d69a1f69ffa37be88b594353dc7c. Native Codex A/final-B contexts and the original Claude middle-message handback support the bounded result. UI/native observation timing is unjoined, current new send failure/cause is unestablished, and continuity/usability and broader states remain unresolved.",
+        "status": "mixed"
+      },
+      "crosswalk": [
+        "Finite three-message Lead exchange: docs/coordination/batches/2026-11-05-combined-lead-exchange.md"
+      ],
+      "dependencies": [
+        "rolecasting-claude-mcp-sender",
+        "rolecasting-codex-ipc-sender"
+      ],
+      "effort": {
+        "active_minutes": null,
+        "cost": null
+      },
+      "evidence": [
+        "combined-lead-exchange-20261105",
+        "combined-lead-codex-continuity-gap-20261105"
+      ],
+      "gaps": [
+        "Manual setup, direct permissions and two procedural corrections were required; ordinary invocation/adoption and current Concierge coverage remain unqualified.",
+        "Unopened reach, general idle/busy work continuity, full inherited settings/authority enforcement, authenticated backend/origin and receiver-app restart/recovery remain unqualified.",
+        "Codex Thinking/stop and native idle/completed observations are not time-aligned; functional future reachability and cause remain unresolved.",
+        "Direct MCP child was killed and reaped after its shutdown deadline; no graceful or full process-tree closure claim."
+      ],
+      "id": "mcp-owner-admission-request-return",
+      "name": "Native MCP and owner-admission IPC request/return composition",
+      "next_check": "Continue the next genuinely needed, separately authorized operation with actual receipt/handling evidence. Use a time-aligned status comparison only to investigate the display discrepancy; it is not a prerequisite to useful work. Reconcile interruption/attachment effects and concrete authority before selecting mitigation. Remaining state, preservation, recovery and consumer adoption claims stay open.",
+      "parent": null,
+      "role": "protocol",
+      "source_scope": "Catalog composition for the recorded three-message request/return case: IPC carries A and final B, while MCP carries A return plus new request B. Both existing actuators are required for this composed case. The record adds no program, queue, broker, plugin component or installed procedure. Separate single-actuator profiles retain their own scope.",
+      "status": "discovered"
+    },
+    {
+      "compatibility": {
         "evidence": [],
         "scope": "Reviewed source scope; actual deployment and affected behavior remain unassessed. Leader/child spawn, message, wait, follow-up, result; unsuitable for an arbitrary independent sidebar task.",
         "status": "unassessed"
@@ -17756,14 +17832,17 @@
     {
       "compatibility": {
         "evidence": [
-          "lead-link-claude-human-ack-851"
+          "lead-link-claude-human-ack-851",
+          "combined-lead-exchange-20261105",
+          "combined-lead-codex-continuity-gap-20261105"
         ],
-        "scope": "One source46133 transaction and human-visible correlated response observed for the declared existing native Desktop pair. Actual binary/backend authentication, automatic authority propagation, other states, preservation/recovery and general compatibility remain unassessed. Forced child reap observed, graceful shutdown unqualified. No changed-build incompatibility inferred.",
+        "scope": "One source46133 transaction and human-visible correlated response observed for the declared existing native Desktop pair. Actual binary/backend authentication, automatic authority propagation, other states, preservation/recovery and general compatibility remain unassessed. Forced child reap observed, graceful shutdown unqualified. No changed-build incompatibility inferred. The later combined batch reports one new MCP middle message carrying checked A output and request B, actual Claude receipt and a checked distinct B return, using unchanged ordinary source14 at bbf997b78676d69a1f69ffa37be88b594353dc7c. This supports the declared opened-pair behavior only. The Codex-owned child reached its shutdown deadline and was killed/reaped with exit -9; graceful and full process-tree closure remain unqualified. Authenticated backend/build, model/settings inheritance, automatic authority propagation, general states and recovery remain unassessed. The separate Codex continuity/usability gap supplies no general fabric-incompatibility or root-cause conclusion.",
         "status": "mixed"
       },
       "crosswalk": [
         "Maintained-source producer nisavid/provingkit#844; reviewed commit 61c17375c28e72db15a4c2898bfc90b251bd1deb",
-        "Limited native Desktop to Claude live profile, nisavid/provingkit#851; docs/coordination/batches/2026-11-05-lead-link-first-results.md"
+        "Limited native Desktop to Claude live profile, nisavid/provingkit#851; docs/coordination/batches/2026-11-05-lead-link-first-results.md",
+        "Finite combined Lead work/direct-return batch: docs/coordination/batches/2026-11-05-combined-lead-exchange.md; unchanged ordinary source14 at bbf997b78676d69a1f69ffa37be88b594353dc7c"
       ],
       "dependencies": [
         "rolecasting-peer-message-support",
@@ -17777,16 +17856,20 @@
         "claude-mcp-sender-source-844",
         "claude-mcp-sender-consumers-844",
         "claude-mcp-sender-source-review-844",
-        "lead-link-claude-human-ack-851"
+        "lead-link-claude-human-ack-851",
+        "combined-lead-exchange-20261105",
+        "combined-lead-codex-continuity-gap-20261105"
       ],
       "gaps": [
         "One manually activated/human-observed existing-pair profile is recorded separately; automatic caller/grant propagation, authenticated server/build/peer and wider consent remain unqualified.",
         "Native receipt, explicit idle/busy, full preservation, later reply and recovery remain open.",
-        "Forced shutdown after deadline observed; complete time/memory/provider guarantees and graceful shutdown remain unqualified."
+        "Forced shutdown after deadline observed; complete time/memory/provider guarantees and graceful shutdown remain unqualified.",
+        "A separate combined profile supports partial checked work and later return for one opened pair; authenticated backend/origin, automatic retrieval/adoption, full authority/settings/work preservation, general states and receiver-app restart remain unqualified.",
+        "Codex return-side continuity/usability remains unresolved; forced MCP child reaping establishes neither graceful shutdown nor full process-tree closure."
       ],
       "id": "rolecasting-claude-mcp-sender",
       "name": "Rolecasting mailbox-backed Claude MCP sender",
-      "next_check": "Extend evidence only through concrete scoped profiles; preserve the limited human-observation result and all stronger gaps.",
+      "next_check": "Continue the next genuinely needed, separately authorized operation with actual receipt/handling evidence. Use a time-aligned status comparison only to investigate the display discrepancy; it is not a prerequisite to useful work. Reconcile interruption/attachment effects and concrete authority before selecting mitigation. Remaining state, preservation, recovery and consumer adoption claims stay open.",
       "parent": null,
       "role": "actuator",
       "source_scope": "Maintained Python stdio MCP command with one claimed mailbox attempt, shared versioned peer envelope, supported SendMessage(to,message), selected-result capture and owned-child closure. Source support establishes no authenticated peer or permission.",
@@ -17802,9 +17885,11 @@
           "codex-owner-admission-source-review-869",
           "lead-link-codex-local-refusal-847",
           "codex-owner-discovery-refusal-847",
-          "codex-opened-human-response-847"
+          "codex-opened-human-response-847",
+          "combined-lead-exchange-20261105",
+          "combined-lead-codex-continuity-gap-20261105"
         ],
-        "scope": "Source mechanics and synthetic command behavior reviewed. Assess affected framing, owner/follow/state, busy steer, correlation/reconciliation and capture behavior with graduated checks; current native build, caller access and receiver remain unassessed. A new build alone proves no incompatibility. Idle-intent source and cooperative command examples are separately assessed; actual native compatibility remains unassessed and a changed version alone proves no incompatibility. November 4 one-shot acquisition matched a decoded bound state, then refused before peer input on an unfinished receive deadline. This function observation establishes neither complete current-build compatibility nor general incompatibility; unexercised idle eligibility/start, receipt and reverse MCP return remain unassessed. The separate owner-admission source/public fixtures assess only that new operation; unchanged split behavior and its failed trial retain their prior evidence. Actual owner/backend/current version, admission versus ordinary-start fallback, receipt/processing and preservation remain unassessed. Source-experiment acceptance adds no live authority. November5 owner-admission attempt stopped on missing caller capture root before claim/connection; this establishes no receiver compatibility or incompatibility. A separately authorized later existing-pair attempt initialized successfully but received no-client-found for owner discovery and submitted no input. This does not establish why attachment failed, complete current compatibility or general incompatibility. Finite opened-existing-receiver batch: one owner-admission request and operator-reported same-chat ACK passed Root correlation/count/sum/fresh-marker checks; automated latest-message observations did not retrieve ACK. This is partial human-observed existing-pair evidence only. Native branch/authenticated backend, both states, authority/preservation, recovery and adoption remain unassessed; prior refusals remain distinct.",
+        "scope": "Source mechanics and synthetic command behavior reviewed. Assess affected framing, owner/follow/state, busy steer, correlation/reconciliation and capture behavior with graduated checks; current native build, caller access and receiver remain unassessed. A new build alone proves no incompatibility. Idle-intent source and cooperative command examples are separately assessed; actual native compatibility remains unassessed and a changed version alone proves no incompatibility. November 4 one-shot acquisition matched a decoded bound state, then refused before peer input on an unfinished receive deadline. This function observation establishes neither complete current-build compatibility nor general incompatibility; unexercised idle eligibility/start, receipt and reverse MCP return remain unassessed. The separate owner-admission source/public fixtures assess only that new operation; unchanged split behavior and its failed trial retain their prior evidence. Actual owner/backend/current version, admission versus ordinary-start fallback, receipt/processing and preservation remain unassessed. Source-experiment acceptance adds no live authority. November5 owner-admission attempt stopped on missing caller capture root before claim/connection; this establishes no receiver compatibility or incompatibility. A separately authorized later existing-pair attempt initialized successfully but received no-client-found for owner discovery and submitted no input. This does not establish why attachment failed, complete current compatibility or general incompatibility. Finite opened-existing-receiver batch: one owner-admission request and operator-reported same-chat ACK passed Root correlation/count/sum/fresh-marker checks; automated latest-message observations did not retrieve ACK. This is partial human-observed existing-pair evidence only. Native branch/authenticated backend, both states, authority/preservation, recovery and adoption remain unassessed; prior refusals remain distinct. The later combined batch reports two successful IPC legs within one opened existing pair, checked A/B work and a distinct final return, using unchanged ordinary source14 at bbf997b78676d69a1f69ffa37be88b594353dc7c. Installed Desktop version 26.1029.61003 was observed; this identifies the fixture and does not establish authenticated native/backend compatibility or model/settings inheritance. Exact admission/start/steer branch remains unknown. Operator-visible Thinking/stop and a later native idle/completed observation have unjoined timing; continuity/usability remains unresolved. No new failed-send/ID error, same-cause proof, general incompatibility or cosmetic explanation is established.",
         "status": "mixed"
       },
       "crosswalk": [
@@ -17814,7 +17899,8 @@
         "Owner-admission source nisavid/provingkit#869; published commit bbf997b78676d69a1f69ffa37be88b594353dc7c",
         "Finite pre-claim local refusal, nisavid/provingkit#847; docs/coordination/batches/2026-11-05-lead-link-first-results.md",
         "Finite owner-discovery refusal, nisavid/provingkit#847; docs/coordination/batches/2026-11-05-owner-discovery-refusal.md",
-        "Finite opened-existing human response: docs/coordination/batches/2026-11-05-codex-opened-human-response.md"
+        "Finite opened-existing human response: docs/coordination/batches/2026-11-05-codex-opened-human-response.md",
+        "Finite combined Lead work/direct-return batch: docs/coordination/batches/2026-11-05-combined-lead-exchange.md; unchanged ordinary source14 at bbf997b78676d69a1f69ffa37be88b594353dc7c"
       ],
       "dependencies": [
         "rolecasting-peer-message-support",
@@ -17840,18 +17926,22 @@
         "codex-owner-admission-source-review-869",
         "lead-link-codex-local-refusal-847",
         "codex-owner-discovery-refusal-847",
-        "codex-opened-human-response-847"
+        "codex-opened-human-response-847",
+        "combined-lead-exchange-20261105",
+        "combined-lead-codex-continuity-gap-20261105"
       ],
       "gaps": [
         "Actual caller exposure, existing endpoint/access, current owner/build/peer and original authority/holds require binding.",
         "Partial synthetic submission/receipt mechanics establish no live operation, ACK/reply, handling, fulfillment or work continuity.",
         "Live idle wake/opening receipt, restart/recovery, complete invocation/resource bounds, installation and adoption remain open.",
         "The November 4 existing-task work trial refused before input after an incomplete-frame deadline; acquisition stopping/ordering/freshness needs a justified source/synthetic disposition.",
-        "Prior discovery refusal remains unexplained. One opened-existing pair has partial operator-reported checked response; automated latest-message retrieval missed it. Cause, native branch, authenticated binding, both-state behavior, full preservation, authority and recovery remain unresolved."
+        "Prior discovery refusal remains unexplained. One opened-existing pair has partial operator-reported checked response; automated latest-message retrieval missed it. Cause, native branch, authenticated binding, both-state behavior, full preservation, authority and recovery remain unresolved.",
+        "A separate combined profile supports partial checked work and later return for one opened pair; it does not resolve earlier refusal causes, general idle/busy behavior, exact native branch, authenticated binding, automatic retrieval/adoption, full authority/settings/work preservation or receiver-app restart.",
+        "Codex UI/native-state observations are not time-aligned. Current send failure and root cause are unestablished; continuity/usability remains unresolved."
       ],
       "id": "rolecasting-codex-ipc-sender",
       "name": "Rolecasting mailbox-backed Codex IPC sender",
-      "next_check": "Resolve the human-visible/automated-observation discrepancy under separate scope; independently qualify states, authority/preservation and recovery before broader use.",
+      "next_check": "Continue the next genuinely needed, separately authorized operation with actual receipt/handling evidence. Use a time-aligned status comparison only to investigate the display discrepancy; it is not a prerequisite to useful work. Reconcile interruption/attachment effects and concrete authority before selecting mitigation. Remaining state, preservation, recovery and consumer adoption claims stay open.",
       "parent": null,
       "role": "actuator",
       "source_scope": "Maintained busy-only Unix IPC sender and original-attempt read-only reconciliation; immutable mailbox claim, peer envelope, intact owner/generation binding and create-only per-run captures. No new queue, automatic resend or idle-start fallback. Separate explicitly selected observed-idle/default/user source prototype uses native start with inherited context; possible submission and unknown opening receipt, no atomic idle guarantee. Separate local v2 owner-admission prototype reuses maintained transport/capture/mailbox/envelope and the same selected-owner class, without follow/state prediction. Both inheritance/admission flags are requested; one exact envelope, at most one submission, no resend/method switching. Ordinary-start fallback remains possible. One opened-existing profile adds partial human-observed ACK/arithmetic evidence; source mechanics and dependencies unchanged.",
@@ -30637,6 +30727,172 @@
       "target_input": "creation-contract"
     },
     {
+      "assurance": "Finite producer intake reports native Codex receipt contexts for A and final B, Claude's original incoming-middle-message handback, and Root checks of literal results, original references and complete received envelopes. The coordinator checked native Codex A/final-B contexts; the original Claude handback supplies middle-message provenance. Authenticated backend/origin and executed-model attestation remain unavailable.",
+      "channel": "claude-desktop-code-to-codex-desktop-local",
+      "claims": [
+        {
+          "coverage": "partial",
+          "evidence": [
+            "combined-lead-exchange-20261105"
+          ],
+          "limits": [
+            "One opened existing pair and one A request. Support rests on the reported actual incoming Codex context and checked correlated return, not generic RPC success alone. Native admission/start/steer branch remains unknown."
+          ],
+          "milestone": "submitted",
+          "operation": "request-work",
+          "stage": "qualified"
+        },
+        {
+          "coverage": "partial",
+          "evidence": [
+            "combined-lead-exchange-20261105"
+          ],
+          "limits": [
+            "Producer reports the actual A request in the nominated native Codex context and Root checks of its complete envelope and original references. Arrival timing and authenticated origin/backend remain unknown."
+          ],
+          "milestone": "receipt",
+          "operation": "request-work",
+          "stage": "qualified"
+        },
+        {
+          "coverage": "partial",
+          "evidence": [
+            "combined-lead-exchange-20261105"
+          ],
+          "limits": [
+            "Codex returned A count 3 and sum 73 in the new middle MCP message, which also requested B. Claude's original handback reports actual receipt in its session; this is not a synchronous IPC response or a general automated-retrieval claim."
+          ],
+          "milestone": "output",
+          "operation": "request-work",
+          "stage": "qualified"
+        },
+        {
+          "coverage": "partial",
+          "evidence": [
+            "combined-lead-exchange-20261105"
+          ],
+          "limits": [
+            "Claude checked A count 3 and sum 73; Root reports independent literal, original-reference and complete-envelope checks. The marker was receiver-chosen and absent from the request. Fulfillment covers this declared arithmetic work only."
+          ],
+          "milestone": "fulfilled",
+          "operation": "request-work",
+          "stage": "qualified"
+        },
+        {
+          "coverage": "partial",
+          "evidence": [
+            "combined-lead-exchange-20261105"
+          ],
+          "limits": [
+            "Claude's distinct final IPC message returned B count 4 and sum 140 directly to originating Codex; producer reports native receipt and Root checks. This establishes one later return, not general continuity, automatic retrieval or recovery."
+          ],
+          "milestone": "later-reply",
+          "operation": "reply",
+          "stage": "qualified"
+        }
+      ],
+      "consent": {
+        "limits": [
+          "The completed three-message grant is spent. Historical references describe scope and evidence, not continuing permission.",
+          "Manual setup, direct permissions and two narrowly approved procedural corrections were required; automatic authority propagation and full procedure adoption remain unqualified."
+        ],
+        "references": [
+          "https://github.com/nisavid/provingkit/issues/879#issuecomment-6671145492",
+          "https://github.com/nisavid/provingkit/issues/847"
+        ]
+      },
+      "continuity": {
+        "busy": "The operator reported B arriving while Codex was responding, followed by visible Thinking/stop. Capture time and native observation timing are unjoined; busy continuity and ordinary usability remain unresolved.",
+        "idle": "General idle behavior is unqualified; a later native idle/completed observation does not establish the state at message arrival.",
+        "restart": "Unexercised. Historical archive/restore is a precedent only; no receiver-app restart or recovery was performed."
+      },
+      "fabric": "mcp-owner-admission-request-return",
+      "gaps": [
+        "One opened manually prepared pair only; ordinary dispatch/adoption, current Concierge and unopened reach remain unqualified.",
+        "Exact native admission/start/steer branch, authenticated origin/backend and automatic result retrieval remain unqualified.",
+        "Full inherited settings, authority enforcement and work preservation remain unqualified.",
+        "Codex UI/native-state observations have unjoined timing; busy continuity and ordinary usability remain unresolved.",
+        "General idle/busy coverage, receiver-app restart/recovery, release and deployment remain unqualified."
+      ],
+      "id": "claude-desktop-codex-combined-work-return-existing",
+      "input_semantics": "One IPC message requested A from Codex. A later distinct IPC message returned Claude's checked B result to the originating Codex task. The unchanged versioned envelopes retained original references and holds; envelopes supply no new authority. This profile describes the composed request/return case and requires both named actuators; single-message candidates retain their own profiles.",
+      "next_check": "Continue the next genuinely needed, separately authorized operation with actual receipt/handling evidence. Use a time-aligned status comparison only to investigate the display discrepancy; it is not a prerequisite to useful work. Reconcile interruption/attachment effects and concrete authority before selecting mitigation. Remaining state, preservation, recovery and consumer adoption claims stay open.",
+      "operations": {
+        "continue-task": [],
+        "create-task": [],
+        "inspect": [],
+        "notify": [],
+        "reply": [
+          {
+            "coverage": "partial",
+            "evidence": [
+              "combined-lead-exchange-20261105"
+            ],
+            "limits": [
+              "Claude's distinct final IPC message returned B count 4 and sum 140 directly to originating Codex; producer reports native receipt and Root checks. This establishes one later return, not general continuity, automatic retrieval or recovery."
+            ],
+            "milestone": "later-reply",
+            "operation": "reply",
+            "stage": "qualified"
+          }
+        ],
+        "request-work": [
+          {
+            "coverage": "partial",
+            "evidence": [
+              "combined-lead-exchange-20261105"
+            ],
+            "limits": [
+              "One opened existing pair and one A request. Support rests on the reported actual incoming Codex context and checked correlated return, not generic RPC success alone. Native admission/start/steer branch remains unknown."
+            ],
+            "milestone": "submitted",
+            "operation": "request-work",
+            "stage": "qualified"
+          },
+          {
+            "coverage": "partial",
+            "evidence": [
+              "combined-lead-exchange-20261105"
+            ],
+            "limits": [
+              "Producer reports the actual A request in the nominated native Codex context and Root checks of its complete envelope and original references. Arrival timing and authenticated origin/backend remain unknown."
+            ],
+            "milestone": "receipt",
+            "operation": "request-work",
+            "stage": "qualified"
+          },
+          {
+            "coverage": "partial",
+            "evidence": [
+              "combined-lead-exchange-20261105"
+            ],
+            "limits": [
+              "Codex returned A count 3 and sum 73 in the new middle MCP message, which also requested B. Claude's original handback reports actual receipt in its session; this is not a synchronous IPC response or a general automated-retrieval claim."
+            ],
+            "milestone": "output",
+            "operation": "request-work",
+            "stage": "qualified"
+          },
+          {
+            "coverage": "partial",
+            "evidence": [
+              "combined-lead-exchange-20261105"
+            ],
+            "limits": [
+              "Claude checked A count 3 and sum 73; Root reports independent literal, original-reference and complete-envelope checks. The marker was receiver-chosen and absent from the request. Fulfillment covers this declared arithmetic work only."
+            ],
+            "milestone": "fulfilled",
+            "operation": "request-work",
+            "stage": "qualified"
+          }
+        ]
+      },
+      "ownership": "Independently existing operator-selected Claude Desktop and native Codex Desktop Leads; public specimen identities only.",
+      "population": "existing",
+      "relationship": "Peer; manually prepared opened pair with direct permissions and narrowly approved procedural corrections.",
+      "target_input": "exact-reference"
+    },
+    {
       "assurance": "Dated failed live trial at actor/source-level provenance, bounded Harness/Setup retained readback, plus a separate invented command/socket discriminator. No authenticated runtime, positive operation or current GUI-build qualification.",
       "channel": "claude-desktop-code-to-chatgpt-codex-gui",
       "claims": [
@@ -34595,6 +34851,172 @@
         ],
         "vector": "SS\u2013SPS"
       },
+      "target_input": "exact-reference"
+    },
+    {
+      "assurance": "Claude's original handback reports actual incoming middle-message receipt, complete envelope/reference checks, checked A and independently computed B. Producer reports native final-B receipt in originating Codex and Root checks. The coordinator checked the native Codex final-B context and original plans. Claude provenance remains an original operator-forwarded actor handback; authenticated backend/origin and executed-model attestation remain unavailable.",
+      "channel": "codex-desktop-local-to-claude-desktop-code",
+      "claims": [
+        {
+          "coverage": "partial",
+          "evidence": [
+            "combined-lead-exchange-20261105"
+          ],
+          "limits": [
+            "One new middle MCP message initiated B while returning A. Support includes Claude's original incoming-message handback and checked final B, not command exit 0 alone. Manual setup and direct permissions limit the profile."
+          ],
+          "milestone": "submitted",
+          "operation": "request-work",
+          "stage": "qualified"
+        },
+        {
+          "coverage": "partial",
+          "evidence": [
+            "combined-lead-exchange-20261105"
+          ],
+          "limits": [
+            "Claude reports actual middle-message receipt in its original session and matching complete envelope, payload and original references. Sender files were not substituted for receipt; authenticated origin and arrival timing remain unknown."
+          ],
+          "milestone": "receipt",
+          "operation": "request-work",
+          "stage": "qualified"
+        },
+        {
+          "coverage": "partial",
+          "evidence": [
+            "combined-lead-exchange-20261105"
+          ],
+          "limits": [
+            "Claude independently computed B count 4 and sum 140 and returned it through a distinct IPC message. Producer reports the actual final message in originating native Codex; this is not synchronous MCP output or general automated retrieval."
+          ],
+          "milestone": "output",
+          "operation": "request-work",
+          "stage": "qualified"
+        },
+        {
+          "coverage": "partial",
+          "evidence": [
+            "combined-lead-exchange-20261105"
+          ],
+          "limits": [
+            "Root reports independent literal B count 4/sum 140, original-reference and complete-envelope checks. The marker was receiver-chosen and absent from the request. Fulfillment covers this declared arithmetic work only."
+          ],
+          "milestone": "fulfilled",
+          "operation": "request-work",
+          "stage": "qualified"
+        },
+        {
+          "coverage": "partial",
+          "evidence": [
+            "combined-lead-exchange-20261105"
+          ],
+          "limits": [
+            "The new middle MCP message carried A count 3 and sum 73 back to requesting Claude, which reports actual receipt and successful checks. It simultaneously initiated B; no synchronous IPC-return, general reply/recovery or ordinary adoption claim follows."
+          ],
+          "milestone": "later-reply",
+          "operation": "reply",
+          "stage": "qualified"
+        }
+      ],
+      "consent": {
+        "limits": [
+          "The completed three-message grant is spent. Historical references describe scope and evidence, not continuing permission.",
+          "Manual setup, direct permissions and two narrowly approved procedural corrections were required; automatic authority propagation and full procedure adoption remain unqualified."
+        ],
+        "references": [
+          "https://github.com/nisavid/provingkit/issues/879#issuecomment-6671145492",
+          "https://github.com/nisavid/provingkit/issues/851"
+        ]
+      },
+      "continuity": {
+        "busy": "Claude processed this incoming middle message and returned B; general busy behavior and preservation are unqualified. Codex's return-side continuity/usability gap remains separately recorded.",
+        "idle": "General idle behavior is unqualified; no independently established idle-at-arrival profile.",
+        "restart": "Unexercised; receiver-app restart and recovery remain unqualified."
+      },
+      "fabric": "mcp-owner-admission-request-return",
+      "gaps": [
+        "One opened manually prepared pair only; ordinary dispatch/adoption, current Concierge and unopened reach remain unqualified.",
+        "Authenticated origin/backend, automatic result retrieval and authority propagation remain unqualified.",
+        "Full inherited settings, authority enforcement and work preservation remain unqualified.",
+        "The Codex-owned MCP child reached its shutdown deadline and was killed and reaped with exit -9; graceful and full process-tree closure remain unqualified.",
+        "Codex return-side continuity/usability, general idle/busy coverage, receiver-app restart/recovery, release and deployment remain unqualified."
+      ],
+      "id": "codex-desktop-claude-combined-work-return-existing",
+      "input_semantics": "One new MCP message returned Codex's A result and initiated B in Claude. Claude returned B through a distinct IPC message to originating Codex. Original references and holds were retained; envelopes supply no new authority. This profile describes the composed request/return case and requires both named actuators; single-message candidates retain their own profiles.",
+      "next_check": "Continue the next genuinely needed, separately authorized operation with actual receipt/handling evidence. Use a time-aligned status comparison only to investigate the display discrepancy; it is not a prerequisite to useful work. Reconcile interruption/attachment effects and concrete authority before selecting mitigation. Remaining state, preservation, recovery and consumer adoption claims stay open.",
+      "operations": {
+        "continue-task": [],
+        "create-task": [],
+        "inspect": [],
+        "notify": [],
+        "reply": [
+          {
+            "coverage": "partial",
+            "evidence": [
+              "combined-lead-exchange-20261105"
+            ],
+            "limits": [
+              "The new middle MCP message carried A count 3 and sum 73 back to requesting Claude, which reports actual receipt and successful checks. It simultaneously initiated B; no synchronous IPC-return, general reply/recovery or ordinary adoption claim follows."
+            ],
+            "milestone": "later-reply",
+            "operation": "reply",
+            "stage": "qualified"
+          }
+        ],
+        "request-work": [
+          {
+            "coverage": "partial",
+            "evidence": [
+              "combined-lead-exchange-20261105"
+            ],
+            "limits": [
+              "One new middle MCP message initiated B while returning A. Support includes Claude's original incoming-message handback and checked final B, not command exit 0 alone. Manual setup and direct permissions limit the profile."
+            ],
+            "milestone": "submitted",
+            "operation": "request-work",
+            "stage": "qualified"
+          },
+          {
+            "coverage": "partial",
+            "evidence": [
+              "combined-lead-exchange-20261105"
+            ],
+            "limits": [
+              "Claude reports actual middle-message receipt in its original session and matching complete envelope, payload and original references. Sender files were not substituted for receipt; authenticated origin and arrival timing remain unknown."
+            ],
+            "milestone": "receipt",
+            "operation": "request-work",
+            "stage": "qualified"
+          },
+          {
+            "coverage": "partial",
+            "evidence": [
+              "combined-lead-exchange-20261105"
+            ],
+            "limits": [
+              "Claude independently computed B count 4 and sum 140 and returned it through a distinct IPC message. Producer reports the actual final message in originating native Codex; this is not synchronous MCP output or general automated retrieval."
+            ],
+            "milestone": "output",
+            "operation": "request-work",
+            "stage": "qualified"
+          },
+          {
+            "coverage": "partial",
+            "evidence": [
+              "combined-lead-exchange-20261105"
+            ],
+            "limits": [
+              "Root reports independent literal B count 4/sum 140, original-reference and complete-envelope checks. The marker was receiver-chosen and absent from the request. Fulfillment covers this declared arithmetic work only."
+            ],
+            "milestone": "fulfilled",
+            "operation": "request-work",
+            "stage": "qualified"
+          }
+        ]
+      },
+      "ownership": "Independently existing operator-selected native Codex Desktop and Claude Desktop Leads; public specimen identities only.",
+      "population": "existing",
+      "relationship": "Peer; manually prepared opened pair with direct permissions and narrowly approved procedural corrections.",
       "target_input": "exact-reference"
     },
     {
@@ -47566,7 +47988,8 @@
           ],
           "crosswalk": [
             "Maintained-source producer nisavid/provingkit#844; reviewed commit 61c17375c28e72db15a4c2898bfc90b251bd1deb",
-            "Finite paired Lead results: docs/coordination/batches/2026-11-05-lead-link-first-results.md"
+            "Finite paired Lead results: docs/coordination/batches/2026-11-05-lead-link-first-results.md",
+            "Finite combined Lead exchange: docs/coordination/batches/2026-11-05-combined-lead-exchange.md"
           ],
           "fabric": "rolecasting-claude-mcp-sender",
           "grouping_only": null,
@@ -47574,7 +47997,7 @@
             "rolecasting-peer-message-support",
             "selected-claude-mcp-peer-server"
           ],
-          "rationale": "Maintained Python stdio MCP command with one claimed mailbox attempt, shared versioned peer envelope, supported SendMessage(to,message), selected-result capture and owned-child closure. Source support establishes no authenticated peer or permission. Complete producer batch: published source61 imports, nominated-child command and procedure; docs/coordination/batches/2026-11-03-claude-mcp-sender.md The finite November5 live results establish no additional mandatory component. Manual activation/direct authority and GUI observation are profile-specific ambient capabilities; an existing capture directory is an invocation input, not a new fabric. Same helper and selected-server/owner classes remain mandatory; actual broader binding gaps stay open."
+          "rationale": "Maintained Python stdio MCP command with one claimed mailbox attempt, shared versioned peer envelope, supported SendMessage(to,message), selected-result capture and owned-child closure. Source support establishes no authenticated peer or permission. Complete producer batch: published source61 imports, nominated-child command and procedure; docs/coordination/batches/2026-11-03-claude-mcp-sender.md The finite November5 live results establish no additional mandatory component. Manual activation/direct authority and GUI observation are profile-specific ambient capabilities; an existing capture directory is an invocation input, not a new fabric. Same helper and selected-server/owner classes remain mandatory; actual broader binding gaps stay open. The complete finite combined case used unchanged ordinary source14 at bbf997b78676d69a1f69ffa37be88b594353dc7c and establishes no additional dependency for a single-actuator send. Its qualified request/return combination is represented separately by mcp-owner-admission-request-return, which requires both actuators. Existing mandatory helper and selected-server/owner classes remain unchanged; exact broader deployment binding and continuity/adoption remain unresolved."
         },
         {
           "alternatives": [],
@@ -47630,7 +48053,8 @@
             "Owner-admission source nisavid/provingkit#869; published commit bbf997b78676d69a1f69ffa37be88b594353dc7c",
             "Finite paired Lead results: docs/coordination/batches/2026-11-05-lead-link-first-results.md",
             "Finite owner-discovery refusal: docs/coordination/batches/2026-11-05-owner-discovery-refusal.md",
-            "Finite opened-existing human response: docs/coordination/batches/2026-11-05-codex-opened-human-response.md"
+            "Finite opened-existing human response: docs/coordination/batches/2026-11-05-codex-opened-human-response.md",
+            "Finite combined Lead exchange: docs/coordination/batches/2026-11-05-combined-lead-exchange.md"
           ],
           "fabric": "rolecasting-codex-ipc-sender",
           "grouping_only": null,
@@ -47638,7 +48062,7 @@
             "rolecasting-peer-message-support",
             "selected-codex-native-ipc-owner"
           ],
-          "rationale": "Maintained busy-only Unix IPC sender and original-attempt read-only reconciliation; immutable mailbox claim, peer envelope, intact owner/generation binding and create-only per-run captures. No new queue, automatic resend or idle-start fallback. Complete finite producer evidence: published source94 core/transport/sender/capture and procedure; docs/coordination/batches/2026-11-03-codex-ipc-sender.md. Shared mailbox/envelope bytes equal source61, so existing helper evidence carries forward unchanged. The complete idle source batch (https://github.com/nisavid/provingkit/blob/71e4d47d582f25373d8f91463bf2b785532d6798/docs/coordination/batches/2026-11-03-codex-idle-prototype.md) reuses the same mandatory components. Native start is another operation of the existing selected-owner class, not a new fabric; no additional mandatory component is established. Current binding/receipt/live gaps remain. The complete finite November 4 failed-trial/retained-readback/synthetic-discriminator batch establishes no additional component requirement. Existing mailbox/envelope and selected IPC-owner dependencies remain unchanged; the planned nomination/MCP return is case-specific and unexercised, not a new mandatory component of all IPC sends. Complete finite owner-admission batch: published command/guide, seven public command/socket fixtures, three independent source critics, distinct adjudication and architecture result. Same mandatory mailbox/envelope and selected IPC-owner classes; no additional component/backend/framework requirement. CPython/stdlib/SQLite/local files remain working conditions. Actual binding remains unknown. The failed split trial is retained; its framing repair is not a prerequisite for the selected owner-admission live proposal. Native App Server access remains a separate unresolved/parked alternative. The finite November5 live results establish no additional mandatory component. Manual activation/direct authority and GUI observation are profile-specific ambient capabilities; an existing capture directory is an invocation input, not a new fabric. Same helper and selected-server/owner classes remain mandatory; actual broader binding gaps stay open. The finite initialized/discovery-error batch adds no required component: mailbox/envelope and selected IPC-owner classes remain unchanged; actual handling-client binding remains unresolved. Read-only admission-control refresh is case administration, not a communication fabric. Complete normalized opened-response batch adds no component: actuator keeps mailbox/envelope helper and selected IPC-owner; owner has no further component. Manual activation/direct authority/GUI observation are profile-specific ambient capabilities. General backend/both states/refusal causes remain unresolved; report retains closure/procedure/visibility/resource limits."
+          "rationale": "Maintained busy-only Unix IPC sender and original-attempt read-only reconciliation; immutable mailbox claim, peer envelope, intact owner/generation binding and create-only per-run captures. No new queue, automatic resend or idle-start fallback. Complete finite producer evidence: published source94 core/transport/sender/capture and procedure; docs/coordination/batches/2026-11-03-codex-ipc-sender.md. Shared mailbox/envelope bytes equal source61, so existing helper evidence carries forward unchanged. The complete idle source batch (https://github.com/nisavid/provingkit/blob/71e4d47d582f25373d8f91463bf2b785532d6798/docs/coordination/batches/2026-11-03-codex-idle-prototype.md) reuses the same mandatory components. Native start is another operation of the existing selected-owner class, not a new fabric; no additional mandatory component is established. Current binding/receipt/live gaps remain. The complete finite November 4 failed-trial/retained-readback/synthetic-discriminator batch establishes no additional component requirement. Existing mailbox/envelope and selected IPC-owner dependencies remain unchanged; the planned nomination/MCP return is case-specific and unexercised, not a new mandatory component of all IPC sends. Complete finite owner-admission batch: published command/guide, seven public command/socket fixtures, three independent source critics, distinct adjudication and architecture result. Same mandatory mailbox/envelope and selected IPC-owner classes; no additional component/backend/framework requirement. CPython/stdlib/SQLite/local files remain working conditions. Actual binding remains unknown. The failed split trial is retained; its framing repair is not a prerequisite for the selected owner-admission live proposal. Native App Server access remains a separate unresolved/parked alternative. The finite November5 live results establish no additional mandatory component. Manual activation/direct authority and GUI observation are profile-specific ambient capabilities; an existing capture directory is an invocation input, not a new fabric. Same helper and selected-server/owner classes remain mandatory; actual broader binding gaps stay open. The finite initialized/discovery-error batch adds no required component: mailbox/envelope and selected IPC-owner classes remain unchanged; actual handling-client binding remains unresolved. Read-only admission-control refresh is case administration, not a communication fabric. Complete normalized opened-response batch adds no component: actuator keeps mailbox/envelope helper and selected IPC-owner; owner has no further component. Manual activation/direct authority/GUI observation are profile-specific ambient capabilities. General backend/both states/refusal causes remain unresolved; report retains closure/procedure/visibility/resource limits. The complete finite combined case used unchanged ordinary source14 at bbf997b78676d69a1f69ffa37be88b594353dc7c and establishes no additional dependency for a single-actuator send. Its qualified request/return combination is represented separately by mcp-owner-admission-request-return, which requires both actuators. Existing mandatory helper and selected-server/owner classes remain unchanged; exact broader deployment binding and continuity/adoption remain unresolved."
         },
         {
           "alternatives": [],
@@ -47660,6 +48084,25 @@
           "grouping_only": null,
           "mandatory_components": [],
           "rationale": "Required existing-owner Unix IPC source-profile backend: initialize, thread-owner-discovery, framed thread-stream following/state and busy thread-follower-steer-turn. Finite producer source/procedure/command evidence establishes no further independent fabric requirement; CPython/stdlib/SQLite/filesystem are working conditions, not new transports. Exact endpoint/access/current build/peer binding remains unknown. Complete finite producer evidence: published source94 core/transport/sender/capture and procedure; docs/coordination/batches/2026-11-03-codex-ipc-sender.md. Shared mailbox/envelope bytes equal source61, so existing helper evidence carries forward unchanged. The complete idle source batch (https://github.com/nisavid/provingkit/blob/71e4d47d582f25373d8f91463bf2b785532d6798/docs/coordination/batches/2026-11-03-codex-idle-prototype.md) reuses the same mandatory components. Native start is another operation of the existing selected-owner class, not a new fabric; no additional mandatory component is established. Current binding/receipt/live gaps remain. The complete finite November 4 failed-trial/retained-readback/synthetic-discriminator batch establishes no additional component requirement. Existing mailbox/envelope and selected IPC-owner dependencies remain unchanged; the planned nomination/MCP return is case-specific and unexercised, not a new mandatory component of all IPC sends. The finite owner-admission source batch adds another operation of this existing-owner class. At the actuator composition level, the existing mailbox/envelope helper and selected-owner backend remain mandatory; this backend record establishes no further independently declared component requirement. Its own mandatory_components/dependencies stay empty. Actual access, owner/backend identity, native admission/fallback and receiver effects remain unbound. No additional backend or observation framework follows from the source flags. The finite initialized/discovery-error batch adds no required component: mailbox/envelope and selected IPC-owner classes remain unchanged; actual handling-client binding remains unresolved. Read-only admission-control refresh is case administration, not a communication fabric. Complete normalized opened-response batch adds no component: actuator keeps mailbox/envelope helper and selected IPC-owner; owner has no further component. Manual activation/direct authority/GUI observation are profile-specific ambient capabilities. General backend/both states/refusal causes remain unresolved; report retains closure/procedure/visibility/resource limits."
+        },
+        {
+          "alternatives": [],
+          "binding_gaps": [
+            "Manual setup, direct permissions and two procedural corrections were required; ordinary invocation/adoption and current Concierge coverage remain unqualified.",
+            "Unopened reach, general idle/busy work continuity, full inherited settings/authority enforcement, authenticated backend/origin and receiver-app restart/recovery remain unqualified.",
+            "Codex Thinking/stop and native idle/completed observations are not time-aligned; functional future reachability and cause remain unresolved.",
+            "Direct MCP child was killed and reaped after its shutdown deadline; no graceful or full process-tree closure claim."
+          ],
+          "crosswalk": [
+            "Finite combined Lead exchange: docs/coordination/batches/2026-11-05-combined-lead-exchange.md"
+          ],
+          "fabric": "mcp-owner-admission-request-return",
+          "grouping_only": null,
+          "mandatory_components": [
+            "rolecasting-claude-mcp-sender",
+            "rolecasting-codex-ipc-sender"
+          ],
+          "rationale": "The finite three-message case requires both source actuator classes: two IPC legs and one MCP leg return the checked results to their original peers. This is a required combination for the composed profile, not a new mandatory opposite-direction dependency of every standalone send. Existing shared mailbox/envelope and selected-server/owner dependencies remain on their actual actuators. Manual permission, operator observation and capture directories are case conditions, not new runtime components. No new reader, queue, router or framework is established by the evidence."
         }
       ],
       "relations": [
@@ -47868,9 +48311,9 @@
   },
   "schema_version": 1,
   "snapshot": {
-    "coverage": "Opened-existing human response added: 29 endpoint views (24 Wave1), 165 fabrics, 318 profiles, 36 evidence records, 28 associations and 812 potential pairs. One Claude-to-Codex existing pair has partial human-observed ACK and checked arithmetic response; native branch/timing remain unknown and automated response retrieval remains unqualified. Earlier refusals and reverse human ACK remain distinct. Both states, authenticated binding/authority, full preservation/procedure, recovery, release/deployment and adoption stay open.",
-    "generated_at": "2026-11-05T18:47:09.752515+00:00",
-    "revision": "opened-codex-human-response-20261105"
+    "coverage": "Completed bounded combined Lead exchange: 29 endpoint views (24 Wave1), 166 fabrics including one explicit MCP/IPC protocol composition, 320 profiles, 38 evidence records, 28 associations and 812 potential pairs. Two new existing-pair composed profiles record partial qualified request submission/receipt/output/checked fulfillment and later replies. All older partial, unknown and refused profiles are preserved. Manual setup/direct permissions and two procedural corrections were required. Codex continuity/usability remains unresolved; operator UI and subsequent native observations have unjoined timing. Exact native branch, authenticated binding, current Concierge, unopened reach, full preservation, general states, receiver-app recovery and ordinary adoption remain unqualified.",
+    "generated_at": "2026-11-05T23:53:11.381727+00:00",
+    "revision": "combined-lead-exchange-20261105"
   },
-  "source_sha256": "a9ff4b3cf1dca68cba080b935576740d5226ae438dc5bd7281b2ead38293b025"
+  "source_sha256": "da4da045d593c5ba532c645ed6337840425afefa8944a2d7a3dcd7590e4376ac"
 }

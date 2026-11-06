@@ -41,6 +41,8 @@ The [owner-discovery result](batches/2026-11-05-owner-discovery-refusal.md) reco
 
 The [opened-existing Codex receiver check](batches/2026-11-05-codex-opened-human-response.md) adds a partial human-observed Claude-to-Codex ACK and checked arithmetic response. The operator reported the correlated same-chat reply; two automated latest-message observations returned other text. This snapshot has 318 profiles and 36 evidence records. Native branch, arrival time, both states, authenticated binding, authority/preservation, recovery and ordinary adoption remain unqualified. Earlier refusals remain distinct; this result grants no further live action.
 
+The [combined Lead exchange](batches/2026-11-05-combined-lead-exchange.md) adds two partial existing-pair work and later-reply profiles on an explicit composition of the MCP and IPC senders. Three messages carried checked A count 3/sum 73 and B count 4/sum 140 through one opened pair. Native Codex contexts and the original Claude handback support receipt and handling; the coordinator checked the literal results and original envelopes/references. Manual setup, direct permissions and two procedural corrections were required. Both IPC connections closed; the MCP child was killed and reaped after its shutdown deadline. Codex continuity/usability remains unresolved: the operator reported Thinking/stop and a later native observation reported idle/completed, with timing unjoined. This snapshot has 166 fabrics, 320 profiles and 38 evidence records. Earlier results remain unchanged; stronger state, preservation, recovery and adoption claims remain open.
+
 ## Read the record
 
 - **Endpoints** identify a host and surface. A host-owned thread, a native GUI
