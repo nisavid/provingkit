@@ -33,7 +33,9 @@ Open ChatGPT in a web browser and confirm the intended account or workspace. The
 
 Start a new chat or Codex session after installation. If the plugin was uploaded earlier but is not installed, open its details and use the plus button. [OpenAI’s plugin guide](https://learn.chatgpt.com/docs/plugins#use-and-install-plugins) describes installation and fresh-session loading.
 
-**Update:** open the existing plugin, choose **More actions → Upload new version**, and select that plugin’s checked Agent Plugins ZIP. Check the saved version and the separate Installed listing after completing the displayed controls. Keep the previous archive and configuration until you have confirmed the result. An upload does not itself prove installation, enablement, or successful loading.
+**Update an earlier account upload:** open the existing uploaded plugin, choose **More actions → Upload new version**, and select that plugin’s checked Agent Plugins ZIP. Check the saved version and the separate Installed listing after completing the displayed controls. Keep the previous archive and configuration until you have confirmed the result. An upload does not itself prove installation, enablement, or successful loading.
+
+**Coming from the older preview:** its guide registered a local marketplace. These web controls manage an account upload, so use the new-plugin steps if you choose that delivery route. They do not establish migration of your local installation or which same-named copy your client selects. Keep the existing installation and configuration until you have confirmed the Alpha 6 version and skills in a fresh session; if you cannot establish which copy loaded, stop before removing either copy.
 
 The first-upload navigation follows a firsthand walkthrough recorded on November 3, 2026. Account and workspace controls can differ. Replacement and rollback behavior have not been verified across accounts; these instructions do not use the separate public plugin-submission portal.
 
