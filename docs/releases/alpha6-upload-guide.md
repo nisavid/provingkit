@@ -4,23 +4,45 @@ Download one plugin ZIP for your account, check its checksum, and upload it thro
 
 ## Get the files
 
-Use the [Alpha 6 download table](https://github.com/nisavid/provingkit/releases/tag/v0.1.0-alpha.6). Choose `agent-plugins.zip` for an OpenAI account or `claude.zip` for Claude, and download the adjacent `.sha256` file. Keep the ZIP intact. The automatic **Source code** archives are not uploadable plugin packages.
+Use the [Alpha 6 download table](https://github.com/nisavid/provingkit/releases/tag/v0.1.0-alpha.6). Choose `agent-plugins.zip` for an OpenAI account or `claude.zip` for Claude. Keep the ZIP intact. The automatic **Source code** archives are not uploadable plugin packages.
 
 For a smaller installation, include the companions used by your workflow. Tricritical review uses Rolecasting for its reviewers. Mergecraft’s PR publication uses Versionkeeping for Git publication and Tricritical with Rolecasting for required reviews. Artifact Customs workflows call those delegation, review, Git, and PR owners as needed. The [plugin front pages](https://github.com/nisavid/provingkit/tree/v0.1.0-alpha.6/plugins) describe the individual workflows; download the same target format for their companions.
 
-Put a ZIP and its checksum file in the same directory. From that directory, verify it on Linux:
+Use the version-pinned copy of this guide linked from the repository README for the expected hashes below. From the directory containing your downloaded ZIP, calculate its SHA-256 on Linux:
 
 ```sh
-sha256sum -c provingkit-rolecasting-0.1.0-alpha.6-agent-plugins.zip.sha256
+sha256sum provingkit-rolecasting-0.1.0-alpha.6-agent-plugins.zip
 ```
 
 On macOS:
 
 ```sh
-shasum -a 256 -c provingkit-rolecasting-0.1.0-alpha.6-agent-plugins.zip.sha256
+shasum -a 256 provingkit-rolecasting-0.1.0-alpha.6-agent-plugins.zip
 ```
 
-Use the matching filename for the plugin and target you downloaded. The result should name that ZIP and say `OK`. Stop if a file is missing or differs. A matching checksum verifies the download’s bytes; the release is unsigned.
+Use the matching filename for the plugin and target you downloaded. **Compare the printed hash and filename with the matching row below before uploading.** Stop if the file is missing or either value differs. A matching hash confirms that the ZIP matches the bytes recorded in this guide revision. The release is unsigned; this check does not authenticate the publisher.
+
+The release also supplies adjacent `.sha256` files. A sidecar can be replaced alongside its ZIP, so agreement between those two downloads alone does not establish a match to this guide's recorded bytes.
+
+<details>
+<summary>Expected ZIP hashes for Alpha 6</summary>
+
+| ZIP filename | Expected SHA-256 |
+| --- | --- |
+| `provingkit-artifact-customs-0.1.0-alpha.6-agent-plugins.zip` | `f752c1d8e305c4daf082038666ab7d17908fe88f88238ce3b9fbe6b0ee90d021` |
+| `provingkit-artifact-customs-0.1.0-alpha.6-claude.zip` | `b40e3a5de0fe767c790d7da55ab4a1ac86210a98bf1c5df1fd2b2487e417fef5` |
+| `provingkit-mergecraft-0.1.0-alpha.6-agent-plugins.zip` | `906859a449973c58cecba4a5dc537f95e99edf8d7ce7b96c34a79be17960f567` |
+| `provingkit-mergecraft-0.1.0-alpha.6-claude.zip` | `84cd390f83619c8622ac838c48707a5f430e76c617b6725b0d0370aa40c834ad` |
+| `provingkit-proseweaving-0.1.0-alpha.6-agent-plugins.zip` | `3fcddaabc5ea060bb373b8d4739e5bf2278fdbcb5ac210697a8486ad90ba1118` |
+| `provingkit-proseweaving-0.1.0-alpha.6-claude.zip` | `f77a2c0e2f1d1104077c490c2b9bc1e1e59503c99fa05bd525c8370bd1703211` |
+| `provingkit-rolecasting-0.1.0-alpha.6-agent-plugins.zip` | `55729c44795ccf9772d5f2ea88a5e58e201f034fbfe79f90cacaf39af9e7afe8` |
+| `provingkit-rolecasting-0.1.0-alpha.6-claude.zip` | `7117b08cc7152eb0a2594e7b0d14505cdea0cba203e67a21a7c845f6c1327215` |
+| `provingkit-tricritical-0.1.0-alpha.6-agent-plugins.zip` | `2a155de664e167c07426ff5bc09dd9b4893a6baa3d088b677f81aef9681767ac` |
+| `provingkit-tricritical-0.1.0-alpha.6-claude.zip` | `baf0b91f085a83dab311d4b8104564fff712140865f5d39e66222319f7395751` |
+| `provingkit-versionkeeping-0.1.0-alpha.6-agent-plugins.zip` | `e0ac9cb67032943814fb25f7a407e050ecbe7f1a880d9fd64bc0f22b3d510a42` |
+| `provingkit-versionkeeping-0.1.0-alpha.6-claude.zip` | `90e241d5a599bcc035e48748bd4e084daed3d255d44d379fdec10eb4a877c9a8` |
+
+</details>
 
 ## ChatGPT and Codex account plugins
 
