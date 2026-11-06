@@ -72,7 +72,9 @@ selected reader-facing deliverable is present or has an explicit operator
 disposition. An unpublished draft or a generic limitations paragraph cannot
 stand in for the promised guide. Verify asset names, target/version, checksum
 correspondence, guide revision, relative links and anchors, and the complete
-rendered reading journey. Use the repository's applicable independent review
+rendered reading journey. Follow fragment links to their actual rendered
+destinations; a heading does not by itself establish an anchor. Use the
+repository's applicable independent review
 for the final candidate, including changed agent-facing instructions.
 
 Review meaning as well as mechanics: a valid link does not establish complete
