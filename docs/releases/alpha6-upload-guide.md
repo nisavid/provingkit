@@ -4,7 +4,7 @@ Download one plugin ZIP for your account, check its checksum, and upload it thro
 
 ## Get the files
 
-Use the [Alpha 6 download table](https://github.com/nisavid/provingkit/releases/tag/v0.1.0-alpha.6#downloads). Choose `agent-plugins.zip` for an OpenAI account or `claude.zip` for Claude, and download the adjacent `.sha256` file. Keep the ZIP intact. The automatic **Source code** archives are not uploadable plugin packages.
+Use the [Alpha 6 download table](https://github.com/nisavid/provingkit/releases/tag/v0.1.0-alpha.6). Choose `agent-plugins.zip` for an OpenAI account or `claude.zip` for Claude, and download the adjacent `.sha256` file. Keep the ZIP intact. The automatic **Source code** archives are not uploadable plugin packages.
 
 For a smaller installation, include the companions used by your workflow. Tricritical review uses Rolecasting for its reviewers. Mergecraft’s PR publication uses Versionkeeping for Git publication and Tricritical with Rolecasting for required reviews. Artifact Customs workflows call those delegation, review, Git, and PR owners as needed. The [plugin front pages](https://github.com/nisavid/provingkit/tree/v0.1.0-alpha.6/plugins) describe the individual workflows; download the same target format for their companions.
 
