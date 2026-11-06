@@ -7,7 +7,7 @@ with checks that make the work reviewable.
 
 [Alpha 6](https://github.com/nisavid/provingkit/releases/tag/v0.1.0-alpha.6)
 is available as per-plugin ZIPs for manual OpenAI and Claude account uploads.
-Use the [Alpha 6 upload and update guide](https://github.com/nisavid/provingkit/blob/c2320323b79e36f0d0ff48bff3f0e165c230d3ee/docs/releases/alpha6-upload-guide.md)
+Use the [Alpha 6 upload and update guide](https://github.com/nisavid/provingkit/blob/543dc825a7898602a85ecc461918ca92354abf1a/docs/releases/alpha6-upload-guide.md)
 to choose files, verify downloads, and confirm installation. This is an
 unsigned prerelease; client support and loading follow the guide’s stated scope.
 
@@ -38,7 +38,7 @@ delegation, and model selection.
 
 ## Get started
 
-Follow the [Alpha 6 upload and update guide](https://github.com/nisavid/provingkit/blob/c2320323b79e36f0d0ff48bff3f0e165c230d3ee/docs/releases/alpha6-upload-guide.md)
+Follow the [Alpha 6 upload and update guide](https://github.com/nisavid/provingkit/blob/543dc825a7898602a85ecc461918ca92354abf1a/docs/releases/alpha6-upload-guide.md)
 for the current release. It distinguishes a first installation from updating
 an existing plugin, then checks the saved version and fresh-session loading.
 Use the named per-plugin ZIPs; GitHub's automatic source archives contain
