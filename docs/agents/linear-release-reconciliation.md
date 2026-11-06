@@ -34,19 +34,25 @@ before moving content between them.
 
 Discover the connected Linear capabilities and inspect their current input
 contracts. Prefer the supported release, release-note, and issue-association
-operations. A release's pipeline stage, its calculated issue progress, and its
-release notes are distinct surfaces. Read the pipeline's actual stage meanings
-instead of assuming a status label from an issue workflow applies to releases.
+operations. A release's pipeline stage, calculated issue progress, description,
+resource links, and release notes are distinct surfaces. Read the pipeline's
+actual stage meanings instead of assuming an issue workflow's status applies.
+
+Use the description for a concise plain-text summary and the release note for
+formatted content. Check the selected field's current limits from its live
+declaration or validation response; keep longer prose in the note rather than
+truncating required content or relying on Markdown rendering in a summary field.
 
 Capabilities can differ by surface. A connector may expose stage, version,
-source commit, timestamps, and notes without an external-link field or a
-release-delete operation. Use an explicit forge-release link in the supported
-description or note when that supplies the needed navigation. If a native
-association or action is required, inspect the supported API or UI before
-declaring it unavailable. Use the permitted alternative with the same scope
-and verify its result; report a remaining capability gap precisely. Missing
-connector support is neither permission to invent a field nor evidence that
-the whole product lacks the operation.
+source commit, timestamps, and notes without resource-link or release-delete
+operations. Prefer a supported connector operation for native release resources.
+When it is absent, inspect the supported API or the release's UI controls for
+adding a document or link. Use the permitted alternative with the same scope,
+supplying the destination URL and a useful title where supported. Verify that
+the resulting resource opens the intended release or guide; a URL string in
+the description does not establish a native link. Report a remaining capability
+gap precisely. Missing connector support is neither permission to invent a
+field nor evidence that the whole product lacks the operation.
 
 ## Reconcile state, content, and associated work
 
@@ -60,8 +66,9 @@ the whole product lacks the operation.
    next action; do not close issues merely to make a percentage reach 100.
    If the pipeline represents a broader outcome, preserve its unfinished stage
    and explain the completed publication within it.
-3. Supply useful navigation between the tracked release, its forge page, and
-   the applicable guide or verification evidence. Use the
+3. Link the tracked release to its forge page and applicable version-pinned
+   guide through native release resources, with further verification links as
+   useful. Use the
    [presentation procedure](release-presentation.md) to author notes from the
    accepted changes and evidence. Existing GitHub or Linear prose is an input
    to assess, not a quality standard to copy. Keep both surfaces factually
@@ -72,10 +79,19 @@ the whole product lacks the operation.
    existing successor. Use current native relations where required; do not
    assume GitHub issue sync carries Linear Release objects, notes, or blockers.
 5. Refresh the affected record immediately before mutation. Apply only the
-   prepared change, then read back the release, note content and coverage,
-   links, stage, source/version, dates, and changed associations. Check the
-   rendered note and navigation as a reader would. A successful write response
-   alone is not completion.
+   prepared change, then read back the description, resource links, note
+   content and coverage, stage, source/version, actual and planned dates, and
+   changed associations. Check rendered headings, tables, and navigation as a
+   reader would, including the displayed release timestamp. A successful write
+   response alone is not completion.
+
+Retain the submitted note text, but compare its readback by facts, required
+actions, scope, and working link targets. Linear may normalize Markdown or
+replace a forge PR URL with its corresponding Linear review URL. Check that
+the replacement identifies the intended review and opens it correctly. Such
+presentation changes do not require byte equality with the authored Markdown;
+changed meaning or a wrong destination still needs correction. Artifact and
+checksum verification retain their own exact-byte requirements.
 
 When a write times out or its result is uncertain, inspect the intended
 post-state and relevant activity before deciding whether anything remains to
