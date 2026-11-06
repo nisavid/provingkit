@@ -303,6 +303,46 @@ Manager source: `early-bootstrap-45-628adb74a9c47df1.js`, bytes `633947`
 (manager facade), `1524370` (manager service), `4152448` (app-host creation),
 and `4530111` (MessagePort registration), with the fingerprint below.
 
+## Picker-source fork eligibility observation
+
+An authorized same-directory fork of the original picker-created Daybreak chat
+returned `status: "created"` and complete synchronization. The fork's settings
+read returned `gpt-6-sol`, `ultra`, and `daybreakEnabled: true`. Its targeted live
+manager snapshot contained `daybreakProgramPropagationEnrolled: false`.
+
+No model turn was submitted. The fork's own rollout contained zero
+`turn_context` records; native readback showed it idle with only the source's
+inherited completed turn. The original rollout's bytes and hash remained
+unchanged, its model and saved choice stayed `gpt-6-sol` / true, and the ordinary
+Advisor remained `gpt-6-astra` / unset. Fork creation and the targeted read
+completed within the admitted 30-second bound, without a retry.
+
+This fork cannot satisfy the enrollment prerequisite for native Daybreak
+inheritance. It does not establish the original chat's enrollment. The desktop
+fork handler derives the child's flag from `rg(forkResponse.thread)`, rather than
+copying the source flag. `rg` returns true only for an explicit valid true;
+false, an absent field, or an invalid field normalize to false. This observation
+does not distinguish those underlying response cases or prove that the server
+preserves enrollment when forking.
+
+No follow-on inheritance model test was run from this unenrolled fork. The
+verified two-turn fresh-worker bootstrap remains available. Selecting Blue on
+the first turn from an ordinary Advisor still requires a qualified caller to
+the existing empty-create helper or another eligible creation path.
+
+Primary source: installed `early-bootstrap-45-628adb74a9c47df1.js`, UTF-8 bytes
+`964084` (fork path), `969219` (child enrollment assignment), and `71209`
+(enrollment normalization), with the fingerprint below. Retained evidence:
+
+- `fresh-picker-fork-observation-20261106.json`, SHA-256
+  `ce9997c4e30a3234c2c3962526180f06f054991a92af90eab1480293e1492b9e`.
+- `fresh-picker-fork-selection-20261106.json`, SHA-256
+  `ed2f2355f3a4ed94ddc82a4e7f05d70b3469ab11079a31286ae24d047844efc2`.
+- `fresh-picker-fork-preservation-20261106.json`, SHA-256
+  `50d00c313d1aaac6a316449d2bea0b1496a565de12e4b750e9911880af51bc18`.
+- `fresh-picker-fork-native-readback-20261106.json`, SHA-256
+  `91acfa3aa26dcf2859cf9bd3fdf898ff46a90a69540a6e56afb246225b1626d1`.
+
 ## Desktop thread tools and existing-app IPC
 
 The native `create_thread` tool rejected an invocation with `model: "gpt-6-sol"`,
