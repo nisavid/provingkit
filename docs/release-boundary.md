@@ -6,9 +6,13 @@ qualification, and a stable Kit release establish different claims.
 
 ## The Kit and its source
 
-A Provingkit release is an immutable whole-Kit compatibility claim over exact,
-independently releasable plugin identities. Individual plugins can be equipped
-separately; a partial selection is not Provingkit.
+A Provingkit release is an immutable whole-Kit compatibility claim over exact
+plugin identities. The Kit and all six plugins use one synchronized version;
+the selected next candidate is `0.1.0-alpha.6`. Neither Provingkit nor a plugin
+has reached `1.0.0`. Earlier manifest fields with that value are incorrect
+metadata, retained unchanged in historical artifacts and evidence. Individual
+plugins can be equipped separately; a partial selection is not Provingkit.
+Correct source metadata does not establish publication or installation.
 
 [`release/provingkit/definition-v1.json`](../release/provingkit/definition-v1.json)
 is the versioned definition of the Kit. It names the exact member set and binds

@@ -87,7 +87,13 @@ The release-evidence bridge that binds a public candidate to verified private de
 _Avoid_: Release stage number, plugin, agent
 
 **Release**:
-An immutable whole-Kit compatibility claim over exact, independently releasable member identities. A partial selection is not Provingkit.
+An immutable whole-Kit compatibility claim over exact member identities. A partial selection is not Provingkit.
+
+Provingkit and all six plugins share one synchronized version. The selected
+next candidate is `0.1.0-alpha.6`. Neither Provingkit nor any plugin has reached
+`1.0.0`; earlier manifest fields with that value are incorrect metadata.
+Individual plugins can be equipped separately without acquiring independent
+version numbers.
 _Avoid_: Version (for the Kit as a whole), drop
 
 **Slate**:

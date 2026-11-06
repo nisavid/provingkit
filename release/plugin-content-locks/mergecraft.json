@@ -2,10 +2,10 @@
   "schema_version": 1,
   "algorithm": "sha256",
   "files": {
-    ".claude-plugin/plugin.json": "e8a0c95daa2fa6a1dab3f1cd3816a865ac2ee99e5702c83e6854d34ebb8eb4d6",
+    ".claude-plugin/plugin.json": "85836d4be9e3e94bb75e982b388ea4b9da5b2fa3c159046854b21486d57d3f84",
     "DEVELOPING.md": "2d30dd7efc5fa08fd95959442f2edc0fcc55d727b78b8a4a4c9b1b35b66ede98",
     "README.md": "2a5b1bcb89cb851b17981c306b2a9b026f0362c29f3969d13d59f3dbce26d609",
-    "plugin.json": "e482c09e7afeb52c4f0f0e1e5f21bf3ae32b23591cdcdd07e01f643a7fa7e70a",
+    "plugin.json": "29fae7043bdb7f7f2ffee03170ba7fc577b79d70052d7c808ad9a445b276d939",
     "skills/addressing-pr-review-feedback/SKILL.md": "fa4fd7f7dd00fb04d189adf348c843d8c8c19a3669830de87f12b7432e50ec98",
     "skills/addressing-pr-review-feedback/agents/openai.yaml": "2496f90c970648152cda7b94f40047baab0426c19b47954b87aa6baac563c39c",
     "skills/addressing-pr-review-feedback/references/feedback-flow.md": "9aa210a8b71f0ea2048ebff6447db5922f242894b19b37f19894ff90ed3e7f24",

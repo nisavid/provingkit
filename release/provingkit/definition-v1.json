@@ -22,7 +22,7 @@
         "content_identity": {
           "kind": "plugin-content-lock",
           "path": "plugins/rolecasting/content-lock.json",
-          "sha256": "sha256:4cc53a9d82013d89ae979a2d2a63341ee72ee69e6ee5f77a180a9601f620bafe"
+          "sha256": "sha256:06df8e821661c672d09b6533c17ac4244010eb7bd227da30f3f81f235dcb7154"
         },
         "display_name": "Rolecasting",
         "distribution_kind": "agent-plugin",
@@ -31,7 +31,7 @@
           "canonical": "plugins/rolecasting/plugin.json",
           "claude": "plugins/rolecasting/.claude-plugin/plugin.json"
         },
-        "version": "1.0.0"
+        "version": "0.1.0-alpha.6"
       },
       {
         "content_identity": {
@@ -46,13 +46,13 @@
           "canonical": "plugins/tricritical/plugin.json",
           "claude": "plugins/tricritical/.claude-plugin/plugin.json"
         },
-        "version": "1.0.0"
+        "version": "0.1.0-alpha.6"
       },
       {
         "content_identity": {
           "kind": "plugin-content-lock",
           "path": "release/plugin-content-locks/versionkeeping.json",
-          "sha256": "sha256:66da09f13423dd505a7ba8d754f8a38f7a96c68dc459b5d238e3b7b3f8e80991"
+          "sha256": "sha256:6f76f16cec4355aa48f2119e93244fbcbf7cd0bc6e4badfa4252108b8cf31add"
         },
         "display_name": "Versionkeeping",
         "distribution_kind": "agent-plugin",
@@ -61,13 +61,13 @@
           "canonical": "plugins/versionkeeping/plugin.json",
           "claude": "plugins/versionkeeping/.claude-plugin/plugin.json"
         },
-        "version": "1.0.0"
+        "version": "0.1.0-alpha.6"
       },
       {
         "content_identity": {
           "kind": "plugin-content-lock",
           "path": "release/plugin-content-locks/mergecraft.json",
-          "sha256": "sha256:290dd438ca38ff494c74407e2efe00c58f4d490b1fc841d0e8fd343a9b2123ab"
+          "sha256": "sha256:526e980f2ec149dbfce7905536ce3063050a7a1a95f69da494383c154b0ab613"
         },
         "display_name": "Mergecraft",
         "distribution_kind": "agent-plugin",
@@ -76,13 +76,13 @@
           "canonical": "plugins/mergecraft/plugin.json",
           "claude": "plugins/mergecraft/.claude-plugin/plugin.json"
         },
-        "version": "1.0.0"
+        "version": "0.1.0-alpha.6"
       },
       {
         "content_identity": {
           "kind": "plugin-content-lock",
           "path": "release/plugin-content-locks/artifact-customs.json",
-          "sha256": "sha256:3a2cf96c58ebb6cb2396ac8a4c4d599a2a37378b33155c8c6886ba9998e30f7d"
+          "sha256": "sha256:496bd90458b13a6bf38997140c1ac9b3501195c208246aa45c02b8d4983b1a56"
         },
         "display_name": "Artifact Customs",
         "distribution_kind": "agent-plugin",
@@ -91,13 +91,13 @@
           "canonical": "plugins/artifact-customs/plugin.json",
           "claude": "plugins/artifact-customs/.claude-plugin/plugin.json"
         },
-        "version": "1.0.0"
+        "version": "0.1.0-alpha.6"
       },
       {
         "content_identity": {
           "kind": "plugin-content-lock",
           "path": "plugins/proseweaving/content-lock.json",
-          "sha256": "sha256:0bb015901c73b1eb3387629ae25400e0cd8b7cc0205cb996288dd5ce85fe1c20"
+          "sha256": "sha256:c9cc570b22f1698dd272745f5278437dcc0fec9895dc3a614cfe7a6b3b92b5e3"
         },
         "display_name": "Proseweaving",
         "distribution_kind": "agent-plugin",
@@ -106,7 +106,7 @@
           "canonical": "plugins/proseweaving/plugin.json",
           "claude": "plugins/proseweaving/.claude-plugin/plugin.json"
         },
-        "version": "1.0.0"
+        "version": "0.1.0-alpha.6"
       }
     ],
     "mode": "exact",

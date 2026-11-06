@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.0-alpha.6
+
+- Synchronize this plugin's version with Provingkit at `0.1.0-alpha.6`.
+- Correct earlier `1.0.0` identity metadata. Neither Provingkit nor its plugins
+  has reached v1.0.0.
+
 ## Unreleased
 
 - Add `configuring-repositories` for GitHub repository creation, assessment,
