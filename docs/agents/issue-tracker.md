@@ -2,6 +2,11 @@
 
 Issues and specs for this repo live as GitHub issues. Use the `gh` CLI for all operations.
 
+For Linear release records and release notes, use
+[release reconciliation](linear-release-reconciliation.md) after publication,
+after release content or scope changes, and when correcting stale records.
+That release workflow preserves this contract's GitHub issue routing.
+
 ## Conventions
 
 Commands substitute values through shell variables such as `$n` and `$map`, and `gh api` paths use gh's own `{owner}`/`{repo}` substitution; angle brackets appear only in issue-body templates, never in a command, because the shell reads them as redirections.
