@@ -13,7 +13,7 @@ authoring source when publishing the release on multiple surfaces.
 
 ## Downloads
 
-{{TARGET_SELECTION_HELP_AND_ARCHIVE_CHECKSUM_LINKS}}
+{{TARGET_SELECTION_HELP_AND_ARCHIVE_LINKS_WITH_CHECKSUM_FILES_OR_VERIFIED_INLINE_HASHES}}
 
 Follow the [installation and update guide]({{IMMUTABLE_GUIDE_URL}}).
 {{ANY_REQUIRED_COMPANIONS_OR_DOWNLOAD_SELECTION_ACTION}}

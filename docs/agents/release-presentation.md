@@ -50,8 +50,12 @@ Describe the supported product and its boundaries without implying that every
 unfinished development task is a limitation of the released capability.
 
 Derive the download rows from the frozen Slate and asset inventory. Label
-targets in terms readers can choose, pair archives with their checksum files,
-and distinguish installable artifacts from forge-generated source archives.
+targets in terms readers can choose and pair archives with the checksum files
+listed in that inventory. When the frozen inventory establishes that no
+checksum file exists, provide an inline archive hash verified against the
+frozen inputs. An unavailable download does not establish absence; resolve
+missing or conflicting checksum evidence before publication. Distinguish
+installable artifacts from forge-generated source archives.
 Link detailed installation and update steps to a maintained document at an
 immutable published revision. The repository's human entrypoint should expose
 the same guide. Explain first installation, replacement/update, required
@@ -85,9 +89,10 @@ remain separate unless the selected release actually depends on them.
 
 The authorized publisher loads this procedure and records its reviewed source
 revision. Publish through the owning release workflow, then read back the
-public body, selected downloads and checksum files, and guide. Verify their
-identity and navigation against the frozen inputs. Retain partial outcomes
-and resolve uncertain writes before repeating them.
+public body, selected downloads, their checksum files or inline hashes, and
+guide. Verify their identities, exact archive-to-hash correspondence, and
+navigation against the frozen inputs. Retain partial outcomes and resolve
+uncertain writes before repeating them.
 
 Before reporting closeout, invoke
 [Linear release reconciliation](linear-release-reconciliation.md) for the
