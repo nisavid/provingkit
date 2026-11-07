@@ -4695,7 +4695,9 @@ class ValidatePublicReleaseTests(unittest.TestCase):
 
     def test_root_readme_withholds_retired_release_arguments(self) -> None:
         readme = (REPOSITORY / "README.md").read_text(encoding="utf-8")
+        release_boundary = (REPOSITORY / "docs/release-boundary.md").read_text(encoding="utf-8")
         normalized_readme = " ".join(readme.split())
+        normalized_release_boundary = " ".join(release_boundary.split())
         required = {
             "--routing-evidence",
             "--composed-receipt",
@@ -4722,10 +4724,10 @@ class ValidatePublicReleaseTests(unittest.TestCase):
         }
         self.assertTrue(required.issubset(parser_options))
         self.assertTrue(required.isdisjoint(documented))
-        self.assertIn("pinned unsigned preview", normalized_readme)
+        self.assertIn("unsigned prerelease", normalized_readme)
         self.assertIn(
             "Stable release and live host qualification remain separate gates.",
-            normalized_readme,
+            normalized_release_boundary,
         )
         self.assertFalse(
             {
