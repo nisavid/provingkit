@@ -22,9 +22,9 @@ PROTOTYPE = SCRIPTS / "owner_admission_sender.py"
 
 class CodexOwnerAdmissionTests(unittest.TestCase):
     def exchange(self, *, early_response=False, response_kind="success", repeat=False,
-                 capture_collision=False, route_change=None):
+                 capture_collision=False, route_change=None, null_initialize=False):
         with tempfile.TemporaryDirectory(prefix="codex-owner-") as temporary:
-            root = Path(temporary)
+            root = Path(temporary).resolve()
             store = root / "mailbox.sqlite3"
             capture = root / "capture"
             capture.mkdir()
@@ -137,7 +137,12 @@ class CodexOwnerAdmissionTests(unittest.TestCase):
                         if early_response:
                             send(response)
                         send({"type": "response", "requestId": "initialize", "resultType": "success",
-                              "method": "initialize", "result": {"clientId": "native-client"}})
+                              "method": "initialize",
+                              "result": None if null_initialize else {"clientId": "native-client"}})
+                        if null_initialize:
+                            self.assertEqual(connection.recv(1), b"")
+                            closed.set()
+                            return
                         self.assertEqual(receive(), {
                             "type": "request", "requestId": "owner", "sourceClientId": "native-client",
                             "version": 1, "method": "thread-owner-discovery",
@@ -223,7 +228,31 @@ class CodexOwnerAdmissionTests(unittest.TestCase):
             self.assertEqual(result["projection"]["native_branch"], "unknown")
             self.assertEqual(result["owned_connection"], {"started": True, "closed": True})
             self.assertEqual(result["peer_input"],
-                             "not_attempted" if capture_collision else "possible_submission")
+                             "not_attempted" if capture_collision or null_initialize else "possible_submission")
+            if null_initialize:
+                self.assertEqual([frame["method"] for frame in wire], ["initialize"])
+                self.assertEqual(json.loads((capture / "outbound.json").read_bytes()), wire)
+                received = json.loads((capture / "received.json").read_bytes())
+                self.assertEqual([frame for _, frame in received], [{
+                    "type": "response", "requestId": "initialize", "resultType": "success",
+                    "method": "initialize", "result": None,
+                }])
+                self.assertEqual(json.loads((capture / "projection.json").read_bytes()), result["projection"])
+                self.assertEqual(json.loads((capture / "normalized-input.json").read_bytes())["correlation"],
+                                 "owner-attempt")
+                acquisition = json.loads((capture / "acquisition.json").read_bytes())
+                self.assertGreater(acquisition["incomingBytes"], 0)
+                self.assertEqual(len({metadata["generation"] for metadata, _ in received}), 1)
+                self.assertEqual(received[0][0]["generation"], acquisition["connectionGeneration"])
+                self.assertFalse((capture / "attempt.json").exists())
+                recorded = mailbox("show", "owner-message")
+                self.assertEqual({k: v for k, v in recorded.items() if k not in {"state", "attempts"}}, original)
+                self.assertEqual(recorded["state"], "unknown")
+                self.assertEqual(len(recorded["attempts"]), 1)
+                self.assertEqual(recorded["attempts"][0]["attempt_id"], "owner-attempt")
+                self.assertEqual([item["kind"] for item in recorded["attempts"][0]["observations"]],
+                                 ["unknown"])
+                return result, json.loads((capture / "rpc.json").read_bytes())
             expected_methods = ["initialize", "thread-owner-discovery"]
             if not capture_collision:
                 expected_methods.append("thread-follower-start-turn")
@@ -237,6 +266,19 @@ class CodexOwnerAdmissionTests(unittest.TestCase):
             recorded = mailbox("show", "owner-message")
             self.assertEqual({k: v for k, v in recorded.items() if k not in {"state", "attempts"}}, original)
             return result, json.loads((capture / "rpc.json").read_bytes())
+
+    def test_null_initialize_result_reports_refusal_and_preserves_evidence_without_peer_input(self):
+        result, rpc = self.exchange(null_initialize=True)
+        self.assertTrue(result["claimed"])
+        self.assertEqual(result["reason"], "initialize-unavailable")
+        self.assertEqual(result["firstDiagnostic"],
+                         {"type": "Refusal", "message": "initialize-unavailable"})
+        self.assertEqual(result["projection"]["stage"], "refused-before-write")
+        self.assertEqual(result["projection"]["reason"], "initialize-unavailable")
+        self.assertEqual(result["projection"]["evidence"], [])
+        self.assertEqual(rpc["status"], "unknown")
+        self.assertEqual(rpc["originalResult"], [])
+        self.assertNotIn("capture_failure", result)
 
     def test_local_owner_request_preserves_peer_envelope_and_admission_flags(self):
         result, rpc = self.exchange()

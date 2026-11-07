@@ -14,7 +14,7 @@ The invocation reads trusted, explicitly selected caller files. Its request has 
 
 `native` supplies `route`, `nominationRef`, `purpose`, `authorityRefs`, `holdRefs`, `scope`, and optionally `profile`/`observationSeconds`. `route` has exactly an explicitly nominated endpoint, `host: "local"`, and a target matching the mailbox recipient. `authorityRefs` and `holdRefs` retain the planned message’s actual references. Scope is exactly `send: true`, `ownerAdmissionIntent: true`, and `holdsSatisfied: true`; those declarations require their own actual authority and hold checks. Attempt IDs reserved for initialization/discovery are rejected.
 
-This local profile emits version2 with no non-null `hostId` in the submission body. It does not silently treat a host-qualified request as local; the inspected native protocol uses a different version when that field is non-null. Remote/host-qualified submission is unsupported by this prototype. No tool-output injection, attachments, environment replacement or settings overrides are accepted.
+This local profile emits version 2 with no non-null `hostId` in the submission body. It does not silently treat a host-qualified request as local; the inspected native protocol uses a different version when that field is non-null. Remote/host-qualified submission is unsupported by this prototype. No tool-output injection, attachments, environment replacement or settings overrides are accepted.
 
 ## Operation and evidence
 

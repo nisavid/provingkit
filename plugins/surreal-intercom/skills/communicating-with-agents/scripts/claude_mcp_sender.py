@@ -58,8 +58,8 @@ def validate(request):
         raise InspectionError("invalid_limits")
     seconds = limits["operation_seconds"]
     if (
-        type(seconds) not in (int, float) or not math.isfinite(seconds)
-        or not 0 < seconds <= 60
+        type(seconds) not in (int, float) or not 0 < seconds <= 60
+        or not math.isfinite(seconds)
     ):
         raise InspectionError("invalid_limits")
     for key in ("stdout_bytes", "stderr_bytes"):
@@ -388,7 +388,7 @@ def main():
                 result["reason"] = "missing_sendmessage"
     except InspectionError as error:
         result["reason"] = str(error)
-    except (ValueError, OSError, sqlite3.Error, MailboxError):
+    except (ValueError, RecursionError, OSError, sqlite3.Error, MailboxError):
         result["reason"] = "local_or_protocol_failure"
     finally:
         if child is not None:

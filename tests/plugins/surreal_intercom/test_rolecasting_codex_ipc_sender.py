@@ -23,7 +23,7 @@ SCRIPTS = (
 class CodexIpcSenderTests(unittest.TestCase):
     def test_busy_peer_receipt_preserves_forwarded_envelope_and_attempt(self):
         with tempfile.TemporaryDirectory(prefix="codex-ipc-") as temporary:
-            root = Path(temporary)
+            root = Path(temporary).resolve()
             store = root / "mailbox.sqlite3"
             capture = root / "capture"
             capture.mkdir()
@@ -253,7 +253,7 @@ class CodexIpcSenderTests(unittest.TestCase):
 
     def reconcile_fixture(self, *, live_receipt, saved_observation=None, known_saved=False):
         with tempfile.TemporaryDirectory(prefix="codex-ipc-") as temporary:
-            root = Path(temporary)
+            root = Path(temporary).resolve()
             store = root / "mailbox.sqlite3"
             capture = root / "capture"
             capture.mkdir()
@@ -511,7 +511,7 @@ class CodexIpcSenderTests(unittest.TestCase):
 
     def test_wrong_recipient_is_refused_before_claim_capture_or_connection(self):
         with tempfile.TemporaryDirectory(prefix="codex-ipc-") as temporary:
-            root = Path(temporary)
+            root = Path(temporary).resolve()
             store = root / "mailbox.sqlite3"
             capture = root / "capture"
             capture.mkdir()
@@ -597,7 +597,7 @@ class CommandFailureTests(unittest.TestCase):
     def setUp(self):
         self.temporary = tempfile.TemporaryDirectory(prefix="codex-ipc-")
         self.addCleanup(self.temporary.cleanup)
-        self.root = Path(self.temporary.name)
+        self.root = Path(self.temporary.name).resolve()
         self.store = self.root / "mailbox.sqlite3"
         self.capture = self.root / "capture"
         self.capture.mkdir()
@@ -746,7 +746,7 @@ class CommandFailureTests(unittest.TestCase):
                                                  "status": "inProgress" if active else "completed", "items": []}]}}},
         }
 
-    def peer_exchange(self, conversation):
+    def peer_exchange(self, conversation, *, null_initialize=False):
         wire, sent, errors = [], [], []
         closed = threading.Event()
         follow = {"type": "broadcast", "sourceClientId": "native-client", "targetClientIds": ["native-owner"],
@@ -774,25 +774,33 @@ class CommandFailureTests(unittest.TestCase):
                         wire.append(value)
                         return value
 
-                    def send(value):
-                        body = json.dumps(value).encode()
-                        frame = struct.pack("<I", len(body)) + body
-                        connection.sendall(frame)
+                    def send(value, *additional):
+                        values = (value, *additional)
+                        frames = []
+                        for item in values:
+                            body = json.dumps(item).encode()
+                            frames.append(struct.pack("<I", len(body)) + body)
+                        data = b"".join(frames)
+                        connection.sendall(data)
                         with (self.root / "fixture-sent.bin").open("ab") as stream:
-                            stream.write(frame)
-                        sent.append(value)
+                            stream.write(data)
+                        sent.extend(values)
 
                     self.assertEqual(receive(), {"type": "request", "requestId": "initialize", "version": 0,
                                                  "method": "initialize", "params": {"clientType": "cli"}})
                     send({"type": "response", "requestId": "initialize", "resultType": "success",
-                          "method": "initialize", "result": {"clientId": "native-client"}})
-                    self.assertEqual(receive(), {"type": "request", "requestId": "owner", "sourceClientId": "native-client",
-                        "version": 1, "method": "thread-owner-discovery",
-                        "params": {"hostId": "peer-host", "conversationId": "busy-peer"}})
-                    send({"type": "response", "requestId": "owner", "resultType": "success",
-                          "method": "thread-owner-discovery", "handledByClientId": "native-owner"})
-                    self.assertEqual(receive(), follow)
-                    conversation(connection, receive, send, follow)
+                          "method": "initialize",
+                          "result": None if null_initialize else {"clientId": "native-client"}})
+                    if null_initialize:
+                        self.assertEqual(connection.recv(1), b"")
+                    else:
+                        self.assertEqual(receive(), {"type": "request", "requestId": "owner", "sourceClientId": "native-client",
+                            "version": 1, "method": "thread-owner-discovery",
+                            "params": {"hostId": "peer-host", "conversationId": "busy-peer"}})
+                        send({"type": "response", "requestId": "owner", "resultType": "success",
+                              "method": "thread-owner-discovery", "handledByClientId": "native-owner"})
+                        self.assertEqual(receive(), follow)
+                        conversation(connection, receive, send, follow)
                 self.assertEqual(connection.fileno(), -1)
                 closed.set()
             except BaseException as error:
@@ -835,6 +843,36 @@ class CommandFailureTests(unittest.TestCase):
         self.assertEqual({k: v for k, v in recorded.items() if k not in {"state", "attempts"}}, self.original)
         self.assertEqual(json.loads((self.capture / "outbound.json").read_bytes())[:len(wire)], wire)
         return result, wire, sent
+
+    def test_null_initialize_result_reports_refusal_and_preserves_evidence_without_peer_input(self):
+        result, wire, sent = self.peer_exchange(None, null_initialize=True)
+        self.assertEqual(result["reason"], "initialize-unavailable")
+        self.assertEqual(result["peer_input"], "not_attempted")
+        self.assertEqual(result["projection"]["stage"], "refused-before-write")
+        self.assertEqual(result["projection"]["reason"], "initialize-unavailable")
+        self.assertEqual(result["projection"]["closure"], "no-subscription;owned-connection-closed")
+        self.assertEqual(result["projection"]["evidence"], [])
+        self.assertEqual([frame["method"] for frame in wire], ["initialize"])
+        self.assertEqual(sent, [{
+            "type": "response", "requestId": "initialize", "resultType": "success",
+            "method": "initialize", "result": None,
+        }])
+        self.assertEqual(json.loads((self.capture / "outbound.json").read_bytes()), wire)
+        received = json.loads((self.capture / "received.json").read_bytes())
+        self.assertEqual([frame for _, frame in received], sent)
+        self.assertEqual(json.loads((self.capture / "projection.json").read_bytes()), result["projection"])
+        acquisition = json.loads((self.capture / "acquisition.json").read_bytes())
+        self.assertGreater(acquisition["incomingBytes"], 0)
+        self.assertEqual(received[0][0]["generation"], acquisition["connectionGeneration"])
+        captured_request = json.loads((self.capture / "request-input.json").read_bytes())
+        self.assertEqual(captured_request["correlation"], "failure-attempt")
+        self.assertEqual(captured_request["route"]["host"], "peer-host")
+        self.assertEqual(captured_request["route"]["target"], "busy-peer")
+        self.assertEqual(captured_request["actor"], self.request["actor"])
+        self.assertTrue((self.capture / "normalized-input.json").is_file())
+        self.assertFalse((self.capture / "attempt.json").exists())
+        self.assertFalse((self.capture / "rpc.json").exists())
+        self.assertNotIn("capture_failure", result)
 
     def test_idle_peer_refuses_start_and_keeps_claim_uncertainty(self):
         def conversation(connection, receive, send, follow):
@@ -925,6 +963,169 @@ class CommandFailureTests(unittest.TestCase):
         self.assertEqual(outbound[4]["method"], "thread-stream-following-changed")
         self.assertFalse(outbound[4]["params"]["following"])
         self.assertEqual(len(outbound), 5)
+
+    def test_malformed_post_write_snapshot_and_cleanup_preserve_known_submission(self):
+        self.malformed_evidence_fixture(malformed_after_write=True)
+
+    def test_first_post_write_refusal_survives_malformed_cleanup(self):
+        self.malformed_evidence_fixture(malformed_after_write=False)
+
+    def malformed_evidence_fixture(self, *, malformed_after_write):
+        response = {
+            "type": "response", "requestId": "failure-attempt", "resultType": "success",
+            "method": "thread-follower-steer-turn", "result": {},
+        }
+        if malformed_after_write:
+            post_write = self.snapshot(active=True)
+            post_write["params"]["change"]["revision"] = 8
+            post_write["params"]["change"]["conversationState"]["turns"][0]["itemsPagination"] = None
+        else:
+            post_write = {"type": "broadcast", "method": "ipc-connection-reset"}
+        cleanup = {"type": "broadcast", "method": "client-status-changed", "params": None}
+        prewrite = []
+
+        def conversation(connection, receive, send, follow):
+            send(self.snapshot(active=True))
+            steer = receive()
+            self.assertEqual(steer["method"], "thread-follower-steer-turn")
+            self.assertEqual(steer["requestId"], "failure-attempt")
+            self.assertEqual(steer["params"]["clientUserMessageId"], "failure-attempt")
+            prewrite.append((self.capture / "attempt.json").read_bytes())
+            send(response, post_write)
+            follow["params"]["following"] = False
+            self.assertEqual(receive(), follow)
+            send(cleanup)
+            # EOF is observed on the accepted socket, rather than inferred from
+            # the fixture closing its own end.
+            self.assertEqual(connection.recv(1), b"")
+
+        result, wire, sent = self.peer_exchange(conversation)
+        rpc = json.loads((self.capture / "rpc.json").read_bytes())
+        self.assertEqual(rpc["status"], "success")
+        self.assertEqual(rpc["originalResult"], [response])
+        self.assertEqual(rpc["submitObservation"]["status"], "success")
+        self.assertEqual(rpc["submitObservation"]["originalResult"], [response])
+        self.assertEqual(rpc["effect"], "possible-submission")
+        self.assertEqual(result["peer_input"], "possible_submission")
+        self.assertEqual(result["projection"]["stage"], "possible-submission")
+        self.assertEqual(result["projection"]["rpc"], "success")
+        self.assertEqual(result["projection"]["evidence"], [])
+        self.assertEqual(result["reason"], result["projection"]["reason"])
+        if malformed_after_write:
+            self.assertIsInstance(result["reason"], str)
+            self.assertTrue(result["reason"])
+            self.assertNotIn(result["reason"], {
+                "invalid_request", "missing-state", "rpc-success-effect-unconfirmed",
+                "observation-deadline-unknown",
+            })
+        else:
+            self.assertEqual(result["reason"], "connection-reset-needs-new-binding")
+        self.assertTrue(result["projection"]["closure"].endswith(";owned-connection-closed"))
+        self.assertNotIn("capture_failure", result)
+        self.assertEqual([m["method"] for m in wire], [
+            "initialize", "thread-owner-discovery", "thread-stream-following-changed",
+            "thread-follower-steer-turn", "thread-stream-following-changed",
+        ])
+        self.assertFalse(wire[-1]["params"]["following"])
+        self.assertEqual(json.loads((self.capture / "outbound.json").read_bytes()), wire)
+        self.assertEqual(prewrite, [(self.capture / "attempt.json").read_bytes()])
+        pending = json.loads(prewrite[0])
+        self.assertEqual(pending["envelope"], wire[3])
+        self.assertEqual(pending["correlation"], "failure-attempt")
+        self.assertEqual(pending["actor"], self.actor)
+        self.assertEqual(pending["declaredOrigin"], self.original["sender"])
+        self.assertEqual(pending["scope"], self.request["native"]["scope"])
+        received = json.loads((self.capture / "received.json").read_bytes())
+        self.assertEqual([m for _, m in received], sent)
+        self.assertEqual(sent[-3:], [response, post_write, cleanup])
+        self.assertEqual(json.loads((self.capture / "projection.json").read_bytes()), result["projection"])
+        acquisition = json.loads((self.capture / "acquisition.json").read_bytes())
+        self.assertEqual(acquisition["events"], len(sent))
+        self.assertEqual(acquisition["incomingBytes"], (self.root / "fixture-sent.bin").stat().st_size)
+        self.assertEqual({record["generation"] for record, _ in received}, {acquisition["connectionGeneration"]})
+        captured_request = json.loads((self.capture / "request-input.json").read_bytes())
+        self.assertEqual(captured_request["correlation"], "failure-attempt")
+        self.assertEqual(captured_request["actor"], self.actor)
+        self.assertEqual(captured_request["route"], self.request["native"]["route"])
+        self.assertTrue((self.capture / "normalized-input.json").is_file())
+
+    def test_missing_discovery_request_id_preserves_correlated_rpc_and_stops_acquisition(self):
+        response = {
+            "type": "response", "requestId": "failure-attempt", "resultType": "success",
+            "method": "thread-follower-steer-turn", "result": {},
+        }
+        malformed = {"type": "client-discovery-request"}
+        unread = {"type": "client-discovery-request", "requestId": "must-not-be-answered"}
+        prewrite = []
+
+        def conversation(connection, receive, send, follow):
+            send(self.snapshot(active=True))
+            steer = receive()
+            self.assertEqual(steer["method"], "thread-follower-steer-turn")
+            self.assertEqual(steer["requestId"], "failure-attempt")
+            self.assertEqual(steer["params"]["clientUserMessageId"], "failure-attempt")
+            prewrite.append((self.capture / "attempt.json").read_bytes())
+            # Coalescing removes a race between rejecting the malformed frame
+            # and placing the later, deliberately unread frame on the wire.
+            send(response, malformed, unread)
+            try:
+                if connection.recv(1, socket.MSG_PEEK):
+                    follow["params"]["following"] = False
+                    self.assertEqual(receive(), follow)
+                self.assertEqual(connection.recv(1), b"")
+            except ConnectionResetError:
+                pass  # Closing with the unread tail can reset the peer socket.
+
+        result, wire, sent = self.peer_exchange(conversation)
+        rpc = json.loads((self.capture / "rpc.json").read_bytes())
+        self.assertEqual(rpc["status"], "success")
+        self.assertEqual(rpc["originalResult"], [response])
+        self.assertEqual(rpc["submitObservation"]["status"], "success")
+        self.assertEqual(rpc["submitObservation"]["originalResult"], [response])
+        terminal = rpc["submitObservation"]["terminalReason"]
+        self.assertIsInstance(terminal, str)
+        self.assertTrue(terminal)
+        self.assertNotIn(terminal, {
+            "invalid_request", "observation-deadline-unknown",
+            "stream-eof-unknown", "rpc-success-effect-unconfirmed",
+        })
+        self.assertEqual(rpc["transportReason"], terminal)
+        self.assertEqual(rpc["effect"], "possible-submission")
+        self.assertEqual(result["reason"], terminal)
+        self.assertEqual(result["peer_input"], "possible_submission")
+        self.assertEqual(result["projection"]["stage"], "possible-submission")
+        self.assertEqual(result["projection"]["rpc"], "success")
+        self.assertEqual(result["projection"]["acquisitionReason"], terminal)
+        self.assertEqual(result["projection"]["evidence"], [])
+        self.assertTrue(result["projection"]["closure"].endswith(";owned-connection-closed"))
+        self.assertNotIn("capture_failure", result)
+        self.assertEqual([m["method"] for m in wire[:4]], [
+            "initialize", "thread-owner-discovery", "thread-stream-following-changed",
+            "thread-follower-steer-turn",
+        ])
+        self.assertLessEqual(len(wire), 5)
+        if len(wire) == 5:
+            self.assertEqual(wire[4]["method"], "thread-stream-following-changed")
+            self.assertFalse(wire[4]["params"]["following"])
+        outbound = json.loads((self.capture / "outbound.json").read_bytes())
+        self.assertEqual(outbound[:4], wire[:4])
+        self.assertLessEqual(len(outbound), 5)
+        if len(outbound) == 5:
+            self.assertEqual(outbound[4]["method"], "thread-stream-following-changed")
+            self.assertFalse(outbound[4]["params"]["following"])
+        self.assertEqual(prewrite, [(self.capture / "attempt.json").read_bytes()])
+        self.assertEqual(json.loads(prewrite[0])["envelope"], wire[3])
+        received = json.loads((self.capture / "received.json").read_bytes())
+        self.assertEqual([m for _, m in received], sent[:-1])
+        self.assertEqual(sent[-3:], [response, malformed, unread])
+        self.assertEqual(json.loads((self.capture / "projection.json").read_bytes()), result["projection"])
+        acquisition = json.loads((self.capture / "acquisition.json").read_bytes())
+        self.assertIn(terminal, acquisition["receiveStatus"])
+        self.assertEqual(acquisition["events"], len(sent) - 1)
+        unread_bytes = 4 + len(json.dumps(unread).encode())
+        self.assertEqual(acquisition["incomingBytes"],
+                         (self.root / "fixture-sent.bin").stat().st_size - unread_bytes)
+        self.assertEqual({record["generation"] for record, _ in received}, {acquisition["connectionGeneration"]})
 
     def test_frame_limit_diagnosis_survives_later_projection_capture_failure(self):
         sentinel = b"Keep this original projection sentinel.\n"

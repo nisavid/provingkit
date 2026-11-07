@@ -8,7 +8,7 @@ import hashlib
 import json
 from pathlib import Path
 import time
-from codex_ipc_transport import FrameReceiver, ReceiveFailure, ReceivePrefixFailure, CliTransport, connect_unix
+from codex_ipc_transport import ReceiveFailure, ReceivePrefixFailure, CliTransport, connect_unix
 
 DEFAULTS = {"caseBytes": 1048576, "incomingBytes": 262144, "frameBytes": 65536,
             "events": 64, "projectionBytes": 8192, "maxAge": 10}
@@ -205,7 +205,8 @@ def _run_operation(case, directory, mode="submit", attempt_path=None, *, transpo
                                    "method": "initialize", "params": {"clientType": "cli"}})
         matches = [m for _, m in response if m.get("type") == "response" and m.get("requestId") == "initialize"
                    and m.get("resultType") == "success" and m.get("method") == "initialize"]
-        if len(matches) != 1 or not matches[0].get("result", {}).get("clientId"):
+        if (len(matches) != 1 or not isinstance(matches[0].get("result"), dict)
+                or not matches[0]["result"].get("clientId")):
             raise Refusal("initialize-unavailable")
         client = matches[0]["result"]["clientId"]
         initial_records = response
@@ -310,9 +311,9 @@ def _run_operation(case, directory, mode="submit", attempt_path=None, *, transpo
                               "terminalReason": receive_failure or terminal_reason}
         observe(records)
         outcome_finished = True
-    except (Refusal, ReceiveFailure, OSError, KeyError, ValueError, TypeError, FileExistsError) as exc:
+    except (Refusal, ReceiveFailure, OSError, KeyError, ValueError, TypeError, AttributeError, FileExistsError) as exc:
         primary_failure = primary_failure or failure_record(exc)
-        reason = str(exc)
+        reason = primary_failure["message"]
         if possible and submit_observation is None:
             submit_observation = {"originalResult": [], "status": "unknown", "terminalReason": reason}
             terminal_reason = terminal_reason or reason
@@ -331,11 +332,11 @@ def _run_operation(case, directory, mode="submit", attempt_path=None, *, transpo
                 closure = "unfollow-unknown:" + str(exc)
             try:
                 observe(cleanup_records)
-            except (Refusal, KeyError, ValueError, TypeError) as exc:
+            except (Refusal, KeyError, ValueError, TypeError, AttributeError) as exc:
                 primary_failure = primary_failure or failure_record(exc)
                 state = None
                 outcome_finished = False
-                reason = str(exc)
+                reason = primary_failure["message"]
         else:
             closure = "no-subscription"
         try:
@@ -359,10 +360,11 @@ def _run_operation(case, directory, mode="submit", attempt_path=None, *, transpo
         try:
             turns, complete = native_turns(state) if state is not None else ([], False)
             stage = evidence[-1]["stage"] if evidence else None
-        except (Refusal, KeyError, ValueError, TypeError) as exc:
+        except (Refusal, KeyError, ValueError, TypeError, AttributeError) as exc:
+            primary_failure = primary_failure or failure_record(exc)
             complete = False
             stage = evidence[-1]["stage"] if evidence else None
-            reason = str(exc)
+            reason = primary_failure["message"]
     projection = {"stage": stage or ("reconcile-unknown" if original is not None else ("possible-submission" if possible else "refused-before-write")), "reason": reason, "closure": closure,
                   "acquisitionReason": terminal_reason,
                   "rpc": rpc, "historyComplete": complete, "evidence": evidence,

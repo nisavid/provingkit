@@ -151,6 +151,9 @@ class CliTransport:
                 records.append((record, message))
                 self.retained.append((record, message))
                 if message.get('type') == 'client-discovery-request':
+                    if 'requestId' not in message:
+                        self.receiver.incomplete = 'discovery-request-id-missing'
+                        raise ReceiveFailure(self.receiver.incomplete)
                     answer = {'type': 'client-discovery-response', 'requestId': message['requestId'],
                               'response': {'canHandle': False}}
                     body = json.dumps(answer).encode()
@@ -195,7 +198,7 @@ def discover_owner(transport, binding, *, text, refusal):
                and message.get("requestId") == "initialize"
                and message.get("method") == "initialize"
                and message.get("resultType") == "success"]
-    if len(matches) != 1:
+    if len(matches) != 1 or not isinstance(matches[0].get("result"), dict):
         raise refusal("initialize-unavailable")
     client = text(matches[0].get("result", {}).get("clientId"), "native-client")
     records = transport.send({

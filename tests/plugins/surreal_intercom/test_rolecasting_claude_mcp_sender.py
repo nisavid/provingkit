@@ -87,6 +87,7 @@ class ClaudeMcpSenderTests(unittest.TestCase):
                 import os
                 import subprocess
                 import sys
+                import time
 
                 def retained():
                     shown = subprocess.run(
@@ -121,6 +122,17 @@ class ClaudeMcpSenderTests(unittest.TestCase):
                                 continue
                             if sys.argv[3] == "stdout_overflow":
                                 os.write(sys.stdout.fileno(), b"X" * 16385)
+                                continue
+                            if sys.argv[3] == "stderr_overflow":
+                                remaining = memoryview(b"E" * (2 * 1048576))
+                                while remaining:
+                                    written = os.write(sys.stderr.fileno(), remaining)
+                                    remaining = remaining[written:]
+                                continue
+                            if sys.argv[3] == "call_deadline":
+                                # Startup and catalog negotiation finish normally;
+                                # only this owned child's call reply is delayed.
+                                time.sleep(30)
                                 continue
                             if sys.argv[3] == "envelope_submission":
                                 response = {
@@ -159,7 +171,7 @@ class ClaudeMcpSenderTests(unittest.TestCase):
             def send(raw=None):
                 request_file.write_bytes(json.dumps(request).encode("utf-8") if raw is None else raw)
                 completed = subprocess.run(
-                    [sys.executable, str(SCRIPTS / "claude_mcp_sender.py"),
+                    [sys.executable, "-B", str(SCRIPTS / "claude_mcp_sender.py"),
                      "--store", str(store), "--request", str(request_file)],
                     capture_output=True, text=True, timeout=12,
                 )
@@ -272,6 +284,191 @@ class ClaudeMcpSenderTests(unittest.TestCase):
                     self.assertEqual([o["kind"] for o in retained["attempts"][0]["observations"]], [
                         "unknown", "refused",
                     ])
+
+    def test_malformed_input_refuses_without_claim_child_or_replay(self):
+        cases = (
+            ("huge_operation_seconds", "invalid_limits"),
+            ("deeply_nested_json", "local_or_protocol_failure"),
+        )
+        for case, reason in cases:
+            for prior_state in ("planned", "unknown"):
+                with self.subTest(input=case, prior_state=prior_state):
+                    with self.consumer() as (
+                        original, request, send, bookkeeping, trace, source,
+                    ):
+                        if prior_state == "unknown":
+                            initial = send()
+                            self.assertTrue(initial["claimed"])
+                            self.assertEqual(initial["reason"], "stdout_eof")
+                            self.assertEqual(initial["peer_input"], "possible_submission")
+                            self.assertEqual(initial["owned_child"], {
+                                "started": True, "reaped": True, "exit_code": 23,
+                            })
+                        retained = bookkeeping("show", "failure-1")
+                        self.assertEqual(retained["state"], prior_state)
+                        self.assertEqual(len(retained["attempts"]), int(prior_state == "unknown"))
+                        trace_before = trace.read_bytes() if trace.exists() else None
+                        for attempt_id in ("attempt-failure", "fresh-unreconciled-attempt"):
+                            malformed = {**request, "attempt_id": attempt_id}
+                            if case == "huge_operation_seconds":
+                                malformed["limits"] = {
+                                    **request["limits"], "operation_seconds": 10 ** 399,
+                                }
+                                raw = json.dumps(malformed).encode("utf-8")
+                            else:
+                                # Keep the request within the byte ceiling while
+                                # exceeding the decoder's ordinary nesting depth.
+                                malformed["evidence_ref"] = "nested-input-placeholder"
+                                raw = json.dumps(malformed).encode("utf-8").replace(
+                                    b'"nested-input-placeholder"',
+                                    b"[" * 4000 + b"0" + b"]" * 4000,
+                                )
+                            self.assertLessEqual(len(raw), 32768)
+                            result = send(raw=raw)
+                            self.assertEqual(result["stage"], "request")
+                            self.assertEqual(result["reason"], reason)
+                            self.assertFalse(result["claimed"])
+                            self.assertEqual(result["peer_input"], "not_attempted")
+                            self.assertEqual(result["owned_child"], {
+                                "started": False, "reaped": False, "exit_code": None,
+                            })
+                            self.assertEqual(bookkeeping("show", "failure-1"), retained)
+                            self.assertEqual(
+                                trace.read_bytes() if trace.exists() else None, trace_before,
+                            )
+                            self.assert_no_receipt(retained, original)
+
+    def test_request_at_32768_bytes_is_admitted_and_submits(self):
+        with self.consumer(mode="tool_success") as (
+            original, request, send, bookkeeping, trace, source,
+        ):
+            encoded = json.dumps(request).encode("utf-8")
+            self.assertLess(len(encoded), 32768)
+            boundary = encoded + b" " * (32768 - len(encoded))
+            self.assertEqual(len(boundary), 32768)
+            result = send(raw=boundary)
+            self.assertEqual(result["stage"], "call")
+            self.assertEqual(result["reason"], "submitted")
+            self.assertEqual(result["peer_input"], "submitted")
+            self.assertTrue(result["claimed"])
+            self.assertEqual(result["owned_child"], {
+                "started": True, "reaped": True, "exit_code": 23,
+            })
+            records = [json.loads(line) for line in trace.read_bytes().splitlines()]
+            self.assertGreater(records[0]["started_pid"], 0)
+            self.assertEqual([r["method"] for r in records if "method" in r], [
+                "initialize", "notifications/initialized", "tools/list", "tools/call",
+            ])
+            self.assertEqual(records[-1], {"stdin_eof": True})
+            retained = bookkeeping("show", "failure-1")
+            self.assert_no_receipt(retained, original)
+            self.assertEqual(retained["state"], "submitted")
+            self.assertEqual(len(retained["attempts"]), 1)
+            self.assertEqual(
+                [o["kind"] for o in retained["attempts"][0]["observations"]],
+                ["unknown", "unknown", "submitted"],
+            )
+            self.assert_no_replay(request, send, bookkeeping, trace, retained)
+
+    def test_oversized_control_frame_refuses_before_possible_submission(self):
+        # The minimal supported catalog has no destination-length constraint.
+        # This destination alone exceeds the entire outgoing frame ceiling.
+        with self.consumer(mode="tool_success", target="uds:" + "x" * 4096) as (
+            original, request, send, bookkeeping, trace, source,
+        ):
+            result = send()
+            self.assertEqual(result["stage"], "catalog")
+            self.assertEqual(result["reason"], "control_frame_limit")
+            self.assertEqual(result["peer_input"], "not_attempted")
+            self.assertTrue(result["claimed"])
+            self.assertEqual(result["owned_child"], {
+                "started": True, "reaped": True, "exit_code": 23,
+            })
+            records = [json.loads(line) for line in trace.read_bytes().splitlines()]
+            self.assertGreater(records[0]["started_pid"], 0)
+            self.assertEqual([r["method"] for r in records if "method" in r], [
+                "initialize", "notifications/initialized", "tools/list",
+            ])
+            self.assertEqual(records[-1], {"stdin_eof": True})
+            retained = bookkeeping("show", "failure-1")
+            self.assert_no_receipt(retained, original)
+            self.assertEqual(retained["state"], "unknown")
+            self.assertEqual(len(retained["attempts"]), 1)
+            attempt = retained["attempts"][0]
+            self.assertEqual(attempt["actor"], request["actor"])
+            self.assertEqual([o["kind"] for o in attempt["observations"]], ["unknown"])
+            self.assertEqual(json.loads(attempt["observations"][0]["detail"]), request)
+            self.assert_no_replay(request, send, bookkeeping, trace, retained)
+
+    def test_stderr_overflow_at_one_mib_preserves_failure_and_uncertainty(self):
+        with self.consumer(mode="stderr_overflow") as (
+            original, request, send, bookkeeping, trace, source,
+        ):
+            request["limits"]["stderr_bytes"] = 1048576
+            result = send()
+            self.assertEqual(result["stage"], "call")
+            self.assertEqual(result["reason"], "stderr_limit")
+            self.assertEqual(result["peer_input"], "possible_submission")
+            self.assertTrue(result["claimed"])
+            closure = result["owned_child"]
+            self.assertTrue(closure["started"])
+            self.assertTrue(closure["reaped"])
+            self.assertIn(closure["exit_code"], (23, -9))
+            self.assertEqual(closure["closure_error"], "stderr_limit")
+            records = [json.loads(line) for line in trace.read_bytes().splitlines()]
+            self.assertGreater(records[0]["started_pid"], 0)
+            self.assertEqual([r["method"] for r in records if "method" in r], [
+                "initialize", "notifications/initialized", "tools/list", "tools/call",
+            ])
+            retained = bookkeeping("show", "failure-1")
+            self.assert_no_receipt(retained, original)
+            self.assertEqual(retained["state"], "unknown")
+            self.assertEqual(len(retained["attempts"]), 1)
+            attempt = retained["attempts"][0]
+            self.assertEqual(attempt["actor"], request["actor"])
+            self.assertEqual([o["kind"] for o in attempt["observations"]], ["unknown", "unknown"])
+            self.assertEqual(json.loads(attempt["observations"][-1]["detail"]), {
+                "phase": "possible_submission", "target": request["target"],
+            })
+            self.assert_no_replay(request, send, bookkeeping, trace, retained)
+
+    def test_call_deadline_preserves_uncertainty_and_reaps_owned_child(self):
+        with self.consumer(mode="call_deadline") as (
+            original, request, send, bookkeeping, trace, source,
+        ):
+            # Keep the ordinary eight-second protocol budget for startup and
+            # negotiation; the child delays its call reply for thirty seconds.
+            result = send()
+            self.assertEqual(result["stage"], "call")
+            self.assertEqual(result["reason"], "deadline")
+            self.assertEqual(result["peer_input"], "possible_submission")
+            self.assertTrue(result["claimed"])
+            self.assertEqual(result["owned_child"], {
+                "started": True, "reaped": True, "exit_code": -9,
+                "closure_error": "deadline",
+            })
+            records = [json.loads(line) for line in trace.read_bytes().splitlines()]
+            self.assertGreater(records[0]["started_pid"], 0)
+            self.assertEqual([r["method"] for r in records if "method" in r], [
+                "initialize", "notifications/initialized", "tools/list", "tools/call",
+            ])
+            before_call = next(r["before_call"] for r in records if "before_call" in r)
+            self.assertEqual(before_call["state"], "unknown")
+            self.assertEqual(json.loads(before_call["attempts"][0]["observations"][-1]["detail"]), {
+                "phase": "possible_submission", "target": request["target"],
+            })
+            self.assertFalse(any("stdin_eof" in r for r in records))
+            retained = bookkeeping("show", "failure-1")
+            self.assert_no_receipt(retained, original)
+            self.assertEqual(retained["state"], "unknown")
+            self.assertEqual(len(retained["attempts"]), 1)
+            attempt = retained["attempts"][0]
+            self.assertEqual(attempt["actor"], request["actor"])
+            self.assertEqual([o["kind"] for o in attempt["observations"]], ["unknown", "unknown"])
+            self.assertEqual(json.loads(attempt["observations"][-1]["detail"]), {
+                "phase": "possible_submission", "target": request["target"],
+            })
+            self.assert_no_replay(request, send, bookkeeping, trace, retained)
 
     def test_request_over_32768_bytes_is_rejected_without_claim_or_child(self):
         with self.consumer() as (original, request, send, bookkeeping, trace, source):
