@@ -70,6 +70,14 @@ Python adapters: plugin changes require their validator
 changes under `plugins/` or `release/`, or to the disposition ledger, require
 `python scripts/validate_source_skill_disposition.py .`.
 
+### Retained source-lineage entrypoints
+
+For changes to the retained lineage validator, refresher, recovery moves, or
+their tests, follow the maintained
+[source-lineage procedure](docs/agents/source-skill-lineage.md). It defines the
+historical/current boundary, rescout ownership, locking and no-replace
+contracts, supported commands, and acceptance evidence.
+
 ## Operating Policy
 
 - This repository uses agentic engineering and operations. Agents should perform assigned tasks autonomously until they reach a boundary that requires stakeholder policy or an unavailable control surface.
