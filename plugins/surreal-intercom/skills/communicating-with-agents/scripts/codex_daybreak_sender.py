@@ -11,7 +11,7 @@ from pathlib import Path
 import sys
 
 from codex_capture import CaptureWriter, StorageRefusal, TERMINAL
-from codex_ipc_transport import CliTransport, discover_owner
+from codex_ipc_transport import CliTransport, ReceivePrefixFailure, discover_owner
 from native_codex_mailbox import Mailbox, text as mailbox_text
 from peer_message import serialize_peer_message
 
@@ -285,23 +285,33 @@ def retained(directory):
     return result
 
 
+def validate_submission_intent(intent, continuation=False):
+    allowed = ALLOWED_SUBMISSION_KEYS | ({"previous_operation_id"} if continuation else set())
+    require(not intent.keys() - allowed, "unsupported-submission-input")
+    for key in ("operation_id", "message_id", "attempt_id", "authority_ref", "payload", "endpoint"):
+        require(text(intent.get(key)), "invalid-" + key)
+    if continuation:
+        require(text(intent.get("previous_operation_id")), "invalid-previous_operation_id")
+    require(identity(intent.get("actor")) and identity(intent.get("owner")), "invalid-peer-identity")
+    require(isinstance(intent.get("holds"), list) and all(text(x) for x in intent["holds"]),
+            "invalid-holds")
+    require(identity(intent.get("sender")), "invalid-sender")
+    require(text(intent.get("correlation_id")), "invalid-correlation-id")
+    require(text(intent.get("mailbox")), "invalid-mailbox")
+    seconds = intent.get("observation_seconds")
+    require(type(seconds) in (int, float) and 0 < seconds <= 10,
+            "invalid-observation-seconds")
+    require(intent.get("capture") is not None, "missing-submission-capture-settings")
+
+
 def submit_task(directory, intent, root, writer):
     """Claim once before effects; later public reads only project retained evidence."""
     result = retained(directory)
     if (directory / "claim.json").exists():
         return result
-    allowed = ALLOWED_SUBMISSION_KEYS
-    if (directory / "continuation.json").exists():
-        allowed = allowed | {"previous_operation_id"}
-    require(not intent.keys() - allowed, "unsupported-submission-input")
-    require(identity(intent.get("sender")), "invalid-sender")
-    require(text(intent.get("correlation_id")), "invalid-correlation-id")
+    validate_submission_intent(intent, continuation=(directory / "continuation.json").exists())
     require(result["child"]["host_id"] == "local", "unsupported-remote-child")
-    require(text(intent.get("mailbox")), "invalid-mailbox")
-    seconds = intent.get("observation_seconds")
-    require(type(seconds) in (int, float) and 0 < seconds <= 10,
-            "invalid-observation-seconds")
-    require("capture" in intent, "missing-submission-capture-settings")
+    seconds = intent["observation_seconds"]
     message = {key: intent[key] for key in
                ("message_id", "correlation_id", "sender", "owner", "authority_ref",
                 "holds", "payload")}
@@ -321,6 +331,7 @@ def submit_task(directory, intent, root, writer):
     mailbox = None
     stage = "mailbox-claim"
     failures = []
+    receive_failure = None
 
     def save(name, value):
         capture(root, [(directory / name, encode(value))], writer)
@@ -331,8 +342,8 @@ def submit_task(directory, intent, root, writer):
         result["failures"] = list(failures)
 
     def usable():
-        require(not transport.closed and transport.stream is not None
-                and transport.receiver.incomplete is None,
+        require(receive_failure is None and not transport.closed
+                and transport.stream is not None and transport.receiver.incomplete is None,
                 "connection-incomplete-before-write")
 
     def envelope(method, version, params):
@@ -341,9 +352,15 @@ def submit_task(directory, intent, root, writer):
                 "version": version, "method": method, "params": params}
 
     def exchange(request, name):
+        nonlocal receive_failure
         # CliTransport can write before noticing receive incompleteness.
         usable()
-        records = transport.send(request)
+        try:
+            records = transport.send(request)
+        except ReceivePrefixFailure as exc:
+            receive_failure = exc
+            failure(stage, exc)
+            records = exc.records
         save(name + "-response.json", {"envelope": request, "records": records})
         matches = [item for _, item in records
                    if item.get("type") == "response"
@@ -493,15 +510,7 @@ def run(arguments):
         capture(root, records, writer)
 
     if arguments.phase == "continue":
-        require(not value.keys() - (ALLOWED_SUBMISSION_KEYS | {"previous_operation_id"}),
-                "unsupported-submission-input")
-        for key in ("operation_id", "message_id", "attempt_id", "previous_operation_id",
-                    "authority_ref", "payload", "endpoint"):
-            require(text(value.get(key)), "invalid-" + key)
-        require(identity(value.get("actor")) and identity(value.get("owner")),
-                "invalid-peer-identity")
-        require(isinstance(value.get("holds"), list) and all(text(x) for x in value["holds"]),
-                "invalid-holds")
+        validate_submission_intent(value, continuation=True)
         if directory.exists():
             require(read_json(directory / "intent.json") == value, "intent-conflict")
             return retained(directory)
@@ -552,11 +561,7 @@ def run(arguments):
         return submit_task(directory, value, root, writer)
 
     if arguments.phase == "prepare":
-        for key in ("operation_id", "message_id", "attempt_id", "authority_ref", "payload", "endpoint"):
-            require(text(value.get(key)), "invalid-" + key)
-        require(identity(value.get("actor")) and identity(value.get("owner")), "invalid-peer-identity")
-        require(isinstance(value.get("holds"), list) and all(text(x) for x in value["holds"]), "invalid-holds")
-        require(not value.keys() - ALLOWED_SUBMISSION_KEYS, "unsupported-submission-input")
+        validate_submission_intent(value)
         try:
             directory.mkdir(mode=0o700)
         except FileExistsError:

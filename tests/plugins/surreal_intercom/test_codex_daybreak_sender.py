@@ -41,6 +41,7 @@ class PendingBootstrapCommandTests(unittest.TestCase):
         return {
             "operation_id": "negative-operation", "message_id": "negative-message",
             "attempt_id": "negative-attempt", "correlation_id": "negative-exchange",
+            "sender": {"thread_id": "origin", "host_id": "local"},
             "actor": {"thread_id": "caller", "host_id": "local"},
             "owner": {"thread_id": "owner", "host_id": "local"},
             "authority_ref": "synthetic://negative-grant", "holds": [],
@@ -50,6 +51,62 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                         "terminal_provision_bytes": 524288, "later_forecast_bytes": 0},
             "observation_seconds": 0.1,
         }
+
+    def test_prepare_refuses_unusable_intent_before_creation_and_allows_corrected_retry(self):
+        missing=object()
+        variants={
+            "sender":(missing,None,"caller",{},
+                      {"thread_id":"origin"},{"thread_id":"origin","host_id":" "},
+                      {"thread_id":0,"host_id":"local"},
+                      {"thread_id":"origin","host_id":"local","extra":True}),
+            "correlation_id":(missing,None,""," ",0,{}),
+            "mailbox":(missing,None,""," ",0,{}),
+            "capture":(missing,None,False,[],{}, {"unexpected":True}),
+            "capture.run_root":(".",None),
+            "capture.allowance_bytes":(True,524288),
+            "capture.terminal_provision_bytes":(True,0),
+            "capture.later_forecast_bytes":(True,-1),
+            "observation_seconds":(missing,None,True,"0.1",{},[],0,-1,10.1),
+        }
+        for field,values in variants.items():
+            for bad in values:
+                with self.subTest(field=field,value="omitted" if bad is missing else bad), tempfile.TemporaryDirectory(prefix="db-intent-") as directory:
+                    scratch=Path(directory).resolve()
+                    root=scratch/"operations"
+                    root.mkdir(mode=0o700)
+                    command=self.command(scratch,root)
+                    valid=self.negative_outcome_intent(scratch,root)
+                    valid["sender"]={"thread_id":"origin","host_id":"local"}
+                    invalid=dict(valid)
+                    key,_,setting=field.partition(".")
+                    if setting:
+                        invalid[key]={**valid[key],setting:bad}
+                    elif bad is missing:
+                        del invalid[key]
+                    else:
+                        invalid[key]=bad
+                    with socket.socket(socket.AF_UNIX,socket.SOCK_STREAM) as listener:
+                        listener.bind(valid["endpoint"])
+                        listener.listen(1)
+                        listener.setblocking(False)
+                        refused=command("prepare",value=invalid)
+                        self.assertEqual(refused["status"],"refused",refused)
+                        self.assertIsNone(refused["native_call"])
+                        self.assertEqual(refused["ipc"],"not_attempted")
+                        self.assertEqual(list(root.iterdir()),[])
+                        self.assertFalse(Path(valid["mailbox"]).exists())
+                        with self.assertRaises(BlockingIOError):
+                            connection,_=listener.accept()
+                            connection.close()
+                        prepared=command("prepare",value=valid)
+                        self.assertEqual(prepared["status"],"prepared",prepared)
+                        self.assertEqual(prepared["refs"]["operation_id"],valid["operation_id"])
+                        self.assertEqual(prepared["native_call"]["tool"],"mcp__codex_app__create_thread")
+                        self.assertEqual(json.loads(Path(prepared["refs"]["operation_ref"]).read_bytes()),valid)
+                        self.assertFalse(Path(valid["mailbox"]).exists())
+                        with self.assertRaises(BlockingIOError):
+                            connection,_=listener.accept()
+                            connection.close()
 
     def test_creation_failure_and_uncertainty_retain_original_result_and_references(self):
         variants = [("failed", {}), ("unknown", {"client_thread_id": "invented-pending"}),
@@ -279,7 +336,7 @@ class PendingBootstrapCommandTests(unittest.TestCase):
 
     def test_pending_bootstrap_retains_one_child_original_refs_and_no_ipc(self):
         with tempfile.TemporaryDirectory(prefix="db-pending-") as directory:
-            scratch=Path(directory)
+            scratch=Path(directory).resolve()
             root=scratch/"operations"
             root.mkdir(mode=0o700)
             endpoint=scratch/"peer.sock"
@@ -294,6 +351,7 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                 return raw,json.loads(raw["content"][0]["text"])
 
             request={
+                **self.negative_outcome_intent(scratch,root),
                 "operation_id":"operation-task-only-01",
                 "message_id":"message-task-only-01",
                 "attempt_id":"attempt-task-only-01",
@@ -348,12 +406,13 @@ class PendingBootstrapCommandTests(unittest.TestCase):
 
     def test_client_setup_reference_stays_pending_without_becoming_a_recipient(self):
         with tempfile.TemporaryDirectory(prefix="db-creation-pending-") as directory:
-            scratch=Path(directory)
+            scratch=Path(directory).resolve()
             root=scratch/"operations"
             root.mkdir(mode=0o700)
             command=self.command(scratch,root)
 
             request={
+                **self.negative_outcome_intent(scratch,root),
                 "operation_id":"pending-creation-operation",
                 "message_id":"pending-creation-message",
                 "attempt_id":"pending-creation-attempt",
@@ -397,12 +456,13 @@ class PendingBootstrapCommandTests(unittest.TestCase):
 
     def test_pending_creation_resolves_original_child_and_recovers_without_effects(self):
         with tempfile.TemporaryDirectory(prefix="db-creation-resolution-") as directory:
-            scratch=Path(directory)
+            scratch=Path(directory).resolve()
             root=scratch/"operations"
             root.mkdir(mode=0o700)
             endpoint=scratch/"peer.sock"
             command=self.command(scratch,root)
             request={
+                **self.negative_outcome_intent(scratch,root),
                 "operation_id":"creation-resolution-operation",
                 "message_id":"creation-resolution-message",
                 "attempt_id":"creation-resolution-attempt",
@@ -532,9 +592,20 @@ class PendingBootstrapCommandTests(unittest.TestCase):
     def test_caller_task_observation_resumes_pending_without_resubmission(self):
         self.completed_bootstrap_submission(task_observation=True)
 
-    def completed_bootstrap_submission(self,pending_first=False,failure=None,continuation=False,task_observation=False):
+    def test_accepted_turn_survives_invalid_receive_tail_and_remains_observable(self):
+        for tail in ("malformed-json","oversized-header"):
+            with self.subTest(tail=tail):
+                self.completed_bootstrap_submission(task_observation=True,accepted_tail=tail)
+
+    def test_setup_and_readback_receive_prefixes_stop_before_the_next_rpc(self):
+        for stage in ("setup-prefix","readback-prefix"):
+            for tail in ("malformed-json","oversized-header"):
+                with self.subTest(stage=stage,tail=tail):
+                    self.completed_bootstrap_submission(failure=stage,accepted_tail=tail)
+
+    def completed_bootstrap_submission(self,pending_first=False,failure=None,continuation=False,task_observation=False,accepted_tail=None):
         with tempfile.TemporaryDirectory(prefix="db-task-") as directory:
-            scratch=Path(directory)
+            scratch=Path(directory).resolve()
             root=scratch/"operations"
             root.mkdir(mode=0o700)
             endpoint=scratch/"peer.sock"
@@ -626,6 +697,8 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                 "bootstrap":{"state":"completed","evidence_ref":"synthetic://bootstrap-completed"},
             }
             wire,errors,prewrite=[],[],[]
+            prefix_tail={None:b"", "malformed-json":struct.pack("<I",1)+b"{",
+                         "oversized-header":struct.pack("<I",65537)}[accepted_tail]
             capture_obstacles=[]
             closed=threading.Event()
             connected=threading.Event()
@@ -656,7 +729,7 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                             wire.append(value)
                             return value
 
-                        def reply(frame,result,owner=None):
+                        def reply(frame,result,owner=None,tail=b""):
                             value={
                                 "type":"response","requestId":frame["requestId"],
                                 "method":frame["method"],"resultType":"success","result":result,
@@ -664,7 +737,7 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                             if owner is not None:
                                 value["handledByClientId"]=owner
                             data=json.dumps(value).encode()
-                            connection.sendall(struct.pack("<I",len(data))+data)
+                            connection.sendall(struct.pack("<I",len(data))+data+tail)
 
                         initialize=receive()
                         self.assertEqual(initialize,{
@@ -729,14 +802,20 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                             "conversationId":child["thread_id"],"daybreakEnabled":True,
                         })
                         captured(setup,"setup_ref")
-                        reply(setup,{"ok":True},"invented-owner-client")
+                        reply(setup,{"ok":True},"invented-owner-client",
+                              tail=prefix_tail if failure=="setup-prefix" else b"")
+                        if failure=="setup-prefix":
+                            self.assertEqual(connection.recv(1),b"")
+                            closed.set()
+                            return
                         settings=receive()
                         targeted(settings,"thread-follower-read-model-settings",1,{
                             "conversationId":child["thread_id"],
                         })
                         reply(settings,{"settings":{"daybreakEnabled":failure!="false-readback"}},
-                              "invented-owner-client")
-                        if failure in {"false-readback","outgoing-frame"}:
+                              "invented-owner-client",
+                              tail=prefix_tail if failure=="readback-prefix" else b"")
+                        if failure in {"false-readback","outgoing-frame","readback-prefix"}:
                             self.assertEqual(connection.recv(1),b"")
                             closed.set()
                             return
@@ -770,7 +849,7 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                             connection.shutdown(socket.SHUT_WR)
                         else:
                             reply(start,{"result":{"turn":{"id":"invented-accepted-turn"}}},
-                                  "invented-owner-client")
+                                  "invented-owner-client",tail=prefix_tail)
                         self.assertEqual(connection.recv(1),b"")
                         closed.set()
                 except BaseException as error:
@@ -827,13 +906,14 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                     methods=["initialize","thread-owner-discovery"]
                     references=[]
                     if failure!="capture-unavailable":
-                        methods.extend(["thread-follower-update-daybreak",
-                                        "thread-follower-read-model-settings"])
+                        methods.append("thread-follower-update-daybreak")
+                        if failure!="setup-prefix":
+                            methods.append("thread-follower-read-model-settings")
                         references.append("setup_ref")
                     if failure=="lost-task-response":
                         methods.append("thread-follower-start-turn")
                         references.append("attempt_ref")
-                    if failure=="outgoing-frame":
+                    if failure in {"outgoing-frame","readback-prefix"}:
                         references.append("attempt_ref")
                         path=Path(accepted["refs"]["attempt_ref"])
                         retained=path.read_bytes()
@@ -841,14 +921,15 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                         self.assertEqual(pending_task["method"],"thread-follower-start-turn")
                         self.assertEqual(pending_task["params"]["turnStart"]["request"]["input"],
                                          [{"type":"text","text":expected_text,"text_elements":[]}])
-                        self.assertGreater(len(json.dumps(pending_task,separators=(",",":")).encode()),65536)
+                        if failure=="outgoing-frame":
+                            self.assertGreater(len(json.dumps(pending_task,separators=(",",":")).encode()),65536)
                         prewrite.append(("attempt_ref",str(path),retained))
                         self.assertIs(accepted["saved_selection"],True)
                     self.assertEqual([frame["method"] for frame in wire],methods,accepted)
                     self.assertEqual(accepted["status"],"submission_unknown",accepted)
                     self.assertIsNone(accepted.get("turn_id"),accepted)
                     self.assertIs(accepted["saved_selection"],
-                                  True if failure in {"lost-task-response","outgoing-frame"} else None)
+                                  True if failure in {"lost-task-response","outgoing-frame","readback-prefix"} else None)
                     self.assertEqual(accepted["receipt"],"unknown")
                     self.assertEqual(accepted["task_completion"],"unknown")
                     self.assertEqual(accepted["effective_program"],"unknown")
@@ -880,6 +961,33 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                         # the surviving claim without pretending diagnostics saved.
                         for path in capture_obstacles:
                             path.rmdir()
+                    elif failure in {"setup-prefix","readback-prefix"}:
+                        reason={"malformed-json":"frame-decode-error",
+                                "oversized-header":"frame-byte-limit"}[accepted_tail]
+                        stage="daybreak-setup" if failure=="setup-prefix" else "daybreak-readback"
+                        self.assertEqual(first,{"stage":stage,"reason":reason})
+                        operation_dir=Path(accepted["refs"]["operation_ref"]).parent
+                        name="setup" if failure=="setup-prefix" else "readback"
+                        response=json.loads((operation_dir/(name+"-response.json")).read_bytes())
+                        self.assertEqual(response["envelope"],wire[-1])
+                        self.assertEqual(len(response["records"]),1)
+                        expected_response={
+                            "type":"response","requestId":wire[-1]["requestId"],
+                            "method":wire[-1]["method"],"resultType":"success",
+                            "handledByClientId":"invented-owner-client",
+                            "result":({"ok":True} if failure=="setup-prefix"
+                                      else {"settings":{"daybreakEnabled":True}}),
+                        }
+                        self.assertEqual(response["records"][0][1],expected_response)
+                        transport=json.loads((operation_dir/"transport.json").read_bytes())
+                        self.assertEqual(transport["received"][-1][1],expected_response)
+                        self.assertEqual(transport["incomplete"],reason)
+                        self.assertIn(reason,transport["receiveStatus"])
+                        self.assertEqual(transport["outbound"],wire)
+                        self.assertEqual(transport["owned_connection"],{"started":True,"closed":True})
+                        if failure=="readback-prefix":
+                            selection=json.loads((operation_dir/"selection.json").read_bytes())
+                            self.assertEqual(selection,{"saved_selection":True,"response":expected_response})
                     else:
                         self.assertEqual(len(accepted["failures"]),1)
                         expected_failure={
@@ -935,6 +1043,8 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                         connection,_=listener.accept()
                         connection.close()
                     return
+                if accepted_tail is not None:
+                    self.assertEqual(accepted.get("turn_id"),"invented-accepted-turn",accepted)
                 self.assertEqual(accepted["status"],"turn_accepted",{"result":accepted,"fixture_errors":[repr(e) for e in errors]})
                 self.assertEqual(errors,[])
                 self.assertTrue(connected.is_set())
@@ -947,6 +1057,29 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                     self.assertEqual(accepted["refs"][key],value)
                 self.assertEqual(accepted["child"],child)
                 self.assertEqual(accepted["turn_id"],"invented-accepted-turn")
+                if accepted_tail is not None:
+                    reason={"malformed-json":"frame-decode-error",
+                            "oversized-header":"frame-byte-limit"}[accepted_tail]
+                    self.assertEqual(accepted["reason"],reason)
+                    self.assertIn({"stage":"task-submit","reason":reason},accepted["failures"])
+                    operation_dir=Path(accepted["refs"]["operation_ref"]).parent
+                    response=json.loads((operation_dir/"start-response.json").read_bytes())
+                    self.assertEqual(response["envelope"],wire[-1])
+                    self.assertEqual(len(response["records"]),1)
+                    accepted_response={
+                        "type":"response","requestId":wire[-1]["requestId"],
+                        "method":"thread-follower-start-turn","resultType":"success",
+                        "handledByClientId":"invented-owner-client",
+                        "result":{"result":{"turn":{"id":"invented-accepted-turn"}}},
+                    }
+                    self.assertEqual(response["records"][0][1],accepted_response)
+                    transport=json.loads((operation_dir/"transport.json").read_bytes())
+                    self.assertEqual(transport["received"][-1][1],accepted_response)
+                    self.assertEqual(transport["incomplete"],reason)
+                    self.assertIn(reason,transport["receiveStatus"])
+                    self.assertEqual(transport["outbound"],wire)
+                    self.assertEqual(json.loads((operation_dir/"submission.json").read_bytes()),
+                                     {key:value for key,value in accepted.items() if key!="phase"})
                 self.assertIs(accepted["saved_selection"],True)
                 self.assertEqual(accepted["receipt"],"unknown")
                 self.assertEqual(accepted["task_completion"],"unknown")
@@ -982,6 +1115,8 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                     self.assertEqual(repeated["refs"],accepted["refs"])
                     self.assertEqual(repeated["child"],child)
                     self.assertEqual(repeated["turn_id"],"invented-accepted-turn")
+                    for key in ("reason","failures"):
+                        self.assertEqual(repeated.get(key),accepted.get(key))
                     self.assertIsNone(repeated["native_call"])
                 self.assertEqual(mailbox("show",request["message_id"]),recorded)
                 self.assertEqual(mailbox("pending"),[recorded])
@@ -1008,6 +1143,8 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                         for key in ("status","child","turn_id","saved_selection","receipt",
                                     "effective_program","owned_connection","ipc"):
                             self.assertEqual(result[key],accepted[key],result)
+                        for key in ("reason","failures"):
+                            self.assertEqual(result.get(key),accepted.get(key))
                         for key,value in accepted["refs"].items():
                             self.assertEqual(result["refs"][key],value)
                         for path,data in original_files.items():
@@ -1313,7 +1450,7 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                             ("cyberAccessProgram","other-program"),
                             ("account","invented-other-account")):
             with self.subTest(field=field), tempfile.TemporaryDirectory(prefix="db-refused-") as directory:
-                scratch=Path(directory)
+                scratch=Path(directory).resolve()
                 root=scratch/"operations"
                 root.mkdir(mode=0o700)
                 command=self.command(scratch,root)
