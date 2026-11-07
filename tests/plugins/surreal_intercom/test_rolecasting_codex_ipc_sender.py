@@ -251,7 +251,14 @@ class CodexIpcSenderTests(unittest.TestCase):
             saved_observation={"source": "native-owner", "generation": "original-generation"},
         )
 
-    def reconcile_fixture(self, *, live_receipt, saved_observation=None, known_saved=False):
+    def test_malformed_saved_receipt_refuses_without_reopening_or_changing_original_attempt(self):
+        for saved in ([], {"evidence": None}, {"evidence": [None]},
+                      {"evidence": [{"stage": "receipt", "source": "native-server-linked-message",
+                                     "serverUserMessageId": "historical-server-message", "observation": []}]}):
+            with self.subTest(saved=saved):
+                self.reconcile_fixture(live_receipt=False, malformed_projection=saved)
+
+    def reconcile_fixture(self, *, live_receipt, saved_observation=None, known_saved=False, malformed_projection=None):
         with tempfile.TemporaryDirectory(prefix="codex-ipc-") as temporary:
             root = Path(temporary).resolve()
             store = root / "mailbox.sqlite3"
@@ -321,6 +328,8 @@ class CodexIpcSenderTests(unittest.TestCase):
                                                   "correlation": "busy-attempt", **saved_observation}}],
                 }
                 (old / "projection.json").write_text(json.dumps(saved), encoding="utf-8")
+            if malformed_projection is not None:
+                (old / "projection.json").write_text(json.dumps(malformed_projection), encoding="utf-8")
             original_bytes = {name: (old / name).read_bytes() for name in ("attempt.json", "rpc.json", "projection.json")}
             mailbox("observe", "busy-message", "busy-attempt", "unknown",
                     "--evidence-ref", "synthetic://original-unknown",
@@ -416,7 +425,7 @@ class CodexIpcSenderTests(unittest.TestCase):
             with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as listener:
                 listener.bind(str(endpoint))
                 listener.listen(1)
-                if known_saved:
+                if known_saved or malformed_projection is not None:
                     listener.setblocking(False)
                     completed = command("codex_ipc_sender.py", "--request", str(request_file),
                                         "--mode", "reconcile", "--original-attempt", str(old / "attempt.json"))
@@ -431,6 +440,14 @@ class CodexIpcSenderTests(unittest.TestCase):
                     self.assertEqual(completed.stderr, "")
                     result = json.loads(completed.stdout)
                     self.assertFalse(result["claimed"])
+                    if malformed_projection is not None:
+                        self.assertEqual(result["peer_input"], "unknown")
+                        self.assertEqual(result["reason"], "invalid-original-projection")
+                        self.assertEqual(result["owned_connection"], {"started": False, "closed": False})
+                        self.assertEqual(list(capture.iterdir()), [])
+                        self.assertEqual({name: (old / name).read_bytes() for name in original_bytes}, original_bytes)
+                        self.assertEqual(mailbox("show", "busy-message"), before)
+                        return
                     self.assertEqual(result["peer_input"], "received")
                     self.assertEqual(result["reason"], "historical-receipt")
                     self.assertEqual(result["projection"], json.loads(original_bytes["projection.json"]))
@@ -689,6 +706,24 @@ class CommandFailureTests(unittest.TestCase):
             self.assertEqual(self.mailbox("show", "failure-message"), before)
             self.assertEqual(list(self.capture.iterdir()), [])
             self.assert_no_connection(listener)
+
+    def test_malformed_scope_refuses_before_busy_or_idle_claim_and_connection(self):
+        before = self.mailbox("show", "failure-message")
+        for script in ("codex_ipc_sender.py", "codex_ipc_idle_sender.py"):
+            for scope in ([], "not a mapping", None):
+                with self.subTest(script=script, scope=scope), socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as listener:
+                    listener.bind(str(self.endpoint))
+                    listener.listen(1)
+                    self.request["native"]["scope"] = scope
+                    self.request_file.write_text(json.dumps(self.request), encoding="utf-8")
+                    result = self.command(script, "--request", str(self.request_file))
+                    self.assertFalse(result["claimed"])
+                    self.assertEqual(result["peer_input"], "not_attempted")
+                    self.assertEqual(result["owned_connection"], {"started": False, "closed": False})
+                    self.assertEqual(self.mailbox("show", "failure-message"), before)
+                    self.assertEqual(list(self.capture.iterdir()), [])
+                    self.assert_no_connection(listener)
+                self.endpoint.unlink()
 
     def test_missing_original_rpc_preserves_known_attempt_uncertainty(self):
         self.mailbox("claim", "failure-message", "failure-attempt", "--actor-thread-id", "forwarder",

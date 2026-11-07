@@ -34,6 +34,8 @@ def native_request(request, planned, *, idle_intent=False):
             or route["target"] != planned["recipient"]["thread_id"]):
         raise Refusal("native_recipient_mismatch")
     scope = native["scope"]
+    if not isinstance(scope, dict):
+        raise Refusal("invalid_native_request")
     if idle_intent:
         if scope.get("idleStartIntent") is not True or "busyOnly" in scope:
             raise Refusal("explicit-idle-intent-required")
@@ -84,7 +86,11 @@ def reconcile(request, planned, native, original_path, result):
     saved_path = original_path.with_name("projection.json")
     if saved_path.exists():
         saved, _ = compact_original(saved_path)
+        if not isinstance(saved, dict) or not isinstance(saved.get("evidence", []), list):
+            raise Refusal("invalid-original-projection")
         for item in saved.get("evidence", []):
+            if not isinstance(item, dict) or not isinstance(item.get("observation", {}), dict):
+                raise Refusal("invalid-original-projection")
             observation = item.get("observation", {})
             if (item.get("stage") == "receipt" and item.get("source") == "native-server-linked-message"
                     and item.get("serverUserMessageId")
