@@ -2,7 +2,7 @@
 
 Provingkit equips coding agents with workflows for choosing workers, reviewing
 changes, keeping Git history, managing pull requests, assessing dependencies,
-writing for people, and communicating with other agents. Its coordinated Agent Plugins pair instructions
+writing for people, and communicating with other agents. Its seven coordinated Agent Plugins pair instructions
 with checks that make the work reviewable.
 
 [Alpha 6](https://github.com/nisavid/provingkit/releases/tag/v0.1.0-alpha.6)

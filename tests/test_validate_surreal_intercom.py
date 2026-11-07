@@ -2,6 +2,7 @@
 
 from contextlib import contextmanager
 import json
+import os
 from pathlib import Path
 import shutil
 import subprocess
@@ -196,6 +197,125 @@ class SurrealIntercomValidatorTests(unittest.TestCase):
             result = self.run_validator(repository, "--write-content-lock")
             self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
             self.assertIn("evaluation fixture", result.stderr)
+            self.assertEqual(lock.read_bytes(), original)
+
+    def test_valid_evaluation_edits_change_the_governed_identity(self):
+        for name in ("fixtures/claude-native-send.md", "evals.json", "trigger-evals.json"):
+            with self.subTest(name=name), self.candidate() as repository:
+                self.assert_valid(repository)
+                lock = repository / "release/plugin-content-locks/surreal-intercom.json"
+                original = lock.read_bytes()
+                path = repository / "evals/surreal-intercom/skills/communicating-with-agents" / name
+                if name.endswith(".md"):
+                    path.write_text(path.read_text() + "\nA changed, valid synthetic fixture.\n")
+                else:
+                    value = json.loads(path.read_text())
+                    if name == "evals.json":
+                        value["evals"][0]["expected_output"] += " Retain the original correlation."
+                    else:
+                        value[0]["query"] += " Keep the unchanged payload."
+                    path.write_text(json.dumps(value))
+                stale = self.run_validator(repository)
+                self.assertEqual(stale.returncode, 1, stale.stdout + stale.stderr)
+                self.assertIn("content lock mismatch", stale.stderr)
+                self.assertEqual(lock.read_bytes(), original)
+                refreshed = self.run_validator(repository, "--write-content-lock")
+                self.assertEqual(refreshed.returncode, 0, refreshed.stdout + refreshed.stderr)
+                updated = lock.read_bytes()
+                self.assertNotEqual(updated, original)
+                self.assert_valid(repository)
+                repeated = self.run_validator(repository, "--write-content-lock")
+                self.assertEqual(repeated.returncode, 0, repeated.stdout + repeated.stderr)
+                self.assertEqual(lock.read_bytes(), updated)
+
+    def test_regeneration_rejects_source_or_destination_changes_during_validation(self):
+        for mutation in ("remove-resource", "replace-destination"):
+            with self.subTest(mutation=mutation), self.candidate() as repository:
+                # A one-leaf procedure graph isolates the last actual semantic
+                # read from repeated cross-links without altering validators.
+                skill = repository / "plugins/surreal-intercom/skills/communicating-with-agents"
+                target = skill / "references/semantic-leaf.md"
+                target.write_text("# Synthetic contained procedure\n")
+                (skill / "SKILL.md").write_text(
+                    "---\nname: communicating-with-agents\n"
+                    "description: Use when exchanging authorized peer messages.\n---\n\n"
+                    "[Procedure](references/semantic-leaf.md)\n"
+                )
+                baseline = self.run_validator(repository, "--write-content-lock")
+                self.assertEqual(baseline.returncode, 0, baseline.stdout + baseline.stderr)
+                self.assert_valid(repository)
+                lock = repository / "release/plugin-content-locks/surreal-intercom.json"
+                original = lock.read_bytes()
+                hook = repository.parent / "filesystem-event"
+                hook.mkdir()
+                marker = hook / "observed"
+                # Wrap the external filesystem read, performing its actual I/O
+                # before a deterministic concurrent fixture edit. No owned
+                # validator or transaction collaborator is replaced.
+                (hook / "sitecustomize.py").write_text('''
+import os
+from pathlib import Path
+original_read_text = Path.read_text
+def read_text(path, *args, **kwargs):
+    content = original_read_text(path, *args, **kwargs)
+    if path == Path(os.environ["FIXTURE_TARGET"]):
+        marker = Path(os.environ["FIXTURE_MARKER"])
+        if not marker.exists():
+            marker.write_text("actual read completed\\n")
+            if os.environ["FIXTURE_MUTATION"] == "remove-resource":
+                path.unlink()
+            else:
+                Path(os.environ["FIXTURE_LOCK"]).write_bytes(b"concurrent lock owner update\\n")
+    return content
+Path.read_text = read_text
+''')
+                result = subprocess.run([
+                    sys.executable, "-B", str(repository / "scripts/validate_surreal_intercom.py"),
+                    str(repository), "--write-content-lock",
+                ], capture_output=True, text=True, timeout=30, env={
+                    **os.environ, "PYTHONPATH": str(hook),
+                    "FIXTURE_TARGET": str(target), "FIXTURE_MARKER": str(marker),
+                    "FIXTURE_LOCK": str(lock), "FIXTURE_MUTATION": mutation,
+                })
+                self.assertTrue(marker.is_file(), "the external file event did not occur")
+                self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+                self.assertIn("changed during regeneration", result.stderr)
+                expected = (original if mutation == "remove-resource"
+                            else b"concurrent lock owner update\n")
+                self.assertEqual(lock.read_bytes(), expected)
+                self.assertNotIn("Traceback", result.stderr)
+
+    def test_descriptor_identity_and_frontmatter_must_match_the_discoverable_skill(self):
+        for descriptor in (
+            "---\nname: another-operation\ndescription: Use when sending a message.\n---\n",
+            "---\nname: [\n---\n",
+            "# Missing skill frontmatter\n",
+        ):
+            with self.subTest(descriptor=descriptor), self.candidate() as repository:
+                self.assert_valid(repository)
+                lock = repository / "release/plugin-content-locks/surreal-intercom.json"
+                original = lock.read_bytes()
+                skill = repository / "plugins/surreal-intercom/skills/communicating-with-agents/SKILL.md"
+                skill.write_text(descriptor)
+                result = self.run_validator(repository, "--write-content-lock")
+                self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+                self.assertIn("skill descriptor", result.stderr)
+                self.assertEqual(lock.read_bytes(), original)
+                self.assertNotIn("Traceback", result.stderr)
+
+    def test_invalid_nested_interface_returns_a_contract_diagnostic(self):
+        with self.candidate() as repository:
+            self.assert_valid(repository)
+            lock = repository / "release/plugin-content-locks/surreal-intercom.json"
+            original = lock.read_bytes()
+            manifest = repository / "plugins/surreal-intercom/plugin.json"
+            value = json.loads(manifest.read_text())
+            value["extensions"]["com.openai"]["interface"] = []
+            manifest.write_text(json.dumps(value))
+            result = self.run_validator(repository, "--write-content-lock")
+            self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+            self.assertIn("canonical interface", result.stderr)
+            self.assertNotIn("Traceback", result.stderr)
             self.assertEqual(lock.read_bytes(), original)
 
 

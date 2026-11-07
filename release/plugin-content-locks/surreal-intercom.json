@@ -4,7 +4,7 @@
   "files": {
     ".claude-plugin/plugin.json": "9421df56eb553a3f53b5fe14ecad5ceb46947cddd3f763fc3ef76fe637e8af06",
     "CHANGELOG.md": "76a601ab2366f76854716bd8426629fdd97696cc72e5b44abdc9589d29396329",
-    "DEVELOPING.md": "5de28e54ef762149c064e4f32f0a1a6a27de649b2e59a84d10062e44280bd80b",
+    "DEVELOPING.md": "ef90b968b58b863e6d3bd78936ecef1f4d8f5a477e11214429d8b83c7ee54404",
     "LICENSE": "68950fb14202e1a28da07612a6cc6978163fee3e678520c2740a0d1bde0680e8",
     "README.md": "3fd0800073c356db5d8f7d16ccfe060508765f3d906639b57a0798ff2334ede1",
     "plugin.json": "157246782b70cf86d9ce205b9bf3beed6978bf83f3fc49e728b3f02c4f9fda36",
@@ -25,5 +25,12 @@
     "skills/communicating-with-agents/scripts/owner_admission_sender.py": "9941c1f9c79b531750f42e84c5686497eb4f413ac8cdf8ea33b0e74e42cb2412",
     "skills/communicating-with-agents/scripts/peer_message.py": "07687af69dece15e0947f845bdd6488399689a7f9aee5682c9660f9f3ffc92b8",
     "topology.json": "eb7b2f2eb98241e932b799cc3d626b4e6120c53f8f1692ae393041d9e76eaf9b"
+  },
+  "evaluations": {
+    "evals/surreal-intercom/skills/communicating-with-agents/evals.json": "7a4e7c2288bcf3d0f1d2b8105dd51731dde7769f11e4aec8f338c97406020b58",
+    "evals/surreal-intercom/skills/communicating-with-agents/fixtures/claude-native-send.md": "96d6604db91b1c04e04ea7286b50088d96f13dc5819bc63f9ed51880011d0ab3",
+    "evals/surreal-intercom/skills/communicating-with-agents/fixtures/native-delegation.md": "29d13724128eb8fcb422b21c926b66e97c36f98f9a7e029ca8c995c619ccb341",
+    "evals/surreal-intercom/skills/communicating-with-agents/fixtures/unknown-codex-submission.md": "575a0bba09ae8fc96ea61a6be8ea59f347646e1bb7bd52380bad41328268aad8",
+    "evals/surreal-intercom/skills/communicating-with-agents/trigger-evals.json": "b83c9e1ce0076a342bbe860bdcd6bb6cbcc9e16b735235d1cbcf887c1f4f388e"
   }
 }

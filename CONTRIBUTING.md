@@ -5,7 +5,7 @@ consistent, and explicit about what their validation proves.
 
 ## Scope
 
-Current changes stay within these Agent Plugins: Rolecasting, Tricritical,
+Current changes stay within the seven Agent Plugins: Rolecasting, Tricritical,
 Versionkeeping, Mergecraft, Artifact Customs, Proseweaving, and Surreal Intercom. Task Witness is
 shelved optional equipment; its historical records remain available for future
 reassessment.

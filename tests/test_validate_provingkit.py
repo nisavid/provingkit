@@ -770,11 +770,11 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
             lock_commands,
         )
 
-    def test_human_docs_state_the_current_six_plugin_source_set(self) -> None:
+    def test_human_docs_state_the_current_seven_plugin_source_set(self) -> None:
         expected = {
-            "README.md": "six coordinated Agent Plugins",
-            "CONTRIBUTING.md": "six Agent Plugins",
-            ".github/pull_request_template.md": "six Agent Plugin members",
+            "README.md": "seven coordinated Agent Plugins",
+            "CONTRIBUTING.md": "seven Agent Plugins",
+            ".github/pull_request_template.md": "seven Agent Plugin members",
         }
         for relative, phrase in expected.items():
             with self.subTest(relative=relative):
@@ -782,6 +782,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 normalized = " ".join(content.split())
                 self.assertIn(phrase, normalized)
                 self.assertIn("Proseweaving", normalized)
+                self.assertIn("Surreal Intercom", normalized)
                 self.assertNotIn("seven source members", normalized)
 
     def test_agent_guidance_describes_member_specific_content_identity_writers(
@@ -3317,7 +3318,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
         mutations = (
             ("type", "object"),
             ("minItems", 0),
-            ("maxItems", 7),
+            ("maxItems", 8),
             ("items", {}),
         )
         for key, value in mutations:

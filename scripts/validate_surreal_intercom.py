@@ -43,9 +43,7 @@ SOURCE_ENTRIES = {
 EXTERNAL_STATE_DIRECTORIES = {"evals", "tests", "captures", "stores", "__pycache__"}
 
 
-def validate_evaluations(repository: Path):
-    root = repository / EVALUATION_RELATIVE
-    snapshot = snapshot_tree(root, error_type=AgentPluginContractError)
+def validate_evaluations(root: Path, snapshot) -> None:
     if any(entry.kind not in {"regular", "directory"} for _, entry in snapshot):
         raise AgentPluginContractError("external evaluation resources must be regular files")
     triggers = json.loads((root / "trigger-evals.json").read_text(encoding="utf-8"))
@@ -70,11 +68,35 @@ def validate_evaluations(repository: Path):
                     or ".." in Path(relative).parts
                     or not (root / relative).is_file()):
                 raise AgentPluginContractError("evaluation fixture is missing or uncontained")
-    return root, snapshot
+
+
+def require_unchanged_sources(sources) -> None:
+    for root, snapshot in sources:
+        if snapshot_tree(root, error_type=AgentPluginContractError) != snapshot:
+            raise AgentPluginContractError("validated source changed during regeneration")
+
+
+def validate_skill_descriptor(root: Path, name: str) -> None:
+    content = (root / "skills" / name / "SKILL.md").read_text(encoding="utf-8")
+    match = re.match(r"\A---\r?\n(.*?)\r?\n---(?:\r?\n|\Z)", content, re.DOTALL)
+    if match is None:
+        raise AgentPluginContractError("skill descriptor frontmatter is missing")
+    try:
+        metadata = yaml.safe_load(match.group(1))
+    except yaml.YAMLError as error:
+        raise AgentPluginContractError("skill descriptor frontmatter is invalid") from error
+    if (not isinstance(metadata, dict) or metadata.get("name") != name
+            or not isinstance(metadata.get("description"), str)
+            or not metadata["description"].strip()):
+        raise AgentPluginContractError("skill descriptor identity or description drift")
 
 
 def validate(repository: Path):
     root = repository / PLUGIN_RELATIVE
+    snapshot = snapshot_tree(root, error_type=AgentPluginContractError)
+    evaluation_root = repository / EVALUATION_RELATIVE
+    evaluation_snapshot = snapshot_tree(evaluation_root, error_type=AgentPluginContractError)
+    sources = ((root, snapshot), (evaluation_root, evaluation_snapshot))
     manifest = load_agent_plugin_manifest(root)
     if manifest.get("name") != "surreal-intercom":
         raise AgentPluginContractError("canonical member identity drift")
@@ -91,6 +113,8 @@ def validate(repository: Path):
     if json.loads(adapter.read_text(encoding="utf-8")) != expected:
         raise AgentPluginContractError("Claude identity projection drift")
     interface = manifest.get("extensions", {}).get("com.openai", {}).get("interface", {})
+    if not isinstance(interface, dict):
+        raise AgentPluginContractError("canonical interface must be an object")
     prompts = interface.get("defaultPrompt")
     target = "$surreal-intercom:communicating-with-agents"
     if (
@@ -114,8 +138,8 @@ def validate(repository: Path):
         raise AgentPluginContractError(
             "Agent Plugins direct-child skill inventory drift"
         )
+    validate_skill_descriptor(root, skills[0])
     validate_skill_resource_links(root, skills, recursive=True)
-    snapshot = snapshot_tree(root, error_type=AgentPluginContractError)
     if any(entry.kind not in {"regular", "directory"} for _, entry in snapshot):
         raise AgentPluginContractError("plugin resources must be regular contained files")
     for relative, _entry in snapshot:
@@ -146,6 +170,7 @@ def validate(repository: Path):
                     raise AgentPluginContractError(f"uncontained runtime import: {path.name}")
         except SyntaxError as error:
             raise AgentPluginContractError(f"invalid runtime source: {path.name}") from error
+    validate_evaluations(evaluation_root, evaluation_snapshot)
     document = {
         "schema_version": 1,
         "algorithm": "sha256",
@@ -153,30 +178,29 @@ def validate(repository: Path):
             relative: entry.sha256 for relative, entry in snapshot
             if entry.kind == "regular"
         },
+        "evaluations": {
+            (EVALUATION_RELATIVE / relative).as_posix(): entry.sha256
+            for relative, entry in evaluation_snapshot if entry.kind == "regular"
+        },
     }
-    return ((root, snapshot), validate_evaluations(repository)), document
+    require_unchanged_sources(sources)
+    return sources, document
 
 
-def write_content_lock(repository: Path, sources, document) -> None:
+def write_content_lock(repository: Path, sources, document, previous: InputEntry) -> None:
     destination = repository / CONTENT_LOCK_RELATIVE
-    previous = capture_input_entry(destination, error_type=AgentPluginContractError)
     if previous.kind not in {"missing", "regular"}:
         raise AgentPluginContractError("external content lock must be a regular file")
     mode = previous.mode if previous.mode is not None else 0o644
     content = (json.dumps(document, indent=2) + "\n").encode("utf-8")
 
-    def require_unchanged_source():
-        for root, snapshot in sources:
-            if snapshot_tree(root, error_type=AgentPluginContractError) != snapshot:
-                raise AgentPluginContractError("validated source changed during regeneration")
-
     def recheck(_temporary_paths):
-        require_unchanged_source()
+        require_unchanged_sources(sources)
         if capture_input_entry(destination, error_type=AgentPluginContractError) != previous:
             raise AgentPluginContractError("content lock changed during regeneration")
 
     def verify():
-        require_unchanged_source()
+        require_unchanged_sources(sources)
         expected = InputEntry("regular", mode, hashlib.sha256(content).hexdigest())
         if capture_input_entry(destination, error_type=AgentPluginContractError) != expected:
             raise AgentPluginContractError("content lock replacement identity mismatch")
@@ -198,9 +222,12 @@ def main(argv: list[str] | None = None) -> int:
         context = prepare_context_if_requested(
             parser, arguments, repository, writing=arguments.write_content_lock,
         )
+        previous = capture_input_entry(
+            repository / CONTENT_LOCK_RELATIVE, error_type=AgentPluginContractError,
+        ) if arguments.write_content_lock else None
         sources, document = validate(repository)
         if arguments.write_content_lock:
-            write_content_lock(repository, sources, document)
+            write_content_lock(repository, sources, document, previous)
         actual = json.loads((repository / CONTENT_LOCK_RELATIVE).read_text(encoding="utf-8"))
         if actual != document:
             raise AgentPluginContractError("semantic content lock mismatch")

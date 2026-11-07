@@ -17,6 +17,12 @@ checks, source-disposition checks, and the artifact projector's standalone
 Agent Plugins and Claude cases. Evaluations belong under `evals/surreal-intercom/`.
 Use the repository's maintained source-test schedule for final Kit checks.
 
+The content lock binds plugin-relative source files and the external evaluation
+files in a separate repository-relative `evaluations` section. The writer freezes
+source and destination identities before validation and refuses observed drift
+through the existing replacement transaction. It preserves the previous lock
+on a failed source check and preserves a concurrent destination edit.
+
 The [coordination register](https://github.com/nisavid/provingkit/tree/main/docs/coordination)
 retains source and operating evidence. Catalog revision
 `85f22c6d7fc93e52189219144f8245b70fe97750` and
