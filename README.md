@@ -5,9 +5,11 @@ changes, keeping Git history, managing pull requests, assessing dependencies,
 and writing for people. Its six coordinated Agent Plugins pair instructions
 with checks that make the work reviewable.
 
-A [pinned unsigned preview](https://github.com/nisavid/provingkit/releases/tag/preview-8acd0e2af1f4)
-is available for Agent Plugins/Codex, Claude Code, and Cursor. Stable release
-and live host qualification remain separate gates.
+[Alpha 6](https://github.com/nisavid/provingkit/releases/tag/v0.1.0-alpha.6)
+is available as per-plugin ZIPs for manual OpenAI and Claude account uploads.
+Use the [Alpha 6 upload and update guide](https://github.com/nisavid/provingkit/blob/c557b9471f74afa82df8622313282808911453f7/docs/releases/alpha6-upload-guide.md)
+to choose files, verify downloads, and confirm installation. This is an
+unsigned prerelease; client support and loading follow the guide’s stated scope.
 
 ## What the plugins do
 
@@ -36,15 +38,12 @@ delegation, and model selection.
 
 ## Get started
 
-Follow the [install, update, and rollback guide](docs/preview/install-and-update.md)
-to choose a target artifact, verify its recorded hash and receipt, and register
-the marketplace for your client. The guide's commands target Linux with a POSIX shell;
-start with its linked installation preparation before a Linux rollout.
-
-The preview is pinned to source commit
-[`8acd0e2af1f4`](https://github.com/nisavid/provingkit/commit/8acd0e2af1f4508a0e2358d8e01f6a3db7a78ce3).
-Changes on `main` do not update those artifacts. Use the named preview target
-archives; GitHub's automatic source archives include development material.
+Follow the [Alpha 6 upload and update guide](https://github.com/nisavid/provingkit/blob/c557b9471f74afa82df8622313282808911453f7/docs/releases/alpha6-upload-guide.md)
+for the current release. It distinguishes a first installation from updating
+an existing plugin, then checks the saved version and fresh-session loading.
+Use the named per-plugin ZIPs; GitHub's automatic source archives contain
+development material. The older [preview instructions](docs/preview/install-and-update.md)
+remain available as historical documentation.
 
 Open a plugin's README above to see its skills and usage boundaries before
 equipping it. Task Witness is deferred optional equipment outside this Kit;
