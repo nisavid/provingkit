@@ -167,13 +167,16 @@ def task_observations(directory, result):
     records = []
     after_ref = None
     evidence_refs = set()
+    accepted = result["status"] == "turn_accepted" and text(result.get("turn_id"))
+    recovering = (result["status"] == "submission_unknown"
+                  and bool(result.get("evidence_read_failures")))
+    bound_turn = result.get("turn_id")
     while True:
         wait_path = task_wait_path(directory, after_ref)
         guard.require(wait_path)
         if not wait_path.exists():
             return records
-        require(result["status"] == "turn_accepted" and text(result.get("turn_id")),
-                "task-turn-not-accepted")
+        require(accepted or recovering, "task-turn-not-accepted")
         wait = read_json(wait_path)
         require(isinstance(wait, dict)
                 and wait.keys() == {"task_wait", "refs", "turn_id", "call"},
@@ -182,8 +185,11 @@ def task_observations(directory, result):
         require(wait["task_wait"]["after_ref"] == after_ref, "task-after-ref-conflict")
         require(wait["refs"] == {key: result["refs"][key] for key in
                                 ("operation_id", "message_id", "attempt_id")}
-                and wait["turn_id"] == result["turn_id"], "task-binding-conflict")
+                and text(wait["turn_id"])
+                and (bound_turn is None or wait["turn_id"] == bound_turn), "task-binding-conflict")
         require(wait["call"] == observation_call(result["child"]), "task-call-conflict")
+        # A wait binds its chain's turn without proving task acceptance.
+        bound_turn = wait["turn_id"]
         observation_path = task_observation_path(directory, str(wait_path))
         guard.require(observation_path)
         observation = None
@@ -288,6 +294,7 @@ def retained(directory):
         if observed:
             _, _, latest_path, latest = observed[-1]
             result["refs"]["task_observation_ref"] = str(latest_path)
+        if observed and result["status"] == "turn_accepted":
             result["task_observation"] = ("pending" if observation is None
                                           else latest["task"]["state"])
             result["task_completion"] = (latest["task"]["state"]
@@ -669,8 +676,7 @@ def run(arguments):
 
     if (arguments.phase == "reconcile" and value is not None
             and any(key in value for key in ("task_wait", "task_wait_ref", "task"))):
-        require(result["status"] == "turn_accepted" and text(result.get("turn_id")),
-                "task-turn-not-accepted")
+        accepted = result["status"] == "turn_accepted" and text(result.get("turn_id"))
         observations = task_observations(directory, result)
         if "task_wait" in value:
             require(value.keys() == {"task_wait"}, "invalid-task-wait-input")
@@ -678,6 +684,7 @@ def run(arguments):
             validate_task_wait(request)
             if any(wait["task_wait"] == request for _, wait, _, _ in observations):
                 return result
+            require(accepted, "task-turn-not-accepted")
             after_ref = None
             if observations:
                 _, _, latest_path, latest = observations[-1]
@@ -705,6 +712,7 @@ def run(arguments):
         if observation is not None:
             require(encode(observation) == encode(value), "task-observation-conflict")
             return result
+        require(accepted, "task-turn-not-accepted")
         require(wait_path == observations[-1][0], "stale-task-wait-ref")
         require(all(item[3] is None
                     or item[3]["task"]["evidence_ref"] != value["task"]["evidence_ref"]

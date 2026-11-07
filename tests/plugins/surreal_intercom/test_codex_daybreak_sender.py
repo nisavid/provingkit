@@ -604,10 +604,12 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                     self.completed_bootstrap_submission(failure=stage,accepted_tail=tail)
 
     def test_retained_inspection_preserves_claim_when_terminal_records_are_damaged(self):
-        for damaged in ((),("failure.json",),("submission.json",),
-                        ("failure.json","submission.json")):
-            with self.subTest(damaged=damaged):
-                self.completed_bootstrap_submission(damaged_results=damaged)
+        for task_observation in (False,True):
+            for damaged in ((),("failure.json",),("submission.json",),
+                            ("failure.json","submission.json")):
+                with self.subTest(damaged=damaged,task_wait=task_observation):
+                    self.completed_bootstrap_submission(
+                        damaged_results=damaged,task_observation=task_observation)
 
     def completed_bootstrap_submission(self,pending_first=False,failure=None,continuation=False,task_observation=False,accepted_tail=None,damaged_results=None):
         with tempfile.TemporaryDirectory(prefix="db-task-") as directory:
@@ -1134,9 +1136,60 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                     connection.close()
 
 
+                if task_observation:
+                    wait_request={"task_wait":{"observation_seconds":1,"after_ref":None}}
+                    waiting=command("reconcile",op,wait_request)
+                    self.assertEqual(waiting["status"],"turn_accepted",waiting)
+                    self.assertEqual(waiting["task_observation"],"pending")
+                    self.assertEqual(waiting["task_completion"],"unknown")
+                    task_call={
+                        "tool":"mcp__codex_app__read_thread",
+                        "arguments":{"threadId":"invented-daybreak-child","hostId":"local",
+                                     "turnLimit":1,"includeOutputs":False,
+                                     "maxOutputCharsPerItem":2048},
+                    }
+                    self.assertEqual(waiting["native_call"],task_call)
+                    wait_ref=waiting["refs"]["task_wait_ref"]
+                    self.assertTrue(Path(wait_ref).is_file())
+                    self.assertEqual(json.loads(Path(wait_ref).read_bytes())["task_wait"],
+                                     wait_request["task_wait"])
+
                 if damaged_results is not None:
                     # Seeded-record reader proof after an actual disposable-peer
                     # submission; this does not simulate a write or fsync failure.
+                    if task_observation:
+                        pending_observation={
+                            "task_wait_ref":wait_ref,"call":task_call,
+                            "result":{"content":[{"type":"text",
+                                "text":"Invented caller observation: original task still running."}]},
+                            "task":{"attempt_id":request["attempt_id"],
+                                    "turn_id":"invented-accepted-turn","state":"pending",
+                                    "evidence_ref":"synthetic://caller-task-pending"},
+                        }
+                        pending=command("reconcile",op,pending_observation)
+                        self.assertEqual(pending["status"],"turn_accepted",pending)
+                        self.assertEqual(pending["task_observation"],"pending")
+                        self.assertEqual(pending["task_completion"],"unknown")
+                        self.assertIsNone(pending["native_call"])
+                        pending_ref=pending["refs"]["task_observation_ref"]
+                        self.assertEqual(pending["refs"],{
+                            **accepted["refs"],"task_wait_ref":wait_ref,
+                            "task_observation_ref":pending_ref,
+                        })
+                        self.assertEqual(json.loads(Path(pending_ref).read_bytes()),pending_observation)
+                        next_wait_request={"task_wait":{"observation_seconds":1,"after_ref":pending_ref}}
+                        next_wait=command("reconcile",op,next_wait_request)
+                        self.assertEqual(next_wait["status"],"turn_accepted",next_wait)
+                        self.assertEqual(next_wait["task_observation"],"pending")
+                        self.assertEqual(next_wait["task_completion"],"unknown")
+                        self.assertEqual(next_wait["native_call"],task_call)
+                        latest_wait_ref=next_wait["refs"]["task_wait_ref"]
+                        self.assertNotEqual(latest_wait_ref,wait_ref)
+                        self.assertEqual(next_wait["refs"],{
+                            **pending["refs"],"task_wait_ref":latest_wait_ref,
+                        })
+                        self.assertEqual(json.loads(Path(latest_wait_ref).read_bytes())["task_wait"],
+                                         next_wait_request["task_wait"])
                     operation_dir=Path(accepted["refs"]["operation_ref"]).parent
                     claim=operation_dir/"claim.json"
                     original_claim=claim.read_bytes()
@@ -1150,15 +1203,24 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                         for name in damaged_results
                     ]
                     final_valid="submission.json" not in damaged_results
+                    expected_refs=dict(accepted["refs"])
+                    if task_observation:
+                        expected_refs["task_wait_ref"]=latest_wait_ref
+                        expected_refs["task_observation_ref"]=pending_ref
                     for phase,value in (
                         ("show",None),("reconcile",None),("submit",None),
+                        ("reconcile",wait_request if task_observation else None),
+                        *([("reconcile",pending_observation),("reconcile",next_wait_request)]
+                          if task_observation else []),
                         ("prepare",request),("bind",created),("submit",observation),
                         ("show",None),("reconcile",None),
                     ):
                         result=command(phase,None if phase=="prepare" else op,value)
                         self.assertEqual(result["status"],
                                          "turn_accepted" if final_valid else "submission_unknown",result)
-                        self.assertEqual(result["refs"],accepted["refs"])
+                        self.assertEqual(result["refs"],expected_refs)
+                        if task_observation:
+                            self.assertEqual(result["task_observation"],"pending")
                         self.assertEqual(result["child"],child)
                         self.assertEqual(result.get("turn_id"),
                                          "invented-accepted-turn" if final_valid else None)
@@ -1182,6 +1244,25 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                         with self.assertRaises(BlockingIOError):
                             connection,_=listener.accept()
                             connection.close()
+                    if task_observation and not final_valid:
+                        fresh_observation={
+                            **pending_observation,"task_wait_ref":latest_wait_ref,
+                            "task":{**pending_observation["task"],
+                                    "evidence_ref":"synthetic://caller-task-fresh-pending"},
+                        }
+                        refused=command("reconcile",op,fresh_observation)
+                        self.assertEqual(refused["status"],"refused",refused)
+                        self.assertEqual(refused["reason"],"task-turn-not-accepted")
+                        self.assertIsNone(refused["native_call"])
+                        self.assertEqual(refused["ipc"],"not_attempted")
+                        self.assertEqual({path:path.read_bytes() for path in root.rglob("*")
+                                          if path.is_file()},seeded)
+                        self.assertEqual(mailbox("show",request["message_id"]),recorded)
+                        self.assertEqual(mailbox("pending"),[recorded])
+                        self.assertEqual(wire,original_wire)
+                        with self.assertRaises(BlockingIOError):
+                            connection,_=listener.accept()
+                            connection.close()
                     return
 
                 if task_observation:
@@ -1189,7 +1270,6 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                     # command emits its existing bounded read call.
                     original_files=dict(retained)
                     original_wire=list(wire)
-                    wait_request={"task_wait":{"observation_seconds":1,"after_ref":None}}
 
                     def retained_bytes():
                         return {path:path.read_bytes() for path in root.rglob("*")
@@ -1212,22 +1292,7 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                             connection,_=listener.accept()
                             connection.close()
 
-                    waiting=command("reconcile",op,wait_request)
-                    self.assertEqual(waiting["status"],"turn_accepted",waiting)
-                    self.assertEqual(waiting["task_observation"],"pending")
-                    self.assertEqual(waiting["task_completion"],"unknown")
                     preserves_submission(waiting)
-                    task_call={
-                        "tool":"mcp__codex_app__read_thread",
-                        "arguments":{"threadId":"invented-daybreak-child","hostId":"local",
-                                     "turnLimit":1,"includeOutputs":False,
-                                     "maxOutputCharsPerItem":2048},
-                    }
-                    self.assertEqual(waiting["native_call"],task_call)
-                    wait_ref=waiting["refs"]["task_wait_ref"]
-                    self.assertTrue(Path(wait_ref).is_file())
-                    self.assertEqual(json.loads(Path(wait_ref).read_bytes())["task_wait"],
-                                     wait_request["task_wait"])
                     # No native call is performed here. These are invented
                     # caller-owned raw and normalized observation fixtures.
                     pending_observation={
