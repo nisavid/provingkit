@@ -1,0 +1,54 @@
+{
+  "source_revision": "fb0be395436d59f5f9f02b81e22c7277d448e18b",
+  "cases": [
+    {
+      "case_id": 13,
+      "passed_expectations": [
+        "meaningful-public-workflow-names",
+        "useful-identifiers-preserved",
+        "guide-substance-preserved"
+      ]
+    },
+    {
+      "case_id": 14,
+      "passed_expectations": [
+        "names-without-costly-legend",
+        "operator-decision-clear",
+        "implementation-state-preserved"
+      ]
+    },
+    {
+      "case_id": 15,
+      "passed_expectations": [
+        "cross-project-meaningful-names",
+        "coordination-grounded",
+        "cross-project-source-bounds"
+      ]
+    },
+    {
+      "case_id": 16,
+      "passed_expectations": [
+        "colocation-not-shared-catalog",
+        "inspection-purpose-clear",
+        "deployment-not-invented"
+      ]
+    },
+    {
+      "case_id": 17,
+      "passed_expectations": [
+        "useful-operator-shorthand-retained",
+        "complete-alongside-legend",
+        "observations-and-choice-preserved"
+      ]
+    },
+    {
+      "case_id": 18,
+      "passed_expectations": [
+        "recovery-system-and-purpose",
+        "actual-and-proposed-interface",
+        "no-nonexistent-command"
+      ]
+    }
+  ],
+  "projection": "The independent grader returned true for all eighteen expectation IDs. This compact public projection retains the source revision, case IDs, and passing IDs; the original explanatory grades remain retained by the producing chat."
+}
