@@ -387,7 +387,13 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
             "v0.1.0-alpha.4",
             "e14e818e423abd2f65b336e279284d412e0fcbce",
         )
+        alpha6_tag = (
+            "v0.1.0-alpha.6",
+            "0c47d9d4b936dfb74134a4d7bf0f9354fc67359b",
+        )
         for tag_inventory in (
+            (alpha6_tag,),
+            (alpha6_tag, alpha4_tag, (ALPHA_TAG, ALPHA_SOURCE), (PREVIEW_TAG, PREVIEW_SOURCE)),
             ((ALPHA_TAG, ALPHA_SOURCE),),
             ((ALPHA_TAG, ALPHA_SOURCE), (PREVIEW_TAG, PREVIEW_SOURCE)),
             (alpha4_tag,),
@@ -427,6 +433,42 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 self.assertEqual(
                     result.stdout, "Provingkit source validation passed\n"
                 )
+
+    def test_source_stage_validator_rejects_alpha6_at_another_source(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory) / "repository"
+            self.clone_with_history(repository)
+            self.set_tag(repository, "v0.1.0-alpha.6", ALPHA_SOURCE)
+            self.assert_unauthorized_tag(repository)
+
+    def test_source_stage_validator_rejects_annotated_alpha6(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory) / "repository"
+            self.clone_with_history(repository)
+            self.set_tag(
+                repository,
+                "v0.1.0-alpha.6",
+                "0c47d9d4b936dfb74134a4d7bf0f9354fc67359b",
+                annotated=True,
+            )
+            self.assert_unauthorized_tag(repository)
+
+    def test_source_stage_validator_rejects_symbolic_alpha6(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory) / "repository"
+            self.clone_with_history(repository)
+            target = "refs/heads/symbolic-alpha6-target"
+            subprocess.run(
+                ["git", "update-ref", target, "0c47d9d4b936dfb74134a4d7bf0f9354fc67359b"],
+                cwd=repository,
+                check=True,
+            )
+            subprocess.run(
+                ["git", "symbolic-ref", "refs/tags/v0.1.0-alpha.6", target],
+                cwd=repository,
+                check=True,
+            )
+            self.assert_unauthorized_tag(repository)
 
     def test_source_stage_validator_rejects_the_preview_tag_at_another_source(
         self,
@@ -3084,9 +3126,21 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
             "refs/tags/v0.1.0-alpha.4 commit "
             "e14e818e423abd2f65b336e279284d412e0fcbce"
         )
+        alpha6_tag = (
+            "refs/tags/v0.1.0-alpha.6 commit "
+            "0c47d9d4b936dfb74134a4d7bf0f9354fc67359b"
+        )
         self.assertIn(
             tags,
             [
+                {alpha6_tag},
+                {preview_tag, alpha6_tag},
+                {alpha_tag, alpha6_tag},
+                {alpha4_tag, alpha6_tag},
+                {preview_tag, alpha_tag, alpha6_tag},
+                {preview_tag, alpha4_tag, alpha6_tag},
+                {alpha_tag, alpha4_tag, alpha6_tag},
+                {preview_tag, alpha_tag, alpha4_tag, alpha6_tag},
                 set(),
                 {preview_tag},
                 {alpha_tag},
