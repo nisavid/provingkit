@@ -112,7 +112,8 @@ def _run_operation(case, directory, mode="submit", attempt_path=None, *, transpo
         return [m for _, m in records if m.get("type") == "response"
                 and m.get("requestId") == case.get("correlation")]
     def rpc_status(matching):
-        if len(matching) == 1 and matching[0].get("resultType") in {"success", "error"}:
+        if (len(matching) == 1 and isinstance(matching[0].get("resultType"), str)
+                and matching[0]["resultType"] in {"success", "error"}):
             return matching[0]["resultType"]
         return "unknown"
     def observe(records):

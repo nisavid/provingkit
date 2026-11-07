@@ -778,13 +778,14 @@ class CommandFailureTests(unittest.TestCase):
                         values = (value, *additional)
                         frames = []
                         for item in values:
-                            body = json.dumps(item).encode()
+                            body = item if isinstance(item, bytes) else json.dumps(item).encode()
                             frames.append(struct.pack("<I", len(body)) + body)
                         data = b"".join(frames)
                         connection.sendall(data)
                         with (self.root / "fixture-sent.bin").open("ab") as stream:
                             stream.write(data)
-                        sent.extend(values)
+                        sent.extend({"rawBodyHex": item.hex()} if isinstance(item, bytes) else item
+                                    for item in values)
 
                     self.assertEqual(receive(), {"type": "request", "requestId": "initialize", "version": 0,
                                                  "method": "initialize", "params": {"clientType": "cli"}})
@@ -963,6 +964,99 @@ class CommandFailureTests(unittest.TestCase):
         self.assertEqual(outbound[4]["method"], "thread-stream-following-changed")
         self.assertFalse(outbound[4]["params"]["following"])
         self.assertEqual(len(outbound), 5)
+
+    def test_unhashable_correlated_result_type_preserves_unknown_submission_and_captures(self):
+        response = {
+            "type": "response", "requestId": "failure-attempt", "resultType": [],
+            "method": "thread-follower-steer-turn", "result": {},
+        }
+        prewrite = []
+
+        def conversation(connection, receive, send, follow):
+            send(self.snapshot(active=True))
+            steer = receive()
+            self.assertEqual(steer["method"], "thread-follower-steer-turn")
+            self.assertEqual(steer["requestId"], "failure-attempt")
+            prewrite.append((self.capture / "attempt.json").read_bytes())
+            send(response)
+            follow["params"]["following"] = False
+            self.assertEqual(receive(), follow)
+            self.assertEqual(connection.recv(1), b"")
+
+        result, wire, sent = self.peer_exchange(conversation)
+        self.assertEqual(result["reason"], "rpc-unknown-effect-unconfirmed")
+        self.assertEqual(result["peer_input"], "possible_submission")
+        self.assertEqual(result["projection"]["stage"], "possible-submission")
+        self.assertEqual(result["projection"]["rpc"], "unknown")
+        self.assertTrue(result["projection"]["closure"].endswith(";owned-connection-closed"))
+        rpc = json.loads((self.capture / "rpc.json").read_bytes())
+        self.assertEqual(rpc["status"], "unknown")
+        self.assertEqual(rpc["originalResult"], [response])
+        self.assertEqual(rpc["submitObservation"]["status"], "unknown")
+        self.assertEqual(rpc["submitObservation"]["originalResult"], [response])
+        self.assertEqual(rpc["effect"], "possible-submission")
+        self.assertEqual(prewrite, [(self.capture / "attempt.json").read_bytes()])
+        self.assertEqual(json.loads(prewrite[0])["envelope"], wire[3])
+        self.assertEqual([frame for _, frame in json.loads(
+            (self.capture / "received.json").read_bytes())], sent)
+        for name in ("request-input.json", "normalized-input.json", "acquisition.json", "projection.json"):
+            self.assertTrue((self.capture / name).is_file(), name)
+
+    def test_decoder_recursion_after_rpc_preserves_prefix_and_closes(self):
+        self.decoder_recursion_fixture(during_cleanup=False)
+
+    def test_decoder_recursion_during_cleanup_preserves_rpc_and_closes(self):
+        self.decoder_recursion_fixture(during_cleanup=True)
+
+    def decoder_recursion_fixture(self, *, during_cleanup):
+        raw = b'{"unused":' + b"[" * 10000 + b"0" + b"]" * 10000 + b"}"
+        self.assertLess(len(raw), 65536)
+        try:
+            json.loads(raw)
+        except RecursionError:
+            pass
+        else:
+            self.skipTest("Decoder accepts this bounded nesting; no recursion-failure case on this interpreter.")
+        response = {
+            "type": "response", "requestId": "failure-attempt", "resultType": "success",
+            "method": "thread-follower-steer-turn", "result": {},
+        }
+        prewrite = []
+
+        def conversation(connection, receive, send, follow):
+            send(self.snapshot(active=True))
+            steer = receive()
+            self.assertEqual(steer["method"], "thread-follower-steer-turn")
+            self.assertEqual(steer["requestId"], "failure-attempt")
+            prewrite.append((self.capture / "attempt.json").read_bytes())
+            send(response) if during_cleanup else send(response, raw)
+            follow["params"]["following"] = False
+            self.assertEqual(receive(), follow)
+            if during_cleanup:
+                send(raw)
+            self.assertEqual(connection.recv(1), b"")
+
+        result, wire, sent = self.peer_exchange(conversation)
+        self.assertEqual(result["reason"], "frame-decode-error")
+        self.assertEqual(result["peer_input"], "possible_submission")
+        self.assertEqual(result["projection"]["stage"], "possible-submission")
+        self.assertEqual(result["projection"]["rpc"], "success")
+        self.assertTrue(result["projection"]["closure"].endswith(";owned-connection-closed"))
+        rpc = json.loads((self.capture / "rpc.json").read_bytes())
+        self.assertEqual(rpc["status"], "success")
+        self.assertEqual(rpc["originalResult"], [response])
+        self.assertEqual(rpc["effect"], "possible-submission")
+        received = json.loads((self.capture / "received.json").read_bytes())
+        self.assertIn(response, [frame for _, frame in received])
+        self.assertEqual(len(received), len(sent) - 1)
+        acquisition = json.loads((self.capture / "acquisition.json").read_bytes())
+        self.assertIn("frame-decode-error", acquisition["receiveStatus"])
+        self.assertEqual(acquisition["events"], len(received) + 1)
+        self.assertEqual(acquisition["incomingBytes"], (self.root / "fixture-sent.bin").stat().st_size)
+        self.assertEqual(prewrite, [(self.capture / "attempt.json").read_bytes()])
+        self.assertEqual(json.loads(prewrite[0])["envelope"], wire[3])
+        for name in ("request-input.json", "normalized-input.json", "projection.json"):
+            self.assertTrue((self.capture / name).is_file(), name)
 
     def test_malformed_post_write_snapshot_and_cleanup_preserve_known_submission(self):
         self.malformed_evidence_fixture(malformed_after_write=True)

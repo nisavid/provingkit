@@ -70,7 +70,7 @@ class FrameReceiver:
             if not isinstance(message, dict):
                 raise ReceiveFailure('frame-object-required')
             return message
-        except (ReceiveFailure, ValueError) as exc:
+        except (ReceiveFailure, ValueError, RecursionError) as exc:
             # Supported receive failures have one terminal contract. Completed
             # messages belong to the exchange; this failure cannot erase them.
             reason = str(exc) if isinstance(exc, ReceiveFailure) else 'frame-decode-error'

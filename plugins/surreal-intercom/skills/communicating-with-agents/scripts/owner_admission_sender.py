@@ -158,7 +158,8 @@ def submit(native, limits, wait, writer, result):
                 and message.get("requestId") == native["correlation"]]
     status = "unknown"
     if (len(original) == 1 and original[0].get("method") == "thread-follower-start-turn"
-            and original[0].get("resultType") in {"success", "error"}):
+            and isinstance(original[0].get("resultType"), str)
+            and original[0]["resultType"] in {"success", "error"}):
         status = original[0]["resultType"]
     if result["reason"] == "rpc-outcome-unknown":
         result["reason"] = {

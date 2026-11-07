@@ -18,11 +18,12 @@ SCRIPTS = (
     / "communicating-with-agents" / "scripts"
 )
 PROTOTYPE = SCRIPTS / "owner_admission_sender.py"
+NO_RESPONSE = object()
 
 
 class CodexOwnerAdmissionTests(unittest.TestCase):
     def exchange(self, *, early_response=False, response_kind="success", repeat=False,
-                 capture_collision=False, route_change=None, null_initialize=False):
+                 capture_collision=False, route_change=None, null_initialize=False, deep_initialize=None):
         with tempfile.TemporaryDirectory(prefix="codex-owner-") as temporary:
             root = Path(temporary).resolve()
             store = root / "mailbox.sqlite3"
@@ -124,7 +125,7 @@ class CodexOwnerAdmissionTests(unittest.TestCase):
                             return value
 
                         def send(value):
-                            data = json.dumps(value).encode()
+                            data = value if isinstance(value, bytes) else json.dumps(value).encode()
                             connection.sendall(struct.pack("<I", len(data)) + data)
 
                         self.assertEqual(receive(), {
@@ -136,6 +137,11 @@ class CodexOwnerAdmissionTests(unittest.TestCase):
                                     "result": {}}
                         if early_response:
                             send(response)
+                        if deep_initialize is not None:
+                            send(deep_initialize)
+                            self.assertEqual(connection.recv(1), b"")
+                            closed.set()
+                            return
                         send({"type": "response", "requestId": "initialize", "resultType": "success",
                               "method": "initialize",
                               "result": None if null_initialize else {"clientId": "native-client"}})
@@ -173,7 +179,7 @@ class CodexOwnerAdmissionTests(unittest.TestCase):
                         self.assertEqual(pending["holdRefs"], ["synthetic://original-hold"])
                         self.assertEqual(pending["actor"], actor)
                         self.assertEqual(pending["declaredOrigin"], original["sender"])
-                        if not early_response and response_kind is not None:
+                        if not early_response and response_kind is not NO_RESPONSE:
                             send(response)
                         self.assertEqual(connection.recv(1), b"")
                         closed.set()
@@ -228,12 +234,12 @@ class CodexOwnerAdmissionTests(unittest.TestCase):
             self.assertEqual(result["projection"]["native_branch"], "unknown")
             self.assertEqual(result["owned_connection"], {"started": True, "closed": True})
             self.assertEqual(result["peer_input"],
-                             "not_attempted" if capture_collision or null_initialize else "possible_submission")
-            if null_initialize:
+                             "not_attempted" if capture_collision or null_initialize or deep_initialize is not None else "possible_submission")
+            if null_initialize or deep_initialize is not None:
                 self.assertEqual([frame["method"] for frame in wire], ["initialize"])
                 self.assertEqual(json.loads((capture / "outbound.json").read_bytes()), wire)
                 received = json.loads((capture / "received.json").read_bytes())
-                self.assertEqual([frame for _, frame in received], [{
+                self.assertEqual([frame for _, frame in received], [] if deep_initialize is not None else [{
                     "type": "response", "requestId": "initialize", "resultType": "success",
                     "method": "initialize", "result": None,
                 }])
@@ -242,8 +248,13 @@ class CodexOwnerAdmissionTests(unittest.TestCase):
                                  "owner-attempt")
                 acquisition = json.loads((capture / "acquisition.json").read_bytes())
                 self.assertGreater(acquisition["incomingBytes"], 0)
-                self.assertEqual(len({metadata["generation"] for metadata, _ in received}), 1)
-                self.assertEqual(received[0][0]["generation"], acquisition["connectionGeneration"])
+                if received:
+                    self.assertEqual(len({metadata["generation"] for metadata, _ in received}), 1)
+                    self.assertEqual(received[0][0]["generation"], acquisition["connectionGeneration"])
+                else:
+                    self.assertEqual(acquisition["incomingBytes"], len(deep_initialize) + 4)
+                    self.assertEqual(acquisition["events"], 1)
+                    self.assertIn("frame-decode-error", acquisition["receiveStatus"])
                 self.assertFalse((capture / "attempt.json").exists())
                 recorded = mailbox("show", "owner-message")
                 self.assertEqual({k: v for k, v in recorded.items() if k not in {"state", "attempts"}}, original)
@@ -265,7 +276,42 @@ class CodexOwnerAdmissionTests(unittest.TestCase):
                 self.assertEqual(prewrite, [(capture / "attempt.json").read_bytes()])
             recorded = mailbox("show", "owner-message")
             self.assertEqual({k: v for k, v in recorded.items() if k not in {"state", "attempts"}}, original)
+            self.assertEqual(json.loads((capture / "projection.json").read_bytes()), result["projection"])
+            for name in ("normalized-input.json", "acquisition.json", "received.json"):
+                self.assertTrue((capture / name).is_file(), name)
             return result, json.loads((capture / "rpc.json").read_bytes())
+
+    def test_unsupported_correlated_result_types_preserve_unknown_submission_and_captures(self):
+        for kind in ({}, None):
+            with self.subTest(result_type=kind):
+                result, rpc = self.exchange(response_kind=kind, repeat=True)
+                self.assertTrue(result["claimed"])
+                self.assertEqual(result["reason"], "rpc-outcome-unknown")
+                self.assertEqual(result["peer_input"], "possible_submission")
+                self.assertEqual(result["owned_connection"], {"started": True, "closed": True})
+                self.assertEqual(result["projection"]["stage"], "possible-submission")
+                self.assertEqual(rpc["status"], "unknown")
+                self.assertEqual(rpc["originalResult"], [{
+                    "type": "response", "requestId": "owner-attempt",
+                    "resultType": kind, "method": "thread-follower-start-turn", "result": {},
+                }])
+
+    def test_decoder_recursion_during_initialize_refuses_with_captures_and_owned_close(self):
+        raw = b'{"unused":' + b"[" * 10000 + b"0" + b"]" * 10000 + b"}"
+        self.assertLess(len(raw), 65536)
+        try:
+            json.loads(raw)
+        except RecursionError:
+            pass
+        else:
+            self.skipTest("Decoder accepts this bounded nesting; no recursion-failure case on this interpreter.")
+        result, rpc = self.exchange(deep_initialize=raw, repeat=True)
+        self.assertTrue(result["claimed"])
+        self.assertEqual(result["reason"], "frame-decode-error")
+        self.assertEqual(result["firstDiagnostic"]["message"], "frame-decode-error")
+        self.assertEqual(result["projection"]["stage"], "refused-before-write")
+        self.assertEqual(rpc["status"], "unknown")
+        self.assertEqual(rpc["originalResult"], [])
 
     def test_null_initialize_result_reports_refusal_and_preserves_evidence_without_peer_input(self):
         result, rpc = self.exchange(null_initialize=True)
@@ -293,7 +339,7 @@ class CodexOwnerAdmissionTests(unittest.TestCase):
         self.assertEqual(result["projection"]["evidence"], [])
 
     def test_missing_reply_keeps_submission_unknown_without_resend(self):
-        result, rpc = self.exchange(response_kind=None)
+        result, rpc = self.exchange(response_kind=NO_RESPONSE)
         self.assertEqual(rpc["status"], "unknown")
         self.assertEqual(result["reason"], "rpc-outcome-unknown")
 
