@@ -257,11 +257,26 @@ def retained(directory):
         completion = read_json(directory / "bootstrap-completed.json")
         result["status"] = "bootstrap_" + completion["bootstrap"]["state"]
         result["refs"]["bootstrap_completion_ref"] = str(directory / "bootstrap-completed.json")
-    if (directory / "claim.json").exists():
+    claim_present = (directory / "claim.json").exists()
+    if claim_present:
         result.pop("reason", None)
+    evidence_read_failures = []
     for name in ("claim.json", "failure.json", "submission.json"):
-        if (directory / name).exists():
-            result.update(read_json(directory / name))
+        path = directory / name
+        if path.exists():
+            try:
+                record = read_json(path)
+            except (ValueError, OSError) as exc:
+                if name == "claim.json" or not claim_present:
+                    raise
+                evidence_read_failures.append({
+                    "path": str(path),
+                    "reason": "read-error" if isinstance(exc, OSError) else "invalid-json",
+                })
+            else:
+                result.update(record)
+    if evidence_read_failures:
+        result["evidence_read_failures"] = evidence_read_failures
     for name, key in (("setup.json", "setup_ref"), ("attempt.json", "attempt_ref")):
         if (directory / name).exists():
             result["refs"][key] = str(directory / name)

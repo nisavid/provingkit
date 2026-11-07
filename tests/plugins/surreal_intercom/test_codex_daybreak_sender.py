@@ -603,7 +603,13 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                 with self.subTest(stage=stage,tail=tail):
                     self.completed_bootstrap_submission(failure=stage,accepted_tail=tail)
 
-    def completed_bootstrap_submission(self,pending_first=False,failure=None,continuation=False,task_observation=False,accepted_tail=None):
+    def test_retained_inspection_preserves_claim_when_terminal_records_are_damaged(self):
+        for damaged in ((),("failure.json",),("submission.json",),
+                        ("failure.json","submission.json")):
+            with self.subTest(damaged=damaged):
+                self.completed_bootstrap_submission(damaged_results=damaged)
+
+    def completed_bootstrap_submission(self,pending_first=False,failure=None,continuation=False,task_observation=False,accepted_tail=None,damaged_results=None):
         with tempfile.TemporaryDirectory(prefix="db-task-") as directory:
             scratch=Path(directory).resolve()
             root=scratch/"operations"
@@ -1127,6 +1133,56 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                     connection,_=listener.accept()
                     connection.close()
 
+
+                if damaged_results is not None:
+                    # Seeded-record reader proof after an actual disposable-peer
+                    # submission; this does not simulate a write or fsync failure.
+                    operation_dir=Path(accepted["refs"]["operation_ref"]).parent
+                    claim=operation_dir/"claim.json"
+                    original_claim=claim.read_bytes()
+                    damaged_bytes=b'{"partial":'
+                    for name in damaged_results:
+                        (operation_dir/name).write_bytes(damaged_bytes)
+                    seeded={path:path.read_bytes() for path in root.rglob("*") if path.is_file()}
+                    original_wire=list(wire)
+                    expected_diagnostics=[
+                        {"path":str(operation_dir/name),"reason":"invalid-json"}
+                        for name in damaged_results
+                    ]
+                    final_valid="submission.json" not in damaged_results
+                    for phase,value in (
+                        ("show",None),("reconcile",None),("submit",None),
+                        ("prepare",request),("bind",created),("submit",observation),
+                        ("show",None),("reconcile",None),
+                    ):
+                        result=command(phase,None if phase=="prepare" else op,value)
+                        self.assertEqual(result["status"],
+                                         "turn_accepted" if final_valid else "submission_unknown",result)
+                        self.assertEqual(result["refs"],accepted["refs"])
+                        self.assertEqual(result["child"],child)
+                        self.assertEqual(result.get("turn_id"),
+                                         "invented-accepted-turn" if final_valid else None)
+                        self.assertIs(result["saved_selection"],True if final_valid else None)
+                        self.assertEqual(result["ipc"],"attempted" if final_valid else "unknown")
+                        self.assertEqual(result["owned_connection"],
+                                         {"started":True,"closed":True} if final_valid
+                                         else {"started":None,"closed":None})
+                        for key in ("receipt","task_completion","effective_program"):
+                            self.assertEqual(result[key],"unknown")
+                        self.assertIsNone(result["native_call"])
+                        self.assertEqual(result.get("evidence_read_failures",[]),expected_diagnostics)
+                        self.assertEqual(claim.read_bytes(),original_claim)
+                        self.assertEqual({path:path.read_bytes() for path in root.rglob("*")
+                                          if path.is_file()},seeded)
+                        for name in damaged_results:
+                            self.assertEqual((operation_dir/name).read_bytes(),damaged_bytes)
+                        self.assertEqual(mailbox("show",request["message_id"]),recorded)
+                        self.assertEqual(mailbox("pending"),[recorded])
+                        self.assertEqual(wire,original_wire)
+                        with self.assertRaises(BlockingIOError):
+                            connection,_=listener.accept()
+                            connection.close()
+                    return
 
                 if task_observation:
                     # The caller acquires each invented native result after the
