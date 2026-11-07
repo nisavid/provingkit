@@ -431,9 +431,21 @@ def native_turns(state):
     if history is not None:
         if history.get("kind") != "canonical":
             raise Refusal("unsupported-turn-history-kind")
-        value = history["history"]
+        value = history.get("history")
+        if (not isinstance(value, dict) or not isinstance(value.get("islands"), list)
+                or not isinstance(value.get("entitiesByKey"), dict)):
+            raise Refusal("unsupported-turn-history")
         islands = value["islands"]
-        turns = [value["entitiesByKey"][entry["value"]] for island in islands for entry in island["entries"]]
+        entities = value["entitiesByKey"]
+        turns = []
+        for island in islands:
+            if not isinstance(island, dict) or not isinstance(island.get("entries"), list):
+                raise Refusal("unsupported-turn-history")
+            for entry in island["entries"]:
+                if (not isinstance(entry, dict) or not isinstance(entry.get("value"), str)
+                        or entry["value"] not in entities):
+                    raise Refusal("unsupported-turn-history")
+                turns.append(entities[entry["value"]])
         complete = value.get("isComplete") is True and len(islands) == 1
     else:
         turns = state.get("turns")

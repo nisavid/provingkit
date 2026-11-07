@@ -1064,7 +1064,16 @@ class CommandFailureTests(unittest.TestCase):
     def test_first_post_write_refusal_survives_malformed_cleanup(self):
         self.malformed_evidence_fixture(malformed_after_write=False)
 
-    def malformed_evidence_fixture(self, *, malformed_after_write):
+    def test_malformed_canonical_history_during_cleanup_preserves_rpc_and_closure(self):
+        self.malformed_evidence_fixture(malformed_after_write=True, canonical_stage="cleanup")
+
+    def test_malformed_canonical_history_after_submission_preserves_rpc_and_closure(self):
+        self.malformed_evidence_fixture(malformed_after_write=True, canonical_stage="post-write")
+
+    def test_first_refusal_survives_malformed_canonical_cleanup(self):
+        self.malformed_evidence_fixture(malformed_after_write=False, canonical_stage="cleanup")
+
+    def malformed_evidence_fixture(self, *, malformed_after_write, canonical_stage=None):
         response = {
             "type": "response", "requestId": "failure-attempt", "resultType": "success",
             "method": "thread-follower-steer-turn", "result": {},
@@ -1076,10 +1085,37 @@ class CommandFailureTests(unittest.TestCase):
         else:
             post_write = {"type": "broadcast", "method": "ipc-connection-reset"}
         cleanup = {"type": "broadcast", "method": "client-status-changed", "params": None}
+        if canonical_stage is not None:
+            malformed = self.snapshot(active=True)
+            malformed["params"]["change"]["revision"] = 8 if canonical_stage == "post-write" else 9
+            malformed["params"]["change"]["conversationState"]["turnHistory"] = {
+                "kind": "canonical", "history": {
+                    "islands": [{"entries": [{"value": 0}]}],
+                    "entitiesByKey": [], "isComplete": True,
+                },
+            }
+            if canonical_stage == "post-write":
+                post_write = malformed
+                cleanup = self.snapshot(active=True)
+                cleanup["params"]["change"]["revision"] = 9
+            else:
+                cleanup = malformed
+                if malformed_after_write:
+                    post_write = self.snapshot(active=True)
+                    post_write["params"]["change"]["revision"] = 8
         prewrite = []
 
         def conversation(connection, receive, send, follow):
-            send(self.snapshot(active=True))
+            initial = self.snapshot(active=True)
+            if canonical_stage is not None:
+                original_turn = initial["params"]["change"]["conversationState"]["turns"][0]
+                initial["params"]["change"]["conversationState"]["turnHistory"] = {
+                    "kind": "canonical", "history": {
+                        "islands": [{"entries": [{"value": "initial-turn"}]}],
+                        "entitiesByKey": {"initial-turn": original_turn}, "isComplete": True,
+                    },
+                }
+            send(initial)
             steer = receive()
             self.assertEqual(steer["method"], "thread-follower-steer-turn")
             self.assertEqual(steer["requestId"], "failure-attempt")
@@ -1105,6 +1141,8 @@ class CommandFailureTests(unittest.TestCase):
         self.assertEqual(result["projection"]["rpc"], "success")
         self.assertEqual(result["projection"]["evidence"], [])
         self.assertEqual(result["reason"], result["projection"]["reason"])
+        if canonical_stage is not None and malformed_after_write:
+            self.assertEqual(result["reason"], "unsupported-turn-history")
         if malformed_after_write:
             self.assertIsInstance(result["reason"], str)
             self.assertTrue(result["reason"])
