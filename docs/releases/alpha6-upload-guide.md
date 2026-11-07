@@ -20,6 +20,14 @@ On macOS:
 shasum -a 256 provingkit-rolecasting-0.1.0-alpha.6-agent-plugins.zip
 ```
 
+On Windows, use PowerShell’s [Get-FileHash](https://learn.microsoft.com/en-us/powershell/module/microsoft.powershell.utility/get-filehash?view=powershell-5.1):
+
+```powershell
+Get-FileHash -Algorithm SHA256 -LiteralPath 'provingkit-rolecasting-0.1.0-alpha.6-agent-plugins.zip' | Format-List
+```
+
+`Hash` contains the digest; the filename at the end of `Path` identifies the checked ZIP. Uppercase and lowercase hexadecimal letters represent the same hash.
+
 Use the matching filename for the plugin and target you downloaded. **Compare the printed hash and filename with the matching row below before uploading.** Stop if the file is missing or either value differs. A matching hash confirms that the ZIP matches the bytes recorded in this guide revision. The release is unsigned; this check does not authenticate the publisher.
 
 The release also supplies adjacent `.sha256` files. A sidecar can be replaced alongside its ZIP, so agreement between those two downloads alone does not establish a match to this guide's recorded bytes.
