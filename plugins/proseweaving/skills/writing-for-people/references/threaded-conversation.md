@@ -11,8 +11,10 @@ did. When initiating, lead with what the reader most needs. Match their
 register and conversational energy while staying professional, and acknowledge
 social intent when it matters. Put a finding directly before its explanation;
 a concrete mechanism or code symbol helps when the reader shares that context.
-For questions about impact or progress, lead with the reader-relevant outcome
-and its material limits, then explain the cause or the work behind it.
+For impact, progress, or incident updates, open with the current condition and
+its effect on the reader, then explain the cause or the work behind it.
+Distinguish completing affected work from fixing the condition that caused it;
+state both when verified.
 
 Let each next point answer a likely follow-up, doubt, or challenge. Keep replies
 focused on the exchange, and end on the last substantive point. First-person
@@ -27,10 +29,24 @@ acknowledgment, or completed-action report may need no ask. A multi-part
 question or a broader status exchange may need several connected answers;
 organize them for the person responding.
 
+Ask a question only when the answer is genuinely open. Do not invite a choice
+and then pre-empt it in the next sentence; state a settled decision directly,
+or leave the requested answer for the reader.
+
 In a review reply, agreement can be brief: say what follows without repeating
 the comment or explaining why the suggestion is sensible. Include a correction
 or tradeoff when the reviewer needs it. Review-specific severity and ask forms
 belong to the review writer's policy.
+
+## Send A Collegial Heads-Up
+
+Lead with why the reader is hearing from you and what, if anything, they need
+to do now. Say when no action is needed rather than leaving a courtesy notice
+looking like an assignment. Explain the practical overlap and any agreed next
+contact in terms of working together, not jurisdiction over each other's work.
+Translate an internal division of responsibility into the coordination the
+peer needs; do not enumerate powers or declare territory. Keep the wording
+cordial without inventing agreement, a deadline, or a promise to follow up.
 
 ## Keep The Reply Proportionate
 

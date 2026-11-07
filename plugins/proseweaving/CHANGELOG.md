@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- Add `editing-finished-drafts` for a recipient-facing verification and repair
+  pass over an existing draft or batch, composing the general writing skill.
+  Include six behavior cases and twelve discovery inputs, and deliver declared
+  skill dependencies in behavior-evaluation runtime bundles.
 - Choose prose register and organization for the medium, purpose, and audience,
   with subject-led publication openings and useful first-person evidence.
 - Apply conversational reply and status guidance through a conditional reference;
