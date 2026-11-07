@@ -274,7 +274,7 @@ Path.read_text = read_text
                     str(repository), "--write-content-lock",
                 ], capture_output=True, text=True, timeout=30, env={
                     **os.environ, "PYTHONPATH": str(hook),
-                    "FIXTURE_TARGET": str(target), "FIXTURE_MARKER": str(marker),
+                    "FIXTURE_TARGET": str(target.resolve()), "FIXTURE_MARKER": str(marker),
                     "FIXTURE_LOCK": str(lock), "FIXTURE_MUTATION": mutation,
                 })
                 self.assertTrue(marker.is_file(), "the external file event did not occur")
