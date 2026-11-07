@@ -66,6 +66,20 @@ def identity(value):
             and all(text(item) for item in value.values()))
 
 
+def creation_outcome(value):
+    """Classify caller-declared negative creation evidence without interpreting it."""
+    if "creation" not in value:
+        require(not (isinstance(value.get("result"), dict)
+                     and value["result"].get("isError")), "native-creation-error")
+        return None
+    observation = value["creation"]
+    require(isinstance(observation, dict)
+            and observation.keys() == {"state", "evidence_ref"}
+            and observation["state"] in {"failed", "unknown"}
+            and text(observation["evidence_ref"]), "invalid-creation-observation")
+    return observation
+
+
 def read_json(path):
     return json.loads(path.read_bytes())
 
@@ -203,7 +217,13 @@ def retained(directory):
         result["refs"]["continuation_ref"] = str(directory / "continuation.json")
     if (directory / "bind.json").exists():
         receipt = read_json(directory / "bind.json")
-        if "child" in receipt:
+        if receipt.get("creation") is not None:
+            result["status"] = "creation_" + receipt["creation"]["state"]
+            result["refs"]["creation_ref"] = str(directory / "bind.json")
+            result["child"] = receipt.get("child")
+            if "client_thread_id" in receipt:
+                result["client_thread_id"] = receipt["client_thread_id"]
+        elif "child" in receipt:
             result["child"] = receipt["child"]
             result["status"] = "bootstrap_unobserved"
         else:
@@ -215,6 +235,12 @@ def retained(directory):
         result["child"] = resolution["child"]
         result["status"] = "bootstrap_unobserved"
         result["refs"]["creation_resolution_ref"] = str(directory / "creation-resolved.json")
+    if (directory / "creation-outcome.json").exists():
+        outcome = read_json(directory / "creation-outcome.json")
+        result["refs"]["creation_outcome_ref"] = str(directory / "creation-outcome.json")
+        if not (directory / "creation-resolved.json").exists():
+            result["status"] = "creation_" + outcome["creation"]["state"]
+            result["child"] = outcome.get("child")
     if (directory / "bootstrap.json").exists():
         bootstrap = read_json(directory / "bootstrap.json")["bootstrap"]
         state = bootstrap["state"]
@@ -223,6 +249,10 @@ def retained(directory):
         else:
             result["status"] = "unsupported"
             result["reason"] = "unsupported-bootstrap-state"
+    if (directory / "bootstrap-outcome.json").exists():
+        outcome = read_json(directory / "bootstrap-outcome.json")
+        result["status"] = "bootstrap_" + outcome["bootstrap"]["state"]
+        result["refs"]["bootstrap_outcome_ref"] = str(directory / "bootstrap-outcome.json")
     if (directory / "bootstrap-completed.json").exists():
         completion = read_json(directory / "bootstrap-completed.json")
         result["status"] = "bootstrap_" + completion["bootstrap"]["state"]
@@ -446,7 +476,8 @@ def run(arguments):
                      "claim.json", "failure.json", "submission.json", "setup.json", "attempt.json",
                      "selection.json", "transport.json", "mailbox-claim.json", "readback.json",
                      "setup-response.json", "readback-response.json", "start-response.json",
-                     "bootstrap-completed.json", "creation-resolved.json", "continuation.json"):
+                      "bootstrap-completed.json", "bootstrap-outcome.json", "creation-resolved.json",
+                      "creation-outcome.json", "continuation.json"):
             guard.require(target / name)
         return target
 
@@ -542,20 +573,23 @@ def run(arguments):
     require(intent["operation_id"] == operation_id, "operation-conflict")
     result = retained(directory)
     if arguments.phase == "bind":
+        require(value.keys() <= {"call", "result", "child", "client_thread_id", "creation"},
+                "invalid-creation-receipt")
         require(value.get("call") == read_json(directory / "create.json"), "creation-call-conflict")
+        negative = creation_outcome(value)
         pending = "child" not in value and text(value.get("client_thread_id"))
         require("result" in value and
-                (pending or (identity(value.get("child")) and "client_thread_id" not in value)),
+                (pending or (identity(value.get("child")) and "client_thread_id" not in value)
+                 or (negative is not None and not {"child", "client_thread_id"} & value.keys())),
                 "invalid-creation-receipt")
-        require(not (isinstance(value["result"], dict) and value["result"].get("isError")), "native-creation-error")
-        if not pending:
+        if "child" in value:
             require(value["child"]["host_id"] == "local", "unsupported-remote-child")
         path = directory / "bind.json"
         if path.exists():
             require(path.read_bytes() == encode(value), "child-binding-conflict")
             return result
         require(not (directory / "bootstrap.json").exists(), "bootstrap-without-child")
-        if pending:
+        if pending or negative is not None:
             save([(path, encode(value))])
             return retained(directory)
         call = observation_call(value["child"])
@@ -566,6 +600,8 @@ def run(arguments):
 
     if (arguments.phase == "reconcile" and value is not None
             and (result["status"] == "creation_pending" or "client_thread_id" in value)):
+        require(value.keys() <= {"call", "result", "child", "client_thread_id", "evidence_ref", "creation"},
+                "invalid-creation-receipt")
         original = read_json(directory / "bind.json")
         require("child" not in original and text(original.get("client_thread_id")),
                 "creation-not-pending")
@@ -573,6 +609,25 @@ def run(arguments):
                 "creation-handle-conflict")
         require(value.get("call") == original["call"] == read_json(directory / "create.json"),
                 "creation-call-conflict")
+        require("result" in value, "invalid-creation-receipt")
+        negative = creation_outcome(value)
+        outcome = directory / "creation-outcome.json"
+        if negative is not None:
+            require(not (directory / "creation-resolved.json").exists(), "creation-already-resolved")
+            if "child" in value:
+                require(identity(value["child"]), "invalid-child")
+                require(value["child"]["host_id"] == "local", "unsupported-remote-child")
+            if outcome.exists():
+                require(outcome.read_bytes() == encode(value), "creation-outcome-conflict")
+                return result
+            require(original.get("creation", {}).get("state") != "failed", "creation-already-terminal")
+            save([(outcome, encode(value))])
+            return retained(directory)
+        require(original.get("creation", {}).get("state") != "failed", "creation-already-terminal")
+        if outcome.exists():
+            prior = read_json(outcome)
+            require(prior["creation"]["state"] != "failed", "creation-already-terminal")
+            require("child" not in prior or prior["child"] == value.get("child"), "creation-child-conflict")
         require(identity(value.get("child")), "invalid-child")
         require(value["child"]["host_id"] == "local", "unsupported-remote-child")
         require(text(value.get("evidence_ref")), "invalid-creation-evidence")
@@ -638,24 +693,42 @@ def run(arguments):
         return retained(directory)
 
     if arguments.phase in {"submit", "reconcile"} and value is not None:
+        require(value.keys() == {"call", "result", "bootstrap"},
+                "invalid-bootstrap-receipt")
         require(result["child"] is not None, "bootstrap-without-child")
         require(value.get("call") == read_json(directory / "read.json"), "bootstrap-call-conflict")
         bootstrap = value.get("bootstrap")
         require("result" in value and isinstance(bootstrap, dict), "invalid-bootstrap-receipt")
-        require(text(bootstrap.get("state")) and text(bootstrap.get("evidence_ref")), "invalid-bootstrap-observation")
-        require(not (isinstance(value["result"], dict) and value["result"].get("isError")), "native-observation-error")
+        require(bootstrap.keys() == {"state", "evidence_ref"}
+                and bootstrap["state"] in {"pending", "completed", "failed", "unknown"}
+                and text(bootstrap["evidence_ref"]), "invalid-bootstrap-observation")
+        require(not (isinstance(value["result"], dict) and value["result"].get("isError"))
+                or bootstrap["state"] == "unknown", "native-observation-error")
         if arguments.phase == "reconcile":
             original = read_json(directory / "bootstrap.json")
             require(original["bootstrap"]["state"] == "pending", "bootstrap-not-pending")
             require(value["call"] == original["call"] == observation_call(result["child"]),
                     "bootstrap-call-conflict")
-            require(bootstrap["state"] == "completed", "bootstrap-not-completed")
             require(bootstrap["evidence_ref"] != original["bootstrap"]["evidence_ref"],
                     "bootstrap-evidence-not-fresh")
             completion = directory / "bootstrap-completed.json"
+            outcome = directory / "bootstrap-outcome.json"
+            if bootstrap["state"] != "completed":
+                require(bootstrap["state"] in {"failed", "unknown"}, "bootstrap-not-completed")
+                require(not completion.exists(), "bootstrap-already-completed")
+                if outcome.exists():
+                    require(outcome.read_bytes() == encode(value), "bootstrap-outcome-conflict")
+                    return result
+                require(not (directory / "claim.json").exists(), "bootstrap-already-claimed")
+                save([(outcome, encode(value))])
+                return retained(directory)
             if completion.exists():
                 require(completion.read_bytes() == encode(value), "bootstrap-completion-conflict")
                 return result
+            if outcome.exists():
+                prior = read_json(outcome)["bootstrap"]
+                require(prior["state"] != "failed", "bootstrap-already-terminal")
+                require(bootstrap["evidence_ref"] != prior["evidence_ref"], "bootstrap-evidence-not-fresh")
             if (directory / "claim.json").exists():
                 return result
             # A retained completion is also an interruption barrier: only its first

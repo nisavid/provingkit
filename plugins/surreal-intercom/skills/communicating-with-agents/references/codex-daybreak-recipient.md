@@ -66,6 +66,11 @@ are the outcome, rather than the process exit code alone.
    Supply `call` equal to the retained creation call and the actual native
    `result`. Supply either `child: {"thread_id":"...","host_id":"local"}`
    or the unresolved native `client_thread_id`, never both. Retain the binding.
+   For a failed or uncertain creation, also supply
+   `creation: {"state":"unknown","evidence_ref":"..."}` (or state `failed`).
+   Retain any actual child or pending handle; neither identifier is required
+   when none was returned. This negative intake preserves the actual result and
+   original operation references, returns no native call, and submits no task.
 4. A bound child returns a caller-owned `native_call` for `read_thread` with its
    exact child identity, `turnLimit: 1`, `includeOutputs: false`, and
    `maxOutputCharsPerItem: 2048`. Execute that read only under the bound authority
@@ -78,9 +83,15 @@ are the outcome, rather than the process exit code alone.
    evidence establishes completion. Otherwise retain `pending`, `failed`, or
    `unknown` with its evidence reference. These states retain uncertainty and do
    not submit the original task.
+   A native read error (`result.isError`) permits only `unknown`: failure of the
+   observation does not establish failure or completion of the bootstrap task.
 
 The helper records caller-supplied observations; it does not execute native
 creation/reads or independently interpret their results as completion proof.
+Creation and bootstrap receipt envelopes reject undeclared fields, including
+account, model, effort, and program requirements. The actual native `result`
+remains opaque. Identical repeated intake returns retained state; conflicting
+evidence refuses without replacing an earlier record.
 The bootstrap carries no original task data. A completed bootstrap permits the
 first task-submission attempt; it does not itself complete that task.
 
@@ -133,14 +144,22 @@ is an uncertainty barrier, not permission to retry the task.
   with the original `call`, matching `client_thread_id`, resolved local `child`,
   actual `result`, and a nonempty `evidence_ref`. A valid first resolution returns
   the child's bootstrap read call. Preserve an unresolved handle without
-  replacement creation.
+  replacement creation. A negative observation of the same handle instead
+  supplies the original `call`, matching `client_thread_id`, actual `result`,
+  and `creation` classification/evidence as above. It retains
+  `creation_outcome_ref` and returns no native call. Fresh evidence may later
+  resolve that same uncertain handle; a retained failed outcome is terminal.
 - **Pending bootstrap:** after a fresh native observation establishes completion,
   run `reconcile OPERATION_ID --input bootstrap-completion.json` with the original
   read `call`, actual `result`, and `bootstrap.state: completed` plus a fresh
   `bootstrap.evidence_ref`. This branch applies to a retained `pending` bootstrap.
   Its first completion intake may enter the original one-attempt submission;
   repeated completion intake returns retained state. A failed or unknown
-  bootstrap has no automatic restart route.
+  bootstrap has no automatic restart route. A fresh failed or unknown observation
+  of that same pending bootstrap uses the same receipt shape and retains
+  `bootstrap_outcome_ref` without a task or native call. A read-control error
+  must be classified unknown. Fresh completion evidence for an uncertain
+  pending bootstrap preserves that earlier outcome; a failed outcome is terminal.
 - **Accepted task:** request one observation by running
   `reconcile OPERATION_ID --input task-wait.json`. Its input is exactly
   `{"task_wait":{"observation_seconds":10,"after_ref":null}}` for the first

@@ -37,6 +37,188 @@ print(json.dumps({"content":[{"type":"text","text":json.dumps(result)}]}))
 
 
 class PendingBootstrapCommandTests(unittest.TestCase):
+    def negative_outcome_intent(self, scratch, root):
+        return {
+            "operation_id": "negative-operation", "message_id": "negative-message",
+            "attempt_id": "negative-attempt", "correlation_id": "negative-exchange",
+            "actor": {"thread_id": "caller", "host_id": "local"},
+            "owner": {"thread_id": "owner", "host_id": "local"},
+            "authority_ref": "synthetic://negative-grant", "holds": [],
+            "payload": "Do not submit the task after uncertain native evidence.",
+            "endpoint": str(scratch / "unused.sock"), "mailbox": str(scratch / "mailbox.sqlite3"),
+            "capture": {"run_root": str(root), "allowance_bytes": 8388608,
+                        "terminal_provision_bytes": 524288, "later_forecast_bytes": 0},
+            "observation_seconds": 0.1,
+        }
+
+    def test_creation_failure_and_uncertainty_retain_original_result_and_references(self):
+        variants = [("failed", {}), ("unknown", {"client_thread_id": "invented-pending"}),
+                    ("unknown", {"child": {"thread_id": "invented-child", "host_id": "local"}})]
+        for state, identity in variants:
+            with self.subTest(state=state, identity=identity), tempfile.TemporaryDirectory(prefix="db-create-error-") as directory:
+                scratch = Path(directory).resolve()
+                root = scratch / "operations"
+                root.mkdir(mode=0o700)
+                command = self.command(scratch, root)
+                request = self.negative_outcome_intent(scratch, root)
+                prepared = command("prepare", value=request)
+                receipt = {"call": prepared["native_call"],
+                           "result": {"isError": True, "content": [{"type": "text", "text": "invented native failure"}]},
+                           "creation": {"state": state, "evidence_ref": "synthetic://creation-error"}, **identity}
+                retained = command("bind", request["operation_id"], receipt)
+                self.assertEqual(retained["status"], "creation_" + state)
+                self.assertIsNone(retained["native_call"])
+                self.assertEqual(retained["ipc"], "not_attempted")
+                self.assertEqual(retained["child"], identity.get("child"))
+                if "client_thread_id" in identity:
+                    self.assertEqual(retained["client_thread_id"], "invented-pending")
+                for key in ("operation_id", "message_id", "attempt_id", "operation_ref"):
+                    self.assertEqual(retained["refs"][key], prepared["refs"][key])
+                self.assertEqual(json.loads(Path(retained["refs"]["creation_ref"]).read_bytes()), receipt)
+                before = {p.relative_to(root): p.read_bytes() for p in root.rglob("*") if p.is_file()}
+                repeated = command("bind", request["operation_id"], receipt)
+                shown = command("show", request["operation_id"])
+                for observed in (repeated, shown, command("prepare", value=request)):
+                    self.assertEqual(observed["status"], retained["status"])
+                    self.assertEqual(observed["refs"], retained["refs"])
+                    self.assertIsNone(observed["native_call"])
+                conflict = command("bind", request["operation_id"], {
+                    **receipt, "creation": {"state": state, "evidence_ref": "synthetic://different-error"},
+                })
+                self.assertEqual(conflict["status"], "refused")
+                self.assertEqual({p.relative_to(root): p.read_bytes() for p in root.rglob("*") if p.is_file()}, before)
+                self.assertFalse((scratch / "mailbox.sqlite3").exists())
+
+    def test_native_receipts_refuse_unsupported_requirements_before_retention_or_effects(self):
+        for phase in ("bind", "creation-reconcile", "submit", "bootstrap-reconcile"):
+            for field in ("account", "model", "effort", "cyberAccessProgram"):
+                with self.subTest(phase=phase, field=field), tempfile.TemporaryDirectory(prefix="db-schema-") as directory:
+                    scratch = Path(directory).resolve()
+                    root = scratch / "operations"
+                    root.mkdir(mode=0o700)
+                    command = self.command(scratch, root)
+                    request = self.negative_outcome_intent(scratch, root)
+                    prepared = command("prepare", value=request)
+                    child = {"thread_id": "invented-child", "host_id": "local"}
+                    creation = {"call": prepared["native_call"], "result": {"invented": "creation"}, "child": child}
+                    invocation = phase
+                    if phase == "bind":
+                        receipt = creation
+                    elif phase == "creation-reconcile":
+                        pending = {"call": prepared["native_call"], "result": {"invented": "queued"},
+                                   "client_thread_id": "invented-pending"}
+                        command("bind", request["operation_id"], pending)
+                        receipt = {**creation, "client_thread_id": "invented-pending",
+                                   "evidence_ref": "synthetic://creation-resolution"}
+                        invocation = "reconcile"
+                    else:
+                        bound = command("bind", request["operation_id"], creation)
+                        receipt = {"call": bound["native_call"], "result": {"invented": "completed"},
+                                   "bootstrap": {"state": "completed", "evidence_ref": "synthetic://completion"}}
+                        if phase == "bootstrap-reconcile":
+                            command("submit", request["operation_id"], {
+                                **receipt, "bootstrap": {"state": "pending", "evidence_ref": "synthetic://pending"},
+                            })
+                            invocation = "reconcile"
+                    before = {p.relative_to(root): p.read_bytes() for p in root.rglob("*") if p.is_file()}
+                    refused = command(invocation, request["operation_id"], {**receipt, field: "unsupported"})
+                    self.assertEqual(refused["status"], "refused")
+                    self.assertIsNone(refused["native_call"])
+                    self.assertEqual(refused["ipc"], "not_attempted")
+                    self.assertEqual({p.relative_to(root): p.read_bytes() for p in root.rglob("*") if p.is_file()}, before)
+                    self.assertFalse((scratch / "mailbox.sqlite3").exists())
+
+    def test_pending_creation_retains_unknown_result_before_same_handle_resolution(self):
+        with tempfile.TemporaryDirectory(prefix="db-pending-error-") as directory:
+            scratch = Path(directory).resolve()
+            root = scratch / "operations"
+            root.mkdir(mode=0o700)
+            command = self.command(scratch, root)
+            request = self.negative_outcome_intent(scratch, root)
+            prepared = command("prepare", value=request)
+            pending = {"call": prepared["native_call"], "result": {"invented": "queued"},
+                       "client_thread_id": "invented-pending"}
+            original = command("bind", request["operation_id"], pending)
+            receipt = {"call": prepared["native_call"], "client_thread_id": "invented-pending",
+                       "result": {"isError": True, "error": "invented uncertain resolution"},
+                       "creation": {"state": "unknown", "evidence_ref": "synthetic://pending-error"}}
+            retained = command("reconcile", request["operation_id"], receipt)
+            self.assertEqual(retained["status"], "creation_unknown")
+            self.assertEqual(retained["client_thread_id"], "invented-pending")
+            self.assertIsNone(retained["native_call"])
+            self.assertEqual(retained["refs"]["creation_ref"], original["refs"]["creation_ref"])
+            observation = Path(retained["refs"]["creation_outcome_ref"])
+            self.assertEqual(json.loads(observation.read_bytes()), receipt)
+            before = {p.relative_to(root): p.read_bytes() for p in root.rglob("*") if p.is_file()}
+            self.assertEqual(command("reconcile", request["operation_id"], receipt)["status"], "creation_unknown")
+            self.assertEqual(command("show", request["operation_id"])["refs"], retained["refs"])
+            conflict = command("reconcile", request["operation_id"], {
+                **receipt, "creation": {"state": "unknown", "evidence_ref": "synthetic://different-error"},
+            })
+            self.assertEqual(conflict["status"], "refused")
+            self.assertEqual({p.relative_to(root): p.read_bytes() for p in root.rglob("*") if p.is_file()}, before)
+            child = {"thread_id": "invented-child", "host_id": "local"}
+            resolved = command("reconcile", request["operation_id"], {
+                "call": prepared["native_call"], "client_thread_id": "invented-pending",
+                "result": {"invented": "resolved"}, "child": child,
+                "evidence_ref": "synthetic://later-resolution",
+            })
+            self.assertEqual(resolved["status"], "bootstrap_unobserved")
+            self.assertEqual(resolved["child"], child)
+            self.assertEqual(resolved["refs"]["creation_outcome_ref"], str(observation))
+            self.assertEqual(resolved["native_call"]["arguments"]["threadId"], "invented-child")
+            self.assertEqual(json.loads(observation.read_bytes()), receipt)
+            self.assertFalse((scratch / "mailbox.sqlite3").exists())
+
+    def test_bootstrap_read_error_retains_unknown_without_task_or_failure_claim(self):
+        for pending_first in (False, True):
+            with self.subTest(pending_first=pending_first), tempfile.TemporaryDirectory(prefix="db-bootstrap-error-") as directory:
+                scratch = Path(directory).resolve()
+                root = scratch / "operations"
+                root.mkdir(mode=0o700)
+                command = self.command(scratch, root)
+                request = self.negative_outcome_intent(scratch, root)
+                prepared = command("prepare", value=request)
+                child = {"thread_id": "invented-child", "host_id": "local"}
+                bound = command("bind", request["operation_id"], {
+                    "call": prepared["native_call"], "result": {"invented": "creation"}, "child": child,
+                })
+                invocation = "submit"
+                if pending_first:
+                    command("submit", request["operation_id"], {
+                        "call": bound["native_call"], "result": {"invented": "pending"},
+                        "bootstrap": {"state": "pending", "evidence_ref": "synthetic://bootstrap-pending"},
+                    })
+                    invocation = "reconcile"
+                receipt = {"call": bound["native_call"], "result": {"isError": True, "error": "invented read failure"},
+                           "bootstrap": {"state": "unknown", "evidence_ref": "synthetic://read-error"}}
+                before_error = {p.relative_to(root): p.read_bytes() for p in root.rglob("*") if p.is_file()}
+                for false_state in ("failed", "completed"):
+                    refused = command(invocation, request["operation_id"], {
+                        **receipt, "bootstrap": {"state": false_state, "evidence_ref": "synthetic://read-error"},
+                    })
+                    self.assertEqual(refused["status"], "refused")
+                    self.assertEqual({p.relative_to(root): p.read_bytes() for p in root.rglob("*") if p.is_file()}, before_error)
+                retained = command(invocation, request["operation_id"], receipt)
+                self.assertEqual(retained["status"], "bootstrap_unknown")
+                self.assertEqual(retained["child"], child)
+                self.assertIsNone(retained["native_call"])
+                self.assertEqual(retained["ipc"], "not_attempted")
+                for key in ("operation_id", "message_id", "attempt_id", "operation_ref"):
+                    self.assertEqual(retained["refs"][key], prepared["refs"][key])
+                outcome = (Path(retained["refs"]["bootstrap_outcome_ref"]) if pending_first
+                           else Path(retained["refs"]["operation_ref"]).with_name("bootstrap.json"))
+                self.assertEqual(json.loads(outcome.read_bytes()), receipt)
+                before = {p.relative_to(root): p.read_bytes() for p in root.rglob("*") if p.is_file()}
+                self.assertEqual(command(invocation, request["operation_id"], receipt)["status"], "bootstrap_unknown")
+                self.assertEqual(command("show", request["operation_id"])["refs"], retained["refs"])
+                conflict = command(invocation, request["operation_id"], {
+                    **receipt, "bootstrap": {"state": "unknown", "evidence_ref": "synthetic://different-read-error"},
+                })
+                self.assertEqual(conflict["status"], "refused")
+                self.assertEqual({p.relative_to(root): p.read_bytes() for p in root.rglob("*") if p.is_file()}, before)
+                self.assertFalse((scratch / "mailbox.sqlite3").exists())
+
     def command(self,scratch,root):
         counter=0
 

@@ -61,6 +61,7 @@ python scripts/validate_proseweaving.py .
 
 python -m unittest tests.test_validate_surreal_intercom tests.plugins.surreal_intercom.test_package_projection
 python -m unittest discover -s tests/plugins/surreal_intercom -p 'test_rolecasting_*.py'
+python -m unittest tests.plugins.surreal_intercom.test_codex_daybreak_sender
 python scripts/validate_surreal_intercom.py .
 ```
 
