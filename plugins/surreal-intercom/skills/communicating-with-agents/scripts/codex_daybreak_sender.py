@@ -291,18 +291,17 @@ def retained(directory):
         wait_path, _, observation_path, observation = observations[-1]
         result["refs"]["task_wait_ref"] = str(wait_path)
         observed = [entry for entry in observations if entry[3] is not None]
+        result["task_observation"] = "pending"
+        result["task_completion"] = "unknown"
         if observed:
             _, _, latest_path, latest = observed[-1]
             result["refs"]["task_observation_ref"] = str(latest_path)
-        if observed and result["status"] == "turn_accepted":
-            result["task_observation"] = ("pending" if observation is None
-                                          else latest["task"]["state"])
-            result["task_completion"] = (latest["task"]["state"]
-                                         if latest["task"]["state"] in {"completed", "failed"}
-                                         else "unknown")
-        else:
-            result["task_observation"] = "pending"
-            result["task_completion"] = "unknown"
+            if result["status"] == "turn_accepted":
+                result["task_observation"] = ("pending" if observation is None
+                                              else latest["task"]["state"])
+                result["task_completion"] = (latest["task"]["state"]
+                                             if latest["task"]["state"] in {"completed", "failed"}
+                                             else "unknown")
         result["native_call"] = None
     return result
 

@@ -1157,6 +1157,7 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                 if damaged_results is not None:
                     # Seeded-record reader proof after an actual disposable-peer
                     # submission; this does not simulate a write or fsync failure.
+                    latest_wait_ref=None
                     if task_observation:
                         pending_observation={
                             "task_wait_ref":wait_ref,"call":task_call,
