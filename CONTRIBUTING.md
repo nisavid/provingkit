@@ -107,6 +107,10 @@ supported derived locks and requires a clean diff.
 
 ## Pull requests
 
+For release notes, download links, and the linked installation guide, use the
+[release presentation procedure](docs/agents/release-presentation.md). It
+includes public readback and Linear reconciliation before release closeout.
+
 A pull request should tell a reviewer:
 
 - what behavior or source contract changes;
