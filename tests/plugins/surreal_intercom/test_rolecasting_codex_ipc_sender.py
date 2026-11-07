@@ -258,6 +258,18 @@ class CodexIpcSenderTests(unittest.TestCase):
             with self.subTest(saved=saved):
                 self.reconcile_fixture(live_receipt=False, malformed_projection=saved)
 
+    def test_saved_receipt_refusal_is_independent_of_malformed_evidence_order(self):
+        receipt = {"stage": "receipt", "source": "native-server-linked-message",
+                   "serverUserMessageId": "historical-server-message",
+                   "observation": {"host": "peer-host", "target": "busy-peer", "correlation": "busy-attempt",
+                                   "source": "native-owner", "generation": "original-generation"}}
+        for malformed in (None, {"observation": []}):
+            for evidence in ([receipt, malformed], [malformed, receipt]):
+                with self.subTest(evidence=evidence):
+                    self.reconcile_fixture(live_receipt=False, malformed_projection={
+                        "stage": "receipt", "reason": "historical-receipt", "rpc": "unknown", "evidence": evidence,
+                    })
+
     def reconcile_fixture(self, *, live_receipt, saved_observation=None, known_saved=False, malformed_projection=None):
         with tempfile.TemporaryDirectory(prefix="codex-ipc-") as temporary:
             root = Path(temporary).resolve()

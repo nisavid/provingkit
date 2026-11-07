@@ -86,11 +86,14 @@ def reconcile(request, planned, native, original_path, result):
     saved_path = original_path.with_name("projection.json")
     if saved_path.exists():
         saved, _ = compact_original(saved_path)
-        if not isinstance(saved, dict) or not isinstance(saved.get("evidence", []), list):
+        if not isinstance(saved, dict):
             raise Refusal("invalid-original-projection")
-        for item in saved.get("evidence", []):
-            if not isinstance(item, dict) or not isinstance(item.get("observation", {}), dict):
-                raise Refusal("invalid-original-projection")
+        evidence = saved.get("evidence", [])
+        if (not isinstance(evidence, list)
+                or any(not isinstance(item, dict) or not isinstance(item.get("observation", {}), dict)
+                       for item in evidence)):
+            raise Refusal("invalid-original-projection")
+        for item in evidence:
             observation = item.get("observation", {})
             if (item.get("stage") == "receipt" and item.get("source") == "native-server-linked-message"
                     and item.get("serverUserMessageId")
