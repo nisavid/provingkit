@@ -4642,6 +4642,16 @@ class ValidatePublicReleaseTests(unittest.TestCase):
         )
         self.assertIn("release/mergecraft", self.module.all_scope_paths())
 
+    def test_intercom_identity_changes_with_refresh_dependency_without_plugin_change(self) -> None:
+        plugins = ("surreal-intercom",)
+        before = self.module.candidate_identities(self.repository, plugins)["plugins"]["surreal-intercom"]
+        self.assertEqual(self.module.candidate_identities(self.repository, plugins)["plugins"]["surreal-intercom"], before)
+        helper = self.repository / "scripts/refresh_transaction.py"
+        helper.write_bytes(helper.read_bytes() + b"\n# Synthetic source identity change.\n")
+        after = self.module.candidate_identities(self.repository, plugins)["plugins"]["surreal-intercom"]
+        self.assertEqual(after["plugin_sha256"], before["plugin_sha256"])
+        self.assertNotEqual(after["composite_sha256"], before["composite_sha256"])
+
     def test_plugin_eval_policy_and_calibration_are_common_identity_inputs(
         self,
     ) -> None:

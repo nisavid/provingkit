@@ -37,7 +37,7 @@ from types import MappingProxyType, ModuleType
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 _RUNNING_AS_ENTRYPOINT = __name__ == "__main__"
-SOURCE_SHA256 = "98134c152ea52a27969cbf344f762b748a6b2406bde3e36e161fffb9949230c4"
+SOURCE_SHA256 = "2c1397dc8853f7e95e3035612542ff20e0dc9cdcf5ff302d42cd8f5d21b2d106"
 PREPARED_SUPERVISOR_SOURCE_OPTION = "--prepared-supervisor-source-sha256"
 MAX_PROOF_SOURCE_BYTES = 2 * 1024 * 1024
 RELEASE_SUPPORT_SOURCES = (
@@ -165,6 +165,7 @@ BASE_PLUGIN_SUPPORT_PATHS = {
         "release/plugin-content-locks/artifact-customs.json",
     },
     "surreal-intercom": {
+        "scripts/refresh_transaction.py",
         "scripts/validate_surreal_intercom.py",
         "tests/test_validate_surreal_intercom.py",
         "evals/surreal-intercom",
