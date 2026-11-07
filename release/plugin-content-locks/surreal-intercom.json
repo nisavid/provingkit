@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "algorithm": "sha256",
+  "files": {
+    ".claude-plugin/plugin.json": "9421df56eb553a3f53b5fe14ecad5ceb46947cddd3f763fc3ef76fe637e8af06",
+    "CHANGELOG.md": "76a601ab2366f76854716bd8426629fdd97696cc72e5b44abdc9589d29396329",
+    "DEVELOPING.md": "ef90b968b58b863e6d3bd78936ecef1f4d8f5a477e11214429d8b83c7ee54404",
+    "LICENSE": "68950fb14202e1a28da07612a6cc6978163fee3e678520c2740a0d1bde0680e8",
+    "README.md": "3fd0800073c356db5d8f7d16ccfe060508765f3d906639b57a0798ff2334ede1",
+    "plugin.json": "157246782b70cf86d9ce205b9bf3beed6978bf83f3fc49e728b3f02c4f9fda36",
+    "skills/communicating-with-agents/SKILL.md": "01b85c8b09dedd0abd4c91534388f0f3a3d128dca28d7105a6ddae442acd9da5",
+    "skills/communicating-with-agents/agents/openai.yaml": "fd5c3396a2f9eaa9dd6e0cf0c44da28cbbf95e3902c03ec74bfc0fb49ff59464",
+    "skills/communicating-with-agents/references/claude-mcp-sender.md": "ac29c46cc156993e121fc59f3f39885f30f21138859662748a7c03c738033867",
+    "skills/communicating-with-agents/references/codex-ipc-sender.md": "ebab8c67045bc93d2bf26ffe27c09d388abdfe19a666223332fca363bac13c1c",
+    "skills/communicating-with-agents/references/codex-owner-admission.md": "449a914e18e59a8303657a0c8dfa4362a0125d814df3c5a2a6a57cec4ab0a78f",
+    "skills/communicating-with-agents/references/native-codex-mailbox.md": "3e03276eb0f20df83afc17ca18e7ee3a0ca66fb322d56a7171045fee75cb0787",
+    "skills/communicating-with-agents/references/peer-messages.md": "303576179ad933344e36ccc400ede8b45ee354cac16e6e589035296e6f952185",
+    "skills/communicating-with-agents/scripts/claude_mcp_sender.py": "16766fdd0871e91485547c71c49b04d16f5a1525dba0eae0e8984df6c019c056",
+    "skills/communicating-with-agents/scripts/codex_capture.py": "1c1142f929394f03aeefdda901ddd151653a9e0681765642bb2b648bae474f2d",
+    "skills/communicating-with-agents/scripts/codex_ipc_core.py": "0e155a820fb29cb083f9eb8a384482049189c375a7bc3d6a17c5d09ff2371449",
+    "skills/communicating-with-agents/scripts/codex_ipc_idle_sender.py": "b1cc049aaa73af5e6dc04ac032b807161dab8d380dbf80ddde8b166c3ee91e3d",
+    "skills/communicating-with-agents/scripts/codex_ipc_sender.py": "bccadc6dae7425679936f12a49a790b42e54e44a102fe16ebde8c09e8f6df533",
+    "skills/communicating-with-agents/scripts/codex_ipc_transport.py": "cbe2a3be4f6b99f52e916d61353f668b1dcbaf3d9035364096700c6ca61e1bec",
+    "skills/communicating-with-agents/scripts/native_codex_mailbox.py": "eb551d82b94f37484f5d5207334b30329ce80bb278e3a8d07028ae230d782823",
+    "skills/communicating-with-agents/scripts/owner_admission_sender.py": "9941c1f9c79b531750f42e84c5686497eb4f413ac8cdf8ea33b0e74e42cb2412",
+    "skills/communicating-with-agents/scripts/peer_message.py": "07687af69dece15e0947f845bdd6488399689a7f9aee5682c9660f9f3ffc92b8",
+    "topology.json": "eb7b2f2eb98241e932b799cc3d626b4e6120c53f8f1692ae393041d9e76eaf9b"
+  },
+  "evaluations": {
+    "evals/surreal-intercom/skills/communicating-with-agents/evals.json": "7a4e7c2288bcf3d0f1d2b8105dd51731dde7769f11e4aec8f338c97406020b58",
+    "evals/surreal-intercom/skills/communicating-with-agents/fixtures/claude-native-send.md": "96d6604db91b1c04e04ea7286b50088d96f13dc5819bc63f9ed51880011d0ab3",
+    "evals/surreal-intercom/skills/communicating-with-agents/fixtures/native-delegation.md": "29d13724128eb8fcb422b21c926b66e97c36f98f9a7e029ca8c995c619ccb341",
+    "evals/surreal-intercom/skills/communicating-with-agents/fixtures/unknown-codex-submission.md": "575a0bba09ae8fc96ea61a6be8ea59f347646e1bb7bd52380bad41328268aad8",
+    "evals/surreal-intercom/skills/communicating-with-agents/trigger-evals.json": "b83c9e1ce0076a342bbe860bdcd6bb6cbcc9e16b735235d1cbcf887c1f4f388e"
+  }
+}

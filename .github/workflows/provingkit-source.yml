@@ -99,7 +99,7 @@ jobs:
       - name: Validate Rolecasting
         run: |
           python -m unittest tests.test_validate_rolecasting tests.test_rolecasting_eval_corpus
-          python -m unittest tests.plugins.test_rolecasting_native_tree tests.plugins.test_rolecasting_native_codex tests.plugins.test_rolecasting_native_mailbox
+          python -m unittest tests.plugins.test_rolecasting_native_tree tests.plugins.test_rolecasting_native_codex
           python scripts/validate_rolecasting.py .
 
   tricritical:
@@ -210,6 +210,28 @@ jobs:
           python -m unittest tests.test_validate_proseweaving
           python scripts/validate_proseweaving.py .
 
+  surreal-intercom:
+    name: Surreal Intercom source contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.13"
+
+      - name: Install validation dependencies
+        run: python -m pip install --disable-pip-version-check -r requirements.txt
+
+      - name: Validate Surreal Intercom
+        run: |
+          python -m unittest tests.test_validate_surreal_intercom tests.plugins.surreal_intercom.test_package_projection
+          python -m unittest tests.plugins.surreal_intercom.test_rolecasting_native_mailbox tests.plugins.surreal_intercom.test_rolecasting_claude_mcp_sender tests.plugins.surreal_intercom.test_rolecasting_codex_ipc_sender tests.plugins.surreal_intercom.test_rolecasting_codex_idle_sender tests.plugins.surreal_intercom.test_rolecasting_codex_owner_admission
+          python scripts/validate_surreal_intercom.py .
+
   artifact-projections:
     name: Installable artifact projections
     runs-on: ubuntu-latest
@@ -256,6 +278,7 @@ jobs:
           python scripts/validate_mergecraft.py . --source-stage --write-content-lock
           python scripts/validate_artifact_customs.py . --source-stage --write-content-lock
           python scripts/validate_proseweaving.py --write-content-lock .
+          python scripts/validate_surreal_intercom.py . --write-content-lock
 
       - name: Require checked-in derived state
         run: git diff --exit-code

@@ -5576,9 +5576,15 @@ class ValidatePublicReleaseTests(unittest.TestCase):
     def test_plugin_eval_accepts_only_exact_optional_legal_field_advisories(
         self,
     ) -> None:
+        def legal_findings(plugin: str) -> list[dict]:
+            # Intercom has no member-specific legal-field exemptions.
+            if plugin == "surreal-intercom":
+                return []
+            return self.optional_legal_field_deductions(plugin)
+
         def exact_findings(target: Path) -> dict:
             return plugin_eval_report(
-                self.optional_legal_field_deductions(target.name), target
+                legal_findings(target.name), target
             )
 
         def exact_result(command, **_kwargs):
@@ -5595,19 +5601,17 @@ class ValidatePublicReleaseTests(unittest.TestCase):
         ):
             evidence = self.module.run_plugin_evals(self.repository, self.plugin_eval)
 
-        self.assertTrue(
-            all(
-                item["advisories"]
-                == [
+        for name, item in evidence.items():
+            self.assertEqual(
+                item["advisories"],
+                [] if name == "surreal-intercom" else [
                     "interface-missing-privacyPolicyURL",
                     "interface-missing-termsOfServiceURL",
-                ]
-                for item in evidence.values()
+                ],
             )
-        )
 
         def drifted_finding(target: Path) -> dict:
-            deductions = self.optional_legal_field_deductions(target.name)
+            deductions = legal_findings(target.name)
             if target.name == "rolecasting":
                 deductions[0]["penalty"] = 13
             return plugin_eval_report(deductions, target)

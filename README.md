@@ -2,7 +2,7 @@
 
 Provingkit equips coding agents with workflows for choosing workers, reviewing
 changes, keeping Git history, managing pull requests, assessing dependencies,
-and writing for people. Its six coordinated Agent Plugins pair instructions
+writing for people, and communicating with other agents. Its seven coordinated Agent Plugins pair instructions
 with checks that make the work reviewable.
 
 [Alpha 6](https://github.com/nisavid/provingkit/releases/tag/v0.1.0-alpha.6)
@@ -29,6 +29,9 @@ Each plugin owns a part of the work:
   an explicit policy.
 - **[Proseweaving](plugins/proseweaving/README.md)** writes and checks prose for
   clarity, evidence, and the reader's needs.
+- **[Surreal Intercom](plugins/surreal-intercom/README.md)** carries addressed peer
+  messages and retained attempts. This source-stage member is not included in
+  Alpha 6; current app compatibility and operating adoption remain separate.
 
 Use the Kit when you want these workflows to work together across an agent's
 work on a repository. Each plugin has its own identity and version and can be

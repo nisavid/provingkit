@@ -16,6 +16,7 @@ EXPECTED_MEMBER_IDENTITIES = {
     "mergecraft",
     "rolecasting",
     "proseweaving",
+    "surreal-intercom",
     "tricritical",
     "versionkeeping",
 }

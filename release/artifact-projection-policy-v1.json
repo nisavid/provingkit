@@ -7,7 +7,8 @@
     "versionkeeping",
     "mergecraft",
     "artifact-customs",
-    "proseweaving"
+    "proseweaving",
+    "surreal-intercom"
   ],
   "targets": {
     "agent-plugins": {

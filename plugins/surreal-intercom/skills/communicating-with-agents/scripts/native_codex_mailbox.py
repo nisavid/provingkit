@@ -27,10 +27,12 @@ def validate_message(message):
     required = {"message_id", "sender", "recipient", "owner", "payload", "authority_ref"}
     if not isinstance(message, dict) or not required <= message.keys():
         raise MailboxError("message requires message_id, sender, recipient, owner, payload, authority_ref")
-    if message.keys() - required - {"holds"}:
+    if message.keys() - required - {"holds", "correlation_id"}:
         raise MailboxError("unknown message fields")
     for name in ("message_id", "authority_ref"):
         text(message[name], name)
+    if "correlation_id" in message:
+        text(message["correlation_id"], "correlation_id")
     if not isinstance(message["payload"], str):
         raise MailboxError("payload must be a string")
     for name in ("sender", "recipient", "owner"):

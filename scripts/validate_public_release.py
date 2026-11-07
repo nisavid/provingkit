@@ -37,7 +37,7 @@ from types import MappingProxyType, ModuleType
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 _RUNNING_AS_ENTRYPOINT = __name__ == "__main__"
-SOURCE_SHA256 = "818e5940efedd4eff19d4611b9fae51016932d4ca90062c8d591717eed7ffbd8"
+SOURCE_SHA256 = "98134c152ea52a27969cbf344f762b748a6b2406bde3e36e161fffb9949230c4"
 PREPARED_SUPERVISOR_SOURCE_OPTION = "--prepared-supervisor-source-sha256"
 MAX_PROOF_SOURCE_BYTES = 2 * 1024 * 1024
 RELEASE_SUPPORT_SOURCES = (
@@ -60,6 +60,7 @@ SKILL_PLUGINS = (
     "tricritical",
     "artifact-customs",
     "proseweaving",
+    "surreal-intercom",
 )
 COMMON_SUPPORT_PATHS = {
     ".claude-plugin/marketplace.json",
@@ -163,6 +164,13 @@ BASE_PLUGIN_SUPPORT_PATHS = {
         "evals/artifact-customs",
         "release/plugin-content-locks/artifact-customs.json",
     },
+    "surreal-intercom": {
+        "scripts/validate_surreal_intercom.py",
+        "tests/test_validate_surreal_intercom.py",
+        "evals/surreal-intercom",
+        "tests/plugins/surreal_intercom",
+        "release/plugin-content-locks/surreal-intercom.json",
+    },
 }
 PLUGIN_EVAL_POLICY_PATH = "release/plugin-eval-policy.json"
 PLUGIN_EVAL_BASELINE_PATH = "release/plugin-eval-baseline-v1.json"
@@ -177,6 +185,7 @@ BASE_VALIDATOR_PATHS = {
     "mergecraft": "scripts/validate_mergecraft.py",
     "tricritical": "scripts/validate_tricritical.py",
     "artifact-customs": "scripts/validate_artifact_customs.py",
+    "surreal-intercom": "scripts/validate_surreal_intercom.py",
 }
 BASE_SOURCE_STAGE_VALIDATOR_FLAGS = {
     "rolecasting": (),
@@ -184,6 +193,7 @@ BASE_SOURCE_STAGE_VALIDATOR_FLAGS = {
     "mergecraft": ("--source-stage",),
     "tricritical": (),
     "artifact-customs": ("--source-stage",),
+    "surreal-intercom": (),
 }
 SHA256 = re.compile(r"sha256:[0-9a-f]{64}$")
 GIT_OID = re.compile(r"(?:[0-9a-f]{40}|[0-9a-f]{64})$")

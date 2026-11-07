@@ -62,7 +62,7 @@ Batch small independent same-shape work into one dispatch and review its diff as
 
 Do local work before waiting; avoid short polling, use a bounded wait when idle, then reconcile live children and recover missed terminal results.
 
-For legacy peer recovery, use [mailbox bookkeeping](references/native-codex-mailbox.md).
+Use `surreal-intercom:communicating-with-agents` for peer communication and reconciliation.
 
 ## Leader Integration
 

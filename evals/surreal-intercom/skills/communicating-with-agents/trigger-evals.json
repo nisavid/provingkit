@@ -1,0 +1,14 @@
+[
+  {
+    "query": "Send this authorized exact message to an existing Claude peer and retain its original attempt.",
+    "should_trigger": true
+  },
+  {
+    "query": "Reconcile this possible peer submission without sending it again.",
+    "should_trigger": true
+  },
+  {
+    "query": "Choose a model and delegate source inspection to a native leader-owned child.",
+    "should_trigger": false
+  }
+]

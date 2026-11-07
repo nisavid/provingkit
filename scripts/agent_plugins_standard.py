@@ -241,9 +241,9 @@ def _resolve_skill_resource(root: Path, skill_root: Path, destination: str) -> P
 
 
 def validate_skill_resource_links(
-    plugin_root: Path, skill_names: tuple[str, ...]
+    plugin_root: Path, skill_names: tuple[str, ...], *, recursive: bool = False
 ) -> None:
-    """Require every relative Markdown resource named by a skill to stay contained."""
+    """Require contained resources, optionally following linked Markdown procedures."""
 
     root = _package_root(plugin_root)
     for skill_name in skill_names:
@@ -253,11 +253,22 @@ def validate_skill_resource_links(
             raise AgentPluginContractError(
                 f"Agent Plugins skill descriptor is missing: {skill_name}"
             )
-        try:
-            content = descriptor.read_text(encoding="utf-8")
-        except (OSError, UnicodeDecodeError) as error:
-            raise AgentPluginContractError(
-                f"Agent Plugins skill descriptor is unreadable: {skill_name}"
-            ) from error
-        for match in _MARKDOWN_LINK.finditer(content):
-            _resolve_skill_resource(root, skill_root, match.group("destination"))
+        pending = [descriptor]
+        visited = set()
+        while pending:
+            document = pending.pop()
+            if document in visited:
+                continue
+            visited.add(document)
+            try:
+                content = document.read_text(encoding="utf-8")
+            except (OSError, UnicodeDecodeError) as error:
+                raise AgentPluginContractError(
+                    f"Agent Skill resource is unreadable: {document.relative_to(root)}"
+                ) from error
+            for match in _MARKDOWN_LINK.finditer(content):
+                resource = _resolve_skill_resource(
+                    root, document.parent, match.group("destination")
+                )
+                if recursive and resource.suffix.lower() == ".md":
+                    pending.append(resource)

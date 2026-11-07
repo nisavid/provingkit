@@ -18,6 +18,7 @@ MEMBERS = (
     "mergecraft",
     "artifact_customs",
     "proseweaving",
+    "surreal_intercom",
 )
 
 

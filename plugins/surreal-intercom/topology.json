@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "skills": {
+    "communicating-with-agents": {
+      "owns": [
+        "peer-addressing",
+        "peer-envelope",
+        "retained-message-attempts",
+        "directional-senders",
+        "communication-outcomes"
+      ],
+      "may_call": []
+    }
+  }
+}

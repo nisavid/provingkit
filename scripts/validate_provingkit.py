@@ -163,6 +163,15 @@ EXPECTED_MEMBERS = (
         "plugin-content-lock",
         "plugins/proseweaving/content-lock.json",
     ),
+    (
+        "surreal-intercom",
+        "Surreal Intercom",
+        "agent-plugin",
+        "plugins/surreal-intercom/plugin.json",
+        "plugins/surreal-intercom/.claude-plugin/plugin.json",
+        "plugin-content-lock",
+        "release/plugin-content-locks/surreal-intercom.json",
+    ),
 )
 EXPECTED_EXCLUDED_SOURCE = {
     "paths": [".scratch", "tooling"],
@@ -277,7 +286,7 @@ EXPECTED_MARKETPLACE = {
     "name": "provingkit",
     "owner": {"name": "Ivan D Vasin"},
     "description": (
-        "Source projection for Provingkit's six Agent Plugins v1 members. "
+        "Source projection for Provingkit's seven Agent Plugins v1 members. "
         "This manifest is not a marketplace publication."
     ),
     "plugins": [
@@ -293,6 +302,7 @@ EXPECTED_MARKETPLACE = {
             "mergecraft",
             "artifact-customs",
             "proseweaving",
+            "surreal-intercom",
         )
     ],
 }

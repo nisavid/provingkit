@@ -38,6 +38,16 @@ the native calls. This source support does not establish an installed release
 or qualified deployment, and leaves the strict native helper, Desktop/CLI
 requirements, and witnessed contracts intact.
 
+Peer communication belongs to
+[Surreal Intercom](https://github.com/nisavid/provingkit/tree/main/plugins/surreal-intercom),
+through `surreal-intercom:communicating-with-agents`. Rolecasting supplies the
+selected worker, task contract, authority interpretation, and supervision;
+Intercom carries the addressed operation and retained message/attempt records.
+Communication startup and effects use their applicable existing permission.
+Installing a source candidate establishes neither live receiver reliability nor
+operating adoption. Existing stores and uncertain attempts retain their original
+identities and pinned source through coordinated caller cutover.
+
 It does not decide repository ownership, review disposition, publication, or
 pull-request work.
 
