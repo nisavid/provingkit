@@ -182,6 +182,8 @@ AUTHORIZED_SOURCE_TAGS = frozenset(
         "df5ffd69cfbe08a82b35ba72baccedadfdaa3b49",
         "refs/tags/v0.1.0-alpha.4 commit "
         "e14e818e423abd2f65b336e279284d412e0fcbce",
+        "refs/tags/v0.1.0-alpha.6 commit "
+        "0c47d9d4b936dfb74134a4d7bf0f9354fc67359b",
     }
 )
 EXPECTED_HISTORY_RELOCATIONS = (
