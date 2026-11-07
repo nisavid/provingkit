@@ -1,6 +1,6 @@
 # Recover native Codex message obligations
 
-Use this Rolecasting procedure when Dispatch records an authorized native Codex
+Use this retained-mailbox procedure when the caller records an authorized native Codex
 peer message, reconciles a sending result, or prepares replacement intake.
 Load this document and record the source revision before dependent use.
 The helper is [scripts/native_codex_mailbox.py](../scripts/native_codex_mailbox.py).
@@ -16,7 +16,7 @@ accepted handover. Reading a mailbox transfers no operational ownership.
 This is the existing mailbox procedure and store contract for routes exposing
 its native send/read/wait controls. For ordinary current-tree Cloud operations,
 select the separate versioned `native_tree.py` profile through
-[native-codex-subagents.md](native-codex-subagents.md). Do not assume this
+Rolecasting’s `delegating-cross-agent-work` procedure when the caller is delegating native work. Do not assume this
 procedure's `read_thread` or `wait_threads` controls exist on that surface, or
 reinterpret its thread/host identities as the new profile's canonical targets.
 The existing helper, stored obligations, and explicit reconciliation rules
@@ -71,7 +71,7 @@ enforcement, recipient authenticity, effective model selection, or cutover.
 
 Resolve `native_codex_mailbox.py` from this skill's `scripts/` resource directory.
 In a source checkout it is
-`plugins/rolecasting/skills/delegating-cross-agent-work/scripts/native_codex_mailbox.py`;
+`plugins/surreal-intercom/skills/communicating-with-agents/scripts/native_codex_mailbox.py`;
 installed consumers use their resolved skill location. Bind that helper path
 and reviewed source revision before use.
 

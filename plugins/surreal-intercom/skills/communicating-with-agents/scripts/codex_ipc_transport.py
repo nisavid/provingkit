@@ -176,3 +176,41 @@ class CliTransport:
         if self.stream is not None:
             self.stream.close()
         self.closed = True
+
+
+def discover_owner(transport, binding, *, text, refusal):
+    """Initialize and bind the exact target's owner on this connection.
+
+    Populate binding["owner"] as soon as the correlated discovery proves it,
+    preserving that acquired prefix even if an incomplete frame then refuses.
+    Caller-supplied text validation and refusal keep its diagnostic contract.
+    This does not select a turn operation or establish authenticated identity.
+    """
+    records = transport.send({
+        "type": "request", "requestId": "initialize", "version": 0,
+        "method": "initialize", "params": {"clientType": "cli"},
+    })
+    matches = [message for _, message in records
+               if message.get("type") == "response"
+               and message.get("requestId") == "initialize"
+               and message.get("method") == "initialize"
+               and message.get("resultType") == "success"]
+    if len(matches) != 1:
+        raise refusal("initialize-unavailable")
+    client = text(matches[0].get("result", {}).get("clientId"), "native-client")
+    records = transport.send({
+        "type": "request", "requestId": "owner", "sourceClientId": client,
+        "version": 1, "method": "thread-owner-discovery",
+        "params": {"hostId": "local", "conversationId": binding["target"]},
+    })
+    matches = [message for _, message in records
+               if message.get("type") == "response"
+               and message.get("requestId") == "owner"
+               and message.get("method") == "thread-owner-discovery"
+               and message.get("resultType") == "success"]
+    if len(matches) != 1:
+        raise refusal("owner-unavailable")
+    binding["owner"] = text(matches[0].get("handledByClientId"), "native-owner")
+    if transport.receiver.incomplete is not None:
+        raise refusal("connection-incomplete-before-write")
+    return client

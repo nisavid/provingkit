@@ -12,15 +12,9 @@ from pathlib import Path
 import sqlite3
 import sys
 
-SCRIPTS = (
-    Path(__file__).resolve().parents[4] / "plugins" / "rolecasting" / "skills"
-    / "delegating-cross-agent-work" / "scripts"
-)
-sys.path.insert(0, str(SCRIPTS))
-
 from codex_capture import CaptureWriter
 from codex_ipc_core import DEFAULTS, Refusal, bounded_bytes, encode, failure_record, print_result
-from codex_ipc_transport import CliTransport, ReceiveFailure
+from codex_ipc_transport import CliTransport, ReceiveFailure, discover_owner
 from native_codex_mailbox import Mailbox, MailboxError, text
 from peer_message import serialize_peer_message
 
@@ -107,33 +101,7 @@ def submit(native, limits, wait, writer, result):
             missing[name] = "UNKNOWN"
 
     try:
-        records = transport.send({
-            "type": "request", "requestId": "initialize", "version": 0,
-            "method": "initialize", "params": {"clientType": "cli"},
-        })
-        matches = [message for _, message in records
-                   if message.get("type") == "response"
-                   and message.get("requestId") == "initialize"
-                   and message.get("method") == "initialize"
-                   and message.get("resultType") == "success"]
-        if len(matches) != 1:
-            raise Refusal("initialize-unavailable")
-        client = text(matches[0].get("result", {}).get("clientId"), "native-client")
-        records = transport.send({
-            "type": "request", "requestId": "owner", "sourceClientId": client,
-            "version": 1, "method": "thread-owner-discovery",
-            "params": {"hostId": "local", "conversationId": binding["target"]},
-        })
-        matches = [message for _, message in records
-                   if message.get("type") == "response"
-                   and message.get("requestId") == "owner"
-                   and message.get("method") == "thread-owner-discovery"
-                   and message.get("resultType") == "success"]
-        if len(matches) != 1:
-            raise Refusal("owner-unavailable")
-        binding["owner"] = text(matches[0].get("handledByClientId"), "native-owner")
-        if transport.receiver.incomplete is not None:
-            raise Refusal("connection-incomplete-before-write")
+        client = discover_owner(transport, binding, text=text, refusal=Refusal)
         correlation = native["correlation"]
         envelope = {
             "type": "request", "requestId": correlation, "sourceClientId": client,

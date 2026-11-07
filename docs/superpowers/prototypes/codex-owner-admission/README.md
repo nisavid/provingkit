@@ -1,13 +1,13 @@
 # Request owner-side admission for one existing Codex chat
 
-This isolated source prototype sends one mailbox-backed message through the nominated local GUI owner, asking that owner to perform native user-message admission with inherited settings. The owner can reach its admission branch or ordinary native start. The requested flag does not identify which branch ran. Source tests use disposable Unix peers; no current app/backend, receiver operation, settings preservation or operating adoption is qualified here.
+The maintained Surreal Intercom command sends one mailbox-backed message through the nominated local GUI owner, asking that owner to perform native user-message admission with inherited settings. The owner can reach its admission branch or ordinary native start. The requested flag does not identify which branch ran. Source tests use disposable Unix peers; no current app/backend, receiver operation, settings preservation or operating adoption is qualified here.
 
 ## Invoke the source command
 
-Read the maintained [Codex sender procedure](../../../../plugins/rolecasting/skills/delegating-cross-agent-work/references/codex-ipc-sender.md) for the existing mailbox/envelope/capture responsibilities. This prototype is a separate explicit operation, not a fallback from that procedure’s busy or idle command. Do not run it against a real endpoint without the separately reviewed case, applicable grant and current admission.
+Read the maintained [Codex owner-admission procedure](../../../../plugins/surreal-intercom/skills/communicating-with-agents/references/codex-owner-admission.md) for the existing mailbox/envelope/capture responsibilities. This prototype is a separate explicit operation, not a fallback from that procedure’s busy or idle command. Do not run it against a real endpoint without the separately reviewed case, applicable grant and current admission.
 
 ```sh
-python -B docs/superpowers/prototypes/codex-owner-admission/owner_admission_sender.py --store case/mailbox.sqlite3 --request case/request.json
+python -B plugins/surreal-intercom/skills/communicating-with-agents/scripts/owner_admission_sender.py --store case/mailbox.sqlite3 --request case/request.json
 ```
 
 The invocation reads trusted, explicitly selected caller files. Its request has exactly `message_id`, `attempt_id`, `actor`, `recipient`, `evidence_ref`, `native`, and `capture`. The mailbox message preserves its original sender, actor, recipient, owner, exchange correlation, authority reference, holds and payload through the shared versioned peer envelope. These are cooperative records, not authenticated identity or newly granted authority.
@@ -33,7 +33,7 @@ The command returns the staged result and actual owned-connection disposition, r
 The public test seam is invented mailbox/peer/route/capture records through this command and a disposable test-owned Unix peer. Assertions cover actual framed requests, stored pending evidence, output stages and owned closure. They are mechanism evidence, not a Claude/Codex live operation or a security-enforcement test. Keep temporary socket paths short enough for the platform; retain test captures separately from the temporary socket root.
 
 ```sh
-python -B -m unittest discover -s tests/plugins -p test_rolecasting_codex_owner_admission.py
+python -B -m unittest tests.plugins.surreal_intercom.test_rolecasting_codex_owner_admission
 ```
 
 The owning technical task is [Prototype owner-side message admission for existing Codex chats](https://github.com/nisavid/provingkit/issues/869). Its remaining review, architecture, prototype reaction and exact live-scope obligations are separate from running these synthetic checks. The independent native-attachment alternative and wider reply/recovery/adoption outcomes stay in the [technical map](https://github.com/nisavid/provingkit/issues/840).

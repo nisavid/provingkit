@@ -5,8 +5,8 @@ consistent, and explicit about what their validation proves.
 
 ## Scope
 
-Current changes stay within the six Agent Plugins: Rolecasting, Tricritical,
-Versionkeeping, Mergecraft, Artifact Customs, and Proseweaving. Task Witness is
+Current changes stay within these Agent Plugins: Rolecasting, Tricritical,
+Versionkeeping, Mergecraft, Artifact Customs, Proseweaving, and Surreal Intercom. Task Witness is
 shelved optional equipment; its historical records remain available for future
 reassessment.
 Hindsight, Base Loadout, personal tools, and unrelated experiments belong
@@ -58,6 +58,10 @@ python scripts/validate_artifact_customs.py . --source-stage
 
 python -m unittest tests.test_validate_proseweaving
 python scripts/validate_proseweaving.py .
+
+python -m unittest tests.test_validate_surreal_intercom tests.plugins.surreal_intercom.test_package_projection
+python -m unittest discover -s tests/plugins/surreal_intercom -p 'test_rolecasting_*.py'
+python scripts/validate_surreal_intercom.py .
 ```
 
 These commands validate public source contracts. They do not grant release,
@@ -84,7 +88,7 @@ explains the additional controls required for release and live qualification.
 
 ## Repository layout
 
-- `plugins/` contains the six canonical plugin source trees and identity
+- `plugins/` contains the canonical plugin source trees and identity
   manifests.
 - `evals/` and `tests/` contain member behavior corpora and contract tests.
 - `scripts/` contains source validators and controlled derived-artifact writers.
@@ -106,6 +110,10 @@ validator. Never edit a digest merely to make validation green. CI regenerates
 supported derived locks and requires a clean diff.
 
 ## Pull requests
+
+For release notes, download links, and the linked installation guide, use the
+[release presentation procedure](docs/agents/release-presentation.md). It
+includes public readback and Linear reconciliation before release closeout.
 
 A pull request should tell a reviewer:
 

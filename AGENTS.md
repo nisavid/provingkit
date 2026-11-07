@@ -7,6 +7,10 @@
 Issues, PRDs, and Wayfinder maps are tracked in GitHub Issues for
 `nisavid/provingkit`. See `docs/agents/issue-tracker.md`.
 
+For release publication or presentation changes, use
+`docs/agents/release-presentation.md`. For stale Linear release records, use
+`docs/agents/linear-release-reconciliation.md`.
+
 ### Triage labels
 
 Use the canonical `needs-triage`, `needs-info`, `ready-for-agent`,

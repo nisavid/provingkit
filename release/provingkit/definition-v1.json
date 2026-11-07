@@ -22,7 +22,7 @@
         "content_identity": {
           "kind": "plugin-content-lock",
           "path": "plugins/rolecasting/content-lock.json",
-          "sha256": "sha256:4cc53a9d82013d89ae979a2d2a63341ee72ee69e6ee5f77a180a9601f620bafe"
+          "sha256": "sha256:b667f2115f1918ba76ca20e628bc0967dcf1868c38a4adb861ce6125ede8a590"
         },
         "display_name": "Rolecasting",
         "distribution_kind": "agent-plugin",
@@ -105,6 +105,21 @@
         "identity_manifests": {
           "canonical": "plugins/proseweaving/plugin.json",
           "claude": "plugins/proseweaving/.claude-plugin/plugin.json"
+        },
+        "version": "1.0.0"
+      },
+      {
+        "content_identity": {
+          "kind": "plugin-content-lock",
+          "path": "release/plugin-content-locks/surreal-intercom.json",
+          "sha256": "sha256:a12b0d9e009bfc3c6fc3a4c8514e5e09fd9de6c1c183c25a3f78aa08e367ea75"
+        },
+        "display_name": "Surreal Intercom",
+        "distribution_kind": "agent-plugin",
+        "id": "surreal-intercom",
+        "identity_manifests": {
+          "canonical": "plugins/surreal-intercom/plugin.json",
+          "claude": "plugins/surreal-intercom/.claude-plugin/plugin.json"
         },
         "version": "1.0.0"
       }

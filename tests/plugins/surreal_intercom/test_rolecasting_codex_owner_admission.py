@@ -12,15 +12,12 @@ import threading
 import unittest
 
 
-ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[3]
 SCRIPTS = (
-    ROOT / "plugins" / "rolecasting" / "skills"
-    / "delegating-cross-agent-work" / "scripts"
+    ROOT / "plugins" / "surreal-intercom" / "skills"
+    / "communicating-with-agents" / "scripts"
 )
-PROTOTYPE = (
-    ROOT / "docs" / "superpowers" / "prototypes"
-    / "codex-owner-admission" / "owner_admission_sender.py"
-)
+PROTOTYPE = SCRIPTS / "owner_admission_sender.py"
 
 
 class CodexOwnerAdmissionTests(unittest.TestCase):

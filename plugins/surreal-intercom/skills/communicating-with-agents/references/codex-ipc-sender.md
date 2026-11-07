@@ -35,7 +35,7 @@ Capture writes are invocation-owned and create-only. The allowance controls this
 From the reviewed source checkout, use its documented interpreter form; do not add Python `-I` or change sibling import resolution:
 
 ```sh
-python -B plugins/rolecasting/skills/delegating-cross-agent-work/scripts/codex_ipc_sender.py --store "$peer_mailbox" --request "$sender_request"
+python -B plugins/surreal-intercom/skills/communicating-with-agents/scripts/codex_ipc_sender.py --store "$peer_mailbox" --request "$sender_request"
 ```
 
 Retain the original foreground invocation, exit, result and exact own capture paths. Follow that invocation through its native continuation if exposed; loss of the result is not permission to start it again. A claim records uncertainty before acquisition/input. The command selects only an eligible busy turn, retains the immutable pre-write attempt, and submits at most one steer. An idle or unsupported target is refused; there is no idle-start fallback or activity created to make a target busy.
@@ -51,7 +51,7 @@ Use the saved projection first. It must bind its native correlation, host, targe
 When the owning grant permits one further read, select the exact original `attempt.json` and sibling `rpc.json`, a new owned capture plan, the same original message/attempt/peer, and the current reader actor:
 
 ```sh
-python -B plugins/rolecasting/skills/delegating-cross-agent-work/scripts/codex_ipc_sender.py --store "$peer_mailbox" --request "$reader_request" --mode reconcile --original-attempt "$original_attempt"
+python -B plugins/surreal-intercom/skills/communicating-with-agents/scripts/codex_ipc_sender.py --store "$peer_mailbox" --request "$reader_request" --mode reconcile --original-attempt "$original_attempt"
 ```
 
 This operation reuses a valid saved receipt or performs the permitted read-only acquisition. It never claims a new attempt, starts/steers a turn, or resends. A receipt can advance the existing mailbox attempt to received; it does not fabricate handled/completed. Original attempt/RPC bytes stay unchanged. The current compact-record profile requires intact originals for a new acquisition; a missing original input remains an explicit unknown/gap, never a fabricated replacement record or proof of nondelivery.
@@ -83,7 +83,7 @@ Retain the exact original attempt, observed profile/revision/time, request/clien
 From the reviewed source checkout, the synthetic invocation shape is:
 
 ```sh
-python -B plugins/rolecasting/skills/delegating-cross-agent-work/scripts/codex_ipc_idle_sender.py --store "$peer_mailbox" --request "$idle_request"
+python -B plugins/surreal-intercom/skills/communicating-with-agents/scripts/codex_ipc_idle_sender.py --store "$peer_mailbox" --request "$idle_request"
 ```
 
 This example selects no live peer. Installation, actual caller/owner binding, private acquisition, provider use, sending, receiver-app recovery and operational adoption remain separate gates.

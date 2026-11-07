@@ -9,8 +9,8 @@ import textwrap
 import unittest
 
 SCRIPTS = (
-    Path(__file__).resolve().parents[2]
-    / "plugins" / "rolecasting" / "skills" / "delegating-cross-agent-work"
+    Path(__file__).resolve().parents[3]
+    / "plugins" / "surreal-intercom" / "skills" / "communicating-with-agents"
     / "scripts"
 )
 

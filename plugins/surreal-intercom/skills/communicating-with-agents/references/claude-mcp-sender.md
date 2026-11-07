@@ -1,6 +1,6 @@
 # Submit a peer message through a nominated Claude MCP child
 
-Use this procedure under the owning task’s selected Claude-receiving native MCP route and applicable original or standing authority. Load this reference and record the reviewed source revision before dependent execution. [Foreign-harness qualification](foreign-harness-peers.md) still governs surface selection; [mailbox bookkeeping](native-codex-mailbox.md) governs retained obligations and reconciliation.
+Use this procedure under the owning task’s selected Claude-receiving native MCP route and applicable original or standing authority. Load this reference and record the reviewed source revision before dependent execution. [Peer binding and authority](peer-messages.md) governs the communication boundary; [mailbox bookkeeping](native-codex-mailbox.md) governs retained obligations and reconciliation.
 
 The sender module is [scripts/claude_mcp_sender.py](../scripts/claude_mcp_sender.py). It uses [peer_message.py](../scripts/peer_message.py) to serialize a retained message and actual submitting actor. This is source support for a narrow stdio MCP profile. It establishes no installed release, live compatibility, authenticated grant, or native peer identity. Operational use, Claude startup, private-data disclosure, sending, installation, and adoption retain their separate gates.
 
@@ -47,7 +47,7 @@ Replies must be newline-delimited JSON-RPC objects with the expected integer ID 
 Resolve helpers from the reviewed skill resources. Prepare the message and request before invocation. The following invented local placeholders illustrate initial setup, planning, sender invocation, and inspection from a source checkout. They select no operational destination and grant no startup, disclosure, or sending authority. Run the sender line only after those gates are satisfied.
 
 ```sh
-SKILL_DIR=plugins/rolecasting/skills/delegating-cross-agent-work
+SKILL_DIR=plugins/surreal-intercom/skills/communicating-with-agents
 python "$SKILL_DIR/scripts/native_codex_mailbox.py" --store ./example-private/mailbox.sqlite3 init
 python "$SKILL_DIR/scripts/native_codex_mailbox.py" --store ./example-private/mailbox.sqlite3 plan --input ./example-private/message.json
 python "$SKILL_DIR/scripts/claude_mcp_sender.py" --store ./example-private/mailbox.sqlite3 --request ./example-private/request.json
