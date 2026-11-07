@@ -433,7 +433,7 @@ class CodexIpcSenderTests(unittest.TestCase):
                     self.assertFalse(result["claimed"])
                     self.assertEqual(result["peer_input"], "received")
                     self.assertEqual(result["reason"], "historical-receipt")
-                    self.assertEqual(result["projection"], saved)
+                    self.assertEqual(result["projection"], json.loads(original_bytes["projection.json"]))
                     self.assertEqual(result["owned_connection"], {"started": False, "closed": False})
                     self.assertEqual(list(capture.iterdir()), [])
                     for name, data in original_bytes.items():
