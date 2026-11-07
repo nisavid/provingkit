@@ -64,6 +64,7 @@ def make_intent(epoch, source, key="intent-1", body=b"Done"):
             "decision": "authorized",
             "evidence_id": "authority-1",
             "actor_login": "ivan",
+            "actor_node_id": "USER_ivan",
         },
         "classification": {
             "result": "human_feedback",
@@ -158,6 +159,7 @@ def make_replacement_intent(basis, key="replacement", body=b"Done"):
             "decision": "authorized",
             "evidence_id": "replacement-authority",
             "actor_login": "ivan",
+            "actor_node_id": "USER_ivan",
             "classification_artifact_sha256": classification["sha256"],
             "adjudication_artifact_sha256": adjudication["sha256"],
         }
@@ -264,6 +266,145 @@ class ResponseRuntimeTests(unittest.TestCase):
         state = json.loads(self.provider_state.read_text(encoding="utf-8"))
         update(state)
         self.provider_state.write_text(json.dumps(state), encoding="utf-8")
+
+    def test_new_intent_requires_immutable_actor_identity_before_provider_access(self):
+        for node_id in (None, "", 7, ["USER_ivan"]):
+            with self.subTest(node_id=node_id):
+                intent = make_intent(self.epoch, self.epoch["sources"][0])
+                if node_id is None:
+                    del intent["authority"]["actor_node_id"]
+                else:
+                    intent["authority"]["actor_node_id"] = node_id
+                calls_before = list(self.provider_calls())
+
+                with self.assertRaises(response_runtime.AdmissionError):
+                    self.runtime.invoke(intent, b"Done")
+
+                self.assertEqual(self.provider_calls(), calls_before)
+                if self.runtime.store.directory.exists():
+                    self.assertEqual(self.runtime.store.records(), [])
+
+    def test_wrong_actor_at_readiness_never_records_or_performs_a_write(self):
+        identities = (
+            {"login": "other", "node_id": "USER_other"},
+            {"login": "ivan", "node_id": "USER_other"},
+            {"login": "ivan"},
+            ["malformed"],
+        )
+        for route, source_kind in (
+            ("inline", "inline_review_comment"),
+            ("conversation", "pr_conversation_comment"),
+        ):
+            for index, identity in enumerate(identities):
+                with self.subTest(route=route, identity=identity):
+                    state_path, _, runtime, epoch = self.isolated_runtime(
+                        f"readiness-actor-{route}-{index}"
+                    )
+                    state = json.loads(state_path.read_text(encoding="utf-8"))
+                    self.assertEqual(
+                        [call["operation"] for call in state["calls"]],
+                        ["graphql_read_query"],
+                    )
+                    state["actor_identity"] = identity
+                    state_path.write_text(json.dumps(state), encoding="utf-8")
+                    source = next(
+                        item for item in epoch["sources"] if item["kind"] == source_kind
+                    )
+                    body = response_body(source)
+
+                    outcome = runtime.invoke(
+                        make_intent(epoch, source, body=body), body
+                    )
+
+                    self.assertEqual(outcome["status"], "confirmed_failure")
+                    self.assertFalse(outcome["provider_call"])
+                    self.assertFalse(
+                        any(
+                            record["record_kind"] == "write_started"
+                            for record in runtime.store.records()
+                        )
+                    )
+                    state = json.loads(state_path.read_text(encoding="utf-8"))
+                    self.assertEqual(
+                        sum(
+                            call["operation"] == "actor_preflight"
+                            for call in state["calls"]
+                        ),
+                        1,
+                    )
+                    self.assertFalse(
+                        any(
+                            call["operation"] == "response_write"
+                            for call in state["calls"]
+                        )
+                    )
+                    self.assertNotIn("objects", state)
+
+    def test_actor_drift_between_readiness_and_leaf_never_posts_either_route(self):
+        for route, source_kind in (
+            ("inline", "inline_review_comment"),
+            ("conversation", "pr_conversation_comment"),
+        ):
+            with self.subTest(route=route):
+                state_path, _, runtime, epoch = self.isolated_runtime(
+                    f"leaf-actor-drift-{route}"
+                )
+                state = json.loads(state_path.read_text(encoding="utf-8"))
+                state["queued"] = {
+                    "GET /user": [
+                        {
+                            "returncode": 0,
+                            "json": {"login": "ivan", "node_id": "USER_ivan"},
+                        },
+                        {
+                            "returncode": 0,
+                            "json": {"login": "ivan", "node_id": "USER_other"},
+                        },
+                    ]
+                }
+                state_path.write_text(json.dumps(state), encoding="utf-8")
+                source = next(
+                    item for item in epoch["sources"] if item["kind"] == source_kind
+                )
+                body = response_body(source)
+
+                outcome = runtime.invoke(make_intent(epoch, source, body=body), body)
+
+                self.assertEqual(outcome["status"], "confirmed_failure")
+                self.assertEqual(outcome["leaf_receipt"]["side_effect"], "none")
+                state = json.loads(state_path.read_text(encoding="utf-8"))
+                self.assertEqual(
+                    sum(
+                        call["operation"] == "actor_preflight"
+                        for call in state["calls"]
+                    ),
+                    2,
+                )
+                self.assertFalse(
+                    any(
+                        call["operation"] == "response_write"
+                        for call in state["calls"]
+                    )
+                )
+                self.assertNotIn("objects", state)
+                records = runtime.store.records()
+                admission = next(
+                    record["payload"]["intent"]
+                    for record in records
+                    if record["record_kind"] == "ordinary_admission"
+                )
+                self.assertEqual(
+                    admission["binding"]["expected_actor_identity"],
+                    {
+                        "availability": "available",
+                        "login": "ivan",
+                        "node_id": "USER_ivan",
+                    },
+                )
+                self.assertEqual(
+                    sum(record["record_kind"] == "write_started" for record in records),
+                    1,
+                )
 
     def test_missing_classification_or_independence_evidence_makes_zero_provider_calls(
         self,
@@ -1034,7 +1175,7 @@ class ResponseRuntimeTests(unittest.TestCase):
                     "node_id": "RESPONSE_node_950",
                     "body": body.decode(),
                     "html_url": result["url"],
-                    "user": {"login": "ivan"},
+                    "user": {"login": "ivan", "node_id": "USER_ivan"},
                 }
                 calls_before = list(state["calls"])
                 state_path.write_text(json.dumps(state), encoding="utf-8")
@@ -1556,6 +1697,75 @@ class ResponseRuntimeTests(unittest.TestCase):
         self.assertEqual(result["status"], "confirmed_success")
         self.assertEqual(len(self.response_write_calls()), 1)
 
+    def test_legacy_pending_actor_binding_recovers_through_fresh_authority(self):
+        def admit_pending(runtime, epoch, *, legacy_actor):
+            source = epoch["sources"][0]
+            proposal = response_runtime._proposal(
+                make_intent(epoch, source, "pending"), b"Done"
+            )
+            owner = response_runtime._owner(epoch, source, None)
+            admitted = response_runtime._intent_record(proposal, owner)
+            if legacy_actor:
+                admitted["binding"]["authority"].pop("actor_node_id")
+                admitted["binding"]["expected_actor_identity"].pop("node_id")
+                admitted["binding_digest"] = response_outcome_store.digest(
+                    admitted["binding"]
+                )
+            with runtime.store.locked(exclusive=True):
+                runtime.store.append(
+                    "ordinary_admission",
+                    {"schema_version": 2, "owner": owner, "intent": admitted},
+                    record_id="pending-admission",
+                )
+            return admitted
+
+        modern_state, _, modern, modern_epoch = self.isolated_runtime(
+            "modern-pending-actor"
+        )
+        admit_pending(modern, modern_epoch, legacy_actor=False)
+        modern_records = modern.store.records()
+        modern_calls = json.loads(modern_state.read_text(encoding="utf-8"))["calls"]
+
+        with self.assertRaises(response_runtime.AdmissionError):
+            modern.prepare_replacement("pending")
+
+        self.assertEqual(modern.store.records(), modern_records)
+        self.assertEqual(
+            json.loads(modern_state.read_text(encoding="utf-8"))["calls"],
+            modern_calls,
+        )
+        predecessor = admit_pending(self.runtime, self.epoch, legacy_actor=True)
+        original = {
+            record["path"]: record["path"].read_bytes()
+            for record in self.runtime.store.records()
+        }
+
+        basis = self.restarted_runtime().prepare_replacement("pending")
+
+        self.assertEqual(basis["terminal_state"], "invalidated_unexecuted")
+        self.assertEqual(basis["predecessor_intent_id"], predecessor["intent_id"])
+        self.assertEqual(self.response_write_calls(), [])
+        self.assertEqual(
+            [record["record_kind"] for record in self.runtime.store.records()],
+            [
+                "ordinary_admission",
+                "prewrite_validation_started",
+                "prewrite_invalidated",
+                "replacement_basis",
+            ],
+        )
+        successor = make_replacement_intent(basis, "fresh-actor-authority")
+        result = self.restarted_runtime().invoke(successor, b"Done")
+
+        with self.assertRaises(response_runtime.AdmissionError):
+            self.restarted_runtime().invoke(successor, b"Done")
+
+        self.assertEqual(result["status"], "confirmed_success")
+        self.assertEqual(result["authority"]["actor_node_id"], "USER_ivan")
+        self.assertEqual(len(self.response_write_calls()), 1)
+        for path, exact_bytes in original.items():
+            self.assertEqual(path.read_bytes(), exact_bytes)
+
     def test_source_fix_requires_new_head_acquisition_before_authoring(self):
         self.update_provider(
             lambda state: state["graphql"]["data"]["repository"]["pullRequest"].update(
@@ -1672,7 +1882,7 @@ class ResponseRuntimeTests(unittest.TestCase):
                 "node_id": "RESPONSE_node_950",
                 "body": "Done",
                 "html_url": result["url"],
-                "user": {"login": "ivan"},
+                "user": {"login": "ivan", "node_id": "USER_ivan"},
             }
 
         self.update_provider(expose_result)

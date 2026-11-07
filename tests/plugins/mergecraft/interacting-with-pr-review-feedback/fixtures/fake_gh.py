@@ -74,10 +74,19 @@ def validate_acquisition_query(query):
 method = "GET"
 if "--method" in argv:
     method = argv[argv.index("--method") + 1]
-endpoint = next(
-    item for item in argv if item.startswith("/repos/") or item == "graphql"
-)
-if endpoint == "graphql":
+if argv[:2] == ["auth", "token"]:
+    method, endpoint = "AUTH", "token"
+else:
+    endpoint = next(
+        item
+        for item in argv
+        if item.startswith("/repos/") or item in {"graphql", "/user"}
+    )
+if method == "AUTH":
+    operation = "credential_read"
+elif endpoint == "/user":
+    operation = "actor_preflight"
+elif endpoint == "graphql":
     operation = "graphql_read_query"
 elif method == "POST":
     operation = "response_write"
@@ -96,7 +105,21 @@ else:
     queued = state.get("queued", {}).get(key, [])
     response = queued.pop(0) if queued else None
 
-if response is None and endpoint == "graphql":
+if response is None and method == "AUTH":
+    response = {"returncode": 0, "stdout": state.get("token", "fake-token")}
+elif response is None and endpoint == "/user":
+    actor_login = state.get("actor", "ivan")
+    response = {
+        "returncode": 0,
+        "json": state.get(
+            "actor_identity",
+            {
+                "login": actor_login,
+                "node_id": state.get("actor_node_id", f"USER_{actor_login}"),
+            },
+        ),
+    }
+elif response is None and endpoint == "graphql":
     if not isinstance(request, dict) or not isinstance(request.get("query"), str):
         response = {"returncode": 2, "stderr": "GraphQL POST lacked query document"}
     elif not isinstance(request.get("variables"), dict):
@@ -117,7 +140,10 @@ elif response is None and method == "POST" and endpoint.startswith("/repos/"):
         "node_id": f"RESPONSE_node_{response_id}",
         "body": request["body"],
         "html_url": f"https://github.com/example/repo/pull/7#response-{response_id}",
-        "user": {"login": state.get("actor", "ivan")},
+        "user": {
+            "login": state.get("actor", "ivan"),
+            "node_id": state.get("actor_node_id", f"USER_{state.get('actor', 'ivan')}"),
+        },
         "kind": object_kind,
     }
     state.setdefault("objects", {})[str(response_id)] = created
