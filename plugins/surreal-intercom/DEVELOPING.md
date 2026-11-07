@@ -30,8 +30,28 @@ retains source and operating evidence. Catalog revision
 are separate integration inputs. Keep historical claims and private records in
 place; a path move supplies no new live qualification.
 
-The early foundation exposes transport, owner discovery, captures, and retained
-message/attempt conventions for the stacked Daybreak operation. The remaining
-first-PR source work includes a supported bounded matching-reply/pending/resume
-procedure and the finite Claude consuming-control lookup. Advertise each only
-when implemented and checked at its actual boundary.
+The [Codex Daybreak recipient procedure](skills/communicating-with-agents/references/codex-daybreak-recipient.md)
+owns invocation of `codex_daybreak_sender.py`: caller-owned native creation and
+reads, retained bootstrap evidence, claimed owner submission, task observation,
+and explicit continuation on the same child. Keep its caller-control shapes and
+retained input/status contracts aligned with the script. The helper is not a
+native creation/read actuator or a general reply observer.
+
+Synthetic coverage for this procedure must distinguish preparation, direct and
+pending creation binding, completed/pending/unknown bootstrap, setup receipt and
+saved-selection readback before task submission, accepted versus uncertain
+submission, bounded caller-owned task observations, and fresh continuations.
+Check conflicting and repeated intake, interruption barriers, missing or stale
+references, remote-child refusal before an observation call, and unchanged
+original attempts after uncertainty. Keep the Daybreak outgoing-frame limit at the shared framing
+write checks, including protocol-generated responses, and require refusal before
+the oversized frame reaches the peer. Ordinary existing transport profiles retain
+their current limits.
+
+Run source checks and synthetic cases through the maintained test schedule;
+retain the candidate revision and actual results. Procedure discovery and
+caller application need their own consumer checks. None of these checks proves
+effective Daybreak execution, current app behavior, installation, signal-safe
+shutdown, or live recovery. The general matching-reply observer and finite Claude consuming-control lookup
+remain separate source work. Advertise it only after implementation and checks at its
+actual boundary.

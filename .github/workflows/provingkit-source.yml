@@ -229,7 +229,7 @@ jobs:
       - name: Validate Surreal Intercom
         run: |
           python -m unittest tests.test_validate_surreal_intercom tests.plugins.surreal_intercom.test_package_projection
-          python -m unittest tests.plugins.surreal_intercom.test_rolecasting_native_mailbox tests.plugins.surreal_intercom.test_rolecasting_claude_mcp_sender tests.plugins.surreal_intercom.test_rolecasting_codex_ipc_sender tests.plugins.surreal_intercom.test_rolecasting_codex_idle_sender tests.plugins.surreal_intercom.test_rolecasting_codex_owner_admission
+          python -m unittest tests.plugins.surreal_intercom.test_rolecasting_native_mailbox tests.plugins.surreal_intercom.test_rolecasting_claude_mcp_sender tests.plugins.surreal_intercom.test_rolecasting_codex_ipc_sender tests.plugins.surreal_intercom.test_rolecasting_codex_idle_sender tests.plugins.surreal_intercom.test_rolecasting_codex_owner_admission tests.plugins.surreal_intercom.test_codex_daybreak_sender
           python scripts/validate_surreal_intercom.py .
 
   artifact-projections:

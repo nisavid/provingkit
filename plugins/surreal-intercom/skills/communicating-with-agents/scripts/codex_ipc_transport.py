@@ -128,6 +128,10 @@ class CliTransport:
     @property
     def events(self):
         return self.receiver.events
+    def _check_outgoing_frame(self, data):
+        limit = self.receiver.limits.get("outgoingFrameBytes")
+        if limit is not None and len(data) > limit:
+            raise ReceiveFailure("outgoing-frame-limit")
     def send(self, envelope):
         if self.stream is None:
             self.stream = self.connector(self.endpoint, self.wait)
@@ -137,6 +141,7 @@ class CliTransport:
             self.write_boundary = {'pendingExistedBeforeWrite': True,
                                    'pendingSha256': hashlib.sha256(self.pending_path.read_bytes()).hexdigest()}
         data = json.dumps(envelope, separators=(',', ':')).encode()
+        self._check_outgoing_frame(data)
         self.outbound.append(envelope)
         deadline = self.clock() + self.wait
         self.stream.write(struct.pack('<I', len(data)) + data, self.wait)
@@ -157,6 +162,7 @@ class CliTransport:
                     answer = {'type': 'client-discovery-response', 'requestId': message['requestId'],
                               'response': {'canHandle': False}}
                     body = json.dumps(answer).encode()
+                    self._check_outgoing_frame(body)
                     self.stream.write(struct.pack('<I', len(body)) + body, max(0.001, deadline - self.clock()))
                     self.outbound.append(answer)
                 if (envelope['method'] in {'initialize', 'thread-owner-discovery'}

@@ -10,5 +10,9 @@
   {
     "query": "Choose a model and delegate source inspection to a native leader-owned child.",
     "should_trigger": false
+  },
+  {
+    "query": "Create a fresh local projectless Codex Daybreak recipient for this authorized task and retain its pending or completed outcome.",
+    "should_trigger": true
   }
 ]

@@ -17,6 +17,15 @@ The source supports two distinct directions between existing conversations:
 - [Claude to Codex](skills/communicating-with-agents/references/codex-owner-admission.md)
   through exact-recipient owner discovery and inherited-settings admission.
 
+The [Codex Daybreak recipient](skills/communicating-with-agents/references/codex-daybreak-recipient.md)
+source procedure adds a fresh local, projectless, unforked child with a harmless
+ordinary bootstrap, followed by explicitly selected tasks. The native caller
+creates and reads the child; the helper retains those observations, checks saved
+Daybreak selection, and submits each task with `gpt-6-sol`, `medium`, and
+`daybreakBlue`. Pending observations and explicit continuations retain their
+original references without replay. Effective program/backend selection and live
+compatibility remain unqualified.
+
 The [older explicit busy and idle operations](skills/communicating-with-agents/references/codex-ipc-sender.md)
 retain their separate contracts. Selecting one is an explicit operation choice.
 

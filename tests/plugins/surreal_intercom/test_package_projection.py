@@ -49,6 +49,7 @@ class IntercomProjectionTests(unittest.TestCase):
                         "native_codex_mailbox.py", "claude_mcp_sender.py",
                         "codex_ipc_sender.py", "codex_ipc_idle_sender.py",
                         "owner_admission_sender.py",
+                        "codex_daybreak_sender.py",
                     ):
                         result = subprocess.run([
                             sys.executable, "-B", str(plugin / "skills/"

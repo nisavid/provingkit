@@ -26,6 +26,8 @@ Load the applicable procedure and record its reviewed revision before execution:
 
 - [Claude MCP sender](references/claude-mcp-sender.md): a bound existing Claude
   recipient and nominated native MCP child.
+- [Codex Daybreak recipient](references/codex-daybreak-recipient.md): an authorized
+  fresh local child, explicit Daybreak task, or retained observation/continuation.
 - [Codex owner admission](references/codex-owner-admission.md): one message to the
   exact existing local Codex recipient through its discovered owner.
 - [Explicit busy/idle operations](references/codex-ipc-sender.md): retained distinct
