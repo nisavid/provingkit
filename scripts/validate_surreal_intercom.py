@@ -11,6 +11,9 @@ import re
 import sys
 from pathlib import Path
 
+SCRIPT_DIRECTORY = Path(__file__).resolve().parent
+sys.path.insert(0, str(SCRIPT_DIRECTORY))
+
 import yaml
 
 from agent_plugins_standard import (
@@ -235,7 +238,9 @@ def main(argv: list[str] | None = None) -> int:
             UnicodeDecodeError, ValueError, yaml.YAMLError) as error:
         print(f"Surreal Intercom contract failed: {error}", file=sys.stderr)
         return 1
-    print("Surreal Intercom contract checks passed",
+    if arguments.write_content_lock:
+        print("Surreal Intercom semantic content lock updated")
+    print("Surreal Intercom contract validation passed",
           file=sys.stderr if context is not None else sys.stdout)
     if context is not None:
         return check_context_if_requested(context, "surreal-intercom")
