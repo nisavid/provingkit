@@ -33,8 +33,8 @@ that is insensitive to outcome quality. The established judgment margin is
 adequate at Grok 4.7 `high`.
 
 G. Opus 5.5 supports `xhigh`, `high`, and `ultracode` on this target. A
-well-defined, highly parallel orchestration request benefits from `ultracode`.
-The selector also advertises `max`. This request is a settled orchestration problem with known solutions.
+well-defined, highly parallel cognitive synthesis request (not an operational orchestrator role) benefits from `ultracode`.
+The selector also advertises `max`. This request is a settled cognitive problem with known solutions.
 
 H. A hard, complex but recoverable analysis has substantial unknowns. Sol
 `xhigh` and `high` are both proven. Choose the effort.
@@ -54,8 +54,21 @@ L. A task has some complexity but well-understood behavior, with Sol `medium`
 and `high` proven. Choose effort.
 
 M. A moderately complex, well-understood, non-quality-sensitive extraction has
-proven GPT-6 Luna `xhigh`, Opus 5.5 `low`, and Grok 4.7 `high`. Name eligible
+proven GPT-6 Luna `xhigh`, Terra 6.1 `low`, Opus 5.5 `low`, and Grok 4.7 `high`. Terra low and Grok high have adequate task-specific judgment margin. Name eligible
 alternatives without imposing a fixed preference.
 
 N. A simple, well-understood, non-quality-sensitive classification has proven
-GPT-6 Luna `high` and Grok 4.7 `low`, with adequate judgment margin and provider-policy support for either. Name eligible alternatives.
+GPT-6 Luna `high`, Luna `max`, Sol Light (proven as Sol `low`), Terra 6.1 `low`/`medium`/`high`/`xhigh`, Sol 6.1 `medium`, and Grok 4.7 `low`. All eligible alternatives have adequate judgment margin. Name the useful frontier and excluded pairs; distinguish operating comparisons from benchmarks and Terra XHigh preference from executor support.
+
+O. Author a committed parser change that is clearly predictable, contained, and easy. Terra low, medium, and high and Sol medium are proven; medium preserves judgment margin. Identify Terra's narrow exception and ordinary code default.
+P. Author committed code with substantial unknowns. Terra high and Sol high are proven; only Sol has adequate judgment margin.
+Q. Perform a browser interaction with correctness and interaction requirements that Terra medium meets. Terra low underfits this particular interaction; Sol medium is also proven. Choose a suitable economical candidate without claiming measured superiority.
+R. Produce a spatially coherent low-poly 3D animated prototype, then refine and polish it. Terra high is proven adequate for the prototype; Sol high and Opus high are proven for refinement. State the validation and handoff boundary.
+S. Configure a Codex operational orchestrator and Claude operational orchestrator with Sage support. Terra medium and Sonnet medium are proven adequate defaults. Configuration requests succeed, but no effective-selection or persistence readback exists. State what is selected and unverified.
+T. The same orchestrator roles have demonstrably settled, simple coordination with sufficient low pairs. A second assignment has difficult coordination itself with sufficient high pairs. State the bounded effort choices.
+U. An orchestrator needs a finite demanding analysis with Sol high proven suitable for a worker. The project also needs continuing specialty arbitration and has an accepted Sage. Allocate the two responsibilities and state what happens to the orchestrator's effort.
+V. Select Codex and Claude Dispatch and Concierge pairs. Terra low and medium and Haiku 5.5 high and xhigh are proven suitable for their respective roles. Luna max is also supported. No operational transfer has been accepted.
+W. Select scoped operator-owned Codex and Claude Reception pairs. Sol high and Opus high are proven suitable. Intake authority is unchanged.
+X. The current operational Codex Foreman coordinates with Sage support. Target decision-facing harness-wide Foremen are operator-owned Sages with adopted Astra 6 ultra and target Fable 5.1 ultracode policy bindings. Their exact native pairs are unsupported; an accepted interim exists and cutover has not been accepted. Distinguish selected policy, actual configuration, and operational duty transfer. No proof-only invocation is authorized.
+Y. A Sage resource-stewardship study will compare serial cognition, delegation, total cost, native controls, and cache behavior. No new model experiment is authorized for current cutover. State the study and #740 evaluation's relationship to current adoption, preserving holds and authority.
+Z. The operator selects Haiku 5.5 xhigh for Claude Concierge. The target catalog advertises it, but the exact executor offers only Haiku 5.5 high. No alternate pair is authorized. Distinguish the selected policy from available execution.

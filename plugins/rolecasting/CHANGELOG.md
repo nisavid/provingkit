@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- Select Terra Low/Medium/High on the useful economical frontier, preserving
+  narrow committed-code suitability, browser competence, and validated low-poly
+  prototype handoffs. Exclude Sol Light and Luna XHigh/Max; prefer Sol Medium
+  over Terra XHigh without declaring that supported pair unavailable.
+- Define Sage-supported orchestrator, Dispatch, Concierge, and scoped Reception
+  defaults; preserve decision-facing Foreman bindings, accepted interim and
+  cutover authority, with native controls, effective selection, and persistence
+  verified separately from selected policy. Use Haiku 5.5 for bounded work,
+  Claude Dispatch at High, and Claude Concierge at XHigh.
+
 - Test insufficient low effort and sufficient high effort within Grok's
   maintained task role.
 

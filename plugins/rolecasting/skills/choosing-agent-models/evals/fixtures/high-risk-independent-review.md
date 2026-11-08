@@ -12,6 +12,6 @@ readiness judgment, and any transcription error is cheap to detect and repair.
 
 Fresh catalog evidence and the target executor both accept `gpt-6-astra` at
 `xhigh` and `high`, `gpt-6.1-sol` at `high`, and `gpt-6-luna` at
-`xhigh`. The review has substantial unknowns, so `high` is insufficient for
+`high`. The review has substantial unknowns, so `high` is insufficient for
 the critic. Its advisory output is reversible; no `max` pair is proven or
 justified. Delegation, scope, authority, and output contracts are settled.
