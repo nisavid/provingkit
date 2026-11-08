@@ -1380,7 +1380,6 @@ def inspect_contract(root: Path) -> tuple[dict, set[str]]:
         "plugin.json",
         "topology.json",
         "evals/delivery.json",
-        "skills/delegating-cross-agent-work/scripts/native_codex_mailbox.py",
         NATIVE_TREE_REFERENCE,
         NATIVE_TREE_RUNTIME,
     }

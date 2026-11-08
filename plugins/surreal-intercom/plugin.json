@@ -1,0 +1,38 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "surreal-intercom",
+  "version": "1.0.0",
+  "description": "Surreal Intercom: addressed agent messages, retained attempts, correlation and conservative communication outcomes.",
+  "author": {
+    "name": "Ivan D Vasin",
+    "url": "https://github.com/nisavid"
+  },
+  "homepage": "https://github.com/nisavid/provingkit/tree/main/plugins/surreal-intercom",
+  "repository": "https://github.com/nisavid/provingkit",
+  "license": "MIT",
+  "keywords": [
+    "agents",
+    "communication",
+    "messages",
+    "correlation",
+    "reconciliation"
+  ],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "Surreal Intercom",
+        "shortDescription": "Exchange agent messages and preserve original attempts.",
+        "longDescription": "Surreal Intercom provides independently usable communication procedures and contained senders, preserving message identity, authority references, correlation, uncertainty and original-attempt reconciliation.",
+        "developerName": "Ivan D Vasin",
+        "category": "Developer Tools",
+        "capabilities": [
+          "Communication"
+        ],
+        "websiteURL": "https://github.com/nisavid/provingkit/tree/main/plugins/surreal-intercom",
+        "defaultPrompt": [
+          "Use $surreal-intercom:communicating-with-agents to communicate with the selected agent while preserving original attempts and truthful outcomes."
+        ]
+      }
+    }
+  }
+}

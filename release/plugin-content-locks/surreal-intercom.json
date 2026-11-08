@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "algorithm": "sha256",
+  "files": {
+    ".claude-plugin/plugin.json": "9421df56eb553a3f53b5fe14ecad5ceb46947cddd3f763fc3ef76fe637e8af06",
+    "CHANGELOG.md": "76a601ab2366f76854716bd8426629fdd97696cc72e5b44abdc9589d29396329",
+    "DEVELOPING.md": "1e496f5a385be3208817a558be821862d2e64460455ea7f7c27a48532cdb88b3",
+    "LICENSE": "68950fb14202e1a28da07612a6cc6978163fee3e678520c2740a0d1bde0680e8",
+    "README.md": "7d3b0f65868d004e5cd48f977fdafb097b6ed30fc4f9dcd4a96da8cf9d400f8a",
+    "plugin.json": "157246782b70cf86d9ce205b9bf3beed6978bf83f3fc49e728b3f02c4f9fda36",
+    "skills/communicating-with-agents/SKILL.md": "76d01a3f99109d4d396c38392a155507a43dd17dad78ccd52c5d79bd5e1d009b",
+    "skills/communicating-with-agents/agents/openai.yaml": "fd5c3396a2f9eaa9dd6e0cf0c44da28cbbf95e3902c03ec74bfc0fb49ff59464",
+    "skills/communicating-with-agents/references/claude-mcp-sender.md": "ac29c46cc156993e121fc59f3f39885f30f21138859662748a7c03c738033867",
+    "skills/communicating-with-agents/references/codex-daybreak-recipient.md": "ffbbbf2993d63bee54ab047dce91b7e99461b2bc488a6254920b14e27e279dee",
+    "skills/communicating-with-agents/references/codex-ipc-sender.md": "ebab8c67045bc93d2bf26ffe27c09d388abdfe19a666223332fca363bac13c1c",
+    "skills/communicating-with-agents/references/codex-owner-admission.md": "449a914e18e59a8303657a0c8dfa4362a0125d814df3c5a2a6a57cec4ab0a78f",
+    "skills/communicating-with-agents/references/native-codex-mailbox.md": "3e03276eb0f20df83afc17ca18e7ee3a0ca66fb322d56a7171045fee75cb0787",
+    "skills/communicating-with-agents/references/peer-messages.md": "303576179ad933344e36ccc400ede8b45ee354cac16e6e589035296e6f952185",
+    "skills/communicating-with-agents/scripts/claude_mcp_sender.py": "f192b9e535f4f6df6d4968e34648a32e38a104489f1169b4fbff289f0e3c66b4",
+    "skills/communicating-with-agents/scripts/codex_capture.py": "1c1142f929394f03aeefdda901ddd151653a9e0681765642bb2b648bae474f2d",
+    "skills/communicating-with-agents/scripts/codex_daybreak_sender.py": "7cf6fc24b533ea3d1358575b565fd9af1ca3bf76072554ac4c3e842e1217a099",
+    "skills/communicating-with-agents/scripts/codex_ipc_core.py": "e6f4783f52e598ff15b0444f925722cd1ad20e073d3ea801e07640127f77863d",
+    "skills/communicating-with-agents/scripts/codex_ipc_idle_sender.py": "b1cc049aaa73af5e6dc04ac032b807161dab8d380dbf80ddde8b166c3ee91e3d",
+    "skills/communicating-with-agents/scripts/codex_ipc_sender.py": "b5646409a67d361d0ea1981dea431caff08cc28ab74ab6bd717eb4db17f83c36",
+    "skills/communicating-with-agents/scripts/codex_ipc_transport.py": "c6760f771759c45f21d8ba3e0136decf50abd7484fb95417973d70b112be47f2",
+    "skills/communicating-with-agents/scripts/native_codex_mailbox.py": "eb551d82b94f37484f5d5207334b30329ce80bb278e3a8d07028ae230d782823",
+    "skills/communicating-with-agents/scripts/owner_admission_sender.py": "feb23bf7cf932877396da87bcdf0d50dcdf5be7aa2c584aae8bc2357fbaf9117",
+    "skills/communicating-with-agents/scripts/peer_message.py": "07687af69dece15e0947f845bdd6488399689a7f9aee5682c9660f9f3ffc92b8",
+    "topology.json": "eb7b2f2eb98241e932b799cc3d626b4e6120c53f8f1692ae393041d9e76eaf9b"
+  },
+  "evaluations": {
+    "evals/surreal-intercom/skills/communicating-with-agents/evals.json": "0e4945952b8d49a4fab76424700ca21dde7a20eb0280e921f5afc56fdb8aa2bc",
+    "evals/surreal-intercom/skills/communicating-with-agents/fixtures/claude-native-send.md": "96d6604db91b1c04e04ea7286b50088d96f13dc5819bc63f9ed51880011d0ab3",
+    "evals/surreal-intercom/skills/communicating-with-agents/fixtures/codex-daybreak-recipient.md": "138a9369a7d5cc3e45edd33124cb6ba449592b736a08410e68fa0126ca99f270",
+    "evals/surreal-intercom/skills/communicating-with-agents/fixtures/native-delegation.md": "29d13724128eb8fcb422b21c926b66e97c36f98f9a7e029ca8c995c619ccb341",
+    "evals/surreal-intercom/skills/communicating-with-agents/fixtures/unknown-codex-submission.md": "575a0bba09ae8fc96ea61a6be8ea59f347646e1bb7bd52380bad41328268aad8",
+    "evals/surreal-intercom/skills/communicating-with-agents/trigger-evals.json": "ad9c9994c6ae085a6f062ce6c54a8ee293934e9fcdf8f5a1e6362b1e73521ee9"
+  }
+}

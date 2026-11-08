@@ -79,7 +79,7 @@ _Avoid_: Landing (for the whole closeout), shipping
 ### Kit and release
 
 **Provingkit**:
-The coordinated Kit of Rolecasting, Tricritical, Versionkeeping, Mergecraft, Artifact Customs, and Proseweaving. *The Kit* is its shorthand. Task Witness is optional future equipment, outside the current Slate; any resurrection must define a fresh contract and adapter.
+The coordinated Kit of Rolecasting, Tricritical, Versionkeeping, Mergecraft, Artifact Customs, Proseweaving, and Surreal Intercom. *The Kit* is its shorthand. Task Witness is optional future equipment, outside the current Slate; any resurrection must define a fresh contract and adapter.
 _Avoid_: Suite, bundle, the six
 
 **Amberbridge**:

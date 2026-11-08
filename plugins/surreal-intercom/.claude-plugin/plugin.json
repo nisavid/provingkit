@@ -1,0 +1,20 @@
+{
+  "name": "surreal-intercom",
+  "version": "1.0.0",
+  "description": "Surreal Intercom: addressed agent messages, retained attempts, correlation and conservative communication outcomes.",
+  "author": {
+    "name": "Ivan D Vasin",
+    "url": "https://github.com/nisavid"
+  },
+  "homepage": "https://github.com/nisavid/provingkit/tree/main/plugins/surreal-intercom",
+  "repository": "https://github.com/nisavid/provingkit",
+  "license": "MIT",
+  "keywords": [
+    "agents",
+    "communication",
+    "messages",
+    "correlation",
+    "reconciliation"
+  ],
+  "displayName": "Surreal Intercom"
+}
