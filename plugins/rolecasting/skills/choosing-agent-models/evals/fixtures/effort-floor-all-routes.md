@@ -22,3 +22,11 @@ Q. A settled executor fixes Grok 4.7 low with no selection fields. Its provider 
 R. Grok 4.7 low and high are supported for a moderately complex, well-understood analysis that is insensitive to outcome quality. Low lacks the required judgment margin for this task; high is proven sufficient under its applicable provider policy.
 S. Claude Haiku low is offered for simple quality-insensitive labeling within its role; current pair capability and adequate judgment margin are established.
 T. GPT-6 Luna low is offered for simple quality-insensitive extraction within its role; current pair capability and adequate judgment margin are established.
+
+U. Terra Light is the selected Codex Dispatch policy. Current target metadata maps Light/Low to the exact fixture-native model `terra-current` with effort `low`. The executor exposes both fields, and this bounded Dispatch task fits low. Return the outgoing fields without activating the role.
+V. Another executor maps the same Terra Low policy to native effort `light`, with `terra-other` as its observed slug. Its catalog/schema intersection and suitable task are proven. Return its own exact labels rather than copying U's labels.
+W. A note names Terra Light, but current target observations supply no native mapping. No alternate pair is proven. Return the missing evidence without guessing `light`, `low`, or a slug.
+X. An executor exposes neither model nor effort control; current evidence fixes eligible Terra low for suitable simple coordination. Record the fixed binding and omitted controls. No observed persistence is supplied.
+Y. An executor has only an effort field and proves inherited Terra for suitable simple coordination; `low` is supported and adequate. Return the explicit effort and recorded inherited model.
+Z. A fixed Sol Light request has a proven Sol low binding, and a fixed Luna XHigh request has exact support. No eligible fallback or target change is authorized. Decide eligibility without treating runtime support as policy permission.
+AA. Terra low is offered for committed code, with medium and high unavailable. No eligible alternative is proven. Return the unavailable disposition.

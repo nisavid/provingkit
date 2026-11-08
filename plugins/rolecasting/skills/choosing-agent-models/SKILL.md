@@ -11,11 +11,11 @@ Own model and effort selection after [delegating-cross-agent-work](../delegating
 
 ## Selection Order
 
-Apply [effort eligibility](references/effort-policy.md) to every route: Astra/Fable and Sol/Opus require `medium` or higher, including inherited or fixed selection; OpenAI and Anthropic `max` requires every model, problem, workflow, and capability gate. Other models retain their applicable effort and suitability rules.
+Apply [effort eligibility](references/effort-policy.md) to every route: Astra/Fable and Sol/Opus require `medium` or higher, including inherited or fixed selection; OpenAI and Anthropic `max` requires every model, problem, workflow, and capability gate. Terra Low/Medium/High follow their task and role boundaries; exclude Luna XHigh/Max and Sol Light.
 
 1. Select Jev first only when the **complete narrow operation** is a suitable System One typed text judgment and current availability, capability, effort eligibility, and authority pass; then stop selection. [Check all gates](references/jev-suitability.md).
 2. For actual cybersecurity work, obviously cybersecurity-related work with another primary domain, and cybersecurity-adjacent work, apply [Daybreak Blue routing and fallbacks](references/daybreak-routing.md).
-3. Otherwise use [general tiers and preferences](references/general-tiers.md): GPT-6.1 Sol and Claude Opus 5.5 serve the same ordinary demanding roles, with existing provider preferences; Luna and proven Grok serve bounded work; Astra and proven Fable require the exceptional-tier conjunction.
+3. Otherwise use [general tiers and preferences](references/general-tiers.md): Sol/Opus serve ordinary demanding roles; Terra bridges economical tiers; Haiku/Luna/proven Grok serve bounded work; Astra/proven Fable require the exceptional-tier conjunction.
 
 ## Prove Target Capability
 

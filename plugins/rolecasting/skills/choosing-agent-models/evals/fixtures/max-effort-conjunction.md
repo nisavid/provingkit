@@ -26,3 +26,5 @@ U. Substitute Grok max with exact catalog/schema support, existing invocation au
 V. The same Grok role and provider policy apply, but its executor supports only high, not max.
 W. Grok max is advertised and schema-supported, but no applicable provider policy or task judgment evidence establishes max suitability. The only justification is that the OpenAI/Anthropic restriction does not cover Grok.
 X. Substitute Claude Sonnet 5.5 max with exact catalog/schema support and the reference problem/workflow; its role is the shallow-cognition middle tier.
+Y. Substitute Terra max, proven by catalog and schema, for the reference model.
+Z. Substitute Claude Haiku 5.5 max, proven by catalog and schema, for the reference model.
