@@ -38,7 +38,7 @@ Consider Claude Haiku 5.5 for simple, well-understood classification, extraction
 
 ## Coordination and intake roles
 
-With Sage support handling demanding intellectual leadership, use these selected operating defaults:
+Use these operating defaults for coordination and intake:
 
 | Role | Codex | Claude |
 | --- | --- | --- |
@@ -47,7 +47,7 @@ With Sage support handling demanding intellectual leadership, use these selected
 | Concierge | Terra 6.1 `medium` | Haiku 5.5 `xhigh` |
 | Scoped operator-owned Reception | Sol 6.1 `high` | Opus 5.5 `high` |
 
-For orchestrators, reserve `low` for demonstrably settled, simple coordination and `high` for difficult coordination itself. Route bounded demanding analysis to a capable Sol or Opus worker and continuing intellectual leadership or specialty arbitration to a Sage or Advisor. Keep these assignments separate from the orchestrator's coordination effort. Apply Terra's committed-code exception and other family effort rules independently.
+The orchestrator and Dispatch defaults assume Sage support for continuing intellectual leadership. For orchestrators, reserve `low` for demonstrably settled, simple coordination and `high` for difficult coordination itself. Route bounded demanding analysis to a capable Sol or Opus worker and continuing intellectual leadership or specialty arbitration to a Sage or Advisor. Keep these assignments separate from the orchestrator's coordination effort. Apply Terra's committed-code exception and other family effort rules independently.
 
 Concierge uses its own effort for accurate routing and handoff. Route requests that need careful framing to scoped Reception. Check each Claude executor for the selected Haiku effort, including `xhigh` for Concierge.
 
