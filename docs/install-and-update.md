@@ -10,8 +10,12 @@ Choose the ZIPs for **ChatGPT** or **Claude**, and leave them compressed.
 The files ending in `-claude.zip` are for Claude; use the other plugin ZIPs
 for ChatGPT. GitHub's **Source code** archives are for development.
 
-Install all plugins in the release for the complete Kit. For individual
-plugins, include the companions listed in their README.
+Install all plugins in the release for the complete Kit. For a partial install,
+use the same ZIP format for each companion:
+
+- **Tricritical reviews:** include Rolecasting.
+- **Mergecraft PR publication:** include Tricritical and Rolecasting for review,
+  plus Versionkeeping for commits and pushes.
 
 ## ChatGPT
 
@@ -19,11 +23,12 @@ Upload through [ChatGPT on the web](https://chatgpt.com/):
 
 | Action | Steps |
 | --- | --- |
-| **Install** | Open **Plugins**, select **Personal**, then choose **Add** and **Upload plugin archive**. Select the ZIP and complete the upload prompts. |
-| **Update** | Open the existing plugin, then choose **More actions**, **Upload new version**, and **Choose file**. Select the new ZIP. |
+| **Install** | Open **Plugins**, select **Personal**, then choose **Add** and **Upload plugin archive**. Select the ZIP, then choose **Add plugin** and **Install plugin** when prompted. |
+| **Update an uploaded ZIP** | Open the existing plugin, then choose **More actions**, **Upload new version**, and **Choose file**. Select the new ZIP. |
 
 If the plugin is not in **Installed**, open its details and select **+** to
-install it. Start a new chat in the web or **ChatGPT desktop app** and use
+install it. After an update, check that its displayed version matches the release
+you downloaded. Start a new chat in the web or **ChatGPT desktop app** and use
 `@` to select a skill, or ask for it by name.
 
 See [ChatGPT's plugin guide](https://learn.chatgpt.com/docs/plugins#use-and-install-plugins).
@@ -33,8 +38,9 @@ See [ChatGPT's plugin guide](https://learn.chatgpt.com/docs/plugins#use-and-inst
 In [Claude on the web](https://claude.ai/) or the **Claude desktop app**:
 
 1. Open **Customize**, then **Plugins**. Choose **Add**, then **Upload plugin**.
-2. Select the Claude ZIP. When updating, confirm **Replace** for the existing
-   plugin.
+2. Select the Claude ZIP, then choose **Upload**. When updating, confirm
+   **Replace** for the existing plugin and check that its displayed version
+   matches the release you downloaded.
 3. Enable the plugin, then start a new chat and type `/` to find its skills,
    or start a new Cowork task.
 
@@ -53,8 +59,7 @@ See [Claude Code's sync guidance](https://code.claude.com/docs/en/plugins/loadin
 
 ## If a skill is missing
 
-Check that the plugin is installed or enabled, then try a new session. After
-an update, compare the plugin's displayed version with the release you downloaded.
+Check that the plugin is installed or enabled, then try a new session.
 If the problem persists, [report it](https://github.com/nisavid/provingkit/issues)
 with the app, plugin, version, and error message.
 
