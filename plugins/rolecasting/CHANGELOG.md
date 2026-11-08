@@ -7,8 +7,6 @@
 - Route addressed agent messages through Surreal Intercom. Rolecasting retains
   worker selection, authority interpretation, and supervision.
 
-## Unreleased
-
 - Select Terra Low/Medium/High on the useful economical frontier, preserving
   narrow committed-code suitability, browser competence, and validated low-poly
   prototype handoffs. Exclude Sol Light and Luna XHigh/Max; prefer Sol Medium
@@ -18,6 +16,8 @@
   accepted interim, and cutover authority. Verify native controls, effective
   selection, and persistence separately from selected policy. Use Haiku 5.5 for
   bounded work, Claude Dispatch at High, and Claude Concierge at XHigh.
+
+## Unreleased
 
 - Test insufficient low effort and sufficient high effort within Grok's
   maintained task role.

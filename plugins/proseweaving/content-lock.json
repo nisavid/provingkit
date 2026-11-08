@@ -3,7 +3,7 @@
   "algorithm": "sha256",
   "files": {
     ".claude-plugin/plugin.json": "aa9d72b82d8b710302eee7821e603e91d838104b816425e5b1b6093131a8001a",
-    "CHANGELOG.md": "8621cd314cbdb31b076e42087c35dc987eb1bb318a57a93fd4e4a6160e84d288",
+    "CHANGELOG.md": "18d42308b3d8add7f901ab54e9e59eed6950c62448553fb8bf8c8520f7805d0c",
     "LICENSE": "68950fb14202e1a28da07612a6cc6978163fee3e678520c2740a0d1bde0680e8",
     "README.md": "3e3fcdc2a6deea752d9be9ecddc567ea5d3881395bc94090d401ab447b24000e",
     "evals/delivery.json": "3926df63cef6bd46edda5ddcfe0992b04a0b7be6156e6bae48cc7cad4e01a9c7",

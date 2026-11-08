@@ -82,7 +82,7 @@
         "content_identity": {
           "kind": "plugin-content-lock",
           "path": "release/plugin-content-locks/artifact-customs.json",
-          "sha256": "sha256:8b8e178ad87f835fd97fec73bb43db53135ed5f0e14377cdd7f011fa37bca0ea"
+          "sha256": "sha256:8a1851ca32780b9bd212fb5a86f81a2478aaf6086b4f8065117f505557e3a5cd"
         },
         "display_name": "Artifact Customs",
         "distribution_kind": "agent-plugin",
@@ -97,7 +97,7 @@
         "content_identity": {
           "kind": "plugin-content-lock",
           "path": "plugins/proseweaving/content-lock.json",
-          "sha256": "sha256:2c081b5d77429f6fc0e9ab075f17fae0fc22c7904c850686699a82f9c8f37c57"
+          "sha256": "sha256:ee955093a99c837cf8f6c99b679bc9097db934acce06bb63139cffc300e0f035"
         },
         "display_name": "Proseweaving",
         "distribution_kind": "agent-plugin",

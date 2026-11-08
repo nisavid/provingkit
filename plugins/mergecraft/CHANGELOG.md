@@ -2,7 +2,7 @@
 
 ## 0.1.0-alpha.8
 
-- Use the Alpha 7 version for the Agent Plugins and Claude projections.
+- Use the Alpha 8 version for the Agent Plugins and Claude projections.
 
 ## Unreleased
 
