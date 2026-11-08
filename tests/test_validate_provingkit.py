@@ -23,6 +23,8 @@ PREVIEW_TAG = "preview-8acd0e2af1f4"
 PREVIEW_SOURCE = "8acd0e2af1f4508a0e2358d8e01f6a3db7a78ce3"
 ALPHA_TAG = "v0.1.0-alpha.3"
 ALPHA_SOURCE = "df5ffd69cfbe08a82b35ba72baccedadfdaa3b49"
+ALPHA7_TAG = "v0.1.0-alpha.7"
+ALPHA7_SOURCE = "6074c2c4ad16b088cf265193ae3bec9d8cd4a929"
 
 
 class ProvingkitRepositoryContractTests(unittest.TestCase):
@@ -399,7 +401,16 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
             "v0.1.0-alpha.6",
             "0c47d9d4b936dfb74134a4d7bf0f9354fc67359b",
         )
+        alpha7_tag = (ALPHA7_TAG, ALPHA7_SOURCE)
         for tag_inventory in (
+            (alpha7_tag,),
+            (
+                alpha7_tag,
+                alpha6_tag,
+                alpha4_tag,
+                (ALPHA_TAG, ALPHA_SOURCE),
+                (PREVIEW_TAG, PREVIEW_SOURCE),
+            ),
             (alpha6_tag,),
             (alpha6_tag, alpha4_tag, (ALPHA_TAG, ALPHA_SOURCE), (PREVIEW_TAG, PREVIEW_SOURCE)),
             ((ALPHA_TAG, ALPHA_SOURCE),),
@@ -473,6 +484,37 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
             )
             subprocess.run(
                 ["git", "symbolic-ref", "refs/tags/v0.1.0-alpha.6", target],
+                cwd=repository,
+                check=True,
+            )
+            self.assert_unauthorized_tag(repository)
+
+    def test_source_stage_validator_rejects_alpha7_at_another_source(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory) / "repository"
+            self.clone_with_history(repository)
+            self.set_tag(repository, ALPHA7_TAG, ALPHA_SOURCE)
+            self.assert_unauthorized_tag(repository)
+
+    def test_source_stage_validator_rejects_annotated_alpha7(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory) / "repository"
+            self.clone_with_history(repository)
+            self.set_tag(repository, ALPHA7_TAG, ALPHA7_SOURCE, annotated=True)
+            self.assert_unauthorized_tag(repository)
+
+    def test_source_stage_validator_rejects_symbolic_alpha7(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory) / "repository"
+            self.clone_with_history(repository)
+            target = "refs/heads/symbolic-alpha7-target"
+            subprocess.run(
+                ["git", "update-ref", target, ALPHA7_SOURCE],
+                cwd=repository,
+                check=True,
+            )
+            subprocess.run(
+                ["git", "symbolic-ref", f"refs/tags/{ALPHA7_TAG}", target],
                 cwd=repository,
                 check=True,
             )
@@ -3149,27 +3191,9 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
             "refs/tags/v0.1.0-alpha.6 commit "
             "0c47d9d4b936dfb74134a4d7bf0f9354fc67359b"
         )
-        self.assertIn(
-            tags,
-            [
-                {alpha6_tag},
-                {preview_tag, alpha6_tag},
-                {alpha_tag, alpha6_tag},
-                {alpha4_tag, alpha6_tag},
-                {preview_tag, alpha_tag, alpha6_tag},
-                {preview_tag, alpha4_tag, alpha6_tag},
-                {alpha_tag, alpha4_tag, alpha6_tag},
-                {preview_tag, alpha_tag, alpha4_tag, alpha6_tag},
-                set(),
-                {preview_tag},
-                {alpha_tag},
-                {preview_tag, alpha_tag},
-                {alpha4_tag},
-                {preview_tag, alpha4_tag},
-                {alpha_tag, alpha4_tag},
-                {preview_tag, alpha_tag, alpha4_tag},
-            ],
-        )
+        alpha7_tag = f"refs/tags/{ALPHA7_TAG} commit {ALPHA7_SOURCE}"
+        authorized_tags = {preview_tag, alpha_tag, alpha4_tag, alpha6_tag, alpha7_tag}
+        self.assertEqual(tags - authorized_tags, set())
 
         history_paths = subprocess.run(
             [
