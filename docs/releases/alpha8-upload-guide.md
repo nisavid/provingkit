@@ -21,7 +21,7 @@ and include their companions in the same target format.
 | If you use | Include |
 | --- | --- |
 | Tricritical for independent review | Rolecasting for reviewer selection and dispatch |
-| Mergecraft for PR publication | Versionkeeping for Git publication, plus Tricritical and Rolecasting when independent review is required |
+| Mergecraft for PR publication | Versionkeeping for Git publication, Tricritical for independent review, and Rolecasting for reviewer selection and dispatch |
 | Artifact Customs workflows that delegate, review, publish Git work, or publish a PR | The Rolecasting, Tricritical, Versionkeeping, and Mergecraft companions those steps call |
 | Addressed peer messaging | Surreal Intercom, which can be used independently of Rolecasting |
 
@@ -105,9 +105,10 @@ Those updates retained the entry IDs and URLs and showed **Installed**.
 **Personal**, **Add**, then **Upload plugin archive**. Use this branch if
 the intended account has no corresponding entry. After choosing the ZIP,
 follow the controls shown and check the resulting entry's identity, personal
-scope, and version. First-upload submission, audience, and the transition
-to **Installed** remain unverified. Once the intended entry exists, check whether it is installed and start a new
-chat to verify loading. See [OpenAI's plugin guide](https://help.openai.com/en/articles/20001256-plugins-in-chatgpt) for current installation controls.
+scope, and version. If the entry offers **Install plugin**, select it and
+confirm that the entry appears in **Installed** before starting a new chat to
+verify loading. First-upload submission, audience, and the transition to
+**Installed** remain unverified for Alpha 8. See [OpenAI's plugin guide](https://help.openai.com/en/articles/20001256-plugins-in-chatgpt) for current installation controls.
 
 If you have a copy from the pinned preview's local marketplace, keep that copy
 and its configuration until you identify which origin the receiving client
@@ -174,10 +175,11 @@ For each account and client you use, check the saved version, the installed
 or enabled state, and whether the expected skills are available in a fresh
 session. Where the client exposes a loaded version or origin, compare that
 with the intended copy. Try a small skill task, such as asking Proseweaving
-to tighten one paragraph. For Surreal Intercom, you can check skill discovery
-by asking it to identify the recipient binding and required authority in a
-hypothetical exchange. Live message delivery and Daybreak remain separate
-checks.
+to tighten one paragraph. For Surreal Intercom, locate and explicitly invoke
+`surreal-intercom:communicating-with-agents` in a fresh session, checking its
+origin or version where the client exposes it. Then ask it to identify the
+recipient binding and required authority in a hypothetical exchange. Live
+message delivery and Daybreak remain separate checks.
 
 When moving messaging callers from Rolecasting to Surreal Intercom, load
 `surreal-intercom:communicating-with-agents` from the intended installation.

@@ -43,8 +43,9 @@ delegation, and model selection.
 
 ## Get started
 
-Follow the [Alpha 6 upload and update guide](https://github.com/nisavid/provingkit/blob/c557b9471f74afa82df8622313282808911453f7/docs/releases/alpha6-upload-guide.md)
-for the current release. It distinguishes a first installation from updating
+Follow the [Alpha 8 upload and update guide](docs/releases/alpha8-upload-guide.md)
+or the [Alpha 6 upload and update guide](https://github.com/nisavid/provingkit/blob/c557b9471f74afa82df8622313282808911453f7/docs/releases/alpha6-upload-guide.md)
+for your chosen release. Each distinguishes a first installation from updating
 an existing plugin, then checks the saved version and fresh-session loading.
 Use the named per-plugin ZIPs; GitHub's automatic source archives contain
 development material. The older [preview instructions](docs/preview/install-and-update.md)
