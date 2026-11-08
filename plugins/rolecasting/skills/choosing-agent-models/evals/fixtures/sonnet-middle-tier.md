@@ -6,7 +6,7 @@ A. Some-complexity bulk extraction is beyond Haiku/Luna's role but shallow cogni
 B. The same task has Sonnet 5.5 medium only; that effort is sufficient.
 C. The work requires deeper cognition than Sonnet's middle-tier role, but is recoverable and not high-stakes. Sonnet high, Sol high, and Opus high are offered; the stronger pairs preserve judgment margin.
 D. The work is shallow but sensitive to outcome quality. Sonnet medium, Sol high, and Opus high are offered; the stronger pairs preserve the quality contract.
-E. Some-complexity extraction exceeds Haiku/Luna's role; shallow cognition and quality conditions hold, but only Haiku low and Luna xhigh are available. No eligible stronger pair or alternate target is authorized.
+E. Some-complexity extraction exceeds Haiku/Luna's role; shallow cognition and quality conditions hold, but only Haiku low and Luna high are available. No eligible stronger pair or alternate target is authorized.
 F. The written baseline names Sonnet 5.5. Current evidence proves Sonnet 5.6 is its newer same-name successor at exact slug sonnet-next-exact and supported medium. The task still fits Sonnet's middle role.
 G. The task fits that middle role, but Sonnet 5.5 is advertised only in the provider catalog, absent from this executor's schema. Opus medium is supported and sufficient under existing fallback authority.
 H. A note offers GPT-6.1 Terra for this middle role without current target catalog/schema evidence or a native label mapping. Sonnet 5.5 medium is proven and fits.

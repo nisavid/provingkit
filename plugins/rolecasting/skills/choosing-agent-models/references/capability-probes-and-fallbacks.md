@@ -8,7 +8,7 @@
 2. Require a currently fresh catalog observation. For Daybreak, including continuations, reuse an unchanged observation inside its declared freshness window; refresh only when missing, stale, or invalidated. Use `codex debug models` for a needed Codex refresh or the target harness's live model catalog for another target.
 3. Inspect the target executor tool or schema for accepted model slugs and reasoning efforts.
 4. Resolve the newest proven same-name GPT or Claude version below, then apply [effort eligibility](effort-policy.md), including fixed and default efforts.
-5. Map display labels such as Terra Light/Low to the exact executor's supported native model and effort labels using current target evidence. A release announcement or comparison is not execution support; never invent a Terra slug or a native `light` alias. Verify supported controls, effective selection, and persistence as separate observations.
+5. Map display labels such as Terra Light/Low to the exact executor's supported native model and effort labels using current target evidence. A release announcement or comparison is not execution support; never invent a Terra slug or a native `light` alias.
 6. Record the exact live-catalog and target-executor-schema intersection, and pass only a pair present in both.
 
 Anthropic lists `claude-haiku-5-5` for the Claude API and advertises
@@ -146,9 +146,9 @@ missing fact or `BLOCKED` with the failed-probe evidence.
 
 For roles without a fixed effort, choose the lowest accepted effort that preserves the task's judgment margin and passes [effort eligibility](effort-policy.md). Raise effort before widening scope or changing models when reasoning can resolve the uncertainty.
 
-Prove every replacement model-effort pair independently in both the current catalog and executor schema, including a lower effort on the same model. Consider eligible Terra alongside Sol or Opus when the task fits its economical frontier and existing target/authority boundaries. Rejecting the requested pair establishes no capability for an alternative. Evidence for GPT does not prove an Opus pair, and schema support alone does not prove catalog availability. If either observation is missing, leave the replacement unselected and return `NEEDS_CONTEXT` or `BLOCKED` with the missing evidence.
+Prove every replacement model-effort pair independently in both the current catalog and executor schema, including a lower effort on the same model. Consider eligible Terra alongside Sol or Opus when the task fits its economical frontier and existing target/authority boundaries. Rejecting the requested pair establishes no capability for an alternative. Evidence for GPT does not prove an Opus pair, and schema support alone does not prove catalog availability. Leave any unproven replacement unselected. If no proven authorized alternative preserves the task contract, return `NEEDS_CONTEXT` or `BLOCKED` with the missing evidence.
 
-When GPT-6 Luna fits but is absent from the target executor schema, choose an accepted eligible Terra, GPT-6.1 Sol, or Claude Opus 5.5 pair that preserves the task contract. Pass every supported model and effort field; use a proven eligible fixed binding only for an absent control. Never invent a slug or effort, and report a fallback that materially changes confidence, cost, or speed.
+When an eligible GPT-6 Luna pair fits but the target executor schema lacks it, apply the same fallback gates. Where fallback is authorized, consider suitable Terra, Haiku, Sol, or Opus pairs proven on the settled executor. Pass every supported model and effort field; use a proven eligible fixed binding only for an absent control. Never invent a slug or effort, and report a fallback that materially changes confidence, cost, or speed.
 
 For another harness, inspect its local capability surface and use only its exact supported values. Report an unavailable user-requested model rather than silently substituting.
 
