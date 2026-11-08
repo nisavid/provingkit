@@ -37,7 +37,7 @@ delegation, and model selection.
 Download the plugins you want from [Releases](https://github.com/nisavid/provingkit/releases).
 
 - **Codex CLI:** extract the standard ZIPs into a [local marketplace](docs/install-and-update.md#codex-cli), then install them through `/plugins`.
-- **Claude Code:** run `claude --plugin-dir ./plugin-claude.zip` with a downloaded Claude ZIP; repeat the flag for each plugin to load in that session.
+- **Claude Code:** pass the path to a downloaded `-claude.zip` to `claude --plugin-dir`; repeat the flag for each plugin to load in that session.
 - **ChatGPT:** upload the standard ZIPs through **Plugins**, **Personal**, **Add**, then **Upload plugin archive**.
 - **Claude web or desktop:** upload the Claude ZIPs through **Customize**, **Plugins**, **Add**, then **Upload plugin**.
 
