@@ -5,11 +5,9 @@ changes, keeping Git history, managing pull requests, assessing dependencies,
 writing for people, and communicating with other agents. Its seven coordinated Agent Plugins pair instructions
 with checks that make the work reviewable.
 
-[Alpha 6](https://github.com/nisavid/provingkit/releases/tag/v0.1.0-alpha.6)
-is available as per-plugin ZIPs for manual OpenAI and Claude account uploads.
-Use the [Alpha 6 upload and update guide](https://github.com/nisavid/provingkit/blob/c557b9471f74afa82df8622313282808911453f7/docs/releases/alpha6-upload-guide.md)
-to choose files, verify downloads, and confirm installation. This is an
-unsigned prerelease; client support and loading follow the guide’s stated scope.
+Download the current release's plugin ZIPs from
+[Releases](https://github.com/nisavid/provingkit/releases), then follow the
+[installation and update guide](docs/install-and-update.md) for ChatGPT or Claude.
 
 ## What the plugins do
 
@@ -41,16 +39,9 @@ delegation, and model selection.
 
 ## Get started
 
-Follow the [Alpha 6 upload and update guide](https://github.com/nisavid/provingkit/blob/c557b9471f74afa82df8622313282808911453f7/docs/releases/alpha6-upload-guide.md)
-for the current release. It distinguishes a first installation from updating
-an existing plugin, then checks the saved version and fresh-session loading.
-Use the named per-plugin ZIPs; GitHub's automatic source archives contain
-development material. The older [preview instructions](docs/preview/install-and-update.md)
-remain available as historical documentation.
-
-The [Alpha 7 upload and update guide](docs/releases/alpha7-upload-guide.md)
-lists the candidate checksums and explains the account and Desktop checks
-for the planned prerelease.
+Follow the [installation and update guide](docs/install-and-update.md) to add
+the current release's plugins to ChatGPT or Claude. It covers first installs,
+updates, and loading skills in a new session.
 
 Open a plugin's README above to see its skills and usage boundaries before
 equipping it. Task Witness is deferred optional equipment outside this Kit;

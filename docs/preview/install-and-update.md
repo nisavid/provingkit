@@ -1,6 +1,6 @@
 # Install and update the pinned unsigned preview
 
-> **Historical instructions.** Use the [Alpha 6 upload and update guide](https://github.com/nisavid/provingkit/blob/c557b9471f74afa82df8622313282808911453f7/docs/releases/alpha6-upload-guide.md)
+> **Historical instructions.** Use the [installation and update guide](../install-and-update.md)
 > for the current release. The older preview release is being retired; its
 > download links and commands below are retained as historical documentation,
 > not the current installation route.
