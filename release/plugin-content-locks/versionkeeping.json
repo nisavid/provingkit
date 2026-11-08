@@ -3,7 +3,7 @@
   "algorithm": "sha256",
   "files": {
     ".claude-plugin/plugin.json": {
-      "sha256": "fd9896fe779a6311ac4c34d1290802bf334b8dc35f346f0da04e743fbc1eea23",
+      "sha256": "7d29a2b805160ed48a3e142049355ffcf7ec109ebe4b1bcc04ea94bfc8e54f17",
       "mode": 420
     },
     "DEVELOPING.md": {
@@ -15,7 +15,7 @@
       "mode": 420
     },
     "plugin.json": {
-      "sha256": "a8a2141e7cdf0b816e6a54c67d310a3574c1def99e9b8018db6067de05089f55",
+      "sha256": "1d7dce8277d0f31085f8f7a4e49e5a53b1215d18583b5a96ffd50ffac46ada39",
       "mode": 420
     },
     "skills/checkpointing-and-publishing-git-work/SKILL.md": {

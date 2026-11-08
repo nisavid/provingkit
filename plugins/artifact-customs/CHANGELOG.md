@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.0-alpha.8
+
+- Use the Alpha 8 version for the Agent Plugins and Claude projections.
+
 ## 1.0.0 - 2026-07-22
 
 - Adopt Agent Plugins v1 as the canonical package, retain the Claude adapter,

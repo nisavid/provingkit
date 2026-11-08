@@ -1,6 +1,11 @@
 # Changelog
 
-## Unreleased
+## 0.1.0-alpha.8
+
+- Guide Terra 6.1 and Haiku 5.5 model selection and preserve the current
+  orchestration, Dispatch, Concierge, and Reception defaults.
+- Route addressed agent messages through Surreal Intercom. Rolecasting retains
+  worker selection, authority interpretation, and supervision.
 
 - Select Terra Low/Medium/High on the useful economical frontier, preserving
   narrow committed-code suitability, browser competence, and validated low-poly
@@ -11,6 +16,8 @@
   accepted interim, and cutover authority. Verify native controls, effective
   selection, and persistence separately from selected policy. Use Haiku 5.5 for
   bounded work, Claude Dispatch at High, and Claude Concierge at XHigh.
+
+## Unreleased
 
 - Test insufficient low effort and sufficient high effort within Grok's
   maintained task role.

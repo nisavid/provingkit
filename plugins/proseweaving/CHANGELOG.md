@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.0-alpha.8
+
+- Use the Alpha 8 version for the Agent Plugins and Claude projections.
+
 ## Unreleased
 
 - Choose prose register and organization for the medium, purpose, and audience,

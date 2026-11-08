@@ -22,7 +22,7 @@
         "content_identity": {
           "kind": "plugin-content-lock",
           "path": "plugins/rolecasting/content-lock.json",
-          "sha256": "sha256:0459763ce8e03c2cf236c5bbe2edf20489eaa6261d73c19acf71e2394a6c8627"
+          "sha256": "sha256:3b9d0f69760ed3c25175fd5b0afd13645151aeb8785f6dfcff91b0d2a7a10253"
         },
         "display_name": "Rolecasting",
         "distribution_kind": "agent-plugin",
@@ -31,7 +31,7 @@
           "canonical": "plugins/rolecasting/plugin.json",
           "claude": "plugins/rolecasting/.claude-plugin/plugin.json"
         },
-        "version": "1.0.0"
+        "version": "0.1.0-alpha.8"
       },
       {
         "content_identity": {
@@ -46,13 +46,13 @@
           "canonical": "plugins/tricritical/plugin.json",
           "claude": "plugins/tricritical/.claude-plugin/plugin.json"
         },
-        "version": "1.0.0"
+        "version": "0.1.0-alpha.8"
       },
       {
         "content_identity": {
           "kind": "plugin-content-lock",
           "path": "release/plugin-content-locks/versionkeeping.json",
-          "sha256": "sha256:66da09f13423dd505a7ba8d754f8a38f7a96c68dc459b5d238e3b7b3f8e80991"
+          "sha256": "sha256:e90ea7f3bed02ec288a3d3d3e32e9d25e35bf4c7d0afee3c646256145b909211"
         },
         "display_name": "Versionkeeping",
         "distribution_kind": "agent-plugin",
@@ -61,13 +61,13 @@
           "canonical": "plugins/versionkeeping/plugin.json",
           "claude": "plugins/versionkeeping/.claude-plugin/plugin.json"
         },
-        "version": "1.0.0"
+        "version": "0.1.0-alpha.8"
       },
       {
         "content_identity": {
           "kind": "plugin-content-lock",
           "path": "release/plugin-content-locks/mergecraft.json",
-          "sha256": "sha256:290dd438ca38ff494c74407e2efe00c58f4d490b1fc841d0e8fd343a9b2123ab"
+          "sha256": "sha256:6341d0d8ad7fcb8bd89513737482ca57e062fa512a909a658048d4db106e1929"
         },
         "display_name": "Mergecraft",
         "distribution_kind": "agent-plugin",
@@ -76,13 +76,13 @@
           "canonical": "plugins/mergecraft/plugin.json",
           "claude": "plugins/mergecraft/.claude-plugin/plugin.json"
         },
-        "version": "1.0.0"
+        "version": "0.1.0-alpha.8"
       },
       {
         "content_identity": {
           "kind": "plugin-content-lock",
           "path": "release/plugin-content-locks/artifact-customs.json",
-          "sha256": "sha256:3a2cf96c58ebb6cb2396ac8a4c4d599a2a37378b33155c8c6886ba9998e30f7d"
+          "sha256": "sha256:8a1851ca32780b9bd212fb5a86f81a2478aaf6086b4f8065117f505557e3a5cd"
         },
         "display_name": "Artifact Customs",
         "distribution_kind": "agent-plugin",
@@ -91,13 +91,13 @@
           "canonical": "plugins/artifact-customs/plugin.json",
           "claude": "plugins/artifact-customs/.claude-plugin/plugin.json"
         },
-        "version": "1.0.0"
+        "version": "0.1.0-alpha.8"
       },
       {
         "content_identity": {
           "kind": "plugin-content-lock",
           "path": "plugins/proseweaving/content-lock.json",
-          "sha256": "sha256:0bb015901c73b1eb3387629ae25400e0cd8b7cc0205cb996288dd5ce85fe1c20"
+          "sha256": "sha256:ee955093a99c837cf8f6c99b679bc9097db934acce06bb63139cffc300e0f035"
         },
         "display_name": "Proseweaving",
         "distribution_kind": "agent-plugin",
@@ -106,13 +106,13 @@
           "canonical": "plugins/proseweaving/plugin.json",
           "claude": "plugins/proseweaving/.claude-plugin/plugin.json"
         },
-        "version": "1.0.0"
+        "version": "0.1.0-alpha.8"
       },
       {
         "content_identity": {
           "kind": "plugin-content-lock",
           "path": "release/plugin-content-locks/surreal-intercom.json",
-          "sha256": "sha256:a29996bffc32f0d94516ffaf9692db58f4237775dba63517ed579c1523d4a4b7"
+          "sha256": "sha256:c6cc5311e2ed5dc1f9f60e3b2a67f9136623845292cb6fe6fcfa3269086a287d"
         },
         "display_name": "Surreal Intercom",
         "distribution_kind": "agent-plugin",
@@ -121,7 +121,7 @@
           "canonical": "plugins/surreal-intercom/plugin.json",
           "claude": "plugins/surreal-intercom/.claude-plugin/plugin.json"
         },
-        "version": "1.0.0"
+        "version": "0.1.0-alpha.8"
       }
     ],
     "mode": "exact",

@@ -1,7 +1,7 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "surreal-intercom",
-  "version": "1.0.0",
+  "version": "0.1.0-alpha.8",
   "description": "Surreal Intercom: addressed agent messages, retained attempts, correlation and conservative communication outcomes.",
   "author": {
     "name": "Ivan D Vasin",
