@@ -11,6 +11,8 @@ Use the [Alpha 6 upload and update guide](https://github.com/nisavid/provingkit/
 to choose files, verify downloads, and confirm installation. This is an
 unsigned prerelease; client support and loading follow the guide’s stated scope.
 
+For Alpha 8 manual uploads, see the [Alpha 8 upload and update guide](docs/releases/alpha8-upload-guide.md).
+
 ## What the plugins do
 
 Each plugin owns a part of the work:
