@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.1.0-alpha.7
+
+- Route addressed agent messages through Surreal Intercom. Rolecasting retains
+  worker selection, authority interpretation, and supervision.
+
 ## Unreleased
 
 - Test insufficient low effort and sufficient high effort within Grok's

@@ -247,7 +247,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 {
                     "id": member_id,
                     "distribution_kind": distribution_kind,
-                    "version": "1.0.0",
+                    "version": "0.1.0-alpha.7",
                     "identity_manifests": {
                         "canonical": {
                             "path": f"plugins/{member_id}/plugin.json",
@@ -938,7 +938,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 (
                     "rolecasting",
                     "agent-plugin",
-                    "1.0.0",
+                    "0.1.0-alpha.7",
                     "plugins/rolecasting/plugin.json",
                     "plugins/rolecasting/.claude-plugin/plugin.json",
                     "plugin-content-lock",
@@ -947,7 +947,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 (
                     "tricritical",
                     "agent-plugin",
-                    "1.0.0",
+                    "0.1.0-alpha.7",
                     "plugins/tricritical/plugin.json",
                     "plugins/tricritical/.claude-plugin/plugin.json",
                     "plugin-content-lock",
@@ -956,7 +956,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 (
                     "versionkeeping",
                     "agent-plugin",
-                    "1.0.0",
+                    "0.1.0-alpha.7",
                     "plugins/versionkeeping/plugin.json",
                     "plugins/versionkeeping/.claude-plugin/plugin.json",
                     "plugin-content-lock",
@@ -965,7 +965,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 (
                     "mergecraft",
                     "agent-plugin",
-                    "1.0.0",
+                    "0.1.0-alpha.7",
                     "plugins/mergecraft/plugin.json",
                     "plugins/mergecraft/.claude-plugin/plugin.json",
                     "plugin-content-lock",
@@ -974,7 +974,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 (
                     "artifact-customs",
                     "agent-plugin",
-                    "1.0.0",
+                    "0.1.0-alpha.7",
                     "plugins/artifact-customs/plugin.json",
                     "plugins/artifact-customs/.claude-plugin/plugin.json",
                     "plugin-content-lock",
@@ -983,7 +983,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 (
                     "proseweaving",
                     "agent-plugin",
-                    "1.0.0",
+                    "0.1.0-alpha.7",
                     "plugins/proseweaving/plugin.json",
                     "plugins/proseweaving/.claude-plugin/plugin.json",
                     "plugin-content-lock",
@@ -992,7 +992,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 (
                     "surreal-intercom",
                     "agent-plugin",
-                    "1.0.0",
+                    "0.1.0-alpha.7",
                     "plugins/surreal-intercom/plugin.json",
                     "plugins/surreal-intercom/.claude-plugin/plugin.json",
                     "plugin-content-lock",
@@ -3281,7 +3281,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
         for member_index, member in enumerate(valid_manifest["members"]):
             with self.subTest(member=member["id"]):
                 invalid_manifest = json.loads(json.dumps(valid_manifest))
-                invalid_manifest["members"][member_index]["version"] = "1.0.1"
+                invalid_manifest["members"][member_index]["version"] = "0.1.0-alpha.8"
 
                 self.assertNotEqual(
                     list(validator.iter_errors(invalid_manifest)),

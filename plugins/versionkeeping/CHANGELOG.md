@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.0-alpha.7
+
+- Use the Alpha 7 version for the Agent Plugins and Claude projections.
+
 ## 1.0.0
 
 Initial dual-harness release, 2026-07-20:
