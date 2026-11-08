@@ -23,6 +23,8 @@ PREVIEW_TAG = "preview-8acd0e2af1f4"
 PREVIEW_SOURCE = "8acd0e2af1f4508a0e2358d8e01f6a3db7a78ce3"
 ALPHA_TAG = "v0.1.0-alpha.3"
 ALPHA_SOURCE = "df5ffd69cfbe08a82b35ba72baccedadfdaa3b49"
+ALPHA8_TAG = "v0.1.0-alpha.8"
+ALPHA8_SOURCE = "a1b4ef58ecdf565ebc5ac01c3a93da2e066f17a7"
 
 
 class ProvingkitRepositoryContractTests(unittest.TestCase):
@@ -441,6 +443,45 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 self.assertEqual(
                     result.stdout, "Provingkit source validation passed\n"
                 )
+
+    def test_source_stage_validator_accepts_alpha8_at_its_release_commit(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory) / "repository"
+            self.clone_with_history(repository)
+            self.set_tag(repository, ALPHA8_TAG, ALPHA8_SOURCE)
+            result = self.validate(repository)
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_source_stage_validator_rejects_alpha8_at_another_source(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory) / "repository"
+            self.clone_with_history(repository)
+            self.set_tag(repository, ALPHA8_TAG, ALPHA_SOURCE)
+            self.assert_unauthorized_tag(repository)
+
+    def test_source_stage_validator_rejects_annotated_alpha8(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory) / "repository"
+            self.clone_with_history(repository)
+            self.set_tag(repository, ALPHA8_TAG, ALPHA8_SOURCE, annotated=True)
+            self.assert_unauthorized_tag(repository)
+
+    def test_source_stage_validator_rejects_symbolic_alpha8(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory) / "repository"
+            self.clone_with_history(repository)
+            target = "refs/heads/symbolic-alpha8-target"
+            subprocess.run(
+                ["git", "update-ref", target, ALPHA8_SOURCE],
+                cwd=repository,
+                check=True,
+            )
+            subprocess.run(
+                ["git", "symbolic-ref", f"refs/tags/{ALPHA8_TAG}", target],
+                cwd=repository,
+                check=True,
+            )
+            self.assert_unauthorized_tag(repository)
 
     def test_source_stage_validator_rejects_alpha6_at_another_source(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -3149,26 +3190,10 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
             "refs/tags/v0.1.0-alpha.6 commit "
             "0c47d9d4b936dfb74134a4d7bf0f9354fc67359b"
         )
-        self.assertIn(
+        alpha8_tag = f"refs/tags/{ALPHA8_TAG} commit {ALPHA8_SOURCE}"
+        self.assertTrue(
+            tags <= {preview_tag, alpha_tag, alpha4_tag, alpha6_tag, alpha8_tag},
             tags,
-            [
-                {alpha6_tag},
-                {preview_tag, alpha6_tag},
-                {alpha_tag, alpha6_tag},
-                {alpha4_tag, alpha6_tag},
-                {preview_tag, alpha_tag, alpha6_tag},
-                {preview_tag, alpha4_tag, alpha6_tag},
-                {alpha_tag, alpha4_tag, alpha6_tag},
-                {preview_tag, alpha_tag, alpha4_tag, alpha6_tag},
-                set(),
-                {preview_tag},
-                {alpha_tag},
-                {preview_tag, alpha_tag},
-                {alpha4_tag},
-                {preview_tag, alpha4_tag},
-                {alpha_tag, alpha4_tag},
-                {preview_tag, alpha_tag, alpha4_tag},
-            ],
         )
 
         history_paths = subprocess.run(
