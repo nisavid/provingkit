@@ -48,6 +48,10 @@ Use the named per-plugin ZIPs; GitHub's automatic source archives contain
 development material. The older [preview instructions](docs/preview/install-and-update.md)
 remain available as historical documentation.
 
+The [Alpha 7 upload and update guide](docs/releases/alpha7-upload-guide.md)
+lists the candidate checksums and explains the account and Desktop checks
+for the planned prerelease.
+
 Open a plugin's README above to see its skills and usage boundaries before
 equipping it. Task Witness is deferred optional equipment outside this Kit;
 the [release boundary](docs/release-boundary.md) explains its status and what
