@@ -10,12 +10,14 @@ Choose the ZIPs for **ChatGPT** or **Claude**, and leave them compressed.
 The files ending in `-claude.zip` are for Claude; use the other plugin ZIPs
 for ChatGPT. GitHub's **Source code** archives are for development.
 
-Install all plugins in the release for the complete Kit. For a partial install,
-use the same ZIP format for each companion:
+Install all plugins in the release for the complete Kit. For partial installs,
+these common workflows need companions in the same ZIP format:
 
 - **Tricritical reviews:** include Rolecasting.
 - **Mergecraft PR publication:** include Tricritical and Rolecasting for review,
   plus Versionkeeping for commits and pushes.
+- **Artifact Customs:** add Rolecasting for delegation, Tricritical for review,
+  Versionkeeping for Git, and Mergecraft for PRs, as your workflow needs.
 
 ## ChatGPT
 
