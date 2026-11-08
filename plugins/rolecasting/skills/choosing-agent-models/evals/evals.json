@@ -38,12 +38,12 @@
       "expectations": [
         {
           "id": "no-invented-luna",
-          "text": "Identifies absent executor schema support as the reason eligible, adequate Luna high is unavailable. Never guesses a label or changes the settled executor.",
+          "text": "Identifies absent executor schema support as the reason eligible, adequate Luna high is unavailable. Every selected replacement must be proven in both the current catalog and the settled executor schema. Rejects catalog-only Terra in C and Haiku in E, without guessing a label or changing the settled executor.",
           "severity": "safety"
         },
         {
           "id": "proven-economical-fallbacks",
-          "text": "Chooses Sol high in A, adequate cheaper Terra medium in B, and adequate cheaper Haiku high in D, using each exact observed label. In C and E rejects the catalog-only alternatives and selects the proven Sol high or Opus high pair, respectively.",
+          "text": "Prefers the cheaper adequate proven pair in B and D, selecting Terra medium and Haiku high respectively. Chooses the sufficient Sol high pair in A and C and Opus high in E.",
           "severity": "quality"
         },
         {
@@ -554,7 +554,7 @@
       "fixture_paths": [
         "evals/fixtures/ultra-panel-applicability.md"
       ],
-      "expected_output": "A uses supported Sol ultra and encourages reconciled collaborative/competitive panels with individually eligible medium/high/xhigh participants. B uses Opus ultracode and encourages adjudicated panels with medium/high participants. C selects medium; D uses supported high or reports unavailable if ultra is fixed. E uses ultra for its required beneficial parallel cognitive synthesis without imposing panels; F uses sufficient high because enhanced synthesis adds no benefit. No max frontier gate or max-participant requirement transfers to ultra. These are bounded cognitive worker/panel-lead selections, not defaults for operational orchestrators, which route bounded demanding analysis to capable workers and continuing intellectual leadership to a Sage or Advisor.",
+      "expected_output": "A uses supported Sol ultra and encourages reconciled collaborative/competitive panels with individually eligible medium/high/xhigh participants. B uses Opus ultracode and encourages adjudicated panels with medium/high participants. C selects medium; D uses supported high or reports unavailable if ultra is fixed. E uses ultra for its required beneficial parallel cognitive synthesis without imposing panels; F uses sufficient high because enhanced synthesis adds no benefit. No max frontier gate or max-participant requirement transfers to ultra. G uses Terra high for the difficult operational coordination under its named role policy. Parallel coordination does not select Sol ultra. The role routes bounded demanding analysis to capable workers and continuing intellectual leadership to a Sage or Advisor.",
       "expectations": [
         {
           "id": "ultra-positive-panels",
@@ -563,7 +563,7 @@
         },
         {
           "id": "ultra-negative-applicability",
-          "text": "C avoids ultra for serial work, D does not infer schema support from catalog, E uses supported ultra for its established cognitive synthesis requirement without a needless panel, and F uses sufficient high when enhanced synthesis adds no benefit.",
+          "text": "C avoids ultra for serial work. D requires schema support as well as catalog availability. E uses supported ultra for its established cognitive synthesis requirement without a needless panel. F uses sufficient high when enhanced synthesis adds no benefit. G keeps the operational orchestrator on Terra high under the role policy despite parallel work and Sol ultra capability.",
           "severity": "safety"
         },
         {

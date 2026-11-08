@@ -6,13 +6,13 @@ GPT-6.1 Sol and Claude Opus 5.5 handle ordinary demanding work. Start precise, r
 
 | Effort | Required judgment |
 | --- | --- |
-| `ultra` / `ultracode` | Highly parallelizable orchestration that benefits from this effort; use the form the exact target accepts. Encourage applicable adjudicated or reconciled collaborative or competitive panels, or similar workflows, with each participant selected under its own effort policy. |
+| `ultra` / `ultracode` | Bounded cognitive work that materially benefits from parallel reasoning. Use the form the exact target accepts. Encourage applicable adjudicated or reconciled collaborative or competitive panels, or similar workflows, with each participant selected under its own effort policy. |
 | `max` | For OpenAI and Anthropic models, every gate in [effort eligibility](effort-policy.md#max-effort), including the frontier problem conjunction and adjudicated or reconciled loop/panel workflow; other providers retain their own applicable rules. |
 | `xhigh` | Hard or complex, substantial unknowns, hard to reverse, or expensive mistakes; any one condition suffices. |
 | `high` | Somewhat hard or complex work that is relatively well understood; the normal consequential-review starting point. |
 | `medium` | Some complexity with well-understood behavior. |
 
-Choose from the target's supported efforts, rather than assuming every model exposes the table. Apply [effort eligibility](effort-policy.md) to all tiers; Opus is eligible for `max` only under its full conjunction and exact target support. Availability alone does not justify a higher effort. Ultra/Ultracode does not require max-effort participants or the frontier problem qualification. Use it when parallel orchestration materially helps; a small serial task or a target without the exact effort support stays on another eligible effort.
+Choose from the target's supported efforts, rather than assuming every model exposes the table. Apply [effort eligibility](effort-policy.md) to all tiers; Opus is eligible for `max` only under its full conjunction and exact target support. Availability alone does not justify a higher effort. Ultra/Ultracode does not require max-effort participants or the frontier problem qualification. For a discretionary Ultra or Ultracode selection, require material benefit from parallel cognition and support on the exact target. Named role selections below govern operational coordination and established Sage modes.
 
 ## Economical frontier and task fit
 
