@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.0-alpha.8
+
+- Guide Terra 6.1 and Haiku 5.5 model selection and preserve the current
+  orchestration, Dispatch, Concierge, and Reception defaults.
+- Route addressed agent messages through Surreal Intercom. Rolecasting retains
+  worker selection, authority interpretation, and supervision.
+
 ## Unreleased
 
 - Select Terra Low/Medium/High on the useful economical frontier, preserving
