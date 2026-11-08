@@ -64,20 +64,18 @@ Keep version-specific filenames, hashes, and upgrade changes in the release's
 assets and notes. Record the reviewed guide revision in the publication evidence.
 
 Write the guide for someone installing plugins: short steps for installation,
-update, and loading, with only useful troubleshooting. Use current product
-names, including **ChatGPT desktop app**. Keep account-specific observations,
-past validation results, pending qualification, release-upload protocols, and
+update, and loading, with only useful troubleshooting. Keep account-specific
+observations, past validation results, pending qualification, release-upload protocols, and
 agent coordination requirements in their owning maintainer records. State only
 user-relevant limitations in the guide. Verify instructions against provider
 documentation and applicable observations; neither source alone establishes a
 successful installation.
 
-Use `proseweaving:writing-for-people` for the prose and
-`honing-human-facing-docs` for the reader journey. The default plugin ZIP name
-omits `-agent-plugins`; a distinct Claude projection retains `-claude` while its
-contents differ. Bind names and checksum sidecars consistently in the new
-release inventory. Filename simplification does not establish cross-client ZIP
-compatibility or rename assets of an already published release.
+Use `proseweaving:writing-for-people` to write and edit the release notes and
+installation guide. Name archives `provingkit-<plugin>-<version>.zip` for
+Agent Plugins clients and `provingkit-<plugin>-<version>-claude.zip` for the
+Claude projection. Name each checksum file `<archive>.sha256`; its filename
+entry and digest must match the archive in the release inventory.
 
 For GitHub and Linear, use the same verified semantic inputs and retain one
 maintained authoring source for the release. Adapt presentation to each

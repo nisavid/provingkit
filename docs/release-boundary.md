@@ -1,4 +1,4 @@
-# Source, preview, and release
+# Source and release
 
 Use the [installation and update guide](install-and-update.md) for the current
 release. Source validation, release publication, live host qualification, and
@@ -16,12 +16,8 @@ each member to its own manifest. The repository contains a schema for a future
 immutable release manifest, but it contains no release-manifest instance.
 
 The root [`marketplace.json`](../.claude-plugin/marketplace.json) is a source
-projection of the six Agent Plugins for Claude Code. Its presence is not
+projection of the Kit's plugins for Claude Code. Its presence is not
 marketplace publication.
-
-## Historical preview
-
-The [pinned preview records](https://github.com/nisavid/provingkit/blob/54e2ca8987a1d0f4fa2ac2da273681aed15abdbd/docs/preview/install-and-update.md) describe the earlier unsigned release and its artifact verification. They remain historical evidence; use the current installation guide for supported steps.
 
 ## Source checks and release evidence
 
