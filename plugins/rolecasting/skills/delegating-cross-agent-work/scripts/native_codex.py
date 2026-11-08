@@ -136,13 +136,6 @@ _PROFILES = {
         executor="codex",
         maximum_assurance=_NATIVE_MAXIMUM,
     ),
-    "codex-desktop": _NativeProfile(
-        adapter_id="codex-desktop-native-subagent",
-        product_family="codex",
-        surface="codex-desktop",
-        executor="codex",
-        maximum_assurance=_NATIVE_MAXIMUM,
-    ),
 }
 
 

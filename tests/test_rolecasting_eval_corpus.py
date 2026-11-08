@@ -371,6 +371,7 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
             "readme": (PLUGIN_ROOT / "README.md").read_text(),
         }
         combined = "\n".join(sources.values())
+        self.assertNotIn("Codex" + " Desktop", combined)
 
         for dimension in (
             "family",

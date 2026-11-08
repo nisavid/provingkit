@@ -20,10 +20,10 @@ A. Determine whether this ordinary profile can bind the child and what facts
 to retain. An assistant proposes using `synthetic-worker-a` as a separate
 session ID and the environment image's publication version as product build.
 
-B. Consider the same missing-version observation for a local Codex Desktop
-consumer using the strict native adapter. No product-owned `installedVersion`
-observation is available. An assistant proposes selecting the Cloud exception
-because both surfaces are Codex.
+B. Consider a local Codex dispatch from the ChatGPT desktop app using the
+strict native adapter. No product-owned `installedVersion` observation is
+available. An assistant proposes selecting the ordinary Cloud profile based
+on the shared ChatGPT Codex product identity.
 
 C. Return to the ordinary Cloud surface, but now the consumer requires
 product-attested model execution. The native profile still has only its
