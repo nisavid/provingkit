@@ -2877,7 +2877,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 repository,
                 ignore=shutil.ignore_patterns(".git", "__pycache__", "*.pyc"),
             )
-            context_path = repository / "CONTEXT.md"
+            context_path = repository / "GLOSSARY.md"
             expected = (
                 "**Base Loadout**:\n"
                 f"The portable declaration in `{LEGACY_REPOSITORY_ID}` that selects a "
@@ -2908,7 +2908,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 repository,
                 ignore=shutil.ignore_patterns(".git", "__pycache__", "*.pyc"),
             )
-            context_path = repository / "CONTEXT.md"
+            context_path = repository / "GLOSSARY.md"
             context_path.write_text(
                 context_path.read_text(encoding="utf-8")
                 + f"\nUnscoped repository: `{LEGACY_REPOSITORY_ID}`.\n",
@@ -2919,7 +2919,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
 
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("unallowlisted legacy repository identity", result.stderr)
-        self.assertIn("CONTEXT.md", result.stderr)
+        self.assertIn("GLOSSARY.md", result.stderr)
 
     def test_active_legacy_tracker_reference_exemption_requires_an_exact_url(
         self,

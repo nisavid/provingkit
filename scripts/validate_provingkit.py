@@ -58,7 +58,7 @@ SOURCE_DISPOSITION_LEDGER_RELATIVE = Path(
 SOURCE_DISPOSITION_REFRESH_RELATIVE = Path(
     "release/source-skill-disposition/release-refresh-contract.json"
 )
-ACTIVE_LEGACY_REPOSITORY_GUIDANCE_RELATIVE = Path("CONTEXT.md")
+ACTIVE_LEGACY_REPOSITORY_GUIDANCE_RELATIVE = Path("GLOSSARY.md")
 LEGACY_IDENTITY_TOKENS = tuple(
     value.encode("ascii")
     for value in (
