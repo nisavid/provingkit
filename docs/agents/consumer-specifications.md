@@ -31,6 +31,8 @@ Keep runs bounded under the owning resource policy. Preserve failures and unknow
 
 ## Complete the delivery
 
+Before requesting independent review of an agent-equipment change or consequential operational script, apply `surreal-artifice-verifying-author-work` from `.agents/skills/surreal-artifice-verifying-author-work/SKILL.md`. Carry its candidate-bound checks and limitations into the review handoff.
+
 Run the touched surface's owning checks, update governed identities through their documented writers, and obtain clean independent review on the final revision and evidence dependencies. Capture the actual source and consumer result through the owning task. Publish and adopt only through their existing gates.
 
 For the first Graphite consumer, a generated inspection command must reach the real auditor parser and the correct inert audit handler, while publishing commands retain their selected review requirements. That demonstrates offline command compatibility. Receipt access, forge mutation, aggregate repair, installation, and live acceptance remain separate.
