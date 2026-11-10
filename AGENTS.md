@@ -4,7 +4,7 @@
 
 ### Issue tracker
 
-Issues, PRDs, and Wayfinder maps are tracked in GitHub Issues for
+Issues, specs, and Wayfinder maps are tracked in GitHub Issues for
 `nisavid/provingkit`. See `docs/agents/issue-tracker.md`.
 
 For release publication or presentation changes, use
