@@ -41,11 +41,12 @@ historical handoff was recorded that way.
 
 From the repository root, this bounded check covers the two active domain
 instruction files from that migration. The first command must exit 1 (no match)
-and the second must exit 0. Any other status is a failed check.
+and each remaining command must exit 0. Any other status is a failed check.
 
 ```sh
 rg -n -F 'CONTEXT.md' AGENTS.md docs/agents/domain.md
-rg -n -F 'GLOSSARY.md' AGENTS.md docs/agents/domain.md
+rg -n -F 'GLOSSARY.md' AGENTS.md
+rg -n -F 'GLOSSARY.md' docs/agents/domain.md
 ```
 
 The [merged migration](https://github.com/nisavid/provingkit/pull/966) retained
