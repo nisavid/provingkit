@@ -42,14 +42,16 @@ This walkthrough is a check of the intended procedure, not a claim that the
 historical handoff was recorded that way.
 
 From the repository root, this bounded check covers the two active domain
-instruction files from that migration. The first command must exit 1 (no match)
-and each remaining command must exit 0. Any other status is a failed check.
+instruction files from that migration. The first two commands must exit 1 (no
+match) and each remaining command must exit 0. Any other status is a failed check.
 The positive checks are tied to the current wording of the affected lines.
 
 ```sh
 rg -n -F 'CONTEXT.md' AGENTS.md docs/agents/domain.md
+rg -n -F 'CONTEXT-MAP.md' AGENTS.md docs/agents/domain.md
 rg -n -F 'Read `GLOSSARY.md` before planning or editing' AGENTS.md
 rg -n -F -- '- **`GLOSSARY.md`** at the repo root, or' docs/agents/domain.md
+rg -n -F -- '- **`GLOSSARY-MAP.md`** at the repo root if it exists:' docs/agents/domain.md
 ```
 
 The [merged migration](https://github.com/nisavid/provingkit/pull/966) retained
