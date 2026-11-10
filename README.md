@@ -59,7 +59,7 @@ the available validation proves.
   for one current thread and its child roles. Its pinned distribution and
   explicit invocation are separate from automatic startup or account-wide peers.
 - **Understand the design:** read the [plugin system design principles](docs/plugin-system/design-principles.md)
-  and [project glossary](CONTEXT.md).
+  and [project glossary](GLOSSARY.md).
 - **Publish under a permission classifier:** read [binding actuator authority](docs/plugin-system/actuator-authority-binding.md)
   before changing a skill that pushes, opens pull requests, or files tickets.
 - **Check release and evidence limits:** see [source, preview, and release](docs/release-boundary.md)

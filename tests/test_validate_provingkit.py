@@ -119,6 +119,8 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
     @staticmethod
     def overlay_current_final_main_contract(destination: Path) -> None:
         for relative in (
+            "CONTEXT.md",
+            "GLOSSARY.md",
             ".claude-plugin/marketplace.json",
             "docs/superpowers/research/2026-09-01-review-writing-cluster-reconciliation.md",
             "docs/superpowers/research/2026-09-17-mergecraft-relation-inventory.md",
@@ -2877,7 +2879,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 repository,
                 ignore=shutil.ignore_patterns(".git", "__pycache__", "*.pyc"),
             )
-            context_path = repository / "CONTEXT.md"
+            context_path = repository / "GLOSSARY.md"
             expected = (
                 "**Base Loadout**:\n"
                 f"The portable declaration in `{LEGACY_REPOSITORY_ID}` that selects a "
@@ -2908,7 +2910,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 repository,
                 ignore=shutil.ignore_patterns(".git", "__pycache__", "*.pyc"),
             )
-            context_path = repository / "CONTEXT.md"
+            context_path = repository / "GLOSSARY.md"
             context_path.write_text(
                 context_path.read_text(encoding="utf-8")
                 + f"\nUnscoped repository: `{LEGACY_REPOSITORY_ID}`.\n",
@@ -2919,7 +2921,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
 
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("unallowlisted legacy repository identity", result.stderr)
-        self.assertIn("CONTEXT.md", result.stderr)
+        self.assertIn("GLOSSARY.md", result.stderr)
 
     def test_active_legacy_tracker_reference_exemption_requires_an_exact_url(
         self,
