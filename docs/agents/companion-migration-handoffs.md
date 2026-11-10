@@ -3,8 +3,9 @@
 Use this procedure when a verified companion installation or deployment changes
 a skill name or path referenced by Provingkit. The deployment owner supplies
 the installed source and version, affected names or paths, its deployment
-record, and the migration issue. An archive or release alone does not establish
-an installed update.
+record, and the migration issue if one exists. If no issue exists, the notice
+identifies that gap so Provingkit Orchestrator can route its creation. An
+archive or release alone does not establish an installed update.
 
 1. Find the existing migration issue, or follow the repository's issue tracker
    procedure to create one. Link the deployment record and identify the affected
