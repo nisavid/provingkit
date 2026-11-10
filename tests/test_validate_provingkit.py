@@ -119,6 +119,8 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
     @staticmethod
     def overlay_current_final_main_contract(destination: Path) -> None:
         for relative in (
+            "CONTEXT.md",
+            "GLOSSARY.md",
             ".claude-plugin/marketplace.json",
             "docs/superpowers/research/2026-09-01-review-writing-cluster-reconciliation.md",
             "docs/superpowers/research/2026-09-17-mergecraft-relation-inventory.md",
