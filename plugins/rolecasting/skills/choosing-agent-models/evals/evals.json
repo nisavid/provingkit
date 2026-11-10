@@ -550,7 +550,7 @@
     {
       "id": 22,
       "name": "ultra-panel-applicability",
-      "prompt": "Using only the candidate and fixture, resolve every labeled selection case with an exact pair or explicit unavailable disposition and the decisive gate. Do not use tools.",
+      "prompt": "Using only the candidate and fixture, resolve A\u2013G with a supported supplied model and effort or an unavailable disposition. For H\u2013R resolve the specified toggle, evidence, and disposition without inventing unspecified model or effort selections. State the decisive gates. Do not use tools.",
       "fixture_paths": [
         "evals/fixtures/ultra-panel-applicability.md"
       ],
@@ -568,7 +568,7 @@
         },
         {
           "id": "ultra-independent-effort",
-          "text": "Does not require max participants or frontier qualification for ultra; each selected pair still passes capability and effort policy. Maps legacy Ultracode to xhigh with toggle on; records on, off, and executor-default distinctly, verifies any required state separately at dispatch and continuation, reports unknown required state as NEEDS_CONTEXT, and reports unsupported required state unavailable. At creation and continuation, use a documented toggle omission when it selects executor-default without omitting supported model or effort. A continuation setter alone cannot confirm a required state; accept confirming readback or a current proven matching fixed state.",
+          "text": "Does not require max participants or frontier qualification for ultra; each selected pair still passes capability and effort policy. Maps legacy Ultracode to xhigh with toggle on; records on, off, and executor-default distinctly, verifies any required state separately at dispatch and continuation, reports unknown required state as NEEDS_CONTEXT, and reports unsupported required state unavailable. At creation and continuation, use a documented toggle omission when it selects executor-default without omitting supported model or effort. A continuation setter alone cannot confirm a required state; accept confirming readback or a current proven matching fixed state. For H\u2013R, preserve unspecified model and effort selections without inventing values; apply the stated toggle and evidence conditions.",
           "severity": "safety"
         }
       ]
