@@ -922,6 +922,35 @@ class CommandFailureTests(unittest.TestCase):
         self.assertFalse((self.capture / "rpc.json").exists())
         self.assertNotIn("capture_failure", result)
 
+    def test_active_peer_without_a_turn_id_refuses_before_peer_input(self):
+        self.refuses_unusable_active_turn_id(None)
+
+    def test_active_peer_with_a_blank_turn_id_refuses_before_peer_input(self):
+        self.refuses_unusable_active_turn_id(" \t")
+
+    def test_active_peer_with_a_nontext_turn_id_refuses_before_peer_input(self):
+        self.refuses_unusable_active_turn_id(7)
+
+    def refuses_unusable_active_turn_id(self, turn_id):
+        def conversation(connection, receive, send, follow):
+            snapshot = self.snapshot(active=True)
+            snapshot["params"]["change"]["conversationState"]["turns"][-1]["turnId"] = turn_id
+            send(snapshot)
+            follow["params"]["following"] = False
+            self.assertEqual(receive(), follow)
+            self.assertEqual(connection.recv(1), b"")
+
+        result, wire, sent = self.peer_exchange(conversation)
+        self.assertEqual(result["reason"], "active-turn-id-unavailable")
+        self.assertEqual(result["peer_input"], "not_attempted")
+        self.assertEqual(result["projection"]["stage"], "refused-before-write")
+        self.assertEqual([message["method"] for message in wire], [
+            "initialize", "thread-owner-discovery",
+            "thread-stream-following-changed", "thread-stream-following-changed",
+        ])
+        self.assertFalse((self.capture / "attempt.json").exists())
+        self.assertFalse((self.capture / "rpc.json").exists())
+
     def test_idle_peer_refuses_start_and_keeps_claim_uncertainty(self):
         def conversation(connection, receive, send, follow):
             send(self.snapshot())

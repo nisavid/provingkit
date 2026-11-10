@@ -244,6 +244,9 @@ def _run_operation(case, directory, mode="submit", attempt_path=None, *, transpo
         current = [t for t in turns if t.get("status") == "inProgress"]
         runtime = state.get("threadRuntimeStatus", {}).get("type")
         if runtime == "active" and len(current) == 1 and turns[-1] == current[0]:
+            active_id = current[0].get("turnId")
+            if not isinstance(active_id, str) or not active_id.strip():
+                raise Refusal("active-turn-id-unavailable")
             selected = "steer"
         elif runtime == "idle" and not current:
             selected = "start"
