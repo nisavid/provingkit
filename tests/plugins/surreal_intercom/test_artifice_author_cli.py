@@ -12,10 +12,19 @@ import unittest
 
 ROOT = Path(__file__).resolve().parents[3]
 SCRIPTS = ROOT / 'plugins/surreal-intercom/skills/communicating-with-agents/scripts'
-SENDER = Path(os.environ.get('ARTIFICE_SENDER_SCRIPT', SCRIPTS / 'owner_admission_sender.py'))
+SENDER = SCRIPTS / 'owner_admission_sender.py'
 
 
 class AuthorVerificationCliTests(unittest.TestCase):
+    def test_ambient_sender_override_does_not_change_routine_suite(self):
+        env = dict(os.environ, ARTIFICE_SENDER_SCRIPT='/nonexistent/artifice-sender.py')
+        result = subprocess.run([
+            sys.executable, '-B', '-m', 'unittest',
+            'tests.plugins.surreal_intercom.test_artifice_author_cli.'
+            'AuthorVerificationCliTests.test_wrong_type_in_scope_refuses_before_connection',
+        ], cwd=ROOT, env=env, capture_output=True, text=True, timeout=10)
+        self.assertEqual(result.returncode, 0, result.stderr)
+
     def assert_scope_refused(self, scope, *, malformed=False):
         with tempfile.TemporaryDirectory(prefix='artifice-author-') as name:
             root = Path(name)
