@@ -41,7 +41,7 @@ agent thread, task, session, or subagent. Inspect each field independently:
 | Effort only | Pass the selected effort. Record the inherited model binding and the absence of a model control. |
 | Neither | Record the inherited model and effort binding and why neither can be set. |
 
-Omit only a field the exact surface does not expose. Model inheritance is
+Omit a model or effort field only when the exact surface does not expose it. Model inheritance is
 permitted only without a model field, with its binding and reason recorded.
 For every unavailable control, establish the fixed binding sufficiently to
 pass suitability, effort eligibility, and consumer requirements before sending
@@ -68,6 +68,11 @@ Claude Ultracode is a mode with a separate on/off state. A legacy
 model, effort, and the toggle selection independently, including an explicit
 on, off, or executor-default choice. A default is not a claim that the mode
 is on or off. Use the exact executor's supported native fields and values.
+For executor-default, use the exact executor's documented default selection
+form, including omission of the toggle field when that is its supported form.
+Record the deliberate default selection and its supporting evidence at creation
+and continuation. This toggle-specific rule does not relax the model or effort
+field requirements; never infer an on/off state from default selection.
 
 When a specific toggle state is required, bind its supported control or a
 proven fixed state before dispatch, apply supported controls, and verify the
@@ -120,7 +125,8 @@ remains suitable. Reuse unchanged observations within their valid binding and
 freshness window; refresh when stale, absent, or invalidated by a relevant
 change. Initial selection alone does not establish continued suitability.
 
-Pass every selection field the continuation actually supports. If it exposes
+Pass the supported selection fields under the field-specific rules above,
+including the documented Ultracode executor-default form. If it exposes
 none, retain the established requested binding and record that no field can
 change it; do not invent a separate account or served-model readback. This
 establishes requested configuration and current native capability, not actual
@@ -147,9 +153,10 @@ retained binding; a stored model alone cannot establish current account affinity
 or effort. Apply the field-specific rules above without silently inheriting a
 global, desktop, or parent default. A continuation that creates a replacement
 thread, task, session, or subagent must also satisfy the creation requirement.
-Recheck any required Ultracode state separately: apply the supported native
-control or verify the retained fixed state before sending task data. A stored
-model alone does not establish the toggle.
+Recheck any required Ultracode state separately before sending task data. Apply
+any supported native control and require confirming state evidence or a
+currently proven matching fixed state; a setter alone is not confirmation. A
+stored model alone does not establish the toggle.
 
 ## Handle Probe Failure
 
