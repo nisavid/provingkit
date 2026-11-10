@@ -84,17 +84,23 @@ def observation(
 
 
 class NativeCodexBindingTests(unittest.TestCase):
-    def test_desktop_freeze_binds_its_own_surface_and_product_version(self) -> None:
+    def test_freeze_rejects_the_retired_surface(self) -> None:
         native = load_module()
-        requested = intent("codex-desktop")
+
+        with self.assertRaisesRegex(native.NativeDispatchError, "surface is unsupported"):
+            native.freeze_native_dispatch(intent("codex-desktop"))
+
+    def test_chatgpt_freeze_binds_its_own_surface_and_product_version(self) -> None:
+        native = load_module()
+        requested = intent("chatgpt-codex")
         requested["version"] = "26.1002.52244"
 
         frozen = native.freeze_native_dispatch(requested)
 
-        self.assertEqual(frozen.adapter_id, "codex-desktop-native-subagent")
+        self.assertEqual(frozen.adapter_id, "chatgpt-codex-native-subagent")
         self.assertEqual(
             tuple(frozen.target),
-            ("codex", "codex-desktop", "26.1002.52244", "codex"),
+            ("codex", "chatgpt-codex", "26.1002.52244", "codex"),
         )
         self.assertEqual(
             tuple(frozen.topology), ("child", "leader-owned", "native-tool")
@@ -111,9 +117,9 @@ class NativeCodexBindingTests(unittest.TestCase):
             ),
         )
 
-    def test_desktop_record_retains_the_product_target_and_unusable_result(self) -> None:
+    def test_chatgpt_record_retains_the_product_target_and_unusable_result(self) -> None:
         native = load_module()
-        requested = intent("codex-desktop")
+        requested = intent("chatgpt-codex")
         requested["version"] = "26.1002.52244"
         frozen = native.freeze_native_dispatch(requested)
 
@@ -128,16 +134,16 @@ class NativeCodexBindingTests(unittest.TestCase):
                 )
                 self.assertEqual(
                     tuple(recorded.target),
-                    ("codex", "codex-desktop", "26.1002.52244", "codex"),
+                    ("codex", "chatgpt-codex", "26.1002.52244", "codex"),
                 )
                 self.assertEqual(recorded.terminal_status, terminal)
                 self.assertIs(recorded.usable, usable)
                 self.assertFalse(recorded.portable_evidence)
                 self.assertFalse(recorded.product_attested)
 
-    def test_desktop_record_rejects_another_surface_or_version_binding(self) -> None:
+    def test_chatgpt_record_rejects_another_surface_or_version_binding(self) -> None:
         native = load_module()
-        requested = intent("codex-desktop")
+        requested = intent("chatgpt-codex")
         requested["version"] = "26.1002.52244"
         frozen = native.freeze_native_dispatch(requested)
         original_observation = observation(frozen)
@@ -154,7 +160,7 @@ class NativeCodexBindingTests(unittest.TestCase):
                         different_target, original_observation
                     )
 
-    def test_desktop_freeze_rejects_invalid_target_values(self) -> None:
+    def test_chatgpt_freeze_rejects_invalid_target_values(self) -> None:
         native = load_module()
         for field, value, error in (
             ("surface", "codex-unknown", "surface is unsupported"),
@@ -163,12 +169,12 @@ class NativeCodexBindingTests(unittest.TestCase):
             ("executor", "claimed-wrapper", "executor does not match native profile"),
         ):
             with self.subTest(field=field, value=value):
-                requested = intent("codex-desktop")
+                requested = intent("chatgpt-codex")
                 requested[field] = value
                 with self.assertRaisesRegex(native.NativeDispatchError, error):
                     native.freeze_native_dispatch(requested)
 
-    def test_desktop_freeze_preserves_authority_and_assurance_limits(self) -> None:
+    def test_chatgpt_freeze_preserves_authority_and_assurance_limits(self) -> None:
         native = load_module()
         for field, value in (
             ("access", "write"),
@@ -176,7 +182,7 @@ class NativeCodexBindingTests(unittest.TestCase):
             ("external_action", True),
         ):
             with self.subTest(authority=field):
-                requested = intent("codex-desktop")
+                requested = intent("chatgpt-codex")
                 requested["authority_intent"][field] = value
                 with self.assertRaisesRegex(
                     native.NativeDispatchError, "must be read-only with onward"
@@ -191,7 +197,7 @@ class NativeCodexBindingTests(unittest.TestCase):
             ("execution_result", "product-attested"),
         ):
             with self.subTest(assurance=field):
-                requested = intent("codex-desktop")
+                requested = intent("chatgpt-codex")
                 requested["assurance_minimum"][field] = value
                 with self.assertRaisesRegex(
                     native.NativeDispatchError,

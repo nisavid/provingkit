@@ -868,7 +868,6 @@ def validate_task_witness_provider(root: Path) -> set[str]:
         "def record_native_observation(",
         'surface="chatgpt-codex"',
         'surface="codex-cli-tui"',
-        'surface="codex-desktop"',
         'executor="codex"',
         'relationship="child"',
         'ownership="leader-owned"',
@@ -887,8 +886,10 @@ def validate_task_witness_provider(root: Path) -> set[str]:
     native_reference = read(root, NATIVE_CODEX_REFERENCE)
     native_reference_words = " ".join(native_reference.split())
     for term in (
-        "ChatGPT Codex, Codex CLI/TUI, and Codex Desktop",
+        "ChatGPT Codex and Codex CLI/TUI",
         "`installedVersion`",
+        "Establish product identity separately",
+        "Missing or contradictory target facts block",
         "does not authenticate the application observation",
         "skill-mediated",
         "before invoking the native subagent tool",

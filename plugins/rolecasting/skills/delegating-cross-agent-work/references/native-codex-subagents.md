@@ -1,8 +1,7 @@
 # Native Codex subagents
 
-This is the operational binding for ChatGPT Codex, Codex CLI/TUI, and Codex
-Desktop. They are separate target surfaces with separate adapter profiles and use
-the harness's native subagent tool as a leader-owned child transport. The
+ChatGPT Codex and Codex CLI/TUI use separate adapter profiles. Each uses
+its harness's native subagent tool for leader-owned children. The
 strict-profile binding is skill-mediated: `native_codex.py` sequences freeze and record state,
 while the skill invokes the native tool between those operations. The module is
 not a launcher and does not turn caller-supplied facts into portable
@@ -10,13 +9,13 @@ attestation.
 
 The normal topology for each profile is:
 
-| Dimension | ChatGPT Codex | Codex CLI/TUI | Codex Desktop |
-| --- | --- | --- | --- |
-| Product family | `codex` | `codex` | `codex` |
-| Surface | `chatgpt-codex` | `codex-cli-tui` | `codex-desktop` |
-| Relationship | `child` | `child` | `child` |
-| Ownership | `leader-owned` | `leader-owned` | `leader-owned` |
-| Transport | `native-tool` | `native-tool` | `native-tool` |
+| Dimension | ChatGPT Codex | Codex CLI/TUI |
+| --- | --- | --- |
+| Product family | `codex` | `codex` |
+| Surface | `chatgpt-codex` | `codex-cli-tui` |
+| Relationship | `child` | `child` |
+| Ownership | `leader-owned` | `leader-owned` |
+| Transport | `native-tool` | `native-tool` |
 
 Do not use this binding to create or steer a user-owned task. That ownership
 requires explicit user consent and a separately classified route.
@@ -28,9 +27,9 @@ initial-release dependency.
 Ordinary current-tree Cloud child operations use the separate `native_tree.py`
 driver through [the native-tree procedure](native-tree-driver.md). Select its explicit versioned
 profile and schema, bound to the current surface and native controls; missing
-legacy fields do not select this profile automatically. The strict
-`native_codex.py` records and their readers remain unchanged. Desktop, CLI/TUI,
-and consumers requiring the strict record use the strict procedure below.
+legacy fields do not select this profile automatically. Use the strict
+`native_codex.py` procedure below for local Codex dispatches from the ChatGPT
+desktop app, Codex CLI/TUI, and consumers that require a strict record.
 
 Freeze the bounded operation, current controller, native target binding and
 generation, requested selection, capability observations, authority, and
@@ -47,8 +46,8 @@ exposed. A missing separate session ID is permitted; copying the target into a
 second ID is not evidence. Product build may be explicitly unavailable only
 for this ordinary profile with its frozen surface/capability binding. An
 environment publication version cannot replace it. A consumer requiring an
-observed product version or stronger evidence still blocks; this exception
-does not apply to Desktop, CLI/TUI, or witnessed evidence.
+observed product version or stronger evidence still blocks. Local ChatGPT Codex
+dispatches, Codex CLI/TUI, and witnessed evidence keep their version requirements.
 
 Use the driver's immutable command and transactional claim before making one
 native call. Only the newly successful claimant may emit that attempt. Record
@@ -75,14 +74,15 @@ continuity. If the profile or driver is unavailable, do not fabricate missing
 metadata or reinterpret strict records. Use another contract-preserving route
 or continue useful authorized work that needs no child operation.
 
-## Identify the Desktop target
+## Identify the ChatGPT Codex target
 
-Use `codex-desktop` for a local Codex-backed Desktop task whose current harness
-exposes leader-owned native subagent controls. A ChatGPT-backed cloud task
-displayed in Desktop is a separate target. The app's user-owned task controls
-do not supply this native child transport.
+The Codex mode of the ChatGPT desktop app uses `chatgpt-codex`. Task backing
+kind and tool namespace describe execution context; they do not establish a
+separate product. Other ChatGPT modes or execution contexts may expose different
+controls. The app's user-owned task controls do not supply native child
+transport.
 
-Before freezing a Desktop dispatch:
+Before freezing a dispatch from that desktop app:
 
 1. Establish the current task's product surface, target host, and available
    native controller from harness-owned context or controls. Verify that the
@@ -90,16 +90,18 @@ Before freezing a Desktop dispatch:
    observations required below. Missing or contradictory target facts block
    this route before invocation.
 2. Obtain the actual application version from a product-owned observation for
-   that app and host. The Codex app's `check_app_update` response exposes
-   `installedVersion` from Electron's `app.getVersion()`. Its update-check
-   status is separate: an unavailable update check can still return the
-   installed version. Retain the complete response and its source; a missing
-   or unknown version blocks the route. A CLI version, model label, launcher
-   name, or worker statement cannot establish the Desktop product version.
-3. Bind that observation and its app/host context into the content-addressed
-   plan. Pass the observed `installedVersion` as the helper's `version` value,
-   with `surface: codex-desktop` and `executor: codex`. Build and release-channel
-   metadata may accompany the observation without replacing the version.
+   that app and host. The app's `check_app_update` response exposes
+   `installedVersion` independently of the update-check status, so an unavailable
+   update check can still return the installed version. Retain the complete
+   response and its source. Establish product identity separately from the
+   numeric version. A missing or unknown version blocks the route. A CLI
+   version, model label, launcher name, or worker statement
+   cannot establish the application version.
+3. Bind the product-identity evidence, version observation, and app/host context
+   into the content-addressed plan. Pass the observed `installedVersion` as the
+   helper's `version` value, with `surface: chatgpt-codex` and `executor: codex`.
+   Build and release-channel metadata may accompany the observation without
+   replacing the version.
 4. Reuse the observation only while its product and host context remain
    current. An app update, target change, or lost connection to the observed
    app requires a fresh observation and plan. Respect the observation control's
@@ -108,9 +110,9 @@ Before freezing a Desktop dispatch:
 The helper binds supplied version text and opaque plan digests. It does not
 authenticate the application observation or establish its freshness. The owning
 workflow performs the checks above; acceptance of an input by the helper alone
-does not establish a valid Desktop target. Product-version evidence does not
+does not establish a valid target. Product and version observations do not
 identify the engine or executed model, attest effective permissions, or qualify
-a native review. The Desktop profile retains the assurance limits below.
+a native review. The ChatGPT Codex profile retains the assurance limits below.
 
 ## Strict-profile freeze before launch
 

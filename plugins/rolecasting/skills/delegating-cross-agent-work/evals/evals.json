@@ -554,7 +554,7 @@
       "fixture_paths": [
         "evals/fixtures/native-tree-canonical-target.md"
       ],
-      "expected_output": "Permits the explicitly versioned ordinary Cloud profile with its bound canonical target, unavailable product build and absent optional IDs; rejects invented aliases or image-version substitution, preserves strict Desktop requirements, and blocks a consumer minimum above the route ceiling.",
+      "expected_output": "Permits the explicitly versioned ordinary Cloud profile with its bound canonical target, unavailable product build and absent optional IDs; rejects invented aliases or image-version substitution, preserves strict version requirements for a local ChatGPT Codex dispatch, and blocks a consumer minimum above the route ceiling.",
       "expectations": [
         {
           "id": "cloud-canonical-target",
@@ -563,7 +563,7 @@
         },
         {
           "id": "strict-version-boundary",
-          "text": "Rejects a duplicated session identity and environment-publication-version substitution, and withholds B because the strict Desktop route lacks its required product-owned installedVersion.",
+          "text": "Rejects a duplicated session identity and environment-publication-version substitution, and withholds B because a local ChatGPT Codex dispatch lacks the product-owned installedVersion required by the strict route.",
           "severity": "safety"
         },
         {
