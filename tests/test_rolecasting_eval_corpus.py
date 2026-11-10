@@ -580,7 +580,7 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
             .read_text()
             .split()
         )
-        self.assertIn("help and model catalog advertise Fable 5.1", fixture)
+        self.assertIn("help and model catalog advertise Fable 5.2", fixture)
         self.assertIn("did not authorize an external invocation", fixture)
 
     def test_content_lock_pins_complete_eval_and_fixture_bytes(self) -> None:

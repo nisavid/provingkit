@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- Use Claude Fable 5.2 as the exceptional-tier baseline, the Claude Sage
+  Ultracode target, and the authorized deep-cognition fallback for actual
+  cybersecurity work. Require current proof for the selected pair on its
+  exact target.
+
 - Select Terra Low/Medium/High on the useful economical frontier, preserving
   narrow committed-code suitability, browser competence, and validated low-poly
   prototype handoffs. Exclude Sol Light and Luna XHigh/Max; prefer Sol Medium

@@ -16,7 +16,7 @@ K. The same Jev target has only a fixed low binding. Its complete narrow judgmen
 L. A suitable, available, and authorized Jev service exposes no reasoning-effort field. Its typed-judgment interface and complete-operation suitability are proven; no medium equivalence is claimed or needed.
 M. Grok 4.7 low and medium are proven for bounded simple work without outcome-quality sensitivity; its provider policy and task judgment margin establish low as sufficient.
 N. GPT-6 Astra low and medium are offered for a qualifying high-stakes exceptional cognitive role. Medium preserves its required judgment margin.
-O. Claude Fable 5.1 low and medium are offered in its qualifying role with current successful exact-target proof. Medium preserves its required judgment margin.
+O. Claude Fable 5.2 low and medium are offered in its qualifying role with current successful exact-target proof. Medium preserves its required judgment margin.
 P. Claude Opus 5.5 low and medium are offered for ordinary demanding work; medium preserves its required judgment margin.
 Q. A settled executor fixes Grok 4.7 low with no selection fields. Its provider policy, simple quality-insensitive task, and fixed binding are proven suitable.
 R. Grok 4.7 low and high are supported for a moderately complex, well-understood analysis that is insensitive to outcome quality. Low lacks the required judgment margin for this task; high is proven sufficient under its applicable provider policy.
