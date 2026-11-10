@@ -76,7 +76,9 @@ The scope of a continuing responsibility or specialty, such as Software Delivery
 **Harness instance**:
 A particular operational deployment of a harness and the agents represented in it. A harness is the runtime product, such as Codex or Claude Code.
 
-An appointment binds a role to a scope and, where applicable, a harness instance. An accepted counterpart can represent the same scope in another instance. The request and accepted appointments determine the responsible owner.
+An appointment binds a role to a domain: a repository, effort, Aspect, or harness instance. It can also identify the harness instance where the role operates. An accepted counterpart can represent the same domain in another instance. The request and accepted appointments determine the responsible owner.
+
+For example, one appointment can cover responsibility for a harness instance itself; another can cover an effort represented in that instance.
 
 For example, a release effort can touch a package repository and a host configuration repository while the Software Delivery Aspect supplies delivery responsibility. Each repository retains its own source policy, and the effort retains its outcome owner. When a recipient accepts a particular handoff, that recipient has custody of the handed-off work while the effort retains its outcome owner.
 
