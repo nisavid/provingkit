@@ -25,14 +25,16 @@ is not a product version. Desktop/CLI and witnessed requirements are unchanged.
 Catalog presence never proves that a native subagent, task, CLI, app-server,
 remote API, or peer accepts the pair. Proof for one product surface does not
 prove its paired surface. Model support also does not prove relationship,
-ownership, transport, or assurance. When the target exposes no selection
-fields, apply the fixed-binding branch below; otherwise pass every supported
-selection field.
+ownership, transport, or assurance. Apply the [model and effort
+rules](#pass-every-supported-selection-field), including fixed bindings for absent controls,
+and the [Ultracode rules](#bind-claude-ultracode) for the exact executor.
 
 ## Pass Every Supported Selection Field
 
-Choose deliberately under the existing selection order before creating any
-agent thread, task, session, or subagent. Inspect each field independently:
+For model and effort, choose deliberately under the existing selection order
+before creating any agent thread, task, session, or subagent. Inspect each
+field independently. Apply the [separate Ultracode rules](#bind-claude-ultracode)
+to the toggle.
 
 | Target controls | Creation request and selection record |
 | --- | --- |
@@ -165,12 +167,14 @@ Treat capability as unproven when the executable is absent, a probe exits nonzer
 When a task that must be isolated cannot be created or verified, do not dispatch: return `NEEDS_CONTEXT` or `BLOCKED` so the owning workflow can select its no-runnable-route disposition. Unrelated-task reuse is never a fallback.
 
 Use a sufficient native route only when it preserves the original task contract.
-Pass every supported selection field and apply the fixed-binding rules only to
-controls the surface lacks. Unknown defaults cannot establish a required
-suitability or policy gate; fixed low defaults are ineligible for Astra/Fable
-and Sol/Opus, while other models follow their own effort rules. If no eligible
-binding can be established, do not dispatch: return `NEEDS_CONTEXT` with the
-missing fact or `BLOCKED` with the failed-probe evidence.
+Apply the [model and effort rules](#pass-every-supported-selection-field) and the
+[Ultracode rules](#bind-claude-ultracode) to that route, including any
+documented omission that selects executor-default. Unknown defaults cannot
+establish a required suitability or policy gate. Fixed low defaults are
+ineligible for Astra/Fable and Sol/Opus, while other models follow their own
+effort rules. If no eligible binding can be established, do not dispatch:
+return `NEEDS_CONTEXT` with the missing fact or `BLOCKED` with the
+failed-probe evidence.
 
 ## Apply Fallbacks
 
