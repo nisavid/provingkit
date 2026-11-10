@@ -154,11 +154,13 @@ For another harness, inspect its local capability surface and use only its exact
 
 ## Prove Fable
 
-Treat Claude Fable 5.1 as unavailable unless a current proof record for the exact target surface is supplied. The proof record must contain:
+Anthropic lists `claude-fable-5-2` for the Claude API. Verify the executor's own model and effort labels. [Claude Fable 5.2 model overview](https://platform.claude.com/docs/en/models/fable-5-2/overview)
+
+Every Fable version requires current successful proof for the exact model-effort pair and target. The proof record must contain:
 
 - harness and version;
 - exact slug and requested effort;
 - invocation result; and
 - an observable successful response.
 
-Help or catalog advertisement is insufficient. If no current successful proof exists, do not invoke Fable merely to establish one. Only the operator's explicit authorization for the exact proof invocation permits the attempt; that authorization does not itself prove availability. Until all fields are recorded after an authorized successful invocation, treat Fable 5.1 as unavailable. A fallback consent decision authorizes only its stated scope; it is not proof that Fable ran or authority to make a proof-only invocation.
+Help or catalog advertisement is insufficient. If no current successful proof exists, do not invoke Fable merely to establish one. Only the operator's explicit authorization for the exact proof invocation permits the attempt; that authorization does not itself prove availability. Until all fields are recorded after an authorized successful invocation, treat the requested Fable pair as unavailable. A fallback consent decision authorizes only its stated scope; it is not proof that Fable ran or authority to make a proof-only invocation.
