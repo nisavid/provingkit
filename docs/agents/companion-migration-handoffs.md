@@ -12,12 +12,13 @@ archive or release alone does not establish an installed update.
    active references, their owning sources, and any intentional historical or
    separately owned references. Keep the deployment handoff pending while the
    issue or an accountable recipient is missing.
-2. Provingkit Orchestrator names the recipient. In the migration issue, record
-   that recipient's acceptance and first action, or that recipient's concrete
-   deferral and the condition that restarts it. Give the entry link to the
-   deployment owner, who maintains the deployment record and its pending state.
-   Verify its backlink. A sent notice or an unanswered assignment remains
-   pending; neither is the recipient's acceptance or deferral.
+2. Provingkit Orchestrator names the recipient. The recipient posts a comment
+   on the migration issue identifying itself and recording acceptance and a
+   first action, or a concrete deferral and the condition that restarts it.
+   Give that comment's permalink to the deployment owner, who verifies the
+   response, maintains the deployment record and its pending state, and links
+   the comment. Verify the backlink. An unanswered assignment, a secondhand
+   entry, or inaccessible or ambiguous evidence leaves the handoff pending.
 3. Bind checks to the changed references and their actual active source files.
    Show that the old reference is rejected there and the replacement is
    accepted. Verify separately that intentional historical evidence and
@@ -52,12 +53,13 @@ rg -n -F -- '- **`GLOSSARY.md`** at the repo root, or' docs/agents/domain.md
 ```
 
 The [merged migration](https://github.com/nisavid/provingkit/pull/966) retained
-the hash-pinned historical research record and the independently owned
-Versionkeeping conflict-resolution skill. Compare those paths across the merge
-to check that migration did not change them:
+the hash-pinned historical research record, the independently owned
+Versionkeeping conflict-resolution skill, and Mergecraft's reference to that
+skill. Compare those paths across the merge to check that migration did not
+change them:
 
 ```sh
-git diff --exit-code e4b82f875981c58caa2d4c697e4b2dd64e243225^ e4b82f875981c58caa2d4c697e4b2dd64e243225 -- docs/superpowers/research/2026-09-17-mergecraft-relation-inventory.md plugins/versionkeeping/skills/resolving-merge-conflicts/SKILL.md
+git diff --exit-code e4b82f875981c58caa2d4c697e4b2dd64e243225^ e4b82f875981c58caa2d4c697e4b2dd64e243225 -- docs/superpowers/research/2026-09-17-mergecraft-relation-inventory.md plugins/versionkeeping/skills/resolving-merge-conflicts/SKILL.md plugins/mergecraft/skills/resuming-reviewed-prs/SKILL.md
 ```
 
 These checks cover the named files and that historical migration only. For a
