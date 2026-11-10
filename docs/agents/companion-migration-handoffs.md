@@ -41,19 +41,29 @@ action, or a deferral and restart condition; the deployment owner then links it.
 This walkthrough is a check of the intended procedure, not a claim that the
 historical handoff was recorded that way.
 
-From the repository root, this bounded check covers the two active domain
-instruction files from that migration. The first two commands must exit 1 (no
-match) and each remaining command must exit 0. Any other status is a failed check.
-The positive checks are tied to the current wording of the affected lines.
+From the repository root, run each command separately. Both old-name searches
+must exit 1 (no match), and each instruction check must exit 0. Any other
+status fails the walkthrough.
+
+The positive checks cover every instruction line whose filenames #966 changed
+in the two active domain instruction files. They match the migration's wording.
+The old-name searches also scan the illustrative file trees, but this
+walkthrough does not check the layout or replacement names in those trees.
 
 ```sh
+# Obsolete names in either active file
 rg -n -F 'CONTEXT.md' AGENTS.md docs/agents/domain.md
 rg -n -F 'CONTEXT-MAP.md' AGENTS.md docs/agents/domain.md
-rg -n -F 'single-context repository with root `GLOSSARY.md`' AGENTS.md
-rg -n -F 'Read `GLOSSARY.md` before planning or editing' AGENTS.md
-rg -n -F -- '- **`GLOSSARY.md`** at the repo root, or' docs/agents/domain.md
-rg -n -F -- '- **`GLOSSARY-MAP.md`** at the repo root if it exists: it points at one `GLOSSARY.md` per context.' docs/agents/domain.md
-rg -n -F 'use the term as defined in `GLOSSARY.md`.' docs/agents/domain.md
+
+# AGENTS.md: single-context layout and required reading
+rg -n -x -F 'This is a single-context repository with root `GLOSSARY.md` and system-wide' AGENTS.md
+rg -n -x -F 'Read `GLOSSARY.md` before planning or editing, and use its canonical language' AGENTS.md
+
+# docs/agents/domain.md: root glossary, map and per-context glossary, multi-context criterion, and vocabulary
+rg -n -x -F -- '- **`GLOSSARY.md`** at the repo root, or' docs/agents/domain.md
+rg -n -x -F -- '- **`GLOSSARY-MAP.md`** at the repo root if it exists: it points at one `GLOSSARY.md` per context. Read each one relevant to the topic.' docs/agents/domain.md
+rg -n -x -F 'Multi-context repo (presence of `GLOSSARY-MAP.md` at the root):' docs/agents/domain.md
+rg -n -x -F "When your output names a domain concept (in an issue title, a refactor proposal, a hypothesis, a test name), use the term as defined in \`GLOSSARY.md\`. Don't drift to synonyms the glossary explicitly avoids." docs/agents/domain.md
 ```
 
 The [merged migration](https://github.com/nisavid/provingkit/pull/966) retained
