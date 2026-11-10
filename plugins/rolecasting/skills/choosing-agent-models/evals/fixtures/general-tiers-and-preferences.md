@@ -32,9 +32,9 @@ catalog intersection. It performs a moderately complex, well-understood analysis
 that is insensitive to outcome quality. The established judgment margin is
 adequate at Grok 4.7 `high`.
 
-G. Opus 5.5 supports `xhigh`, `high`, and `ultracode` on this target. A
+G. Opus 5.5 supports `xhigh` and `high` and a separate Ultracode toggle on this target. A
 well-defined, highly parallel cognitive synthesis request (not an operational orchestrator role) benefits from `ultracode`.
-The selector also advertises `max`. This request is a settled cognitive problem with known solutions.
+The selector also advertises `max`. This request is a settled cognitive problem with known solutions; `high` provides an adequate judgment margin independently of the toggle.
 
 H. A hard, complex but recoverable analysis has substantial unknowns. Sol
 `xhigh` and `high` are both proven. Choose the effort.
