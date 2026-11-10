@@ -82,7 +82,9 @@ For example, one appointment can cover responsibility for a harness instance its
 
 For example, a release effort can touch a package repository and a host configuration repository while the Software Delivery Aspect supplies delivery responsibility. Each repository retains its own source policy, and the effort retains its outcome owner. When a recipient accepts a particular handoff, that recipient has custody of the handed-off work while the effort retains its outcome owner.
 
-Two Orchestrators can represent the same effort in different harness instances. Coordination under a standing grant depends on the actual accepted counterpart and a supported route. Chats that share a harness product or workspace still need an accepted command-chain or counterpart relationship and an applicable grant to treat correspondence as pre-authorized. Permission to send a coordination message and permission to perform an action requested in that message are evaluated separately.
+Two Orchestrators can represent the same effort in different harness instances. When using standing authority for counterpart coordination, verify the accepted counterpart and a supported route.
+
+Sharing a harness product or workspace confers no communication authority. When relying on authority tied to appointments, verify the accepted command-chain or counterpart relationship and the applicable grant. A separate standing grant can cover the actual operation and recipient independently of that relationship. Evaluate permission to send a message separately from permission to perform an action requested in it.
 
 ### Authority and closeout
 
