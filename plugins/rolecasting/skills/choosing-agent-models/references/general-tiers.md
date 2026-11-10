@@ -6,13 +6,13 @@ GPT-6.1 Sol and Claude Opus 5.5 handle ordinary demanding work. Start precise, r
 
 | Effort | Required judgment |
 | --- | --- |
-| `ultra` / `ultracode` | Bounded cognitive work that materially benefits from parallel reasoning. Use the form the exact target accepts. Encourage applicable adjudicated or reconciled collaborative or competitive panels, or similar workflows, with each participant selected under its own effort policy. |
+| Codex `ultra` | Bounded cognitive work that materially benefits from parallel reasoning. Encourage applicable adjudicated or reconciled collaborative or competitive panels, or similar workflows, with each participant selected under its own effort policy. |
 | `max` | For OpenAI and Anthropic models, every gate in [effort eligibility](effort-policy.md#max-effort), including the frontier problem conjunction and adjudicated or reconciled loop/panel workflow; other providers retain their own applicable rules. |
 | `xhigh` | Hard or complex, substantial unknowns, hard to reverse, or expensive mistakes; any one condition suffices. |
 | `high` | Somewhat hard or complex work that is relatively well understood; the normal consequential-review starting point. |
 | `medium` | Some complexity with well-understood behavior. |
 
-Choose from the target's supported efforts, rather than assuming every model exposes the table. Apply [effort eligibility](effort-policy.md) to all tiers; Opus is eligible for `max` only under its full conjunction and exact target support. Availability alone does not justify a higher effort. Ultra/Ultracode does not require max-effort participants or the frontier problem qualification. For a discretionary Ultra or Ultracode selection, require material benefit from parallel cognition and support on the exact target. Named role selections below govern operational coordination and established Sage modes.
+Choose from the target's supported efforts, rather than assuming every model exposes the table. Apply [effort eligibility](effort-policy.md) to all tiers; Opus is eligible for `max` only under its full conjunction and exact target support. Availability alone does not justify a higher effort. For a discretionary Codex Ultra selection or Claude Ultracode toggle, require material benefit from parallel cognition and support on the exact target. Neither requires max-effort participants or the frontier problem qualification. [Bind Claude's effort and Ultracode state separately](capability-probes-and-fallbacks.md#bind-claude-ultracode). Named role selections below govern operational coordination and established Sage modes.
 
 ## Economical frontier and task fit
 
@@ -51,7 +51,7 @@ The orchestrator and Dispatch defaults assume Sage support for continuing intell
 
 Concierge uses its own effort for accurate routing and handoff. Route requests that need careful framing to scoped Reception. Check each Claude executor for the selected Haiku effort, including `xhigh` for Concierge.
 
-The current operational Codex Foreman is an orchestrator. Target decision-facing Foremen are operator-owned harness-wide Sages with the adopted Astra 6 `ultra` and target Fable 5.1 `ultracode` selections. Their operational duties transfer only through accepted cutover; preserve these separate bindings rather than lowering them as orchestrators. These Sage policy selections do not establish effective native settings or activation. If the exact native pair is unsupported, retain an accepted interim through the owning workflow; add no proof-only invocation or cutover gate.
+The current operational Codex Foreman is an orchestrator. Target decision-facing Foremen are operator-owned harness-wide Sages with the adopted Astra 6 `ultra` and target Fable 5.1 `ultracode` selections. Their operational duties transfer only through accepted cutover; preserve these separate bindings rather than lowering them as orchestrators. These Sage policy selections do not establish effective native settings or activation. If the exact native model, effort, or required toggle is unsupported, retain an accepted interim through the owning workflow; add no proof-only invocation or cutover gate.
 
 Treat defaults as selected policy. Verify supported model/effort controls, effective selection, and persistence separately; acceptance of a configuration request proves none of the other observations. Source guidance neither activates nor transfers a role. Evaluate missed escalation, authority and hold preservation, outcome quality, and total orchestration, handoff, recovery, and model cost under [#740](https://github.com/nisavid/provingkit/issues/740). The Sage serial/delegation and resource-stewardship study under [#804](https://github.com/nisavid/provingkit/issues/804) informs later guidance without becoming a current cutover prerequisite; no new experiment is required for this cutover.
 

@@ -61,6 +61,21 @@ Retain the actual outgoing selection fields with the selection record, including
 omission reasons and proven fixed bindings. This establishes requested
 configuration, not actual model execution or product-enforced authority.
 
+## Bind Claude Ultracode
+
+Claude Ultracode is a mode with a separate on/off state. A legacy
+`Ultracode` selection requests `xhigh` effort with Ultracode on. Record
+model, effort, and the toggle selection independently, including an explicit
+on, off, or executor-default choice. A default is not a claim that the mode
+is on or off. Use the exact executor's supported native fields and values.
+
+When a specific toggle state is required, bind its supported control or a
+proven fixed state before dispatch, apply supported controls, and verify the
+required state separately from the effort. An unsupported required state makes
+the route unavailable; an unknown required state returns `NEEDS_CONTEXT`.
+Keep requested settings separate from effective selection and persistence
+readback. [Claude Code model configuration](https://code.claude.com/docs/en/model-config)
+
 ## Resolve Named Successors
 
 The written GPT and Claude versions are baselines for their named roles. Always select a newer available version of the same named model instead of any lower version, even when the written policy has not caught up. GPT-6.1 Sol supersedes every earlier Sol. Preserve the named model's role, provider preference, effort policy, authority, and all capability or proof gates; an Astra successor stays Astra, and a Sol successor stays Sol.
@@ -79,6 +94,9 @@ freshness of those observations, successor lineage/version evidence, and
 effort eligibility, including the task-fit or role-default branch, its judgment evidence, native label mapping, and every `max` gate when requested. This record establishes the selected request
 and available capability; it does not attest the model that actually executed.
 The completed plan binds this record's identity before dispatch. Do not describe opaque provider rerouting as an observed execution fact.
+
+When the selection specifies an Ultracode toggle, record that choice separately
+from effort, together with any required native control or fixed-state evidence.
 
 An explicitly witnessed consumer additionally requires its authenticated
 `adapter:model-selection-receipt`. An ordinary record cannot substitute for
@@ -107,6 +125,8 @@ none, retain the established requested binding and record that no field can
 change it; do not invent a separate account or served-model readback. This
 establishes requested configuration and current native capability, not actual
 model execution. Missing required binding or capability blocks the operation.
+A required Ultracode state must also be verified separately on continuation;
+an unchanged requested model or effort does not establish its toggle state.
 A replacement child must meet creation requirements. A new root or lost
 controller continuity requires verified new bindings or explicit handoff, not
 restoration from an old target string.
@@ -127,6 +147,9 @@ retained binding; a stored model alone cannot establish current account affinity
 or effort. Apply the field-specific rules above without silently inheriting a
 global, desktop, or parent default. A continuation that creates a replacement
 thread, task, session, or subagent must also satisfy the creation requirement.
+Recheck any required Ultracode state separately: apply the supported native
+control or verify the retained fixed state before sending task data. A stored
+model alone does not establish the toggle.
 
 ## Handle Probe Failure
 
