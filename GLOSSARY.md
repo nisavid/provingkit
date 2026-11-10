@@ -62,6 +62,26 @@ _Avoid_: Poster, transport, actuator
 An operation-specific component that performs a separately authorized state change from fully bound inputs. When it consumes semantic-writer output, that content remains opaque unless the operation contract explicitly says otherwise.
 _Avoid_: Writer, generic GitHub client
 
+### Managerial scope
+
+**Repository (repo)**:
+The scope of a maintained source repository and its repository-level stewardship and policy.
+
+**Effort**:
+The scope of a defined outcome and the work and obligations needed to reach it. An effort can span repositories, and a repository can carry several efforts.
+
+**Aspect**:
+The scope of a continuing responsibility or specialty, such as Software Delivery or Proto-Factory, which can serve several repositories and efforts.
+
+**Harness instance**:
+A particular operational deployment of a harness and the agents represented in it. A harness is the runtime product, such as Codex or Claude Code.
+
+An appointment binds a role to a scope and, where applicable, a harness instance. An accepted counterpart can represent the same scope in another instance.
+
+For example, a release effort can touch a package repository and a host configuration repository while the Software Delivery Aspect supplies delivery responsibility. Each repository retains its own source policy, and the effort retains its outcome owner.
+
+Two Orchestrators can represent the same effort in different harness instances. Their appointments, standing authority, and supported communication route are separate facts; sharing a harness product or workspace alone does not establish a counterpart relationship or permission to act.
+
 ### Authority and closeout
 
 **Standing authority**:
