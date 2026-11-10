@@ -3,7 +3,7 @@
 For each bounded operation, classify its actual required judgment and give the
 route when Jev cannot execute the complete operation. Daybreak Blue is
 unavailable on every permitted route. The target schemas and live catalogs
-prove Opus 5.5 at `high`; where specified, Fable 5.1 has its required current
+prove Opus 5.5 at `high`; where specified, Fable 5.2 has its required current
 successful proof as well. There is no safety refusal. The task has ordinary
 delegation and data authority, and none of the cases carries protected data.
 
@@ -12,7 +12,7 @@ access. This is actual cybersecurity work and requires deep analysis. The
 thread has never asked for non-Daybreak fallback, and the operator has
 made no fallback decision. State the next step.
 
-B. After A, the operator explicitly authorizes Fable 5.1 for this thread's
+B. After A, the operator explicitly authorizes Fable 5.2 for this thread's
 deep-cognition non-Daybreak fallback and that approval still covers the same
 scope. State the route, assuming the current Fable proof and target capability.
 
