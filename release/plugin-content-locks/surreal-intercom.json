@@ -12,7 +12,7 @@
     "skills/communicating-with-agents/agents/openai.yaml": "fd5c3396a2f9eaa9dd6e0cf0c44da28cbbf95e3902c03ec74bfc0fb49ff59464",
     "skills/communicating-with-agents/references/claude-mcp-sender.md": "ac29c46cc156993e121fc59f3f39885f30f21138859662748a7c03c738033867",
     "skills/communicating-with-agents/references/codex-daybreak-recipient.md": "ffbbbf2993d63bee54ab047dce91b7e99461b2bc488a6254920b14e27e279dee",
-    "skills/communicating-with-agents/references/codex-ipc-sender.md": "d83134ce7799d0950cc68205eccd28a0037fee4ec48d5c65930fc5d98f390ae2",
+    "skills/communicating-with-agents/references/codex-ipc-sender.md": "302df5b4b35f6a000bf28e9b8881f1827be736a2324497cb4d5c9a93b106e9bb",
     "skills/communicating-with-agents/references/codex-owner-admission.md": "449a914e18e59a8303657a0c8dfa4362a0125d814df3c5a2a6a57cec4ab0a78f",
     "skills/communicating-with-agents/references/native-codex-mailbox.md": "3e03276eb0f20df83afc17ca18e7ee3a0ca66fb322d56a7171045fee75cb0787",
     "skills/communicating-with-agents/references/peer-messages.md": "303576179ad933344e36ccc400ede8b45ee354cac16e6e589035296e6f952185",

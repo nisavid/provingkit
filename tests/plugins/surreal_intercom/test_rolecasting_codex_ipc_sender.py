@@ -923,7 +923,14 @@ class CommandFailureTests(unittest.TestCase):
         self.assertNotIn("capture_failure", result)
 
     def test_active_peer_without_a_turn_id_refuses_before_peer_input(self):
+        self.refuses_unusable_active_turn_id(None, omit=True)
+
+    def test_active_peer_with_a_null_turn_id_refuses_before_peer_input(self):
         self.refuses_unusable_active_turn_id(None)
+
+    def test_missing_turn_id_with_compact_projection_refuses_before_peer_input(self):
+        self.request["native"]["profile"]["projectionBytes"] = 256
+        self.refuses_unusable_active_turn_id(None, omit=True, reason="projection-byte-limit")
 
     def test_active_peer_with_a_blank_turn_id_refuses_before_peer_input(self):
         self.refuses_unusable_active_turn_id(" \t")
@@ -931,17 +938,21 @@ class CommandFailureTests(unittest.TestCase):
     def test_active_peer_with_a_nontext_turn_id_refuses_before_peer_input(self):
         self.refuses_unusable_active_turn_id(7)
 
-    def refuses_unusable_active_turn_id(self, turn_id):
+    def refuses_unusable_active_turn_id(self, turn_id, *, omit=False, reason="active-turn-id-unavailable"):
         def conversation(connection, receive, send, follow):
             snapshot = self.snapshot(active=True)
-            snapshot["params"]["change"]["conversationState"]["turns"][-1]["turnId"] = turn_id
+            turn = snapshot["params"]["change"]["conversationState"]["turns"][-1]
+            if omit:
+                turn.pop("turnId", None)
+            else:
+                turn["turnId"] = turn_id
             send(snapshot)
             follow["params"]["following"] = False
             self.assertEqual(receive(), follow)
             self.assertEqual(connection.recv(1), b"")
 
         result, wire, sent = self.peer_exchange(conversation)
-        self.assertEqual(result["reason"], "active-turn-id-unavailable")
+        self.assertEqual(result["reason"], reason)
         self.assertEqual(result["peer_input"], "not_attempted")
         self.assertEqual(result["projection"]["stage"], "refused-before-write")
         self.assertEqual([message["method"] for message in wire], [
