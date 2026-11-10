@@ -76,11 +76,11 @@ The scope of a continuing responsibility or specialty, such as Software Delivery
 **Harness instance**:
 A particular operational deployment of a harness and the agents represented in it. A harness is the runtime product, such as Codex or Claude Code.
 
-An appointment binds a role to a scope and, where applicable, a harness instance. An accepted counterpart can represent the same scope in another instance.
+An appointment binds a role to a scope and, where applicable, a harness instance. An accepted counterpart can represent the same scope in another instance. The request and accepted appointments determine the responsible owner.
 
 For example, a release effort can touch a package repository and a host configuration repository while the Software Delivery Aspect supplies delivery responsibility. Each repository retains its own source policy, and the effort retains its outcome owner. When a recipient accepts a particular handoff, that recipient has custody of the handed-off work while the effort retains its outcome owner.
 
-Two Orchestrators can represent the same effort in different harness instances. Their appointments, standing authority, and supported communication route are separate facts; sharing a harness product or workspace alone does not establish a counterpart relationship or permission to act. Permission to send a coordination message and permission to perform an action requested in that message are evaluated separately.
+Two Orchestrators can represent the same effort in different harness instances. Coordination under a standing grant depends on the actual accepted counterpart and a supported route. Chats that share a harness product or workspace still need an accepted command-chain or counterpart relationship and an applicable grant to treat correspondence as pre-authorized. Permission to send a coordination message and permission to perform an action requested in that message are evaluated separately.
 
 ### Authority and closeout
 
