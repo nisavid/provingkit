@@ -2,7 +2,7 @@
 
 Each case is outside all three cybersecurity classes. Delegation, authority,
 and exact live catalog and executor-schema intersections are established for
-the named models and efforts. Fable 5.1 is proven by a current successful
+the named models and efforts. Fable 5.2 is proven by a current successful
 target invocation where offered. Choose a model and supported effort without
 claiming the selected request attests actual execution.
 
@@ -11,13 +11,13 @@ GPT-6 Astra `high`, and Claude Opus 5.5 `high` are available. The mistake cost
 is ordinary, and no exceptional cognitive need is present.
 
 B. Review a high-stakes, difficult architectural decision with substantial
-unknown unknowns. GPT-6 Astra `xhigh`, GPT-6.1 Sol `xhigh`, Claude Fable 5.1
+unknown unknowns. GPT-6 Astra `xhigh`, GPT-6.1 Sol `xhigh`, Claude Fable 5.2
 `xhigh`, and Claude Opus 5.5 `xhigh` are available. The owner asks for a GPT
 reviewer.
 
 C. Write a thoughtful synthesis of a complex but recoverable research topic.
 It needs intuitive analysis, but is not high-stakes. Opus 5.5 `xhigh`, Astra
-`xhigh`, Fable 5.1 `xhigh`, and Sol `xhigh` are available.
+`xhigh`, Fable 5.2 `xhigh`, and Sol `xhigh` are available.
 
 D. Transcribe exact labels from a small supplied table. GPT-6 Luna `high` and
 Sol `high` are available; errors are cheap to spot.
@@ -32,9 +32,9 @@ catalog intersection. It performs a moderately complex, well-understood analysis
 that is insensitive to outcome quality. The established judgment margin is
 adequate at Grok 4.7 `high`.
 
-G. Opus 5.5 supports `xhigh`, `high`, and `ultracode` on this target. A
+G. Opus 5.5 supports `xhigh` and `high` and a separate Ultracode toggle on this target. A
 well-defined, highly parallel cognitive synthesis request (not an operational orchestrator role) benefits from `ultracode`.
-The selector also advertises `max`. This request is a settled cognitive problem with known solutions.
+The selector also advertises `max`. This request is a settled cognitive problem with known solutions; `high` provides an adequate judgment margin independently of the toggle.
 
 H. A hard, complex but recoverable analysis has substantial unknowns. Sol
 `xhigh` and `high` are both proven. Choose the effort.
@@ -69,6 +69,6 @@ T. The same orchestrator roles have demonstrably settled, simple coordination wi
 U. An orchestrator needs a finite demanding analysis with Sol high proven suitable for a worker. The project also needs continuing specialty arbitration and has an accepted Sage. Allocate the two responsibilities and state what happens to the orchestrator's effort.
 V. Select Codex and Claude Dispatch and Concierge pairs. Terra low and medium and Haiku 5.5 high and xhigh are proven suitable for their respective roles. Luna max is also supported. No operational transfer has been accepted.
 W. Select scoped operator-owned Codex and Claude Reception pairs. Sol high and Opus high are proven suitable. Intake authority is unchanged.
-X. The current operational Codex Foreman coordinates with Sage support. Target decision-facing harness-wide Foremen are operator-owned Sages with adopted Astra 6 ultra and target Fable 5.1 ultracode policy bindings. Their exact native pairs are unsupported; an accepted interim exists and cutover has not been accepted. Distinguish selected policy, actual configuration, and operational duty transfer. No proof-only invocation is authorized.
+X. The current operational Codex Foreman coordinates with Sage support. Target decision-facing harness-wide Foremen are operator-owned Sages with adopted Astra 6 ultra and target Fable 5.2 ultracode policy bindings. Their exact native pairs are unsupported; an accepted interim exists and cutover has not been accepted. Distinguish selected policy, actual configuration, and operational duty transfer. No proof-only invocation is authorized.
 Y. A Sage resource-stewardship study will compare serial cognition, delegation, total cost, native controls, and cache behavior. No new model experiment is authorized for current cutover. State the study and #740 evaluation's relationship to current adoption, preserving holds and authority.
 Z. The operator selects Haiku 5.5 xhigh for Claude Concierge. The target catalog advertises it, but the exact executor offers only Haiku 5.5 high. No alternate pair is authorized. Distinguish the selected policy from available execution.

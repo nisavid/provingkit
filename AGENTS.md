@@ -11,6 +11,9 @@ For release publication or presentation changes, use
 `docs/agents/release-presentation.md`. For stale Linear release records, use
 `docs/agents/linear-release-reconciliation.md`.
 
+For an installed companion update that changes Provingkit references, use
+`docs/agents/companion-migration-handoffs.md`.
+
 ### Triage labels
 
 Use the canonical `needs-triage`, `needs-info`, `ready-for-agent`,

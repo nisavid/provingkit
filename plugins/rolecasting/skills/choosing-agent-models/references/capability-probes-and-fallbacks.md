@@ -25,14 +25,16 @@ is not a product version. Desktop/CLI and witnessed requirements are unchanged.
 Catalog presence never proves that a native subagent, task, CLI, app-server,
 remote API, or peer accepts the pair. Proof for one product surface does not
 prove its paired surface. Model support also does not prove relationship,
-ownership, transport, or assurance. When the target exposes no selection
-fields, apply the fixed-binding branch below; otherwise pass every supported
-selection field.
+ownership, transport, or assurance. Apply the [model and effort
+rules](#pass-every-supported-selection-field), including fixed bindings for absent controls,
+and the [Ultracode rules](#bind-claude-ultracode) for the exact executor.
 
 ## Pass Every Supported Selection Field
 
-Choose deliberately under the existing selection order before creating any
-agent thread, task, session, or subagent. Inspect each field independently:
+For model and effort, choose deliberately under the existing selection order
+before creating any agent thread, task, session, or subagent. Inspect each
+field independently. Apply the [separate Ultracode rules](#bind-claude-ultracode)
+to the toggle.
 
 | Target controls | Creation request and selection record |
 | --- | --- |
@@ -41,7 +43,7 @@ agent thread, task, session, or subagent. Inspect each field independently:
 | Effort only | Pass the selected effort. Record the inherited model binding and the absence of a model control. |
 | Neither | Record the inherited model and effort binding and why neither can be set. |
 
-Omit only a field the exact surface does not expose. Model inheritance is
+Omit a model or effort field only when the exact surface does not expose it. Model inheritance is
 permitted only without a model field, with its binding and reason recorded.
 For every unavailable control, establish the fixed binding sufficiently to
 pass suitability, effort eligibility, and consumer requirements before sending
@@ -61,6 +63,26 @@ Retain the actual outgoing selection fields with the selection record, including
 omission reasons and proven fixed bindings. This establishes requested
 configuration, not actual model execution or product-enforced authority.
 
+## Bind Claude Ultracode
+
+Claude Ultracode is a mode with a separate on/off state. A legacy
+`Ultracode` selection requests `xhigh` effort with Ultracode on. Record
+model, effort, and the toggle selection independently, including an explicit
+on, off, or executor-default choice. A default is not a claim that the mode
+is on or off. Use the exact executor's supported native fields and values.
+For executor-default, use the exact executor's documented default selection
+form, including omission of the toggle field when that is its supported form.
+Record the deliberate default selection and its supporting evidence at creation
+and continuation. This toggle-specific rule does not relax the model or effort
+field requirements; never infer an on/off state from default selection.
+
+When a specific toggle state is required, bind its supported control or a
+proven fixed state before dispatch, apply supported controls, and verify the
+required state separately from the effort. An unsupported required state makes
+the route unavailable; an unknown required state returns `NEEDS_CONTEXT`.
+Keep requested settings separate from effective selection and persistence
+readback. [Claude Code model configuration](https://code.claude.com/docs/en/model-config)
+
 ## Resolve Named Successors
 
 The written GPT and Claude versions are baselines for their named roles. Always select a newer available version of the same named model instead of any lower version, even when the written policy has not caught up. GPT-6.1 Sol supersedes every earlier Sol. Preserve the named model's role, provider preference, effort policy, authority, and all capability or proof gates; an Astra successor stays Astra, and a Sol successor stays Sol.
@@ -79,6 +101,9 @@ freshness of those observations, successor lineage/version evidence, and
 effort eligibility, including the task-fit or role-default branch, its judgment evidence, native label mapping, and every `max` gate when requested. This record establishes the selected request
 and available capability; it does not attest the model that actually executed.
 The completed plan binds this record's identity before dispatch. Do not describe opaque provider rerouting as an observed execution fact.
+
+When the selection specifies an Ultracode toggle, record that choice separately
+from effort, together with any required native control or fixed-state evidence.
 
 An explicitly witnessed consumer additionally requires its authenticated
 `adapter:model-selection-receipt`. An ordinary record cannot substitute for
@@ -102,11 +127,14 @@ remains suitable. Reuse unchanged observations within their valid binding and
 freshness window; refresh when stale, absent, or invalidated by a relevant
 change. Initial selection alone does not establish continued suitability.
 
-Pass every selection field the continuation actually supports. If it exposes
+Pass the supported selection fields under the field-specific rules above,
+including the documented Ultracode executor-default form. If it exposes
 none, retain the established requested binding and record that no field can
 change it; do not invent a separate account or served-model readback. This
 establishes requested configuration and current native capability, not actual
 model execution. Missing required binding or capability blocks the operation.
+A required Ultracode state must also be verified separately on continuation;
+an unchanged requested model or effort does not establish its toggle state.
 A replacement child must meet creation requirements. A new root or lost
 controller continuity requires verified new bindings or explicit handoff, not
 restoration from an old target string.
@@ -127,6 +155,10 @@ retained binding; a stored model alone cannot establish current account affinity
 or effort. Apply the field-specific rules above without silently inheriting a
 global, desktop, or parent default. A continuation that creates a replacement
 thread, task, session, or subagent must also satisfy the creation requirement.
+Recheck any required Ultracode state separately before sending task data. Apply
+any supported native control and require confirming state evidence or a
+currently proven matching fixed state; a setter alone is not confirmation. A
+stored model alone does not establish the toggle.
 
 ## Handle Probe Failure
 
@@ -135,12 +167,14 @@ Treat capability as unproven when the executable is absent, a probe exits nonzer
 When a task that must be isolated cannot be created or verified, do not dispatch: return `NEEDS_CONTEXT` or `BLOCKED` so the owning workflow can select its no-runnable-route disposition. Unrelated-task reuse is never a fallback.
 
 Use a sufficient native route only when it preserves the original task contract.
-Pass every supported selection field and apply the fixed-binding rules only to
-controls the surface lacks. Unknown defaults cannot establish a required
-suitability or policy gate; fixed low defaults are ineligible for Astra/Fable
-and Sol/Opus, while other models follow their own effort rules. If no eligible
-binding can be established, do not dispatch: return `NEEDS_CONTEXT` with the
-missing fact or `BLOCKED` with the failed-probe evidence.
+Apply the [model and effort rules](#pass-every-supported-selection-field) and the
+[Ultracode rules](#bind-claude-ultracode) to that route, including any
+documented omission that selects executor-default. Unknown defaults cannot
+establish a required suitability or policy gate. Fixed low defaults are
+ineligible for Astra/Fable and Sol/Opus, while other models follow their own
+effort rules. If no eligible binding can be established, do not dispatch:
+return `NEEDS_CONTEXT` with the missing fact or `BLOCKED` with the
+failed-probe evidence.
 
 ## Apply Fallbacks
 
@@ -154,11 +188,13 @@ For another harness, inspect its local capability surface and use only its exact
 
 ## Prove Fable
 
-Treat Claude Fable 5.1 as unavailable unless a current proof record for the exact target surface is supplied. The proof record must contain:
+Anthropic lists `claude-fable-5-2` for the Claude API. Verify the executor's own model and effort labels. [Claude Fable 5.2 model overview](https://platform.claude.com/docs/en/models/fable-5-2/overview)
+
+Every Fable version requires current successful proof for the exact model-effort pair and target. The proof record must contain:
 
 - harness and version;
 - exact slug and requested effort;
 - invocation result; and
 - an observable successful response.
 
-Help or catalog advertisement is insufficient. If no current successful proof exists, do not invoke Fable merely to establish one. Only the operator's explicit authorization for the exact proof invocation permits the attempt; that authorization does not itself prove availability. Until all fields are recorded after an authorized successful invocation, treat Fable 5.1 as unavailable. A fallback consent decision authorizes only its stated scope; it is not proof that Fable ran or authority to make a proof-only invocation.
+Help or catalog advertisement is insufficient. If no current successful proof exists, do not invoke Fable merely to establish one. Only the operator's explicit authorization for the exact proof invocation permits the attempt; that authorization does not itself prove availability. Until all fields are recorded after an authorized successful invocation, treat the requested Fable pair as unavailable. A fallback consent decision authorizes only its stated scope; it is not proof that Fable ran or authority to make a proof-only invocation.
