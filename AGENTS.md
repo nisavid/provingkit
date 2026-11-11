@@ -4,12 +4,15 @@
 
 ### Issue tracker
 
-Issues, PRDs, and Wayfinder maps are tracked in GitHub Issues for
+Issues, specs, and Wayfinder maps are tracked in GitHub Issues for
 `nisavid/provingkit`. See `docs/agents/issue-tracker.md`.
 
 For release publication or presentation changes, use
 `docs/agents/release-presentation.md`. For stale Linear release records, use
 `docs/agents/linear-release-reconciliation.md`.
+
+For an installed companion update that changes Provingkit references, use
+`docs/agents/companion-migration-handoffs.md`.
 
 ### Triage labels
 
@@ -19,7 +22,7 @@ Use the canonical `needs-triage`, `needs-info`, `ready-for-agent`,
 
 ### Domain docs
 
-This is a single-context repository with root `CONTEXT.md` and system-wide
+This is a single-context repository with root `GLOSSARY.md` and system-wide
 ADRs under `docs/adr/`. See `docs/agents/domain.md`.
 
 ## Sys1 incidents
@@ -32,7 +35,7 @@ from it and verify byte equality before publishing procedure changes.
 
 ## Project context
 
-Read `CONTEXT.md` before planning or editing, and use its canonical language
+Read `GLOSSARY.md` before planning or editing, and use its canonical language
 in code, tests, documentation, issues, and commits. Where the glossary gives an
 Agent Plugins term and a Claude equivalent, the Agent Plugins term is the
 repository's word. Keep `README.md` as the verified human entrypoint and keep

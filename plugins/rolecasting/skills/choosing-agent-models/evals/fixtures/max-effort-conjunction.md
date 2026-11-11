@@ -15,9 +15,9 @@ J. The executor supports Sol max, but the current catalog offers only xhigh.
 K. Only high stakes, risky unknowns, and expensive irreversible mistakes are established. No frontier, extreme-complexity, or panel-loop evidence exists.
 L. The reference workflow is instead a tricritical:loop using max-effort tricritical:review reviewer panels, with adjudication. The reference problem holds.
 M. Substitute Claude Opus 5.5 max, supported by both catalog and schema, in the same ordinary role and reference problem/workflow.
-N. Substitute Claude Opus 5.5 where the schema proves xhigh and ultracode, but does not support max.
+N. Substitute Claude Opus 5.5 where the schema proves xhigh and a separate Ultracode toggle, but does not support max.
 O. Substitute GPT-6 Astra max in a high-stakes deep-cognition role qualifying for the exceptional tier; reference problem/workflow and exact max capability hold.
-P. Substitute Claude Fable 5.1 max in its qualifying high-stakes deep-cognition role, with successful current target invocation proof and exact max capability; reference problem/workflow holds.
+P. Substitute Claude Fable 5.2 max in its qualifying high-stakes deep-cognition role, with successful current target invocation proof and exact max capability; reference problem/workflow holds.
 Q. Fable has only a catalog advertisement, without successful proof or proof-only invocation authority; all other reference facts hold.
 R. Astra is offered for ordinary recoverable implementation without the exceptional-tier conjunction; all other reference facts hold.
 S. Problem-frontier status is unproven; all other reference facts hold.
@@ -26,3 +26,5 @@ U. Substitute Grok max with exact catalog/schema support, existing invocation au
 V. The same Grok role and provider policy apply, but its executor supports only high, not max.
 W. Grok max is advertised and schema-supported, but no applicable provider policy or task judgment evidence establishes max suitability. The only justification is that the OpenAI/Anthropic restriction does not cover Grok.
 X. Substitute Claude Sonnet 5.5 max with exact catalog/schema support and the reference problem/workflow; its role is the shallow-cognition middle tier.
+Y. Substitute Terra max, proven by catalog and schema, for the reference model.
+Z. Substitute Claude Haiku 5.5 max, proven by catalog and schema, for the reference model.

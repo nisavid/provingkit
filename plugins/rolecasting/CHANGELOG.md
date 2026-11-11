@@ -2,6 +2,21 @@
 
 ## Unreleased
 
+- Use Claude Fable 5.2 as the exceptional-tier baseline, the Claude Sage
+  Ultracode target, and the authorized deep-cognition fallback for actual
+  cybersecurity work. Require current proof for the selected pair on its
+  exact target.
+
+- Select Terra Low/Medium/High on the useful economical frontier, preserving
+  narrow committed-code suitability, browser competence, and validated low-poly
+  prototype handoffs. Exclude Sol Light and Luna XHigh/Max; prefer Sol Medium
+  over Terra XHigh without declaring that supported pair unavailable.
+- Define Sage-supported orchestrator and Dispatch defaults and standing defaults
+  for Concierge and scoped Reception. Preserve decision-facing Foreman bindings,
+  accepted interim, and cutover authority. Verify native controls, effective
+  selection, and persistence separately from selected policy. Use Haiku 5.5 for
+  bounded work, Claude Dispatch at High, and Claude Concierge at XHigh.
+
 - Test insufficient low effort and sufficient high effort within Grok's
   maintained task role.
 

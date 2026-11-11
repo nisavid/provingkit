@@ -22,7 +22,7 @@
         "content_identity": {
           "kind": "plugin-content-lock",
           "path": "plugins/rolecasting/content-lock.json",
-          "sha256": "sha256:b667f2115f1918ba76ca20e628bc0967dcf1868c38a4adb861ce6125ede8a590"
+          "sha256": "sha256:8373ed4d753dca5dc5f63bea1f639e03d37bc55961ca2922e15139206b4b7a66"
         },
         "display_name": "Rolecasting",
         "distribution_kind": "agent-plugin",
@@ -112,7 +112,7 @@
         "content_identity": {
           "kind": "plugin-content-lock",
           "path": "release/plugin-content-locks/surreal-intercom.json",
-          "sha256": "sha256:a29996bffc32f0d94516ffaf9692db58f4237775dba63517ed579c1523d4a4b7"
+          "sha256": "sha256:ad93adb9b6d36ed0346661cda7b99ea83595a4328750e6f74389008111a79cad"
         },
         "display_name": "Surreal Intercom",
         "distribution_kind": "agent-plugin",
