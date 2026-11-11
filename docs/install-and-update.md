@@ -6,9 +6,9 @@ ChatGPT, and Claude.
 ## Download
 
 Download the plugins you want from [Releases](https://github.com/nisavid/provingkit/releases).
-Choose the standard plugin ZIPs for **Codex or ChatGPT**, or the files ending
-in `-claude.zip` for **Claude Code or Claude**. GitHub's **Source code** archives
-are for development.
+Choose the files ending in `-agent-plugins.zip` for **Codex or ChatGPT**, or
+`-claude.zip` for **Claude Code or Claude**. Check the release inventory for
+the exact filenames. GitHub's **Source code** archives are for development.
 
 The release page lists the plugins available in that release. For partial
 installs, these common workflows need companions in the same format:
@@ -55,18 +55,26 @@ add its name and path to the catalog, and install it through `/plugins` or
 `codex plugin add NAME@provingkit-release`, replacing `NAME` with the plugin's
 name. Start a new session to use it.
 
-To update a plugin, remove its installed copy before replacing its extracted
-folder, then install it again and start a new session. Replace `NAME` with the
-plugin name:
+To update a plugin, replace `NAME` with its name and follow these steps:
 
-```sh
-codex plugin remove NAME@provingkit-release
-# Replace plugins/NAME with a fresh extraction of its new ZIP.
-codex plugin add NAME@provingkit-release
-codex plugin list --marketplace provingkit-release --json
-```
+1. Remove the installed copy:
 
-Check that the installed version matches the release you downloaded.
+   ```sh
+   codex plugin remove NAME@provingkit-release
+   ```
+
+2. In the registered `provingkit-release` folder, replace `plugins/NAME` with
+   a fresh extraction of the new ZIP. Confirm that `plugins/NAME/plugin.json`
+   exists.
+3. Install the plugin from the updated marketplace folder and check its version:
+
+   ```sh
+   codex plugin add NAME@provingkit-release
+   codex plugin list --marketplace provingkit-release --json
+   ```
+
+   Confirm that the installed version matches the release you downloaded, then
+   start a new session.
 
 See the [Codex plugin commands](https://learn.chatgpt.com/docs/cli/reference#codex-plugin)
 and [local marketplace format](https://developers.openai.com/plugins/build/plugins#install-a-local-plugin-manually).
