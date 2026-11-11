@@ -10,8 +10,8 @@ Choose the standard plugin ZIPs for **Codex or ChatGPT**, or the files ending
 in `-claude.zip` for **Claude Code or Claude**. GitHub's **Source code** archives
 are for development.
 
-Install all plugins in the release for the complete Kit. For partial installs,
-these common workflows need companions in the same format:
+The release page lists the plugins available in that release. For partial
+installs, these common workflows need companions in the same format:
 
 - **Tricritical reviews:** include Rolecasting.
 - **Mergecraft PR publication:** include Tricritical and Rolecasting for review,
@@ -35,7 +35,7 @@ Rolecasting; add an entry for each plugin you want.
      "plugins": [
        {
          "name": "rolecasting",
-         "source": "./plugins/rolecasting",
+         "source": {"source": "local", "path": "./plugins/rolecasting"},
          "policy": {"installation": "AVAILABLE", "authentication": "ON_INSTALL"},
          "category": "Productivity"
        }
@@ -55,9 +55,18 @@ add its name and path to the catalog, and install it through `/plugins` or
 `codex plugin add NAME@provingkit-release`, replacing `NAME` with the plugin's
 name. Start a new session to use it.
 
-To update, replace each plugin folder with a fresh extraction of its new ZIP,
-run `codex plugin add NAME@provingkit-release` again, and start a new session.
-Check the installed versions with `codex plugin list`.
+To update a plugin, remove its installed copy before replacing its extracted
+folder, then install it again and start a new session. Replace `NAME` with the
+plugin name:
+
+```sh
+codex plugin remove NAME@provingkit-release
+# Replace plugins/NAME with a fresh extraction of its new ZIP.
+codex plugin add NAME@provingkit-release
+codex plugin list --marketplace provingkit-release --json
+```
+
+Check that the installed version matches the release you downloaded.
 
 See the [Codex plugin commands](https://learn.chatgpt.com/docs/cli/reference#codex-plugin)
 and [local marketplace format](https://developers.openai.com/plugins/build/plugins#install-a-local-plugin-manually).

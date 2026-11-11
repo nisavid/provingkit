@@ -72,10 +72,9 @@ documentation and applicable observations; neither source alone establishes a
 successful installation.
 
 Use `proseweaving:writing-for-people` to write and edit the release notes and
-installation guide. Name archives `provingkit-<plugin>-<version>.zip` for
-Agent Plugins clients and `provingkit-<plugin>-<version>-claude.zip` for the
-Claude projection. Name each checksum file `<archive>.sha256`; its filename
-entry and digest must match the archive in the release inventory.
+installation guide. Use the archive filenames from the selected release
+inventory for each target. Name each checksum file `<archive>.sha256`; its
+filename entry and digest must match the archive in that inventory.
 
 For GitHub and Linear, use the same verified semantic inputs and retain one
 maintained authoring source for the release. Adapt presentation to each
