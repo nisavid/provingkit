@@ -22,7 +22,12 @@ or target requirements before effects; preserve the requested destination.
 
 ## Select And Send
 
-Load the applicable procedure and record its reviewed revision before execution:
+For an already-held addressed reply, use
+[native reply forwarding](references/native-peer-relay.md). Inspect the
+original attempt before checking current send eligibility or choosing a route.
+
+For other operations, load the applicable procedure and record its reviewed
+revision before execution:
 
 - [Claude MCP sender](references/claude-mcp-sender.md): a bound existing Claude
   recipient and nominated native MCP child.
