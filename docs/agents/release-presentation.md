@@ -71,6 +71,17 @@ Assess existing notes against these criteria before reusing them.
 
 ## Review and publish
 
+Bind the approved GitHub host, repository, release tag, permitted tag form, and
+source commit before publication. Independently read the exact tag ref from that
+repository before creating a release draft, before promoting it, and during public
+readback. Verify the observed ref, object form, and resolved commit against the
+approved values at each boundary. An absent, unexpected, or unavailable ref stops
+publication; tag creation requires its separately authorized protection and
+recovery procedure. Use the existing GitHub release route with `--verify-tag` to
+avoid implicit tag creation, but do not treat its existence check as proof of
+the approved commit or as atomic with publication. Reconcile uncertain writes
+before retrying and preserve the applicable tag protections.
+
 Freeze the candidate text and its source/evidence identities. Check that every
 selected reader-facing deliverable is present or has an explicit operator
 disposition. An unpublished draft or a generic limitations paragraph cannot
