@@ -122,6 +122,8 @@ def _validate_item_metrics(items: list[StackItem], errors: list[str]) -> None:
         )
         if not metric_items and not zero_file_operations:
             errors.append("each Stack item needs at least one category metric")
+        if metric_items and zero_file_operations:
+            errors.append("zero-file Stack items must not have category metrics")
         validate_category_order(item.metrics, errors, f"Stack item #{item.number}")
         if len(metric_items) != len(dict(metric_items)):
             errors.append(f"Stack item #{item.number} repeats a category metric")

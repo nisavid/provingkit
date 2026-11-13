@@ -107,7 +107,7 @@
     "skills/writing-reviewable-pr-descriptions/scripts/change_navigation/review_input.py": "080509fad468b3e42b9c871458aed1b578dfda637661dfdf45a8ab785e9e33c8",
     "skills/writing-reviewable-pr-descriptions/scripts/change_navigation/sensitive_content.py": "889150d160affb865fe8f85944ee953093c8d19d09e936adc97bc56ccf82529f",
     "skills/writing-reviewable-pr-descriptions/scripts/change_navigation/stack.py": "fef38fcf1bb89ebe72e8bbc861631b2d7c816ebb381b7a41003b4fad0707b6fd",
-    "skills/writing-reviewable-pr-descriptions/scripts/change_navigation/stack_inventory.py": "b4d6ee30e27294305e4445eeed16a3ed32978121fbf44c9b4a8332e2172de328",
+    "skills/writing-reviewable-pr-descriptions/scripts/change_navigation/stack_inventory.py": "2c49c6a489fd4280e895251d7f51f25847f75704e8e442ee20cc67e5169cd572",
     "skills/writing-reviewable-pr-descriptions/scripts/change_navigation/types.py": "5a8a32bbaf5c0a29b97afd9280c366e149383712628a55155eda0acd6aa4ee81",
     "skills/writing-reviewable-pr-descriptions/scripts/change_navigation/urls.py": "ca1fd7b3210320967e47ed5696dc3fb12d1005f3cbbbd4214845247b5a895bf6",
     "skills/writing-reviewable-pr-descriptions/scripts/validate_change_navigation.py": "3942dc548c41b87afd05e0ea7990507a595e7ca5a35095dc1c316f5993054509",

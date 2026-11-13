@@ -130,6 +130,19 @@ class EmptyDiffPublicationTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(result.stdout.strip(), 'Change navigation is valid')
 
+    def test_writer_holds_prior_zero_file_row_with_category_metrics(self):
+        self.prepare_file_changing_stack()
+        from test_validate_change_navigation import badge
+        category = badge('IMPL: 1 additions, 0 deletions', 'IMPL-%2B1%20%E2%88%920-0969DA')
+        self.body = self.body.replace('<br><picture><img alt="FILES: 0 added',
+                                      '<br>' + category + ' <picture><img alt="FILES: 0 added', 1)
+        self.raw['stack'][0]['metrics'] = {'IMPL': [1, 0]}
+        self.raw['candidate']['body_sha256'] = hashlib.sha256(self.body.encode()).hexdigest()
+        self.save()
+        result = self.writer()
+        self.assertNotEqual(result.returncode, 0, result.stdout)
+        self.assertIn('Change navigation is invalid', result.stderr)
+
     def test_writer_holds_empty_prior_categories_with_any_nonzero_file_operation(self):
         self.prepare_file_changing_stack()
         from test_validate_change_navigation import badge
