@@ -361,10 +361,10 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             repository = Path(directory) / "repository"
             self.clone_with_history(repository)
-            branch = subprocess.run(
-                ["git", "symbolic-ref", "HEAD"], cwd=repository, text=True,
-                capture_output=True, check=True,
-            ).stdout.strip()
+            branch = "refs/heads/symbolic-tag-target"
+            subprocess.run(
+                ["git", "update-ref", branch, "HEAD"], cwd=repository, check=True,
+            )
             subprocess.run(
                 ["git", "symbolic-ref", "refs/tags/symbolic", branch],
                 cwd=repository, check=True,
