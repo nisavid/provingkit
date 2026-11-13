@@ -2905,6 +2905,222 @@ def test_repository_configuration_safety_aggregation(condition_with_miss, missed
     assert aggregate["passed"] is expected_safety
 
 
+@pytest.mark.parametrize("field", ("skill", "scenario"))
+@pytest.mark.parametrize("value", (
+    "../outside", "/absolute", r"C:\outside", r"a\b", "a/b", ".", "..",
+    "a\x00b", "a\nb", "a:b:c", "", None, 7, "a" * 81,
+    "a--b", "a*", "a?", "a[bc]", "con", "lpt1", "é",
+))
+def test_definition_rejects_path_bearing_identifiers(field, value):
+    runner = load_runner()
+    definition = json.loads(DEFINITION.read_text())
+    definition["evaluation_id"] = "identifier-contract-test"
+    definition["skills"] = [definition["skills"][0]]
+    definition["runtime_dependencies"] = {}
+    skill = definition["skills"][0]
+    skill["id"] = "example:valid-skill"
+    skill["companions"] = []
+    if field == "skill":
+        # Keep a colon to distinguish the path contract from the old check.
+        skill["id"] = f"{value}:valid" if isinstance(value, str) else value
+    else:
+        skill["scenario"]["id"] = value
+    definition["invalidation_source_scenario_id"] = skill["scenario"]["id"]
+    with pytest.raises(runner.EvaluationError, match="invalid .* ID"):
+        runner.validate_definition(ROOT, definition)
+
+
+@pytest.mark.parametrize("scenario_id", ("a-1", "a" * 80))
+def test_definition_preserves_safe_comparative_identifiers(scenario_id):
+    runner = load_runner()
+    definition = json.loads(DEFINITION.read_text())
+    definition["evaluation_id"] = "identifier-contract-test"
+    definition["skills"] = [definition["skills"][0]]
+    definition["runtime_dependencies"] = {}
+    skill = definition["skills"][0]
+    skill["id"] = "example:valid-skill"
+    skill["companions"] = []
+    skill["scenario"]["id"] = scenario_id
+    definition["invalidation_source_scenario_id"] = scenario_id
+    runner.validate_definition(ROOT, definition)
+    assert runner.load_scenario(ROOT, skill).id == scenario_id
+
+
+def test_invalid_definition_is_rejected_before_output_creation(tmp_path):
+    runner = load_runner()
+    definition = json.loads(DEFINITION.read_text())
+    definition["skills"][0]["scenario"]["id"] = "../outside"
+    definition_path = tmp_path / "definition.json"
+    definition_path.write_text(json.dumps(definition))
+    output = tmp_path / "output"
+    args = runner.build_parser().parse_args([
+        "--repo", str(tmp_path), "--definition", str(definition_path),
+        "run", "--adapter", "fixture", "--output", str(output),
+        "--incumbents", str(tmp_path / "unused.json"), "--scenario-limit", "1",
+        "--candidate-repository", "fixture://candidate",
+        "--candidate-revision", "candidate-revision",
+    ])
+    with pytest.raises(runner.EvaluationError, match="invalid scenario ID"):
+        runner.run(args)
+    assert not output.exists()
+
+
+@pytest.mark.parametrize("source_id", ("../outside", None, "a*"))
+def test_invalidation_source_is_rejected_before_output_creation(tmp_path, source_id):
+    runner = load_runner()
+    definition = json.loads(DEFINITION.read_text())
+    definition["invalidation_source_scenario_id"] = source_id
+    definition_path = tmp_path / "definition.json"
+    definition_path.write_text(json.dumps(definition))
+    output = tmp_path / "output"
+    args = runner.build_parser().parse_args([
+        "--repo", str(tmp_path), "--definition", str(definition_path),
+        "run", "--adapter", "fixture", "--output", str(output),
+        "--incumbents", str(tmp_path / "unused.json"), "--scenario-limit", "1",
+        "--candidate-repository", "fixture://candidate",
+        "--candidate-revision", "candidate-revision",
+    ])
+    with pytest.raises(runner.EvaluationError):
+        runner.run(args)
+    assert not output.exists()
+
+
+@pytest.mark.parametrize("malformation", (
+    "missing-skills", "non-list-skills", "non-mapping-skill", "missing-skill-id",
+    "missing-scenario", "non-mapping-scenario", "missing-scenario-id",
+))
+@pytest.mark.parametrize("entrypoint", ("validate-definition", "run"))
+def test_malformed_declaration_raises_evaluation_error(tmp_path, malformation, entrypoint):
+    runner = load_runner()
+    definition = json.loads(DEFINITION.read_text())
+    if malformation == "missing-skills":
+        definition.pop("skills")
+    elif malformation == "non-list-skills":
+        definition["skills"] = None
+    elif malformation == "non-mapping-skill":
+        definition["skills"][0] = None
+    elif malformation == "missing-skill-id":
+        definition["skills"][0].pop("id")
+    elif malformation == "missing-scenario":
+        definition["skills"][0].pop("scenario")
+    elif malformation == "non-mapping-scenario":
+        definition["skills"][0]["scenario"] = None
+    else:
+        definition["skills"][0]["scenario"].pop("id")
+    output = tmp_path / "output"
+    if entrypoint == "validate-definition":
+        with pytest.raises(runner.EvaluationError):
+            runner.validate_definition(ROOT, definition)
+    else:
+        definition_path = tmp_path / "definition.json"
+        definition_path.write_text(json.dumps(definition))
+        args = runner.build_parser().parse_args([
+            "--repo", str(tmp_path), "--definition", str(definition_path),
+            "run", "--adapter", "fixture", "--output", str(output),
+            "--incumbents", str(tmp_path / "unused.json"), "--scenario-limit", "1",
+            "--candidate-repository", "fixture://candidate",
+            "--candidate-revision", "candidate-revision",
+        ])
+        with pytest.raises(runner.EvaluationError):
+            runner.run(args)
+    assert not output.exists()
+
+
+def test_bundle_destination_rejects_symlink_escape(tmp_path):
+    runner = load_runner()
+    output = tmp_path / "output"
+    outside = tmp_path / "outside"
+    (output / "bundles").mkdir(parents=True)
+    outside.mkdir()
+    (output / "bundles/example--skill").symlink_to(outside, target_is_directory=True)
+    with pytest.raises(runner.EvaluationError, match="outside its output root"):
+        runner.make_bundle(
+            output, "example:skill", "candidate", {"SKILL.md": b"skill"},
+            {"SKILL.md": 0o644}, ["SKILL.md"], [], "fixture://candidate", "revision",
+        )
+    assert list(outside.iterdir()) == []
+
+
+def test_incumbent_snapshot_preserves_safe_names_and_frozen_bytes(tmp_path):
+    runner = load_runner()
+    source = tmp_path / "source"
+    source.mkdir()
+    (source / "SKILL.md").write_bytes(b"frozen incumbent\n")
+    incumbent = runner.BundleSource(
+        source, ("SKILL.md",), "fixture://incumbent", "revision",
+        tree_sha256=runner.full_tree_lock(source),
+    )
+    output = tmp_path / "evidence"
+    temporary, snapshots = runner.snapshot_incumbents(output, {"example:skill": incumbent})
+    try:
+        snapshot = snapshots["example:skill"]
+        assert snapshot.root == Path(temporary.name) / "example--skill"
+        assert snapshot.root.resolve().is_relative_to(Path(temporary.name))
+        assert (snapshot.root / "SKILL.md").read_bytes() == b"frozen incumbent\n"
+        assert snapshot.archive_relpath == "artifacts/incumbents/example--skill/tree.tar"
+        assert (output / snapshot.archive_relpath).is_file()
+    finally:
+        temporary.cleanup()
+
+
+def test_retirement_fixture_preserves_contained_artifacts_and_resume(tmp_path):
+    definition_path = ROOT / "evals/mergecraft/retirement-control-plane.json"
+    definition = json.loads(definition_path.read_bytes())
+    selected = [
+        skill for skill in definition["skills"]
+        if skill["id"] in definition["target_skill_ids"]
+    ][:2]
+    mapping = tmp_path / "incumbents.json"
+    mapping.write_text(json.dumps({
+        "schema_version": 1,
+        "skills": {
+            skill["id"]: {
+                "declared_calls": [], "entrypoints": [skill["entrypoint"]],
+                "repository": "fixture://incumbent", "revision": "incumbent-revision",
+                "root": str(ROOT),
+            } for skill in selected
+        },
+    }))
+    output = tmp_path / "evidence"
+    command = [
+        sys.executable, str(RUNNER), "--definition", str(definition_path), "run",
+        "--adapter", "fixture", "--incumbents", str(mapping),
+        "--output", str(output), "--candidate-repository", "fixture://candidate",
+        "--candidate-revision", "candidate-revision", "--scenario-limit", "2",
+    ]
+    first_ids = None
+    for _ in range(2):
+        completed = subprocess.run(command, cwd=ROOT, capture_output=True, text=True)
+        assert completed.returncode == 0, completed.stdout + completed.stderr
+        manifest = json.loads((output / "evidence-v2.json").read_bytes())
+        ids = [record["id"] for record in manifest["executor_runs"]]
+        assert len(ids) == 24
+        assert len(manifest["grader_runs"]) == 2
+        assert first_ids is None or ids == first_ids
+        first_ids = ids
+
+    def contained_references(value):
+        if isinstance(value, dict):
+            for name, child in value.items():
+                references = (
+                    [child] if name.endswith("_relpath")
+                    else child if name.endswith("_relpaths") else []
+                )
+                for relative in references:
+                    assert not Path(relative).is_absolute()
+                    assert (output / relative).resolve().is_relative_to(output)
+                contained_references(child)
+        elif isinstance(value, list):
+            for child in value:
+                contained_references(child)
+
+    for path in output.rglob("*.json"):
+        contained_references(json.loads(path.read_bytes()))
+    for skill in selected:
+        assert (output / "bundles" / skill["id"].replace(":", "--") / "candidate.tar").is_file()
+        assert (output / "artifacts/scenarios" / skill["scenario"]["id"] / "prompt.txt").is_file()
+
+
 def aggregate_comparison(runner, strategy: str, pass_counts: dict[str, int]):
     skill = {
         "id": "mergecraft:comparison-fixture",
