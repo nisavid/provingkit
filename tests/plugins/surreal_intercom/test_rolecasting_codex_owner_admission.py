@@ -1,15 +1,19 @@
 """Local owner-admission encoding through a disposable Unix peer."""
 
+import contextlib
+import hashlib
+import importlib
+import io
 import json
 import os
 from pathlib import Path
-import socket
 import struct
 import subprocess
 import sys
 import tempfile
-import threading
+from types import SimpleNamespace
 import unittest
+from unittest import mock
 
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -21,7 +25,241 @@ PROTOTYPE = SCRIPTS / "owner_admission_sender.py"
 NO_RESPONSE = object()
 
 
+class InjectedPeerStream:
+    """One deterministic connection with source-backed peer observations."""
+
+    def __init__(self, peer=None, *, early_response=False, response_kind="success",
+                 null_initialize=False, deep_initialize=None,
+                 response_request_id="owner-attempt"):
+        self.peer = peer
+        self.peer_identity_calls = 0
+        self.early_response = early_response
+        self.response_kind = response_kind
+        self.null_initialize = null_initialize
+        self.deep_initialize = deep_initialize
+        self.response_request_id = response_request_id
+        self.writes = []
+        self.responses = bytearray()
+        self.closed = False
+
+    def peer_identity(self):
+        index = self.peer_identity_calls
+        self.peer_identity_calls += 1
+        if isinstance(self.peer, list):
+            return self.peer[min(index, len(self.peer) - 1)]
+        return self.peer
+
+    def read(self, maximum, timeout):
+        if not self.responses:
+            raise TimeoutError
+        data = bytes(self.responses[:maximum])
+        del self.responses[:maximum]
+        return data
+
+    def write(self, data, timeout):
+        length = struct.unpack("<I", data[:4])[0]
+        value = json.loads(data[4:4 + length])
+        self.writes.append(value)
+        if value["method"] == "initialize":
+            response = {
+                "type": "response", "requestId": self.response_request_id,
+                "resultType": self.response_kind, "method": "thread-follower-start-turn",
+                "result": {},
+            }
+            if self.early_response:
+                self._queue(response)
+            if self.deep_initialize is not None:
+                self._queue(self.deep_initialize)
+                return
+            response = {
+                "type": "response", "requestId": "initialize",
+                "resultType": "success", "method": "initialize",
+                "result": None if self.null_initialize else {"clientId": "native-client"},
+            }
+        elif value["method"] == "thread-owner-discovery":
+            response = {
+                "type": "response", "requestId": "owner",
+                "resultType": "success", "method": "thread-owner-discovery",
+                "handledByClientId": "native-owner",
+            }
+        else:
+            if self.early_response or self.response_kind is NO_RESPONSE:
+                return
+            response = {
+                "type": "response", "requestId": self.response_request_id,
+                "resultType": self.response_kind, "method": "thread-follower-start-turn",
+                "result": {},
+            }
+        self._queue(response)
+
+    def _queue(self, value):
+        if isinstance(value, bytes):
+            body = value
+        else:
+            body = json.dumps(value).encode()
+        self.responses.extend(struct.pack("<I", len(body)) + body)
+
+    def close(self):
+        self.closed = True
+
+
 class CodexOwnerAdmissionTests(unittest.TestCase):
+    def test_guarded_nomination_refuses_mismatched_connected_peer_before_protocol_write(self):
+        with tempfile.TemporaryDirectory(prefix="codex-owner-guard-") as temporary:
+            root = Path(temporary).resolve()
+            store = root / "mailbox.sqlite3"
+            capture = root / "capture"
+            capture.mkdir(mode=0o700)
+            original = {
+                "message_id": "owner-message", "correlation_id": "shared-exchange",
+                "sender": {"thread_id": "origin", "host_id": "origin-host"},
+                "recipient": {"thread_id": "owner-peer", "host_id": "local"},
+                "owner": {"thread_id": "task-owner", "host_id": "owner-host"},
+                "payload": "Guard this payload.",
+                "authority_ref": "synthetic://original-authority",
+                "holds": ["synthetic://original-hold"],
+            }
+            actor = {"thread_id": "forwarder", "host_id": "forwarder-host"}
+            environment = {
+                **os.environ, "PYTHONDONTWRITEBYTECODE": "1", "PYTHONNOUSERSITE": "1",
+            }
+
+            def mailbox(*arguments):
+                completed = subprocess.run([
+                    sys.executable, "-B", str(SCRIPTS / "native_codex_mailbox.py"),
+                    "--store", str(store), *arguments,
+                ], capture_output=True, text=True, timeout=10, env=environment)
+                self.assertEqual(completed.returncode, 0, completed.stderr)
+
+            message_file = root / "message.json"
+            message_file.write_text(json.dumps(original), encoding="utf-8")
+            mailbox("init")
+            mailbox("plan", "--input", str(message_file))
+
+            executable = {"path": "/opt/codex/Codex", "device": 41, "inode": 73}
+            expected_peer = {
+                "pid": 4100, "uid": 1000, "gid": 1000, "startTicks": 9001,
+                "bootId": "synthetic-boot", "networkNamespace": "net:[701]",
+                "executable": executable,
+            }
+            expected_invocation = {
+                "control": "native-read-thread-command-execution",
+                "taskRef": "synthetic://task", "attemptId": "shared-exchange",
+                "chat": original["recipient"],
+                "command": ["/usr/bin/python3", "-B", "/opt/helpers/codex_route_nomination.py",
+                            "--request", "/private/request.json"],
+                "workingDirectory": "/synthetic/worktree",
+                "helper": {"path": "/opt/helpers/codex_route_nomination.py",
+                           "sha256": "a" * 64},
+            }
+            nomination = {
+                "schema": "codex-route-nomination-v2", "status": "provisional",
+                "route": {"endpoint": str(root / "peer.sock"), "host": "local",
+                          "target": "owner-peer"},
+                "recipient": original["recipient"], "producer": original["recipient"],
+                "submitter": actor,
+                "operationId": "shared-exchange", "acceptor": expected_peer,
+                "expectedInvocation": expected_invocation,
+                "acquisition": {
+                    "startedMilliseconds": 1000, "finishedMilliseconds": 1004,
+                    "descriptorEntries": 12, "unixRows": 30, "unixBytes": 4096,
+                    "descriptorLinkBytes": 512, "selectedDescriptor": 11,
+                    "socketInode": 501,
+                    "launchSourceRef": "synthetic://installed-launch-source",
+                    "listenerSourceRef": "synthetic://installed-listener-source",
+                },
+                "permissions": {},
+                "acquisitionHolds": ["synthetic://original-hold"],
+                "freshness": {"observedAtMilliseconds": 1004},
+                "privacy": {"boundary": "unix-account-private",
+                            "sameUidIsolation": False, "pathIsAuthority": False},
+                "retirement": {"scope": "original-invocation-staging-only"},
+            }
+            for name, evidence, act, consumer in (
+                ("metadata", "synthetic://metadata-authority",
+                 "acquire-route-metadata", "nomination-controller"),
+                ("nomination", "synthetic://nomination-authority",
+                 "publish-route-nomination", "codex-route-nomination"),
+                ("routeUse", "synthetic://route-use-authority",
+                 "consume-route-nomination", "owner-admission-sender"),
+            ):
+                nomination["permissions"][name] = {
+                    "evidenceRef": evidence,
+                    "issuer": {"thread_id": "operator", "host_id": "native"},
+                    "actor": (original["recipient"] if name in {"metadata", "nomination"}
+                              else actor),
+                    "act": act, "chat": original["recipient"],
+                    "operationId": "shared-exchange",
+                    "validityRef": "synthetic://validity/" + name,
+                    "revocationRef": "synthetic://revocation/" + name,
+                    "consumer": consumer,
+                }
+            nomination_bytes = json.dumps(
+                nomination, sort_keys=True, separators=(",", ":")
+            ).encode()
+            nomination_path = root / "nomination.json"
+            nomination_path.write_bytes(nomination_bytes)
+            nomination_path.chmod(0o600)
+            request = {
+                "message_id": "owner-message", "attempt_id": "owner-attempt",
+                "actor": actor, "recipient": original["recipient"],
+                "evidence_ref": "synthetic://owner-evidence",
+                "native": {
+                    "nomination": {
+                        "path": str(nomination_path),
+                        "sha256": hashlib.sha256(nomination_bytes).hexdigest(),
+                        "size": len(nomination_bytes),
+                        "invocation": {
+                            **expected_invocation,
+                            "evidenceRef": "synthetic://native-command/completed",
+                            "nativeItemId": "item-1", "status": "completed", "exitCode": 0,
+                        },
+                    },
+                    "purpose": "Forward the original peer message",
+                    "authorityRefs": ["synthetic://original-authority"],
+                    "holdRefs": ["synthetic://original-hold"],
+                    "scope": {"send": True, "ownerAdmissionIntent": True,
+                              "holdsSatisfied": True},
+                    "profile": {}, "observationSeconds": 0.1,
+                },
+                "capture": {"run_root": str(capture), "allowance_bytes": 8388608,
+                            "terminal_provision_bytes": 524288,
+                            "later_forecast_bytes": 0},
+            }
+            request_file = root / "request.json"
+            request_file.write_text(json.dumps(request), encoding="utf-8")
+
+            mismatched_peer = dict(expected_peer, pid=4101)
+            stream = InjectedPeerStream(mismatched_peer)
+            sys.path.insert(0, str(SCRIPTS))
+            try:
+                sender = importlib.import_module("owner_admission_sender")
+                transport_module = importlib.import_module("codex_ipc_transport")
+
+                def transport(endpoint, limits, wait):
+                    return transport_module.CliTransport(
+                        endpoint, limits, wait, connector=lambda _endpoint, _wait: stream,
+                    )
+
+                output = io.StringIO()
+                with mock.patch.object(sender, "CliTransport", transport), mock.patch.object(
+                    sys, "argv", [str(PROTOTYPE), "--store", str(store),
+                                  "--request", str(request_file)]
+                ), contextlib.redirect_stdout(output):
+                    exit_code = sender.main(
+                        effective_uid=nomination_path.stat().st_uid,
+                        clock=lambda: 7005,
+                    )
+            finally:
+                sys.path.remove(str(SCRIPTS))
+
+            self.assertEqual(exit_code, 0)
+            result = json.loads(output.getvalue())
+            self.assertEqual(result["reason"], "connected-peer-mismatch")
+            self.assertEqual(result["peer_input"], "not_attempted")
+            self.assertEqual(stream.writes, [])
+            self.assertTrue(stream.closed)
+
     def exchange(self, *, early_response=False, response_kind="success", repeat=False,
                  capture_collision=False, route_change=None, null_initialize=False, deep_initialize=None):
         with tempfile.TemporaryDirectory(prefix="codex-owner-") as temporary:
@@ -54,8 +292,33 @@ class CodexOwnerAdmissionTests(unittest.TestCase):
             environment = {
                 **os.environ, "PYTHONDONTWRITEBYTECODE": "1", "PYTHONNOUSERSITE": "1",
             }
+            stream = None
 
             def command(script, *arguments):
+                if script == PROTOTYPE:
+                    sys.path.insert(0, str(SCRIPTS))
+                    try:
+                        sender = importlib.import_module("owner_admission_sender")
+                        transport_module = importlib.import_module("codex_ipc_transport")
+
+                        def transport(endpoint, limits, wait):
+                            return transport_module.CliTransport(
+                                endpoint, limits, wait,
+                                connector=lambda _endpoint, _wait: stream,
+                            )
+
+                        stdout = io.StringIO()
+                        stderr = io.StringIO()
+                        with mock.patch.object(sender, "CliTransport", transport), \
+                                contextlib.redirect_stdout(stdout), contextlib.redirect_stderr(stderr):
+                            returncode = sender.main([
+                                "--store", str(store), *arguments,
+                            ])
+                        return SimpleNamespace(
+                            returncode=returncode, stdout=stdout.getvalue(), stderr=stderr.getvalue()
+                        )
+                    finally:
+                        sys.path.remove(str(SCRIPTS))
                 return subprocess.run(
                     [sys.executable, "-B", str(script), "--store", str(store), *arguments],
                     capture_output=True, text=True, timeout=10, env=environment,
@@ -96,126 +359,27 @@ class CodexOwnerAdmissionTests(unittest.TestCase):
             if capture_collision:
                 (capture / "attempt.json").write_bytes(retained_attempt)
                 (capture / "rpc.json").write_bytes(retained_rpc)
-            wire, errors, prewrite = [], [], []
-            closed = threading.Event()
-
-            def serve(listener):
-                try:
-                    try:
-                        connection, _ = listener.accept()
-                    except TimeoutError:
-                        return  # An absent prototype never connects.
-                    with connection:
-                        connection.settimeout(3)
-
-                        def receive():
-                            def exact(count):
-                                data = b""
-                                while len(data) < count:
-                                    part = connection.recv(count - len(data))
-                                    if not part:
-                                        raise AssertionError("unexpected fixture EOF")
-                                    data += part
-                                return data
-                            length = struct.unpack("<I", exact(4))[0]
-                            self.assertGreater(length, 0)
-                            self.assertLessEqual(length, 65536)
-                            value = json.loads(exact(length))
-                            wire.append(value)
-                            return value
-
-                        def send(value):
-                            data = value if isinstance(value, bytes) else json.dumps(value).encode()
-                            connection.sendall(struct.pack("<I", len(data)) + data)
-
-                        self.assertEqual(receive(), {
-                            "type": "request", "requestId": "initialize", "version": 0,
-                            "method": "initialize", "params": {"clientType": "cli"},
-                        })
-                        response = {"type": "response", "requestId": "owner-attempt",
-                                    "resultType": response_kind, "method": "thread-follower-start-turn",
-                                    "result": {}}
-                        if early_response:
-                            send(response)
-                        if deep_initialize is not None:
-                            send(deep_initialize)
-                            self.assertEqual(connection.recv(1), b"")
-                            closed.set()
-                            return
-                        send({"type": "response", "requestId": "initialize", "resultType": "success",
-                              "method": "initialize",
-                              "result": None if null_initialize else {"clientId": "native-client"}})
-                        if null_initialize:
-                            self.assertEqual(connection.recv(1), b"")
-                            closed.set()
-                            return
-                        self.assertEqual(receive(), {
-                            "type": "request", "requestId": "owner", "sourceClientId": "native-client",
-                            "version": 1, "method": "thread-owner-discovery",
-                            "params": {"hostId": "local", "conversationId": "owner-peer"},
-                        })
-                        send({"type": "response", "requestId": "owner", "resultType": "success",
-                              "method": "thread-owner-discovery", "handledByClientId": "native-owner"})
-                        if capture_collision:
-                            self.assertEqual(connection.recv(1), b"")
-                            closed.set()
-                            return
-                        start = receive()
-                        prewrite.append((capture / "attempt.json").read_bytes())
-                        # Exact equality also excludes hostId, settings, attachments,
-                        # injection, tool output, and other optional submission fields.
-                        self.assertEqual(start, {
-                            "type": "request", "requestId": "owner-attempt", "sourceClientId": "native-client",
-                            "targetClientId": "native-owner", "version": 2, "method": "thread-follower-start-turn",
-                            "params": {"conversationId": "owner-peer", "turnStart": {
-                                "request": {"threadId": "owner-peer", "clientUserMessageId": "owner-attempt",
-                                    "input": [{"type": "text", "text": expected_payload, "text_elements": []}]},
-                                "context": {"inheritThreadSettings": True, "useUserMessageAdmission": True}}},
-                        })
-                        pending = json.loads(prewrite[0])
-                        self.assertEqual(pending["envelope"], start)
-                        self.assertEqual(pending["correlation"], "owner-attempt")
-                        self.assertEqual(pending["authorityRefs"], ["synthetic://original-authority"])
-                        self.assertEqual(pending["holdRefs"], ["synthetic://original-hold"])
-                        self.assertEqual(pending["actor"], actor)
-                        self.assertEqual(pending["declaredOrigin"], original["sender"])
-                        if not early_response and response_kind is not NO_RESPONSE:
-                            send(response)
-                        self.assertEqual(connection.recv(1), b"")
-                        closed.set()
-                except BaseException as error:
-                    errors.append(error)
-
-            with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as listener:
-                listener.bind(str(endpoint))
-                listener.listen(1)
-                listener.settimeout(1)
-                server = threading.Thread(target=serve, args=(listener,))
-                server.start()
-                try:
-                    completed = command(PROTOTYPE, "--request", str(request_file))
-                finally:
-                    server.join(timeout=5)
-                    if server.is_alive():
-                        listener.close()
-                        server.join(timeout=4)
-                self.assertFalse(server.is_alive(), "fixture server did not terminate")
-                if repeat:
-                    retained = {item.name: item.read_bytes() for item in capture.iterdir()}
-                    repeated = command(PROTOTYPE, "--request", str(request_file))
-                    self.assertEqual(repeated.returncode, 0, repeated.stderr)
-                    repeated_result = json.loads(repeated.stdout)
-                    self.assertEqual(repeated_result["reason"], "claim_not_acquired")
-                    self.assertFalse(repeated_result["claimed"])
-                    self.assertEqual(repeated_result["peer_input"], "not_attempted")
-                    self.assertEqual(repeated_result["owned_connection"], {"started": False, "closed": False})
-                    self.assertEqual({item.name: item.read_bytes() for item in capture.iterdir()}, retained)
-                    listener.settimeout(0.1)
-                    with self.assertRaises(TimeoutError):
-                        listener.accept()
+            stream = InjectedPeerStream(
+                early_response=early_response, response_kind=response_kind,
+                null_initialize=null_initialize, deep_initialize=deep_initialize,
+            )
+            completed = command(PROTOTYPE, "--request", str(request_file))
+            wire = stream.writes
+            prewrite = [] if not (capture / "attempt.json").is_file() else [
+                (capture / "attempt.json").read_bytes()
+            ]
+            if repeat:
+                retained = {item.name: item.read_bytes() for item in capture.iterdir()}
+                repeated = command(PROTOTYPE, "--request", str(request_file))
+                self.assertEqual(repeated.returncode, 0, repeated.stderr)
+                repeated_result = json.loads(repeated.stdout)
+                self.assertEqual(repeated_result["reason"], "claim_not_acquired")
+                self.assertFalse(repeated_result["claimed"])
+                self.assertEqual(repeated_result["peer_input"], "not_attempted")
+                self.assertEqual(repeated_result["owned_connection"], {"started": False, "closed": False})
+                self.assertEqual({item.name: item.read_bytes() for item in capture.iterdir()}, retained)
             self.assertEqual(completed.returncode, 0, completed.stderr)
             self.assertEqual(completed.stderr, "")
-            self.assertEqual(errors, [])
             if route_change is not None:
                 result = json.loads(completed.stdout)
                 self.assertFalse(result["claimed"])
@@ -225,7 +389,7 @@ class CodexOwnerAdmissionTests(unittest.TestCase):
                 self.assertEqual(list(capture.iterdir()), [])
                 self.assertEqual(mailbox("show", "owner-message")["state"], "planned")
                 return result, {}
-            self.assertTrue(closed.is_set())
+            self.assertTrue(stream.closed)
             result = json.loads(completed.stdout)
             self.assertEqual(result["receipt"], "unknown")
             self.assertEqual(result["native_branch"], "unknown")
@@ -274,6 +438,27 @@ class CodexOwnerAdmissionTests(unittest.TestCase):
                 self.assertEqual((capture / "rpc.json").read_bytes(), retained_rpc)
             else:
                 self.assertEqual(prewrite, [(capture / "attempt.json").read_bytes()])
+                start = wire[-1]
+                # Exact equality also excludes hostId, settings, attachments,
+                # injection, tool output, and other optional submission fields.
+                self.assertEqual(start, {
+                    "type": "request", "requestId": "owner-attempt", "sourceClientId": "native-client",
+                    "targetClientId": "native-owner", "version": 2,
+                    "method": "thread-follower-start-turn",
+                    "params": {"conversationId": "owner-peer", "turnStart": {
+                        "request": {"threadId": "owner-peer", "clientUserMessageId": "owner-attempt",
+                            "input": [{"type": "text", "text": expected_payload,
+                                       "text_elements": []}]},
+                        "context": {"inheritThreadSettings": True,
+                                    "useUserMessageAdmission": True}}},
+                })
+                pending = json.loads(prewrite[0])
+                self.assertEqual(pending["envelope"], start)
+                self.assertEqual(pending["correlation"], "owner-attempt")
+                self.assertEqual(pending["authorityRefs"], ["synthetic://original-authority"])
+                self.assertEqual(pending["holdRefs"], ["synthetic://original-hold"])
+                self.assertEqual(pending["actor"], actor)
+                self.assertEqual(pending["declaredOrigin"], original["sender"])
             recorded = mailbox("show", "owner-message")
             self.assertEqual({k: v for k, v in recorded.items() if k not in {"state", "attempts"}}, original)
             self.assertEqual(json.loads((capture / "projection.json").read_bytes()), result["projection"])

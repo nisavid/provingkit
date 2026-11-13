@@ -47,8 +47,9 @@ class IntercomProjectionTests(unittest.TestCase):
                     self.assertFalse((output / "plugins/rolecasting").exists())
                     for command in (
                         "native_codex_mailbox.py", "claude_mcp_sender.py",
+                        "claude_route_nomination.py",
                         "codex_ipc_sender.py", "codex_ipc_idle_sender.py",
-                        "owner_admission_sender.py",
+                        "codex_route_nomination.py", "owner_admission_sender.py",
                         "codex_daybreak_sender.py",
                     ):
                         result = subprocess.run([
@@ -57,6 +58,22 @@ class IntercomProjectionTests(unittest.TestCase):
                             "--help",
                         ], cwd=root, capture_output=True, text=True, timeout=10)
                         self.assertEqual(result.returncode, 0, result.stderr)
+                    nomination_reference = (
+                        plugin / "skills/communicating-with-agents/references/"
+                        "codex-route-nomination.md"
+                    )
+                    self.assertTrue(nomination_reference.is_file())
+                    nomination_text = nomination_reference.read_text()
+                    self.assertIn("codex-route-nomination-request-v2", nomination_text)
+                    self.assertIn("Five seconds bounds acquisition only", nomination_text)
+                    claude_nomination_reference = (
+                        plugin / "skills/communicating-with-agents/references/"
+                        "claude-route-nomination.md"
+                    )
+                    self.assertTrue(claude_nomination_reference.is_file())
+                    claude_nomination_text = claude_nomination_reference.read_text()
+                    self.assertIn("claude-route-nomination-request-v1", claude_nomination_text)
+                    self.assertIn("claude-sender-request-preparation-v1", claude_nomination_text)
                     self.assertFalse((plugin / "DEVELOPING.md").exists())
                     self.assertFalse((plugin / "topology.json").exists())
                     self.assertEqual(

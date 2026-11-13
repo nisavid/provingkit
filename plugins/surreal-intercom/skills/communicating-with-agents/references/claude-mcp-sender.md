@@ -1,6 +1,14 @@
 # Submit a peer message through a nominated Claude MCP child
 
-Use this procedure under the owning task’s selected Claude-receiving native MCP route and applicable original or standing authority. Load this reference and record the reviewed source revision before dependent execution. [Peer binding and authority](peer-messages.md) governs the communication boundary; [mailbox bookkeeping](native-codex-mailbox.md) governs retained obligations and reconciliation.
+Use this procedure under the owning task's selected Claude-receiving native MCP
+route and applicable original or standing authority. For ordinary first use,
+acquire and consume that route through
+[Claude route nomination](claude-route-nomination.md); do not ask the operator
+to supply a launcher, socket, request JSON, or authority URI. Load this reference
+and record the reviewed source revision before dependent execution. [Peer
+binding and authority](peer-messages.md) governs the communication boundary;
+[mailbox bookkeeping](native-codex-mailbox.md) governs retained obligations and
+reconciliation.
 
 The sender module is [scripts/claude_mcp_sender.py](../scripts/claude_mcp_sender.py). It uses [peer_message.py](../scripts/peer_message.py) to serialize a retained message and actual submitting actor. This is source support for a narrow stdio MCP profile. It establishes no installed release, live compatibility, authenticated grant, or native peer identity. Operational use, Claude startup, private-data disclosure, sending, installation, and adoption retain their separate gates.
 
@@ -20,7 +28,16 @@ The trusted local UTF-8 JSON request has exactly these fields:
 - `command`: a nonempty argument list whose executable path is absolute; the sender passes the exact argument vector with `shell=False`. An explicitly nominated launcher still has its own behavior and side effects.
 - `limits`: exactly `operation_seconds`, `stdout_bytes`, and `stderr_bytes`, within the limits below.
 
-The caller binds the executable, arguments, nominated endpoint, and intended receiver using separately permitted evidence. The retained request includes the command arguments; use the authorized environment-backed credential route rather than secret literals in those arguments. Matching the mailbox recipient does not prove that the endpoint reaches that recipient. A trusted request is a caller nomination, not proved binding, authentication, or permission. This module does not inspect receiver configuration, select an installed build, or verify startup side effects.
+The caller binds the executable, arguments, nominated endpoint, and intended
+receiver using separately permitted evidence. The ordinary nomination helper
+obtains those transport values from the selected receiver and preserves the
+installed launcher's invoked name. The retained request includes the command
+arguments; use the authorized environment-backed credential route rather than
+secret literals in those arguments. Matching the mailbox recipient does not
+prove that the endpoint reaches that recipient. A trusted request is a caller
+nomination, not proved binding, authentication, or permission. This module does
+not inspect receiver configuration, select an installed build, or verify startup
+side effects.
 
 ## Bounds and supported protocol
 

@@ -9,6 +9,7 @@ files do not consume this invocation's allowance; writes never replace them.
 import hashlib
 import json
 import os
+import tempfile
 from pathlib import Path
 
 
@@ -87,14 +88,35 @@ class CaptureWriter:
         if available < required:
             raise StorageRefusal("filesystem-capacity-insufficient")
         path.parent.mkdir(parents=True, exist_ok=True)
-        with path.open("xb") as stream:
+        # A final name advertises complete bytes only. Staging is invocation-owned
+        # and stays in the destination parent so link publication is atomic.
+        fd, staging_name = tempfile.mkstemp(prefix=".codex-capture-", suffix=".tmp", dir=path.parent)
+        staging = Path(staging_name)
+        try:
             try:
-                stream.write(data)
-                stream.flush()
-                os.fsync(stream.fileno())
+                os.fchmod(fd, 0o600)
+                remaining = memoryview(data)
+                while remaining:
+                    written = os.write(fd, remaining)
+                    if written <= 0:
+                        raise StorageRefusal("capture-write-incomplete")
+                    remaining = remaining[written:]
+                if os.fstat(fd).st_size != len(data):
+                    raise StorageRefusal("capture-write-incomplete")
+                os.fsync(fd)
             finally:
-                # Count even a partially written file when a write fails.
-                count = os.fstat(stream.fileno()).st_size
-                self.new_bytes += count
-                if terminal:
-                    self.terminal_bytes += count
+                try:
+                    # Failed staging still consumes this invocation's allowance.
+                    count = os.fstat(fd).st_size
+                    self.new_bytes += count
+                    if terminal:
+                        self.terminal_bytes += count
+                finally:
+                    os.close(fd)
+            # Unlike rename/replace, link refuses a final name that already exists,
+            # including one created after admission. Never remove that final name.
+            os.link(staging, path)
+        finally:
+            # Only this call's staging name is eligible for cleanup. Abrupt process
+            # termination may leave staging; a fresh call uses a new unique name.
+            staging.unlink(missing_ok=True)

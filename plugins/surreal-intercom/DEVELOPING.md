@@ -52,6 +52,14 @@ Run source checks and synthetic cases through the maintained test schedule;
 retain the candidate revision and actual results. Procedure discovery and
 caller application need their own consumer checks. None of these checks proves
 effective Daybreak execution, current app behavior, installation, signal-safe
-shutdown, or live recovery. The general matching-reply observer and finite Claude consuming-control lookup
-remain separate source work. Advertise it only after implementation and checks at its
-actual boundary.
+shutdown, or live recovery. The general matching-reply observer remains separate
+source work.
+
+The [Claude route nomination procedure](skills/communicating-with-agents/references/claude-route-nomination.md)
+owns receiver-side host/session and messaging-field acquisition, installed
+launcher lookup, private nomination publication, mailbox planning, and request
+preparation for `claude_mcp_sender.py`. Its synthetic tests inject only primitive
+environment and launcher observations, use disposable private files, and reach
+the real sender request parser. Keep live native-control availability, launcher
+startup, credentials, provider/account identity, receipt, reply, and installed
+qualification outside those source claims.

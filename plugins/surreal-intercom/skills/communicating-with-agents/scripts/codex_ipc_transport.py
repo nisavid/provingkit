@@ -7,6 +7,9 @@ Both production and invented IO use FrameReceiver; no background reader exists.
 # 259cea2f440065c77a07436c40a23387eda3d4679237736ae92ada62e1dbe0c1.
 import hashlib
 import json
+import os
+from pathlib import Path
+import socket
 import struct
 import time
 import uuid
@@ -91,6 +94,42 @@ class UnixStream:
         self.connection.sendall(data)
     def close(self):
         self.connection.close()
+    def peer_identity(self):
+        """Return Linux peer credentials and stable procfs identity fields."""
+        try:
+            raw = self.connection.getsockopt(socket.SOL_SOCKET, socket.SO_PEERCRED, 12)
+            pid, uid, gid = struct.unpack("3i", raw)
+            if pid <= 0 or uid < 0 or gid < 0:
+                raise ValueError
+            proc = Path("/proc") / str(pid)
+            stat_bytes = _bounded_read(proc / "stat")
+            close = stat_bytes.rfind(b")")
+            fields = stat_bytes[close + 1:].split()
+            if close < 0 or len(fields) <= 19:
+                raise ValueError
+            start_ticks = int(fields[19])
+            executable_link = proc / "exe"
+            executable_path = os.readlink(executable_link)
+            executable_stat = executable_link.stat()
+            return {
+                "pid": pid, "uid": uid, "gid": gid, "startTicks": start_ticks,
+                "bootId": _bounded_read(Path("/proc/sys/kernel/random/boot_id")).decode().strip(),
+                "networkNamespace": os.readlink(proc / "ns/net"),
+                "executable": {
+                    "path": executable_path, "device": executable_stat.st_dev,
+                    "inode": executable_stat.st_ino,
+                },
+            }
+        except (AttributeError, OSError, UnicodeError, ValueError, struct.error) as exc:
+            raise ReceiveFailure("peer-identity-unavailable") from exc
+
+
+def _bounded_read(path, limit=8192):
+    with path.open("rb") as source:
+        data = source.read(limit + 1)
+    if not data or len(data) > limit:
+        raise ValueError("bounded-peer-identity-read")
+    return data
 
 def connect_unix(endpoint, timeout):
     # Importing this module opens no socket. The command uses this connector
@@ -132,9 +171,18 @@ class CliTransport:
         limit = self.receiver.limits.get("outgoingFrameBytes")
         if limit is not None and len(data) > limit:
             raise ReceiveFailure("outgoing-frame-limit")
-    def send(self, envelope):
+    def connect(self):
         if self.stream is None:
             self.stream = self.connector(self.endpoint, self.wait)
+        return self.stream
+    def connected_peer_identity(self):
+        stream = self.connect()
+        identity = stream.peer_identity()
+        if not isinstance(identity, dict):
+            raise ReceiveFailure("peer-identity-unavailable")
+        return identity
+    def send(self, envelope):
+        self.connect()
         if envelope['method'] in {'thread-follower-steer-turn', 'thread-follower-start-turn'}:
             if self.pending_path is None or not self.pending_path.is_file():
                 raise ReceiveFailure('missing-pre-write-capture')
