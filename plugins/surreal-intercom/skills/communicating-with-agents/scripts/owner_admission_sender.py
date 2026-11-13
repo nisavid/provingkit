@@ -348,6 +348,16 @@ def submit(native, limits, wait, writer, result, guard=None):
             "closed": transport.stream is not None and transport.closed,
         }
 
+    nondelivery = None
+    if (not transport.write_boundary
+            and (transport.stream is None or transport.closed)):
+        nondelivery = {
+            "claim": "message-frame-write-boundary-not-entered",
+            "reason": result["reason"],
+            "writeBoundary": dict(transport.write_boundary),
+            "ownedConnection": dict(result["owned_connection"]),
+        }
+
     submitted_records = transport.retained[submission_start:] if submission_start is not None else []
     original = [message for _, message in submitted_records
                 if message.get("type") == "response"
@@ -398,6 +408,7 @@ def submit(native, limits, wait, writer, result, guard=None):
             "originalFailure": first_error, "captureFailures": capture_failures,
             "missingEvidence": missing,
         }
+    return nondelivery
 
 
 def main(argv=None, *, effective_uid=None, clock=None):
@@ -428,7 +439,24 @@ def main(argv=None, *, effective_uid=None, clock=None):
             # Durable uncertainty precedes acquisition and any native input write.
             mailbox.observe(request["message_id"], request["attempt_id"], "unknown",
                             request["evidence_ref"], json.dumps(native, sort_keys=True))
-            submit(native, limits, wait, writer, result, guard)
+            nondelivery = submit(native, limits, wait, writer, result, guard)
+            if nondelivery is not None:
+                bookkeeping = {
+                    "kind": "not_delivered", "evidence_ref": request["evidence_ref"],
+                    "observation": nondelivery,
+                }
+                try:
+                    mailbox.observe(
+                        request["message_id"], request["attempt_id"], "not_delivered",
+                        request["evidence_ref"],
+                        json.dumps(nondelivery, ensure_ascii=True, sort_keys=True,
+                                   separators=(",", ":")),
+                    )
+                    bookkeeping["status"] = "retained"
+                except (MailboxError, OSError, sqlite3.Error, ValueError, TypeError) as error:
+                    bookkeeping["status"] = "failed"
+                    bookkeeping["failure"] = failure_record(error)
+                result["conclusive_bookkeeping"] = bookkeeping
     except (Refusal, ReceiveFailure, MailboxError, OSError, sqlite3.Error,
             UnicodeError, ValueError, KeyError, TypeError) as error:
         result["reason"] = str(error)

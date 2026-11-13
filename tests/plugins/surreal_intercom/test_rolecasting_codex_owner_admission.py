@@ -30,7 +30,8 @@ class InjectedPeerStream:
 
     def __init__(self, peer=None, *, early_response=False, response_kind="success",
                  null_initialize=False, deep_initialize=None,
-                 response_request_id="owner-attempt"):
+                 response_request_id="owner-attempt", owner_response_kind="success",
+                 message_write_error=False, message_write_interrupt=False):
         self.peer = peer
         self.peer_identity_calls = 0
         self.early_response = early_response
@@ -38,6 +39,9 @@ class InjectedPeerStream:
         self.null_initialize = null_initialize
         self.deep_initialize = deep_initialize
         self.response_request_id = response_request_id
+        self.owner_response_kind = owner_response_kind
+        self.message_write_error = message_write_error
+        self.message_write_interrupt = message_write_interrupt
         self.writes = []
         self.responses = bytearray()
         self.closed = False
@@ -79,10 +83,14 @@ class InjectedPeerStream:
         elif value["method"] == "thread-owner-discovery":
             response = {
                 "type": "response", "requestId": "owner",
-                "resultType": "success", "method": "thread-owner-discovery",
+                "resultType": self.owner_response_kind, "method": "thread-owner-discovery",
                 "handledByClientId": "native-owner",
             }
         else:
+            if self.message_write_interrupt:
+                raise KeyboardInterrupt("synthetic-abrupt-message-write-interruption")
+            if self.message_write_error:
+                raise OSError("partial-message-write")
             if self.early_response or self.response_kind is NO_RESPONSE:
                 return
             response = {
@@ -105,6 +113,12 @@ class InjectedPeerStream:
 
 class CodexOwnerAdmissionTests(unittest.TestCase):
     def test_guarded_nomination_refuses_mismatched_connected_peer_before_protocol_write(self):
+        self._assert_guarded_peer_mismatch()
+
+    def test_guarded_nomination_refuses_peer_changed_before_message_write(self):
+        self._assert_guarded_peer_mismatch(changed_after_owner=True)
+
+    def _assert_guarded_peer_mismatch(self, *, changed_after_owner=False):
         with tempfile.TemporaryDirectory(prefix="codex-owner-guard-") as temporary:
             root = Path(temporary).resolve()
             store = root / "mailbox.sqlite3"
@@ -130,6 +144,7 @@ class CodexOwnerAdmissionTests(unittest.TestCase):
                     "--store", str(store), *arguments,
                 ], capture_output=True, text=True, timeout=10, env=environment)
                 self.assertEqual(completed.returncode, 0, completed.stderr)
+                return json.loads(completed.stdout)
 
             message_file = root / "message.json"
             message_file.write_text(json.dumps(original), encoding="utf-8")
@@ -230,7 +245,8 @@ class CodexOwnerAdmissionTests(unittest.TestCase):
             request_file.write_text(json.dumps(request), encoding="utf-8")
 
             mismatched_peer = dict(expected_peer, pid=4101)
-            stream = InjectedPeerStream(mismatched_peer)
+            peer = [expected_peer, mismatched_peer] if changed_after_owner else mismatched_peer
+            stream = InjectedPeerStream(peer)
             sys.path.insert(0, str(SCRIPTS))
             try:
                 sender = importlib.import_module("owner_admission_sender")
@@ -242,26 +258,60 @@ class CodexOwnerAdmissionTests(unittest.TestCase):
                     )
 
                 output = io.StringIO()
+                repeated_output = io.StringIO()
                 with mock.patch.object(sender, "CliTransport", transport), mock.patch.object(
                     sys, "argv", [str(PROTOTYPE), "--store", str(store),
                                   "--request", str(request_file)]
-                ), contextlib.redirect_stdout(output):
-                    exit_code = sender.main(
-                        effective_uid=nomination_path.stat().st_uid,
-                        clock=lambda: 7005,
-                    )
+                ):
+                    with contextlib.redirect_stdout(output):
+                        exit_code = sender.main(
+                            effective_uid=nomination_path.stat().st_uid,
+                            clock=lambda: 7005,
+                        )
+                    with contextlib.redirect_stdout(repeated_output):
+                        repeated_exit_code = sender.main(
+                            effective_uid=nomination_path.stat().st_uid,
+                            clock=lambda: 7005,
+                        )
             finally:
                 sys.path.remove(str(SCRIPTS))
 
             self.assertEqual(exit_code, 0)
             result = json.loads(output.getvalue())
-            self.assertEqual(result["reason"], "connected-peer-mismatch")
+            self.assertEqual(
+                result["reason"],
+                "connected-peer-changed-before-message" if changed_after_owner
+                else "connected-peer-mismatch",
+            )
             self.assertEqual(result["peer_input"], "not_attempted")
-            self.assertEqual(stream.writes, [])
+            expected_methods = ([] if not changed_after_owner else
+                                ["initialize", "thread-owner-discovery"])
+            self.assertEqual([frame["method"] for frame in stream.writes], expected_methods)
             self.assertTrue(stream.closed)
+            self.assertEqual(result["conclusive_bookkeeping"]["status"], "retained")
+            self.assertEqual(repeated_exit_code, 0)
+            repeated = json.loads(repeated_output.getvalue())
+            self.assertFalse(repeated["claimed"])
+            self.assertEqual(repeated["reason"], "claim_not_acquired")
+            self.assertEqual(repeated["peer_input"], "not_attempted")
+            recorded = mailbox("show", "owner-message")
+            self.assertEqual(len(recorded["attempts"]), 1)
+            attempt = recorded["attempts"][0]
+            self.assertEqual(attempt["attempt_id"], "owner-attempt")
+            self.assertEqual([item["kind"] for item in attempt["observations"]],
+                             ["unknown", "not_delivered"])
+            self.assertIsNone(attempt["reconciliation"])
+            later = mailbox(
+                "claim", "owner-message", "later-attempt",
+                "--actor-thread-id", actor["thread_id"],
+                "--actor-host-id", actor["host_id"],
+            )
+            self.assertFalse(later["claimed"])
 
     def exchange(self, *, early_response=False, response_kind="success", repeat=False,
-                 capture_collision=False, route_change=None, null_initialize=False, deep_initialize=None):
+                 capture_collision=False, route_change=None, null_initialize=False,
+                 deep_initialize=None, owner_response_kind="success",
+                 message_write_error=False, message_write_interrupt=False):
         with tempfile.TemporaryDirectory(prefix="codex-owner-") as temporary:
             root = Path(temporary).resolve()
             store = root / "mailbox.sqlite3"
@@ -362,7 +412,18 @@ class CodexOwnerAdmissionTests(unittest.TestCase):
             stream = InjectedPeerStream(
                 early_response=early_response, response_kind=response_kind,
                 null_initialize=null_initialize, deep_initialize=deep_initialize,
+                owner_response_kind=owner_response_kind,
+                message_write_error=message_write_error,
+                message_write_interrupt=message_write_interrupt,
             )
+            if message_write_interrupt:
+                # This models only a BaseException at the ordinary message-frame
+                # write call, after the frame is presented to the stream; it does
+                # not model abrupt termination at every possible instruction.
+                with self.assertRaisesRegex(
+                        KeyboardInterrupt, "synthetic-abrupt-message-write-interruption"):
+                    command(PROTOTYPE, "--request", str(request_file))
+                return mailbox("show", "owner-message"), list(stream.writes), stream.closed
             completed = command(PROTOTYPE, "--request", str(request_file))
             wire = stream.writes
             prewrite = [] if not (capture / "attempt.json").is_file() else [
@@ -397,16 +458,30 @@ class CodexOwnerAdmissionTests(unittest.TestCase):
             self.assertEqual(result["projection"]["receipt"], "unknown")
             self.assertEqual(result["projection"]["native_branch"], "unknown")
             self.assertEqual(result["owned_connection"], {"started": True, "closed": True})
+            setup_refusal = (null_initialize or deep_initialize is not None
+                             or owner_response_kind != "success")
             self.assertEqual(result["peer_input"],
-                             "not_attempted" if capture_collision or null_initialize or deep_initialize is not None else "possible_submission")
-            if null_initialize or deep_initialize is not None:
-                self.assertEqual([frame["method"] for frame in wire], ["initialize"])
+                             "not_attempted" if capture_collision or setup_refusal
+                             else "possible_submission")
+            if setup_refusal:
+                expected_methods = ["initialize"]
+                if owner_response_kind != "success":
+                    expected_methods.append("thread-owner-discovery")
+                self.assertEqual([frame["method"] for frame in wire], expected_methods)
                 self.assertEqual(json.loads((capture / "outbound.json").read_bytes()), wire)
                 received = json.loads((capture / "received.json").read_bytes())
-                self.assertEqual([frame for _, frame in received], [] if deep_initialize is not None else [{
-                    "type": "response", "requestId": "initialize", "resultType": "success",
-                    "method": "initialize", "result": None,
-                }])
+                if deep_initialize is not None:
+                    self.assertEqual(received, [])
+                elif null_initialize:
+                    self.assertEqual([frame for _, frame in received], [{
+                        "type": "response", "requestId": "initialize", "resultType": "success",
+                        "method": "initialize", "result": None,
+                    }])
+                else:
+                    self.assertEqual(
+                        [frame["requestId"] for _, frame in received],
+                        ["initialize", "owner"],
+                    )
                 self.assertEqual(json.loads((capture / "projection.json").read_bytes()), result["projection"])
                 self.assertEqual(json.loads((capture / "normalized-input.json").read_bytes())["correlation"],
                                  "owner-attempt")
@@ -426,7 +501,8 @@ class CodexOwnerAdmissionTests(unittest.TestCase):
                 self.assertEqual(len(recorded["attempts"]), 1)
                 self.assertEqual(recorded["attempts"][0]["attempt_id"], "owner-attempt")
                 self.assertEqual([item["kind"] for item in recorded["attempts"][0]["observations"]],
-                                 ["unknown"])
+                                 ["unknown", "not_delivered"])
+                self.assertEqual(result["conclusive_bookkeeping"]["status"], "retained")
                 return result, json.loads((capture / "rpc.json").read_bytes())
             expected_methods = ["initialize", "thread-owner-discovery"]
             if not capture_collision:
@@ -461,6 +537,14 @@ class CodexOwnerAdmissionTests(unittest.TestCase):
                 self.assertEqual(pending["declaredOrigin"], original["sender"])
             recorded = mailbox("show", "owner-message")
             self.assertEqual({k: v for k, v in recorded.items() if k not in {"state", "attempts"}}, original)
+            self.assertEqual(
+                [item["kind"] for item in recorded["attempts"][0]["observations"]],
+                ["unknown", "not_delivered"] if capture_collision else ["unknown"],
+            )
+            if capture_collision:
+                self.assertEqual(result["conclusive_bookkeeping"]["status"], "retained")
+            else:
+                self.assertNotIn("conclusive_bookkeeping", result)
             self.assertEqual(json.loads((capture / "projection.json").read_bytes()), result["projection"])
             for name in ("normalized-input.json", "acquisition.json", "received.json"):
                 self.assertTrue((capture / name).is_file(), name)
@@ -511,6 +595,14 @@ class CodexOwnerAdmissionTests(unittest.TestCase):
         self.assertEqual(rpc["originalResult"], [])
         self.assertNotIn("capture_failure", result)
 
+    def test_owner_refusal_retains_conclusive_nondelivery_after_owned_close(self):
+        result, rpc = self.exchange(owner_response_kind="error")
+        self.assertTrue(result["claimed"])
+        self.assertEqual(result["reason"], "owner-unavailable")
+        self.assertEqual(result["projection"]["stage"], "refused-before-write")
+        self.assertEqual(rpc["status"], "unknown")
+        self.assertEqual(rpc["originalResult"], [])
+
     def test_local_owner_request_preserves_peer_envelope_and_admission_flags(self):
         result, rpc = self.exchange()
         self.assertEqual(rpc["status"], "success")
@@ -532,6 +624,36 @@ class CodexOwnerAdmissionTests(unittest.TestCase):
         result, rpc = self.exchange(response_kind="error")
         self.assertEqual(rpc["status"], "error")
         self.assertEqual(result["reason"], "rpc-error-effect-unknown")
+
+    def test_message_write_failure_after_boundary_preserves_unknown(self):
+        result, rpc = self.exchange(message_write_error=True)
+        self.assertEqual(result["reason"], "partial-message-write")
+        self.assertEqual(result["peer_input"], "possible_submission")
+        self.assertEqual(result["projection"]["stage"], "possible-submission")
+        self.assertNotIn("conclusive_bookkeeping", result)
+        self.assertEqual(rpc["status"], "unknown")
+
+    def test_abrupt_interruption_after_durable_unknown_preserves_original_attempt(self):
+        recorded, wire, closed = self.exchange(message_write_interrupt=True)
+        self.assertTrue(closed)
+        methods = [frame["method"] for frame in wire]
+        self.assertEqual(methods, [
+            "initialize", "thread-owner-discovery", "thread-follower-start-turn",
+        ])
+        self.assertEqual(methods.count("thread-follower-start-turn"), 1)
+        self.assertEqual(recorded["state"], "unknown")
+        self.assertEqual(len(recorded["attempts"]), 1)
+        attempt = recorded["attempts"][0]
+        self.assertEqual(attempt["attempt_id"], "owner-attempt")
+        self.assertEqual(attempt["submission"], "unknown")
+        self.assertIsNone(attempt["reconciliation"])
+        self.assertFalse(attempt["received"])
+        self.assertFalse(attempt["handled"])
+        self.assertFalse(attempt["completed"])
+        self.assertEqual(
+            [observation["kind"] for observation in attempt["observations"]],
+            ["unknown"],
+        )
 
     def test_repeat_invocation_cannot_reclaim_or_resend_the_original_attempt(self):
         self.exchange(repeat=True)

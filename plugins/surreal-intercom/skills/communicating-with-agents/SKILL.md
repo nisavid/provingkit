@@ -68,11 +68,25 @@ Distinguish submission, receipt, handling, reply, completed work, and resource
 closure. Only matching receiver evidence advances the corresponding claim.
 Reconcile an uncertain attempt without redispatch or operation substitution.
 
-Reply observation is caller-owned. These senders do not acquire replies: preserve
-the original message/attempt, expected peer, reply-to correlation, and actual
-native observation references for the caller's supported consuming control.
-Exhausted or unavailable observation remains pending; it proves no nondelivery.
-No background wake is promised after the caller exits.
+Use the reply/wait preference after submission:
+
+- Without a requested wait, return the observed outcome and name the custodian
+  of any pending reply.
+- When a reply or wait is requested, consume a matching actual native observation
+  already available. Otherwise use the caller's supported native read/wait
+  control for one bounded observation within the requested and supported budget.
+  Match the actual expected peer, recipient and original exchange/reply
+  correlation; retain its native item or evidence reference. Advance only the
+  stage that observation establishes.
+- When that control is unavailable, return the precise missing observation
+  capability and retain the pending reply with its custodian and supported
+  continuation trigger. A bounded observation without a match also stays pending.
+
+These senders do not acquire replies. Preserve the original message and attempt
+through observation; neither a missing reply nor a successful RPC authorizes
+another send or proves nondelivery. Continue the same pending duty when its
+supported trigger occurs. A bounded wait is not a relay expiry, and no background
+wake or survival across caller exit or Quit is promised.
 
 Return the operation and attempt references, observed status, evidence limits,
 actual owned closure, and the continuation custodian for unresolved obligations.

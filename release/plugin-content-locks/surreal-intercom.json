@@ -8,7 +8,7 @@
     "LICENSE": "68950fb14202e1a28da07612a6cc6978163fee3e678520c2740a0d1bde0680e8",
     "README.md": "7d3b0f65868d004e5cd48f977fdafb097b6ed30fc4f9dcd4a96da8cf9d400f8a",
     "plugin.json": "46aecec33679c98c3e770eb82a34894afb9589f3b68414cc0c4d40074e6c246e",
-    "skills/communicating-with-agents/SKILL.md": "d7b0777c2aadfd196d53790118286f5e37e08b22c66f3f148003a47ad341f756",
+    "skills/communicating-with-agents/SKILL.md": "496c8c0d7e081b90e0dbd2017505b080a29014acc2cb67f2fb8026080953910f",
     "skills/communicating-with-agents/agents/openai.yaml": "fd5c3396a2f9eaa9dd6e0cf0c44da28cbbf95e3902c03ec74bfc0fb49ff59464",
     "skills/communicating-with-agents/references/claude-mcp-sender.md": "91a7db6c39457b671a07ac53dccd7bbd6b3198d94d224c245f6dba279fe70d93",
     "skills/communicating-with-agents/references/claude-route-nomination.md": "a76d7bae48c63dcd0e06a9e8509d5becbc96c541604a28d292d37f23610a33a7",
@@ -29,17 +29,18 @@
     "skills/communicating-with-agents/scripts/codex_ipc_transport.py": "0cf6ddc29bad4b23be398fb9c4207e22d35fce2fce02b3bb0f82a75a4454817a",
     "skills/communicating-with-agents/scripts/codex_route_nomination.py": "17c9775ec718a9d390296aa33aa8a746d2efb65a5d0fb556396662a5f63c63e1",
     "skills/communicating-with-agents/scripts/native_codex_mailbox.py": "eb551d82b94f37484f5d5207334b30329ce80bb278e3a8d07028ae230d782823",
-    "skills/communicating-with-agents/scripts/owner_admission_sender.py": "9a3c8a3add37bb86083e44be106fd0f99c48604cde6d76eb4f56f3a52f17c3af",
+    "skills/communicating-with-agents/scripts/owner_admission_sender.py": "f803779bbe3d4ce72d62dc62d47205ffbbc07f50aba70f3643c5500d657927f1",
     "skills/communicating-with-agents/scripts/peer_message.py": "07687af69dece15e0947f845bdd6488399689a7f9aee5682c9660f9f3ffc92b8",
     "topology.json": "eb7b2f2eb98241e932b799cc3d626b4e6120c53f8f1692ae393041d9e76eaf9b"
   },
   "evaluations": {
-    "evals/surreal-intercom/skills/communicating-with-agents/evals.json": "d032d1c095e88a0f4019d100707eeae8104ef77c3a9f78bab19facf68a23e435",
+    "evals/surreal-intercom/skills/communicating-with-agents/evals.json": "f78459a256fd5ccfb3381644a155a8319517542e03424da29abe5c5ac67ec4b2",
     "evals/surreal-intercom/skills/communicating-with-agents/fixtures/claude-native-send.md": "96d6604db91b1c04e04ea7286b50088d96f13dc5819bc63f9ed51880011d0ab3",
     "evals/surreal-intercom/skills/communicating-with-agents/fixtures/codex-daybreak-recipient.md": "138a9369a7d5cc3e45edd33124cb6ba449592b736a08410e68fa0126ca99f270",
     "evals/surreal-intercom/skills/communicating-with-agents/fixtures/held-reply-native-route.md": "a156e88dd5e6912252133e5a3996a0a495685a98203e2f6804a5c2b3387e9cfd",
     "evals/surreal-intercom/skills/communicating-with-agents/fixtures/native-delegation.md": "29d13724128eb8fcb422b21c926b66e97c36f98f9a7e029ca8c995c619ccb341",
     "evals/surreal-intercom/skills/communicating-with-agents/fixtures/ordinary-entry.md": "6ddee59279db3c61e0bf77f955f047b0bf0b1c888143a848d7e4f583900e2eab",
+    "evals/surreal-intercom/skills/communicating-with-agents/fixtures/reply-follow-through.md": "34db4e2b188e101782c0d5475952d87b46008dfa76f7fed6302f0aa3c34b1523",
     "evals/surreal-intercom/skills/communicating-with-agents/fixtures/unknown-codex-submission.md": "575a0bba09ae8fc96ea61a6be8ea59f347646e1bb7bd52380bad41328268aad8",
     "evals/surreal-intercom/skills/communicating-with-agents/trigger-evals.json": "ad9c9994c6ae085a6f062ce6c54a8ee293934e9fcdf8f5a1e6362b1e73521ee9"
   }

@@ -84,6 +84,22 @@ class IntercomProjectionTests(unittest.TestCase):
                         (plugin / "skills/communicating-with-agents/agents/"
                          "openai.yaml").exists(), target == "agent-plugins",
                     )
+                    run = root / (target + "-ordinary")
+                    run.mkdir(mode=0o700)
+                    driver = run / "projected_ordinary_flow.py"
+                    shutil.copyfile(Path(__file__).with_name(driver.name), driver)
+                    completed = subprocess.run([
+                        sys.executable, "-I", "-S", "-B", str(driver),
+                        str(plugin), str(run),
+                    ], cwd=run, capture_output=True, text=True, timeout=30)
+                    self.assertEqual(completed.returncode, 0, completed.stderr)
+                    flow = json.loads(completed.stdout)
+                    self.assertTrue(flow["origins"])
+                    for origin in flow["origins"].values():
+                        self.assertTrue(Path(origin).is_relative_to(plugin))
+                    for name in ("a", "b"):
+                        self.assertEqual(flow["codex"][name]["retained"]["state"], "unknown")
+                    self.assertEqual(flow["claude"]["retained"]["state"], "submitted")
 
     def test_intercom_can_be_selected_without_other_members(self):
         with tempfile.TemporaryDirectory(dir=ROOT.parent) as temporary:
