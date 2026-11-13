@@ -65,6 +65,7 @@ def make_intent(epoch, source, key="intent-1", body=b"Done"):
             "decision": "authorized",
             "evidence_id": "authority-1",
             "actor_login": "ivan",
+            "actor_node_id": "USER_ivan",
         },
         "independence_evidence": {
             "availability": "not_applicable",
@@ -121,6 +122,7 @@ def make_replacement_intent(basis, key="replacement", body=b"Done"):
             "decision": "authorized",
             "evidence_id": "replacement-authority",
             "actor_login": "ivan",
+            "actor_node_id": "USER_ivan",
             "classification_artifact_sha256": classification["sha256"],
             "adjudication_artifact_sha256": adjudication["sha256"],
         }
@@ -157,8 +159,11 @@ def make_replacement_intent(basis, key="replacement", body=b"Done"):
     }
 
 
-def append_unknown_attempt(store, epoch, source, key):
+def append_unknown_attempt(store, epoch, source, key, *, legacy_actor=False):
     proposal = response_runtime._proposal(make_intent(epoch, source, key), b"Done")
+    if legacy_actor:
+        proposal["authority"].pop("actor_node_id")
+        proposal["expected_actor_identity"].pop("node_id")
     owner = response_runtime._owner(epoch, source, None)
     intent = response_runtime._intent_record(proposal, owner)
     validation_id = f"validation-{key}"
@@ -374,6 +379,240 @@ class ResponseOutcomeStoreTests(unittest.TestCase):
             self.assertEqual(records, records_before_fold)
             with runtime.store.locked(exclusive=False):
                 self.assertEqual(runtime.store.staging_remnants(), [])
+
+    def test_actor_node_ids_must_match_between_authority_and_expected_identity(self):
+        mutations = {
+            "missing_expected": lambda binding: binding["expected_actor_identity"].pop(
+                "node_id"
+            ),
+            "missing_authority": lambda binding: binding["authority"].pop(
+                "actor_node_id"
+            ),
+            "mismatched": lambda binding: binding["expected_actor_identity"].update(
+                node_id="USER_other"
+            ),
+            "empty_expected": lambda binding: binding["expected_actor_identity"].update(
+                node_id=""
+            ),
+            "empty_authority": lambda binding: binding["authority"].update(
+                actor_node_id=""
+            ),
+        }
+        with tempfile.TemporaryDirectory() as temporary:
+            _, _, runtime, epoch = self.environment(Path(temporary))
+            proposal = response_runtime._proposal(
+                make_intent(epoch, epoch["sources"][0]), b"Done"
+            )
+            owner = response_runtime._owner(epoch, epoch["sources"][0], None)
+            intent = response_runtime._intent_record(proposal, owner)
+            for name, mutate in mutations.items():
+                with self.subTest(mutation=name):
+                    malformed = copy.deepcopy(intent)
+                    mutate(malformed["binding"])
+                    malformed["binding_digest"] = response_outcome_store.digest(
+                        malformed["binding"]
+                    )
+
+                    with self.assertRaisesRegex(
+                        response_outcome_store.OutcomeStoreError,
+                        "invalid-response-outcome-bundle.*actor",
+                    ):
+                        response_outcome_store.fold_semantic_history(
+                            [
+                                {
+                                    "record_kind": "ordinary_admission",
+                                    "record_id": name,
+                                    "payload": {
+                                        "schema_version": 2,
+                                        "owner": owner,
+                                        "intent": malformed,
+                                    },
+                                }
+                            ]
+                        )
+
+    def test_modern_success_receipt_requires_the_bound_actor_node_id(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            _, _, runtime, epoch = self.environment(Path(temporary))
+            runtime.invoke(make_intent(epoch, epoch["sources"][0]), b"Done")
+            records = runtime.store.records()
+            for node_id in (None, "USER_other", "", 7):
+                with self.subTest(node_id=node_id):
+                    malformed = copy.deepcopy(records)
+                    outcome = malformed[-1]["payload"]["outcome"]
+                    receipt = outcome["leaf_receipt"]
+                    if node_id is None:
+                        receipt["response"].pop("actor_node_id")
+                    else:
+                        receipt["response"]["actor_node_id"] = node_id
+                    outcome["leaf_receipt_digest"] = response_outcome_store.digest(
+                        receipt
+                    )
+                    outcome["outcome_id"] = "outcome-" + response_outcome_store.digest(
+                        {
+                            "attempt_id": outcome["attempt_id"],
+                            "receipt": receipt,
+                            "reconciles": None,
+                        }
+                    )
+
+                    with self.assertRaisesRegex(
+                        response_outcome_store.OutcomeStoreError,
+                        "invalid-response-outcome-bundle.*actor",
+                    ):
+                        response_outcome_store.fold_semantic_history(malformed)
+
+    def test_legacy_login_only_unknown_reconciles_and_restarts_without_new_write(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            state_path, _, runtime, epoch = self.environment(Path(temporary))
+            legacy_input = make_intent(epoch, epoch["sources"][0], "legacy-unknown")
+            legacy_input["authority"].pop("actor_node_id")
+            with runtime.store.locked(exclusive=True):
+                intent, _ = append_unknown_attempt(
+                    runtime.store,
+                    epoch,
+                    epoch["sources"][0],
+                    "legacy-unknown",
+                    legacy_actor=True,
+                )
+            original = {
+                record["path"]: record["path"].read_bytes()
+                for record in runtime.store.records()
+            }
+            state = json.loads(state_path.read_text(encoding="utf-8"))
+            state["actor_identity"] = {"login": "other", "node_id": "USER_other"}
+            pr = state["graphql"]["data"]["repository"]["pullRequest"]
+            response = copy.deepcopy(
+                pr["reviewThreads"]["nodes"][0]["comments"]["nodes"][1]
+            )
+            response.update(
+                {
+                    "id": "RESPONSE_node_950",
+                    "databaseId": 950,
+                    "body": "Done",
+                    "author": {
+                        "__typename": "User",
+                        "id": "USER_ivan",
+                        "login": "ivan",
+                    },
+                    "createdAt": "2026-09-09T00:00:00Z",
+                    "updatedAt": "2026-09-09T00:00:00Z",
+                    "url": "https://github.com/base-owner/base-repo/pull/7#discussion_r950",
+                }
+            )
+            pr["reviewThreads"]["nodes"][0]["comments"]["nodes"].append(response)
+            state["objects"] = {
+                "950": {
+                    "id": 950,
+                    "node_id": "RESPONSE_node_950",
+                    "body": "Done",
+                    "html_url": response["url"],
+                    "user": {"login": "ivan"},
+                }
+            }
+            state_path.write_text(json.dumps(state), encoding="utf-8")
+
+            reconciled = runtime.reconcile("legacy-unknown")
+
+            self.assertEqual(reconciled["status"], "confirmed_success")
+            self.assertNotIn("actor_node_id", reconciled["leaf_receipt"]["response"])
+            restarted = response_outcome_store.ResponseOutcomeStore(
+                runtime.store.directory
+            )
+            history = restarted.semantic_history()
+            self.assertEqual(
+                history["intents"][intent["intent_id"]]["binding"][
+                    "expected_actor_identity"
+                ],
+                {"availability": "available", "login": "ivan"},
+            )
+            self.assertIn(reconciled["outcome_id"], history["outcomes"])
+            for path, exact_bytes in original.items():
+                self.assertEqual(path.read_bytes(), exact_bytes)
+            state = json.loads(state_path.read_text(encoding="utf-8"))
+            self.assertEqual(
+                {call["operation"] for call in state["calls"]},
+                {"graphql_read_query", "response_reread"},
+            )
+            calls_before_replay = list(state["calls"])
+            records_before_replay = runtime.store.records()
+
+            replay = runtime.invoke(legacy_input, b"Done")
+
+            self.assertEqual(replay["status"], "confirmed_no_op")
+            self.assertEqual(replay["outcome_id"], reconciled["outcome_id"])
+            changed_body = copy.deepcopy(legacy_input)
+            changed_body["writer"]["body_sha256"] = hashlib.sha256(b"Changed").hexdigest()
+            changed_authority = copy.deepcopy(legacy_input)
+            changed_authority["authority"]["actor_login"] = "other"
+            for changed, body in (
+                (changed_body, b"Changed"),
+                (changed_authority, b"Done"),
+            ):
+                with (
+                    self.subTest(change=body),
+                    self.assertRaises(response_runtime.IntentConflict),
+                ):
+                    runtime.invoke(changed, body)
+            self.assertEqual(runtime.store.records(), records_before_replay)
+            self.assertEqual(
+                json.loads(state_path.read_text(encoding="utf-8"))["calls"],
+                calls_before_replay,
+            )
+
+    def test_legacy_retryable_failure_cannot_write_or_implicitly_upgrade_actor(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            state_path, _, runtime, epoch = self.environment(Path(temporary))
+            legacy_input = make_intent(epoch, epoch["sources"][0], "legacy-failure")
+            legacy_input["authority"].pop("actor_node_id")
+            with runtime.store.locked(exclusive=True):
+                admitted, attempt = append_unknown_attempt(
+                    runtime.store,
+                    epoch,
+                    epoch["sources"][0],
+                    "legacy-failure",
+                    legacy_actor=True,
+                )
+                history = runtime.store.semantic_history()
+                owner = history["owners"][admitted["owner_id"]]
+                resolution = runtime._resolution_payload(
+                    owner,
+                    admitted,
+                    attempt,
+                    {
+                        "schema_version": 1,
+                        "status": "confirmed_failure",
+                        "reason": "HTTP 409",
+                        "retryable": True,
+                        "side_effect": "none",
+                        "provider_evidence": {"transport_operation": "response_write"},
+                    },
+                    None,
+                )
+                runtime.store.append(
+                    "attempt_resolution", resolution, record_id="legacy-failed-resolution"
+                )
+            records_before = runtime.store.records()
+            calls_before = json.loads(state_path.read_text(encoding="utf-8"))["calls"]
+            self.assertTrue(resolution["outcome"]["retryable"])
+
+            with self.assertRaisesRegex(
+                response_runtime.AdmissionError,
+                "legacy authority permits only a confirmed replay",
+            ):
+                runtime.invoke(legacy_input, b"Done")
+
+            upgraded = copy.deepcopy(legacy_input)
+            upgraded["authority"]["actor_node_id"] = "USER_ivan"
+            with self.assertRaises(response_runtime.IntentConflict):
+                runtime.invoke(upgraded, b"Done")
+            with self.assertRaises(response_runtime.AdmissionError):
+                runtime.prepare_replacement("legacy-failure")
+            self.assertEqual(runtime.store.records(), records_before)
+            self.assertEqual(
+                json.loads(state_path.read_text(encoding="utf-8"))["calls"],
+                calls_before,
+            )
 
     def test_staging_remnants_are_reported_but_never_folded_as_evidence(self):
         with tempfile.TemporaryDirectory() as temporary:
