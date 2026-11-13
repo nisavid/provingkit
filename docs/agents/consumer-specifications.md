@@ -1,10 +1,14 @@
 # Specify consumer behavior and develop one verified slice
 
-Use this method when adding or correcting software behavior in Provingkit. It connects the consumer's intended result to executable examples, a protocol driver, and a test-first repair. The first supported application is offline Python CLI compatibility; agent behavior and other runtime surfaces need their own discovery and qualification.
+Use this method when specifying, developing, or reviewing behavior at any layer of a component within Provingkit or a component built by Provingkit. It connects the consumer's intended result to executable examples, a separate protocol driver, and a verified development slice. Apply the rule to each relevant component boundary, including agent behavior and downstream construction.
+
+The existing qualified application is offline Python CLI compatibility. Universal applicability of the rule does not qualify every driver or runtime surface. Agent behavior, user interfaces, installed use, and other seams need their own discovery and qualification; preserve the existing CLI evidence within its supported inputs and observations.
 
 ## Establish the consumer contract
 
-Identify who consumes the operation, the outcome they need, and the assurances they rely on. Read the applicable domain language, maintained interface, existing tests, and current source before choosing examples. Record supported inputs, consequences of failure, and what the proposed observation cannot establish.
+Identify who consumes the behavior at each relevant boundary, the outcome they need, and the assurances they rely on. The consumer may be a person, another component, or an agent carrying out its task; an internal mechanism can itself serve another consumer at a different layer. Read the applicable domain language, maintained interface, existing tests, and current source before choosing examples. Record supported inputs, consequences of failure, and what the proposed observation cannot establish.
+
+State acceptance in that consumer's terms before choosing the driver. For example, a caller needs the selected member's evidence to be inspectable; a command's exit status alone does not establish that result. Materialize the accepted criteria as executable specifications. Requirements, development, and review use the same behavioral assertions rather than replacing them with the implementation's steps.
 
 Choose the smallest existing specification language that expresses those distinctions clearly. Compare applicable alternatives with a concrete example before adding a framework. Python functions, values, and assertions can form a small embedded DSL when the consumer concepts remain legible; a list of flags or a snapshot of the implementation is not a consumer contract.
 
@@ -16,7 +20,7 @@ Confirm the public test boundary before writing a test. State what real componen
 
 Exercise the actual consuming interface. A mocked successful subprocess result does not show that the command it received is accepted. Distinguish parser rejection, entry into an inert operation handler, and completion of a live operation.
 
-Qualify the driver on its claimed observation: deliberately wrong expected identities and outcomes must fail, and invalid inputs must remain distinguishable from successful operation entry. Isolate live effects without replacing the behavior under test. These controls qualify only the selected driver and seam, not every future use of the method.
+Qualify the driver on its claimed observation: deliberately wrong expected identities and outcomes must fail, and invalid inputs must remain distinguishable from successful operation entry. Include a control in which the mechanism appears successful while the consumer's required result is absent or wrong; the semantic assertion must reject it. Isolate live effects without replacing the behavior under test. These controls qualify only the selected driver and seam, not every future use of the method.
 
 ## Develop and refine
 
@@ -31,6 +35,8 @@ Keep runs bounded under the owning resource policy. Preserve failures and unknow
 
 ## Complete the delivery
 
-Run the touched surface's owning checks, update governed identities through their documented writers, and obtain clean independent review on the final revision and evidence dependencies. Capture the actual source and consumer result through the owning task. Publish and adopt only through their existing gates.
+Run the touched surface's owning checks, update governed identities through their documented writers, and obtain clean independent review on the final revision and evidence dependencies. Review completion against the consumer assertions and the observation's limits; source existence, passing tests, or successful delivery alone do not establish installed use or the consumer's outcome. Capture the actual source and consumer result through the owning task. Publish and adopt only through their existing gates.
+
+A downstream consumer loads this maintained procedure at the reviewed revision before applying it, records that revision with `capturing-agent-procedures`, and identifies the assertions, driver, actual result, and remaining qualification gaps. A source-only change supplies guidance for that application; it does not itself prove discovery, loading, or adoption. Retrospective conversion of unrelated components and tests is not required to introduce the rule in the current slice.
 
 For the first Graphite consumer, a generated inspection command must reach the real auditor parser and the correct inert audit handler, while publishing commands retain their selected review requirements. That demonstrates offline command compatibility. Receipt access, forge mutation, aggregate repair, installation, and live acceptance remain separate.
