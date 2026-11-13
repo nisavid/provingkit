@@ -702,7 +702,7 @@ EXPECTED_ATLAS_PROSE_SHA256 = {
     "design": "23b642b37ced3407c84ad2b1ca6da430d95dd68a674f7daceede3a1b297af441",
     "writer": "7b951fdff8ac45197b856bd3d22f82673281f06523c6729bfef754d150f7a97e",
     "body": "8e159e2138abaedabcd51d958be595f1a63b4a71ee230cc8d0713fb5289310a1",
-    "navigation": "a619b2292831ef56f8f991dd761b60b211389b2a2cf649b67b9624d228ef8cec",
+    "navigation": "dc2ea82e016202cf02b47c2b6974a4c8186c536f128d1d83538ea35c5526fd6b",
 }
 MARKDOWN_LINK_RE = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
 PORTABILITY_MARKERS = (
@@ -4681,6 +4681,8 @@ with tempfile.TemporaryDirectory() as raw_directory:
         "import sys\n"
         "from pathlib import Path\n"
         "arguments = sys.argv[1:]\n"
+        "if arguments[:1] == ['--no-replace-objects']:\n"
+        "    arguments = arguments[1:]\n"
         "if arguments[:1] == ['-C'] and len(arguments) >= 3:\n"
         "    repository = Path(arguments[1]).resolve()\n"
         "    command = arguments[2:]\n"
