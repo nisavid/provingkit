@@ -18,8 +18,9 @@ entrypoint.
   [Build a candidate](#build-a-candidate) and read to the end.
 - For publication, update, rollback, and qualification, and for what this
   profile does not claim, see
-  [Update and operating scope](#update-and-operating-scope). What must never
-  be published in an image is in [Bind and operate](#bind-and-operate).
+  [Update and operating scope](#update-and-operating-scope). What consumers
+  explicitly load is in [Start explicitly](#start-explicitly), and what must
+  never be published in an image is in [Bind and operate](#bind-and-operate).
 
 ## What the distribution contains
 
