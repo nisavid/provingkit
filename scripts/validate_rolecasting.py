@@ -67,6 +67,8 @@ NATIVE_CODEX_REFERENCE = (
     "skills/delegating-cross-agent-work/references/native-codex-subagents.md"
 )
 NATIVE_CODEX_RUNTIME = "skills/delegating-cross-agent-work/scripts/native_codex.py"
+NATIVE_TREE_REFERENCE = "skills/delegating-cross-agent-work/references/native-tree-driver.md"
+NATIVE_TREE_RUNTIME = "skills/delegating-cross-agent-work/scripts/native_tree.py"
 DAYBREAK_CATALOG_RUNTIME = (
     "skills/choosing-agent-models/scripts/daybreak_catalog.py"
 )
@@ -866,6 +868,7 @@ def validate_task_witness_provider(root: Path) -> set[str]:
         "def record_native_observation(",
         'surface="chatgpt-codex"',
         'surface="codex-cli-tui"',
+        'surface="codex-desktop"',
         'executor="codex"',
         'relationship="child"',
         'ownership="leader-owned"',
@@ -884,7 +887,9 @@ def validate_task_witness_provider(root: Path) -> set[str]:
     native_reference = read(root, NATIVE_CODEX_REFERENCE)
     native_reference_words = " ".join(native_reference.split())
     for term in (
-        "ChatGPT Codex and Codex CLI/TUI",
+        "ChatGPT Codex, Codex CLI/TUI, and Codex Desktop",
+        "`installedVersion`",
+        "does not authenticate the application observation",
         "skill-mediated",
         "before invoking the native subagent tool",
         "Model-generated text is never host evidence",
@@ -1375,6 +1380,8 @@ def inspect_contract(root: Path) -> tuple[dict, set[str]]:
         "plugin.json",
         "topology.json",
         "evals/delivery.json",
+        NATIVE_TREE_REFERENCE,
+        NATIVE_TREE_RUNTIME,
     }
     semantic_files = validate_evals(root, topology, bodies, delivery, semantic_files)
     return topology, semantic_files

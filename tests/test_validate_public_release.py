@@ -3999,6 +3999,7 @@ class ValidatePublicReleaseTests(unittest.TestCase):
         human_docs = "\n".join((readme, contributing, release_boundary))
         normalized_readme = " ".join(readme.split())
         normalized_contributing = " ".join(contributing.split())
+        normalized_release_boundary = " ".join(release_boundary.split())
 
         self.assertEqual(human_docs.count("run_prepared_release_validation.sh"), 1)
         self.assertIn("python scripts/validate_provingkit.py .", contributing)
@@ -4011,10 +4012,10 @@ class ValidatePublicReleaseTests(unittest.TestCase):
             "proseweaving",
         ):
             self.assertIn(f"validate_{member}.py", contributing)
-        self.assertIn("pinned unsigned preview", normalized_readme)
+        self.assertIn("unsigned prerelease", normalized_readme)
         self.assertIn(
             "Stable release and live host qualification remain separate gates.",
-            normalized_readme,
+            normalized_release_boundary,
         )
         self.assertIn("validate public source contracts", normalized_contributing)
         self.assertNotIn("amberbridge-production", human_docs)
@@ -4641,6 +4642,16 @@ class ValidatePublicReleaseTests(unittest.TestCase):
         )
         self.assertIn("release/mergecraft", self.module.all_scope_paths())
 
+    def test_intercom_identity_changes_with_refresh_dependency_without_plugin_change(self) -> None:
+        plugins = ("surreal-intercom",)
+        before = self.module.candidate_identities(self.repository, plugins)["plugins"]["surreal-intercom"]
+        self.assertEqual(self.module.candidate_identities(self.repository, plugins)["plugins"]["surreal-intercom"], before)
+        helper = self.repository / "scripts/refresh_transaction.py"
+        helper.write_bytes(helper.read_bytes() + b"\n# Synthetic source identity change.\n")
+        after = self.module.candidate_identities(self.repository, plugins)["plugins"]["surreal-intercom"]
+        self.assertEqual(after["plugin_sha256"], before["plugin_sha256"])
+        self.assertNotEqual(after["composite_sha256"], before["composite_sha256"])
+
     def test_plugin_eval_policy_and_calibration_are_common_identity_inputs(
         self,
     ) -> None:
@@ -4694,7 +4705,9 @@ class ValidatePublicReleaseTests(unittest.TestCase):
 
     def test_root_readme_withholds_retired_release_arguments(self) -> None:
         readme = (REPOSITORY / "README.md").read_text(encoding="utf-8")
+        release_boundary = (REPOSITORY / "docs/release-boundary.md").read_text(encoding="utf-8")
         normalized_readme = " ".join(readme.split())
+        normalized_release_boundary = " ".join(release_boundary.split())
         required = {
             "--routing-evidence",
             "--composed-receipt",
@@ -4721,10 +4734,10 @@ class ValidatePublicReleaseTests(unittest.TestCase):
         }
         self.assertTrue(required.issubset(parser_options))
         self.assertTrue(required.isdisjoint(documented))
-        self.assertIn("pinned unsigned preview", normalized_readme)
+        self.assertIn("unsigned prerelease", normalized_readme)
         self.assertIn(
             "Stable release and live host qualification remain separate gates.",
-            normalized_readme,
+            normalized_release_boundary,
         )
         self.assertFalse(
             {
@@ -5573,9 +5586,15 @@ class ValidatePublicReleaseTests(unittest.TestCase):
     def test_plugin_eval_accepts_only_exact_optional_legal_field_advisories(
         self,
     ) -> None:
+        def legal_findings(plugin: str) -> list[dict]:
+            # Intercom has no member-specific legal-field exemptions.
+            if plugin == "surreal-intercom":
+                return []
+            return self.optional_legal_field_deductions(plugin)
+
         def exact_findings(target: Path) -> dict:
             return plugin_eval_report(
-                self.optional_legal_field_deductions(target.name), target
+                legal_findings(target.name), target
             )
 
         def exact_result(command, **_kwargs):
@@ -5592,19 +5611,17 @@ class ValidatePublicReleaseTests(unittest.TestCase):
         ):
             evidence = self.module.run_plugin_evals(self.repository, self.plugin_eval)
 
-        self.assertTrue(
-            all(
-                item["advisories"]
-                == [
+        for name, item in evidence.items():
+            self.assertEqual(
+                item["advisories"],
+                [] if name == "surreal-intercom" else [
                     "interface-missing-privacyPolicyURL",
                     "interface-missing-termsOfServiceURL",
-                ]
-                for item in evidence.values()
+                ],
             )
-        )
 
         def drifted_finding(target: Path) -> dict:
-            deductions = self.optional_legal_field_deductions(target.name)
+            deductions = legal_findings(target.name)
             if target.name == "rolecasting":
                 deductions[0]["penalty"] = 13
             return plugin_eval_report(deductions, target)

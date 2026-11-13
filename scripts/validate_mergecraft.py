@@ -75,6 +75,7 @@ EXTERNAL_TOPOLOGY_RELATIVES = (
 )
 CONTENT_LOCK_EXCLUSIONS = {"CHANGELOG.md", "LICENSE"}
 PUBLIC_SKILLS = (
+    "configuring-repositories",
     "writing-github-issue-and-pr-markdown",
     "maintaining-issue-pr-relations",
     "writing-reviewable-pr-descriptions",
@@ -90,6 +91,7 @@ PUBLIC_SKILLS = (
 ROOT_FILES = {
     ".claude-plugin/plugin.json",
     "CHANGELOG.md",
+    "DEVELOPING.md",
     "LICENSE",
     "README.md",
     "plugin.json",
@@ -153,6 +155,20 @@ MERGE_EVAL_FIXTURES = (
     "persistent-request-changes-after-addressed.md",
 )
 RAW_SKILL_EVAL_FIXTURES = {
+    "configuring-repositories": (
+        "create-solo.md",
+        "assess-inherited-controls.md",
+        "defaults-informed-freeze.md",
+        "focused-outside-catalog.md",
+        "harden-python-content.md",
+        "harden-typescript-private.md",
+        "policy-and-privileged-input.md",
+        "maintained-writer-and-concurrency.md",
+        "changed-producer-and-skipped-result.md",
+        "partial-effect-and-reconciliation.md",
+        "conflicting-provider-evidence.md",
+        "ordinary-edit-near-miss.md",
+    ),
     "maintaining-issue-pr-relations": (
         "absent-pr-creation.md",
         "direct-implementation.md",
@@ -314,6 +330,13 @@ MARKDOWN_AUTHORING_FEATURES = {
     "material-conflict",
 }
 EXPECTED_SKILL_FILES = {
+    "configuring-repositories": COMMON_SKILL_FILES
+    | {
+        "references/decisions.md",
+        "references/github-controls.md",
+        "references/ci-hardening.md",
+        "references/apply-and-verify.md",
+    },
     "maintaining-issue-pr-relations": COMMON_SKILL_FILES
     | {
         "references/relation-contract.md",
@@ -360,7 +383,10 @@ EXPECTED_SKILL_FILES = {
         "scripts/publish_relation_ledger.py",
         "scripts/relation_ledger_receipts.py",
     },
-    "graphite": COMMON_SKILL_FILES | {"scripts/submit_draft_stack.py"},
+    "graphite": COMMON_SKILL_FILES | {
+        "scripts/submit_draft_stack.py",
+        "scripts/host_trust.py",
+    },
     "addressing-pr-review-feedback": COMMON_SKILL_FILES
     | {
         "references/feedback-flow.md",
@@ -392,6 +418,10 @@ EXPECTED_SKILL_FILES = {
     "stacking-pr-fixups": COMMON_SKILL_FILES,
 }
 CODEX_PROMPTS = {
+    "configuring-repositories": (
+        "Use $mergecraft:configuring-repositories to create, assess, or configure "
+        "a GitHub repository and its CI."
+    ),
     "maintaining-issue-pr-relations": (
         "Use $mergecraft:maintaining-issue-pr-relations to reconcile these "
         "Issue–PR contributions."
@@ -431,6 +461,10 @@ CODEX_PROMPTS = {
     ),
 }
 MANIFEST_PROMPTS = [
+    (
+        "Use $mergecraft:configuring-repositories to create, assess, or configure "
+        "a GitHub repository and its CI."
+    ),
     (
         "Use $mergecraft:maintaining-issue-pr-relations to reconcile these "
         "Issue–PR contributions."
@@ -667,7 +701,7 @@ ATLAS_EXTENSION_CONTRACT = {
 EXPECTED_ATLAS_PROSE_SHA256 = {
     "design": "23b642b37ced3407c84ad2b1ca6da430d95dd68a674f7daceede3a1b297af441",
     "writer": "7b951fdff8ac45197b856bd3d22f82673281f06523c6729bfef754d150f7a97e",
-    "body": "f589ea798c38ede6b4b382235bc6d9eeb1913a5ae0633d4cb4b9129524f0411c",
+    "body": "8e159e2138abaedabcd51d958be595f1a63b4a71ee230cc8d0713fb5289310a1",
     "navigation": "dc2ea82e016202cf02b47c2b6974a4c8186c536f128d1d83538ea35c5526fd6b",
 }
 MARKDOWN_LINK_RE = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
@@ -2312,6 +2346,54 @@ def validate_topology(root: Path) -> None:
                 "nested loop ownership",
             )
     skills_by_name = {component["name"]: component for component in skills}
+    configuration = skills_by_name["configuring-repositories"]
+    configuration_references = {
+        f"skills/configuring-repositories/{relative}"
+        for relative in EXPECTED_SKILL_FILES["configuring-repositories"]
+        if relative.startswith("references/")
+    }
+    require(
+        set(configuration["references"]) == configuration_references
+        and len(configuration["references"]) == len(configuration_references),
+        "repository configuration resource discovery drift",
+    )
+    require(
+        configuration["scripts"] == [] and configuration["modules"] == [],
+        "repository configuration helper discovery drift",
+    )
+    require(
+        set(configuration["calls"])
+        == {
+            "operation:git-ref-push",
+            "operation:publication-evidence",
+            "operation:review-loop",
+        },
+        "repository configuration operation call drift",
+    )
+    configuration_operation = operation_by_id.get("repository-configuration", {})
+    configuration_authority = (
+        "requested repository outcome, applicable policy, and separately authorized "
+        "configuration effects"
+    )
+    require(
+        configuration["operations"] == ["repository-configuration"]
+        and configuration_operation.get("owner") == configuration["name"]
+        and configuration_operation.get("implementation") == configuration["entrypoint"]
+        and configuration_operation.get("surface") == "workflow"
+        and configuration_operation.get("access") == "coordinate"
+        and configuration_operation.get("disposition") == "public-skill"
+        and configuration_operation.get("authority") == configuration_authority
+        and configuration["contract"]["authority"] == configuration_authority,
+        "repository configuration workflow authority drift",
+    )
+    require(
+        configuration["contract"]["modes"]
+        == ["create", "assess", "defaults", "focused-change", "ci-hardening"]
+        and configuration["contract"]["loop_owner"] == "tricritical:loop"
+        and configuration["contract"]["terminal_statuses"]
+        == ["assessed", "planned", "verified", "no-op", "partial", "blocked", "unknown"],
+        "repository configuration mode, review, or result drift",
+    )
     response_skill = "interacting-with-pr-review-feedback"
     response_authoring_projection = (
         f"skills/{response_skill}/{MARKDOWN_AUTHORING_PROJECTIONS[response_skill]}"
@@ -2670,20 +2752,19 @@ def render_operation_registry(operations: list[dict[str, Any]]) -> str:
 
 def validate_readme_projection(root: Path) -> None:
     readme = read(root, "README.md")
+    developer_page = read(root, "DEVELOPING.md")
     topology = load_json(root, "topology.json")
+    require("## Public skills" in readme, "README public skills section drift")
     require(
-        all(
-            heading in readme
-            for heading in (
-                "## Public skills",
-                "## Operation registry",
-            )
-        ),
-        "README projection sections drift",
+        "## Operation registry" in developer_page,
+        "developer page operation registry section drift",
     )
-    skill_projection = readme.split("## Public skills", 1)[1].split(
-        "## Operation registry", 1
-    )[0]
+    require(
+        OPERATION_REGISTRY_START not in readme
+        and OPERATION_REGISTRY_END not in readme,
+        "README carries the operation registry",
+    )
+    skill_projection = readme.split("## Public skills", 1)[1].split("\n## ", 1)[0]
     for skill in PUBLIC_SKILLS:
         require(
             re.search(
@@ -2695,20 +2776,20 @@ def validate_readme_projection(root: Path) -> None:
             f"README skill projection drift: {skill}",
         )
     require(
-        readme.count(OPERATION_REGISTRY_START) == 1
-        and readme.count(OPERATION_REGISTRY_END) == 1,
-        "README operation registry markers drift",
+        developer_page.count(OPERATION_REGISTRY_START) == 1
+        and developer_page.count(OPERATION_REGISTRY_END) == 1,
+        "developer page operation registry markers drift",
     )
     projection = (
         OPERATION_REGISTRY_START
-        + readme.split(OPERATION_REGISTRY_START, 1)[1].split(OPERATION_REGISTRY_END, 1)[
-            0
-        ]
+        + developer_page.split(OPERATION_REGISTRY_START, 1)[1].split(
+            OPERATION_REGISTRY_END, 1
+        )[0]
         + OPERATION_REGISTRY_END
     )
     require(
         projection == render_operation_registry(topology["operations"]),
-        "README operation registry stale projection",
+        "developer page operation registry stale projection",
     )
 
 
@@ -3702,6 +3783,18 @@ def validate_raw_skill_eval_isolation(repo_root: Path) -> None:
             isinstance(evals, list) and len(evals) == len(fixture_names),
             f"raw eval coverage drift: {skill}",
         )
+        if skill == "configuring-repositories":
+            fixture_root = repo_root / EVAL_RELATIVE / f"skills/{skill}/fixtures"
+            require(
+                fixture_root.is_dir() and not fixture_root.is_symlink(),
+                f"raw eval fixture inventory drift: {skill}",
+            )
+            fixture_entries = tuple(fixture_root.iterdir())
+            require(
+                all(path.is_file() and not path.is_symlink() for path in fixture_entries)
+                and {path.name for path in fixture_entries} == set(fixture_names),
+                f"raw eval fixture inventory drift: {skill}",
+            )
         for position, (item, fixture_name) in enumerate(zip(evals, fixture_names)):
             require(
                 isinstance(item, dict)
@@ -4656,12 +4749,13 @@ with tempfile.TemporaryDirectory() as raw_directory:
 
     original_graphite_environment = graphite._environment
 
-    def graphite_probe_environment():
-        environment = original_graphite_environment()
+    def graphite_probe_environment(profile=None, *, root=None, bindings=None):
+        environment = original_graphite_environment(profile, root=root, bindings=bindings)
         environment["PATH"] = f"{fake_bin}:{environment['PATH']}"
         return environment
 
-    def bind_graphite_probe_executable(arguments, _root):
+    def bind_graphite_probe_executable(arguments, _root, *, profile="hardened", bindings=None):
+        assert profile in {"host-compatible", "hardened"}
         executable = Path(arguments[0]).name
         if executable == "git":
             return [str(fake_git), *arguments[1:]]

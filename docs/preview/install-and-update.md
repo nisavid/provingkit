@@ -1,5 +1,10 @@
 # Install and update the pinned unsigned preview
 
+> **Historical instructions.** Use the [Alpha 6 upload and update guide](https://github.com/nisavid/provingkit/blob/c557b9471f74afa82df8622313282808911453f7/docs/releases/alpha6-upload-guide.md)
+> for the current release. The older preview release is being retired; its
+> download links and commands below are retained as historical documentation,
+> not the current installation route.
+
 Install the six Provingkit plugins from the target artifacts of
 [`preview-8acd0e2af1f4`](https://github.com/nisavid/provingkit/releases/tag/preview-8acd0e2af1f4).
 The qualified source is commit

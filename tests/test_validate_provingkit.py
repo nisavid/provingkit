@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import importlib.util
 import json
+import shlex
 import shutil
 import subprocess
 import sys
@@ -118,6 +119,8 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
     @staticmethod
     def overlay_current_final_main_contract(destination: Path) -> None:
         for relative in (
+            "CONTEXT.md",
+            "GLOSSARY.md",
             ".claude-plugin/marketplace.json",
             "docs/superpowers/research/2026-09-01-review-writing-cluster-reconciliation.md",
             "docs/superpowers/research/2026-09-17-mergecraft-relation-inventory.md",
@@ -129,6 +132,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
             "release/plugin-content-locks/artifact-customs.json",
             "release/plugin-content-locks/mergecraft.json",
             "release/plugin-content-locks/versionkeeping.json",
+            "release/plugin-content-locks/surreal-intercom.json",
             "plugins/tricritical/content-lock.json",
             "release/source-skill-lineage/source-manifest.json",
             "release/source-skill-disposition/disposition-ledger.json",
@@ -143,11 +147,12 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
             "rolecasting",
             "tricritical",
             "versionkeeping",
+            "surreal-intercom",
         }
         for stale_member in (destination / "plugins").iterdir():
             if stale_member.is_dir() and stale_member.name not in expected_members:
                 shutil.rmtree(stale_member)
-        for member in ("rolecasting", "proseweaving"):
+        for member in ("rolecasting", "proseweaving", "surreal-intercom"):
             shutil.copytree(
                 REPOSITORY / "plugins" / member,
                 destination / "plugins" / member,
@@ -232,6 +237,12 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 "agent-plugin",
                 "plugin-content-lock",
                 "plugins/proseweaving/content-lock.json",
+            ),
+            (
+                "surreal-intercom",
+                "agent-plugin",
+                "plugin-content-lock",
+                "release/plugin-content-locks/surreal-intercom.json",
             ),
         ):
             members.append(
@@ -382,8 +393,29 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
     def test_source_stage_validator_accepts_the_alpha_tag_alone_or_with_preview(
         self,
     ) -> None:
-        for include_preview in (False, True):
-            with self.subTest(include_preview=include_preview):
+        alpha4_tag = (
+            "v0.1.0-alpha.4",
+            "e14e818e423abd2f65b336e279284d412e0fcbce",
+        )
+        alpha6_tag = (
+            "v0.1.0-alpha.6",
+            "0c47d9d4b936dfb74134a4d7bf0f9354fc67359b",
+        )
+        for tag_inventory in (
+            (alpha6_tag,),
+            (alpha6_tag, alpha4_tag, (ALPHA_TAG, ALPHA_SOURCE), (PREVIEW_TAG, PREVIEW_SOURCE)),
+            ((ALPHA_TAG, ALPHA_SOURCE),),
+            ((ALPHA_TAG, ALPHA_SOURCE), (PREVIEW_TAG, PREVIEW_SOURCE)),
+            (alpha4_tag,),
+            (alpha4_tag, (PREVIEW_TAG, PREVIEW_SOURCE)),
+            (alpha4_tag, (ALPHA_TAG, ALPHA_SOURCE)),
+            (
+                alpha4_tag,
+                (ALPHA_TAG, ALPHA_SOURCE),
+                (PREVIEW_TAG, PREVIEW_SOURCE),
+            ),
+        ):
+            with self.subTest(tags=tag_inventory):
                 with tempfile.TemporaryDirectory() as directory:
                     repository = Path(directory) / "repository"
                     self.clone_with_history(repository)
@@ -402,9 +434,8 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                             capture_output=True,
                             check=True,
                         )
-                    self.set_tag(repository, ALPHA_TAG, ALPHA_SOURCE)
-                    if include_preview:
-                        self.set_tag(repository, PREVIEW_TAG, PREVIEW_SOURCE)
+                    for name, target in tag_inventory:
+                        self.set_tag(repository, name, target)
 
                     result = self.validate(repository)
 
@@ -412,6 +443,42 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 self.assertEqual(
                     result.stdout, "Provingkit source validation passed\n"
                 )
+
+    def test_source_stage_validator_rejects_alpha6_at_another_source(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory) / "repository"
+            self.clone_with_history(repository)
+            self.set_tag(repository, "v0.1.0-alpha.6", ALPHA_SOURCE)
+            self.assert_unauthorized_tag(repository)
+
+    def test_source_stage_validator_rejects_annotated_alpha6(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory) / "repository"
+            self.clone_with_history(repository)
+            self.set_tag(
+                repository,
+                "v0.1.0-alpha.6",
+                "0c47d9d4b936dfb74134a4d7bf0f9354fc67359b",
+                annotated=True,
+            )
+            self.assert_unauthorized_tag(repository)
+
+    def test_source_stage_validator_rejects_symbolic_alpha6(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory) / "repository"
+            self.clone_with_history(repository)
+            target = "refs/heads/symbolic-alpha6-target"
+            subprocess.run(
+                ["git", "update-ref", target, "0c47d9d4b936dfb74134a4d7bf0f9354fc67359b"],
+                cwd=repository,
+                check=True,
+            )
+            subprocess.run(
+                ["git", "symbolic-ref", "refs/tags/v0.1.0-alpha.6", target],
+                cwd=repository,
+                check=True,
+            )
+            self.assert_unauthorized_tag(repository)
 
     def test_source_stage_validator_rejects_the_preview_tag_at_another_source(
         self,
@@ -530,21 +597,72 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
 
             self.assert_unauthorized_tag(repository)
 
-    def test_provingkit_source_job_pins_identity_validation_dependency(self) -> None:
-        workflow = yaml.safe_load(SOURCE_WORKFLOW.read_text(encoding="utf-8"))
-        commands = {
-            step.get("run", "")
-            for step in workflow["jobs"]["provingkit-source"]["steps"]
-        }
-        expected = (
-            "python -m pip install --disable-pip-version-check "
-            "idna==3.18 jsonschema==4.26.0 PyYAML==6.0.3"
-        )
+    def test_ci_and_contributors_install_the_declared_validation_dependencies(
+        self,
+    ) -> None:
+        requirements = [
+            line.strip()
+            for line in (REPOSITORY / "requirements.txt")
+            .read_text(encoding="utf-8")
+            .splitlines()
+            if line.strip() and not line.lstrip().startswith("#")
+        ]
+        declared = set()
+        for requirement in requirements:
+            self.assertRegex(requirement, r"^[A-Za-z0-9_.-]+==[0-9][^\s;]*$")
+            declared.add(requirement.split("==", 1)[0].lower())
+        self.assertTrue({"idna", "jsonschema", "pyyaml"}.issubset(declared))
 
-        self.assertIn(expected, commands)
+        for path in (
+            SOURCE_WORKFLOW,
+            REPOSITORY / ".github/workflows/source-skill-disposition.yml",
+        ):
+            workflow = yaml.safe_load(path.read_text(encoding="utf-8"))
+            required_jobs = (
+                (
+                    "provingkit-source",
+                    "rolecasting",
+                    "tricritical",
+                    "mergecraft",
+                    "proseweaving",
+                    "surreal-intercom",
+                    "derived-locks",
+                )
+                if path == SOURCE_WORKFLOW
+                else ("validate",)
+            )
+            for job_name in required_jobs:
+                self.assertTrue(
+                    any(
+                        "pip install" in step.get("run", "")
+                        for step in workflow["jobs"][job_name]["steps"]
+                    ),
+                    f"{path.name}: {job_name} needs validation dependencies",
+                )
+            installations = [
+                step["run"]
+                for job_name in required_jobs
+                for step in workflow["jobs"][job_name]["steps"]
+                if "pip install" in step.get("run", "")
+            ]
+            self.assertTrue(installations, path)
+            for command in installations:
+                with self.subTest(workflow=path.name, command=command):
+                    arguments = shlex.split(command)
+                    self.assertIn("-r", arguments)
+                    self.assertEqual(
+                        arguments[arguments.index("-r") + 1], "requirements.txt"
+                    )
+                    self.assertFalse(
+                        any(
+                            argument.split("==", 1)[0].lower() in declared
+                            for argument in arguments
+                        ),
+                        "Install package versions from the maintained inventory",
+                    )
+
         self.assertIn(
-            "python -m pip install idna==3.18 jsonschema==4.26.0 "
-            "PyYAML==6.0.3",
+            "python -m pip install -r requirements.txt",
             (REPOSITORY / "CONTRIBUTING.md").read_text(encoding="utf-8"),
         )
 
@@ -573,18 +691,6 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
             for step in workflow["jobs"]["derived-locks"]["steps"]
         }
         self.assertIn("git diff --exit-code", derived_commands)
-
-    def test_rolecasting_source_job_installs_its_validation_dependency(self) -> None:
-        workflow = yaml.safe_load(SOURCE_WORKFLOW.read_text(encoding="utf-8"))
-        commands = {
-            step.get("run", "")
-            for step in workflow["jobs"]["rolecasting"]["steps"]
-        }
-
-        self.assertIn(
-            "python -m pip install --disable-pip-version-check PyYAML==6.0.3",
-            commands,
-        )
 
     def test_required_jobs_run_current_tricritical_and_projection_contracts(
         self,
@@ -666,11 +772,11 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
             lock_commands,
         )
 
-    def test_human_docs_state_the_current_six_plugin_source_set(self) -> None:
+    def test_human_docs_state_the_current_seven_plugin_source_set(self) -> None:
         expected = {
-            "README.md": "six coordinated Agent Plugins",
-            "CONTRIBUTING.md": "six Agent Plugins",
-            ".github/pull_request_template.md": "six Agent Plugin members",
+            "README.md": "seven coordinated Agent Plugins",
+            "CONTRIBUTING.md": "seven Agent Plugins",
+            ".github/pull_request_template.md": "seven Agent Plugin members",
         }
         for relative, phrase in expected.items():
             with self.subTest(relative=relative):
@@ -678,6 +784,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 normalized = " ".join(content.split())
                 self.assertIn(phrase, normalized)
                 self.assertIn("Proseweaving", normalized)
+                self.assertIn("Surreal Intercom", normalized)
                 self.assertNotIn("seven source members", normalized)
 
     def test_agent_guidance_describes_member_specific_content_identity_writers(
@@ -883,6 +990,15 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                     "plugins/proseweaving/.claude-plugin/plugin.json",
                     "plugin-content-lock",
                     "plugins/proseweaving/content-lock.json",
+                ),
+                (
+                    "surreal-intercom",
+                    "agent-plugin",
+                    "1.0.0",
+                    "plugins/surreal-intercom/plugin.json",
+                    "plugins/surreal-intercom/.claude-plugin/plugin.json",
+                    "plugin-content-lock",
+                    "release/plugin-content-locks/surreal-intercom.json",
                 ),
             ],
         )
@@ -2763,7 +2879,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 repository,
                 ignore=shutil.ignore_patterns(".git", "__pycache__", "*.pyc"),
             )
-            context_path = repository / "CONTEXT.md"
+            context_path = repository / "GLOSSARY.md"
             expected = (
                 "**Base Loadout**:\n"
                 f"The portable declaration in `{LEGACY_REPOSITORY_ID}` that selects a "
@@ -2794,7 +2910,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 repository,
                 ignore=shutil.ignore_patterns(".git", "__pycache__", "*.pyc"),
             )
-            context_path = repository / "CONTEXT.md"
+            context_path = repository / "GLOSSARY.md"
             context_path.write_text(
                 context_path.read_text(encoding="utf-8")
                 + f"\nUnscoped repository: `{LEGACY_REPOSITORY_ID}`.\n",
@@ -2805,7 +2921,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
 
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("unallowlisted legacy repository identity", result.stderr)
-        self.assertIn("CONTEXT.md", result.stderr)
+        self.assertIn("GLOSSARY.md", result.stderr)
 
     def test_active_legacy_tracker_reference_exemption_requires_an_exact_url(
         self,
@@ -3027,13 +3143,33 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
         }
         preview_tag = f"refs/tags/{PREVIEW_TAG} commit {PREVIEW_SOURCE}"
         alpha_tag = f"refs/tags/{ALPHA_TAG} commit {ALPHA_SOURCE}"
+        alpha4_tag = (
+            "refs/tags/v0.1.0-alpha.4 commit "
+            "e14e818e423abd2f65b336e279284d412e0fcbce"
+        )
+        alpha6_tag = (
+            "refs/tags/v0.1.0-alpha.6 commit "
+            "0c47d9d4b936dfb74134a4d7bf0f9354fc67359b"
+        )
         self.assertIn(
             tags,
             [
+                {alpha6_tag},
+                {preview_tag, alpha6_tag},
+                {alpha_tag, alpha6_tag},
+                {alpha4_tag, alpha6_tag},
+                {preview_tag, alpha_tag, alpha6_tag},
+                {preview_tag, alpha4_tag, alpha6_tag},
+                {alpha_tag, alpha4_tag, alpha6_tag},
+                {preview_tag, alpha_tag, alpha4_tag, alpha6_tag},
                 set(),
                 {preview_tag},
                 {alpha_tag},
                 {preview_tag, alpha_tag},
+                {alpha4_tag},
+                {preview_tag, alpha4_tag},
+                {alpha_tag, alpha4_tag},
+                {preview_tag, alpha_tag, alpha4_tag},
             ],
         )
 
@@ -3184,7 +3320,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
         mutations = (
             ("type", "object"),
             ("minItems", 0),
-            ("maxItems", 7),
+            ("maxItems", 8),
             ("items", {}),
         )
         for key, value in mutations:

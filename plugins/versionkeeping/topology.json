@@ -28,6 +28,7 @@
       "modules": [
         "skills/checkpointing-and-publishing-git-work/scripts/git_publication/__init__.py",
         "skills/checkpointing-and-publishing-git-work/scripts/git_publication/adapter.py",
+        "skills/checkpointing-and-publishing-git-work/scripts/git_publication/host_trust.py",
         "skills/checkpointing-and-publishing-git-work/scripts/git_publication/core.py",
         "skills/checkpointing-and-publishing-git-work/scripts/git_publication/deletion.py",
         "skills/checkpointing-and-publishing-git-work/scripts/git_publication/execution.py"
@@ -58,7 +59,9 @@
       "scripts": [
         "skills/using-persistent-git-worktrees/scripts/validate_worktree_target.py"
       ],
-      "modules": [],
+      "modules": [
+        "skills/using-persistent-git-worktrees/scripts/host_trust.py"
+      ],
       "calls": ["checkpointing-and-publishing-git-work"],
       "operations": ["persistent-worktree-lifecycle"]
     },

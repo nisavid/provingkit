@@ -81,6 +81,7 @@ EVAL_FIXTURES = (
     "topology-inadequate-foreign-isolation.md",
     "topology-prohibited-subdelegation-external-action.md",
     "topology-valid-native-dispatch.md",
+    "topology-valid-cloud-native-tree.md",
     "adjudicate-external-feedback.md",
     "revise-authority.md",
     "loop-fixed-point.md",

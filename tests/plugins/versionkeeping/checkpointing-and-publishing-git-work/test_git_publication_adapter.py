@@ -218,7 +218,7 @@ class RequestTests(unittest.TestCase):
                 self.env_overrides = None
                 self.hooks_path = Path("/controlled/empty-hooks")
 
-            def run(self, args, check=True, allowed=(), env_overrides=None):
+            def run_transport(self, args, endpoint, check=True, env_overrides=None):
                 self.args = args
                 self.env_overrides = env_overrides
                 return subprocess.CompletedProcess(["git", *args], 0, "", "")
@@ -243,9 +243,12 @@ class RequestTests(unittest.TestCase):
 
     def test_https_credential_preflight_includes_repository_path(self):
         repository = object.__new__(adapter.GitRepository)
+        repository._host_runtime = ()
+        repository._windows_runtime_identities = {}
         repository.git_executable = "git"
         repository.path = Path("/controlled/repository")
         repository.env = {}
+        repository.config_profile = "hardened"
         repository.timeout_seconds = 1
         repository.enable_https_credentials = mock.Mock()
         completed = subprocess.CompletedProcess(
@@ -265,6 +268,45 @@ class RequestTests(unittest.TestCase):
             run.call_args.kwargs["input"],
             "protocol=https\nhost=github.com\npath=nisavid/provingkit.git\n\n",
         )
+
+    def test_https_credential_preflight_uses_only_return_code(self):
+        repository = object.__new__(adapter.GitRepository)
+        repository._host_runtime = ()
+        repository._windows_runtime_identities = {}
+        repository.git_executable = "git"
+        repository.path = Path("/controlled/repository")
+        repository.env = {}
+        repository.timeout_seconds = 1
+        repository.config_profile = "hardened"
+        repository.enable_https_credentials = mock.Mock()
+        completed = (
+            subprocess.CompletedProcess(
+                ["git", "credential", "fill"], 0, "", ""
+            ),
+            subprocess.CompletedProcess(
+                ["git", "credential", "fill"], 1, None, None
+            ),
+        )
+        with mock.patch.object(
+            adapter.subprocess, "run", side_effect=completed
+        ) as run:
+            try:
+                repository.ensure_https_credentials(
+                    "https://github.com/nisavid/provingkit.git"
+                )
+            except adapter.PolicyGate as gate:
+                self.fail(f"zero return code was rejected: {gate.code}")
+
+            with self.assertRaises(adapter.PolicyGate) as raised:
+                repository.ensure_https_credentials(
+                    "https://github.com/nisavid/provingkit.git"
+                )
+
+        self.assertEqual(raised.exception.code, "HTTPS_CREDENTIALS_UNAVAILABLE")
+        for call in run.call_args_list:
+            self.assertIs(call.kwargs["check"], False)
+            self.assertIs(call.kwargs["stdout"], subprocess.DEVNULL)
+            self.assertIs(call.kwargs["stderr"], subprocess.DEVNULL)
 
     def test_cached_https_credentials_recheck_host_configuration(self):
         repository = object.__new__(adapter.GitRepository)
@@ -388,7 +430,7 @@ class RequestTests(unittest.TestCase):
                 self.output = output
                 self.hooks_path = Path("/controlled/empty-hooks")
 
-            def run(self, *args, **kwargs):
+            def run_transport(self, *args, **kwargs):
                 return subprocess.CompletedProcess(["git"], 0, self.output, "")
 
         reference = "refs/heads/topic"

@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import os
 import re
@@ -13,6 +14,25 @@ import sys
 import tempfile
 from collections.abc import Callable
 from pathlib import Path
+
+
+# Load this skill's installed projection, independent of cwd and sibling plugins.
+_host_trust_spec = importlib.util.spec_from_file_location(
+    "_versionkeeping_worktree_host_trust",
+    Path(__file__).resolve().with_name("host_trust.py"),
+)
+assert _host_trust_spec is not None and _host_trust_spec.loader is not None
+_host_trust = importlib.util.module_from_spec(_host_trust_spec)
+sys.modules[_host_trust_spec.name] = _host_trust
+try:
+    _host_trust_spec.loader.exec_module(_host_trust)
+except BaseException:
+    sys.modules.pop(_host_trust_spec.name, None)
+    raise
+HostExecutable = _host_trust.HostExecutable
+HostTrustError = _host_trust.HostTrustError
+bind_host_executable = _host_trust.bind_host_executable
+recheck_host_executable = _host_trust.recheck_host_executable
 
 
 CONTROL = re.compile(r"[\x00-\x20\x7f]")
@@ -94,32 +114,22 @@ def require(condition: bool, message: str) -> None:
         raise InvalidTarget(message)
 
 
-def trusted_git_executable() -> str:
+def _bind_git_runtime(clone: Path | None = None) -> HostExecutable:
     try:
-        resolved = TRUSTED_GIT_EXECUTABLE.resolve(strict=True)
-        require(
-            resolved == TRUSTED_GIT_EXECUTABLE,
-            "trusted Git executable is unavailable",
+        return bind_host_executable(
+            TRUSTED_GIT_EXECUTABLE,
+            excluded_roots=(clone,) if clone is not None else (),
         )
-        for parent in (Path("/"), Path("/usr"), Path("/usr/bin")):
-            metadata = parent.lstat()
-            require(
-                stat.S_ISDIR(metadata.st_mode)
-                and metadata.st_uid == 0
-                and stat.S_IMODE(metadata.st_mode) & 0o022 == 0,
-                "trusted Git executable is unavailable",
-            )
-        metadata = resolved.lstat()
-    except OSError as error:
+    except HostTrustError as error:
         raise InvalidTarget("trusted Git executable is unavailable") from error
-    require(
-        stat.S_ISREG(metadata.st_mode)
-        and metadata.st_uid == 0
-        and stat.S_IMODE(metadata.st_mode) & 0o022 == 0
-        and stat.S_IMODE(metadata.st_mode) & 0o111 != 0,
-        "trusted Git executable is unavailable",
-    )
-    return str(resolved)
+
+
+def trusted_git_executable() -> str:
+    return _bind_git_runtime().path
+
+
+class GitRuntimeChanged(InvalidTarget):
+    """A completed command cannot be trusted after observable runtime drift."""
 
 
 def lexical_absolute(path: Path) -> Path:
@@ -287,9 +297,12 @@ def git_environment(hooks_path: Path) -> dict[str, str]:
     return environment
 
 
-def git_arguments(clone: Path, hooks_path: Path, *arguments: str) -> list[str]:
+def git_arguments(
+    clone: Path, hooks_path: Path, *arguments: str,
+    runtime: HostExecutable | None = None,
+) -> list[str]:
     return [
-        trusted_git_executable(),
+        (runtime or _bind_git_runtime(clone)).path,
         "-c",
         f"core.hooksPath={hooks_path}",
         "-C",
@@ -303,9 +316,15 @@ def invoke_git(
     clone: Path,
     hooks_path: Path,
     *arguments: str,
+    runtime: HostExecutable | None = None,
 ) -> subprocess.CompletedProcess[str]:
-    return runner(
-        git_arguments(clone, hooks_path, *arguments),
+    runtime = runtime or _bind_git_runtime(clone)
+    try:
+        recheck_host_executable(runtime)
+    except HostTrustError as error:
+        raise InvalidTarget("trusted Git executable changed before execution") from error
+    result = runner(
+        git_arguments(clone, hooks_path, *arguments, runtime=runtime),
         check=False,
         capture_output=True,
         text=True,
@@ -313,6 +332,11 @@ def invoke_git(
         stdin=subprocess.DEVNULL,
         timeout=GIT_TIMEOUT_SECONDS,
     )
+    try:
+        recheck_host_executable(runtime)
+    except HostTrustError as error:
+        raise GitRuntimeChanged("trusted Git executable changed during execution") from error
+    return result
 
 
 def git_config_key_inventory(
@@ -321,6 +345,7 @@ def git_config_key_inventory(
     hooks_path: Path,
     *,
     includes: bool,
+    runtime: HostExecutable | None = None,
 ) -> list[tuple[str, str, str]]:
     try:
         result = invoke_git(
@@ -334,6 +359,7 @@ def git_config_key_inventory(
             "--includes" if includes else "--no-includes",
             "--name-only",
             "--list",
+            runtime=runtime,
         )
     except subprocess.TimeoutExpired as error:
         raise InvalidTarget("Git configuration preflight timed out") from error
@@ -355,12 +381,16 @@ def establish_inert_git_policy(
     runner: Runner,
     clone: Path,
     hooks_path: Path,
+    *,
+    runtime: HostExecutable | None = None,
 ) -> None:
+    runtime = runtime or _bind_git_runtime(clone)
     without_includes = git_config_key_inventory(
         runner,
         clone,
         hooks_path,
         includes=False,
+        runtime=runtime,
     )
     include_classes = {
         config_class
@@ -377,6 +407,7 @@ def establish_inert_git_policy(
         clone,
         hooks_path,
         includes=True,
+        runtime=runtime,
     )
     unsafe_classes = {
         config_class
@@ -391,7 +422,8 @@ def establish_inert_git_policy(
 
 
 def local_branch_oid(
-    runner: Runner, clone: Path, hooks_path: Path, branch: str
+    runner: Runner, clone: Path, hooks_path: Path, branch: str,
+    *, runtime: HostExecutable | None = None,
 ) -> str | None:
     try:
         result = invoke_git(
@@ -402,6 +434,7 @@ def local_branch_oid(
             "--verify",
             "--quiet",
             f"refs/heads/{branch}",
+            runtime=runtime,
         )
     except subprocess.TimeoutExpired as error:
         raise InvalidTarget("local branch preflight timed out") from error
@@ -417,6 +450,7 @@ def local_branch_oid(
             "--verify",
             "--hash",
             f"refs/heads/{branch}",
+            runtime=runtime,
         )
     except subprocess.TimeoutExpired as error:
         raise InvalidTarget("local branch identity check timed out") from error
@@ -467,9 +501,10 @@ def create_worktree(
         "worktree target already exists",
     )
 
+    runtime = _bind_git_runtime(clone)
     with tempfile.TemporaryDirectory(prefix="versionkeeping-empty-hooks-") as hooks:
         hooks_path = Path(hooks).resolve()
-        establish_inert_git_policy(runner, clone, hooks_path)
+        establish_inert_git_policy(runner, clone, hooks_path, runtime=runtime)
         require_same_directory(clone.parent, parent_identity, "worktree root parent")
         require_same_directory(clone, clone_identity, "main clone")
         if not worktree_root.exists():
@@ -478,7 +513,7 @@ def create_worktree(
             except FileExistsError:
                 pass
         root_identity = directory_identity(worktree_root, "sibling worktree root")
-        branch_before = local_branch_oid(runner, clone, hooks_path, branch)
+        branch_before = local_branch_oid(runner, clone, hooks_path, branch, runtime=runtime)
         require(
             (branch_before is not None) == existing_branch,
             "branch existence does not match --existing-branch",
@@ -493,7 +528,14 @@ def create_worktree(
         require_same_directory(clone, clone_identity, "main clone")
         require_same_directory(worktree_root, root_identity, "sibling worktree root")
         try:
-            result = invoke_git(runner, clone, hooks_path, *add_arguments)
+            result = invoke_git(runner, clone, hooks_path, *add_arguments, runtime=runtime)
+        except GitRuntimeChanged as error:
+            return {
+                "schema_version": 1,
+                "status": "unknown",
+                "reason": str(error),
+                "worktree_path": str(target),
+            }
         except subprocess.TimeoutExpired:
             return {
                 "schema_version": 1,
@@ -528,9 +570,9 @@ def create_worktree(
                 "created worktree escapes sibling root",
             )
             listing = invoke_git(
-                runner, clone, hooks_path, "worktree", "list", "--porcelain"
+                runner, clone, hooks_path, "worktree", "list", "--porcelain", runtime=runtime
             )
-            status_result = invoke_git(runner, target, hooks_path, "status", "--short")
+            status_result = invoke_git(runner, target, hooks_path, "status", "--short", runtime=runtime)
             symbolic_branch = invoke_git(
                 runner,
                 target,
@@ -539,6 +581,7 @@ def create_worktree(
                 "--quiet",
                 "--short",
                 "HEAD",
+                runtime=runtime,
             )
         except (InvalidTarget, OSError, subprocess.TimeoutExpired) as error:
             return {

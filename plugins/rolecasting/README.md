@@ -14,7 +14,7 @@ separate. A transport never determines the
 relationship, and a user-owned peer requires explicit user consent.
 
 Initial operational support uses separate native-child adapter profiles for
-ChatGPT Codex and Codex CLI/TUI. Both freeze the complete plan and assurance
+ChatGPT Codex, Codex CLI/TUI, and local Codex Desktop. All three freeze the complete plan and assurance
 minima before native spawn and bind same-leader launch, status, and result
 observations afterward. A separate verification digest and strict Boolean
 preserve completed-but-blocked or unverified results as unusable. Their current
@@ -27,6 +27,26 @@ they do not authenticate actual model execution or authority enforcement.
 Operational support is not evidence issuance:
 witnessed-publication producer and issuer qualification remains pending for every
 exact surface, version, executor, transport, and assurance source.
+
+The separate ordinary Cloud profile `chatgpt-codex-native-tree-v1` uses the
+[native-tree driver](skills/delegating-cross-agent-work/references/native-tree-driver.md)
+for exact native-call planning, transactional local claims, source-tagged
+observations, and owner acceptance within one current controller tree.
+Canonical native targets may lack separate session IDs or exposed product
+builds; profile maxima remain ceilings, not achieved evidence. The agent makes
+the native calls. This source support does not establish an installed release
+or qualified deployment, and leaves the strict native helper, Desktop/CLI
+requirements, and witnessed contracts intact.
+
+Peer communication belongs to
+[Surreal Intercom](https://github.com/nisavid/provingkit/tree/main/plugins/surreal-intercom),
+through `surreal-intercom:communicating-with-agents`. Rolecasting supplies the
+selected worker, task contract, authority interpretation, and supervision;
+Intercom carries the addressed operation and retained message/attempt records.
+Communication startup and effects use their applicable existing permission.
+Installing a source candidate establishes neither live receiver reliability nor
+operating adoption. Existing stores and uncertain attempts retain their original
+identities and pinned source through coordinated caller cutover.
 
 It does not decide repository ownership, review disposition, publication, or
 pull-request work.
@@ -80,8 +100,11 @@ is independent of the dispatch-evidence bundle contract. Private tests may
 construct test-owned bootstrap trust to exercise historical validation, but no
 Rolecasting historical trust has been installed and those results cannot
 become authenticated evidence for witnessed publication. The skill-mediated
-native Codex module sequences pre-spawn freeze and post-result same-leader
-recording, but it is not a harness actuator and emits neither portable evidence
+native Codex module supports separate ChatGPT Codex, CLI/TUI, and local Desktop
+profiles. Follow its [native binding procedure](skills/delegating-cross-agent-work/references/native-codex-subagents.md)
+to identify the product and observe the Desktop application version. The module
+sequences pre-spawn freeze and post-result same-leader recording, but it is not
+a harness actuator and emits neither portable evidence
 nor product attestation. Explicitly witnessed publication stays blocked until a
 real native harness integration authenticates execution and its exact owning
 bytes are bound into a newly registered producer/issuer identity.
@@ -122,6 +145,7 @@ uv run --with PyYAML python -m unittest tests/test_validate_rolecasting.py
 python3 -m unittest tests/test_rolecasting_eval_corpus.py
 python3 -m unittest tests/plugins/test_rolecasting_dispatch_evidence.py
 python3 -m unittest tests/plugins/test_rolecasting_native_codex.py
+python3 -m unittest tests/plugins/test_rolecasting_native_tree.py
 python3 -m unittest tests/plugins/test_rolecasting_daybreak_routing.py
 ```
 

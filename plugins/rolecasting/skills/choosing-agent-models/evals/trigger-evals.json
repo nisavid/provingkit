@@ -1,6 +1,6 @@
 [
   {
-    "query": "Delegation is settled. Select a proven model and effort for this bounded implementation task.",
+    "query": "Delegation is settled. Select a proven model and effort for this bounded browser task, considering Terra Low/Light and coordination defaults.",
     "should_trigger": true
   },
   {

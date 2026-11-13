@@ -304,6 +304,119 @@ class EvidenceTransportTests(unittest.TestCase):
                         ["attempts/attempt-0001.json"],
                     )
 
+    def test_ordinary_candidate_git_uses_fixed_runtime_with_hostile_path(self) -> None:
+        with tempfile.TemporaryDirectory(dir=ROOT, prefix="candidate-consumer-") as scratch:
+            workspace = Path(scratch)
+            candidate = workspace / "candidate"
+            candidate.mkdir(mode=0o700)
+            subprocess.run(["/usr/bin/git", "init", "-q", str(candidate)], check=True)
+            (candidate / "content.txt").write_text("candidate\n")
+            malicious_bin = workspace / "bin"
+            malicious_bin.mkdir(mode=0o700)
+            marker = workspace / "candidate-git-ran"
+            fake_git = malicious_bin / "git"
+            fake_git.write_text(f"#!/bin/sh\ntouch '{marker}'\nexit 0\n")
+            fake_git.chmod(0o700)
+            with mock.patch.dict(os.environ, {"PATH": str(malicious_bin)}):
+                result = SUPPORT.run_candidate_git(
+                    candidate, ["ls-files", "-co", "--exclude-standard", "-z"],
+                    error_factory=SupportError, operation="enumerate fixture",
+                    runtime_policy="host-compatible",
+                )
+            self.assertEqual(result, b"content.txt\0")
+            self.assertFalse(marker.exists())
+            subprocess.run(
+                ["/usr/bin/git", "-C", str(candidate), "config",
+                 "filter.attack.smudge", "untrusted-command"], check=True,
+            )
+            with self.assertRaisesRegex(SupportError, "unsafe candidate Git configuration"):
+                SUPPORT.run_candidate_git(
+                    candidate, ["ls-files"], error_factory=SupportError,
+                    operation="enumerate fixture", runtime_policy="host-compatible",
+                )
+
+    def test_candidate_identity_keeps_hardened_runtime_default(self) -> None:
+        original = Path.lstat
+
+        def foreign_system_root(path):
+            metadata = original(path)
+            if path == Path("/"):
+                fields = list(metadata)
+                fields[4] = 65534
+                return os.stat_result(fields)
+            return metadata
+
+        with mock.patch.object(Path, "lstat", foreign_system_root), mock.patch.object(
+            SUPPORT, "bind_host_executable", wraps=SUPPORT.bind_host_executable
+        ) as ordinary:
+            with self.assertRaisesRegex(SupportError, "trusted Git executable is unavailable"):
+                SUPPORT.candidate_content_identity(self.root, error_factory=SupportError)
+            ordinary.assert_not_called()
+
+    def test_candidate_runtime_policy_is_closed_and_never_falls_back(self) -> None:
+        for policy in ("unknown", "hardened"):
+            with self.subTest(policy=policy), mock.patch.object(
+                SUPPORT, "_trusted_candidate_git_executable",
+                side_effect=SupportError("strict unavailable"),
+            ), mock.patch.object(SUPPORT.subprocess, "run") as run:
+                with self.assertRaises(SupportError):
+                    SUPPORT.run_candidate_git(
+                        self.root, ["status"], error_factory=SupportError,
+                        operation="inspect fixture", runtime_policy=policy,
+                    )
+                run.assert_not_called()
+
+    def test_repository_discovery_from_root_and_nested_directory(self) -> None:
+        checkout = self.root / "checkout"
+        subprocess.run(
+            ["/usr/bin/git", "init", "-q", str(checkout)],
+            check=True,
+            capture_output=True,
+        )
+        nested = checkout / "nested" / "directory"
+        nested.mkdir(parents=True)
+        for start in (checkout, nested):
+            with self.subTest(start=start):
+                self.assertEqual(
+                    SUPPORT.candidate_repository_root(
+                        start, error_factory=SupportError
+                    ),
+                    checkout,
+                )
+
+    def test_candidate_git_reuses_binding_and_checks_command_completion(self) -> None:
+        with mock.patch.object(
+            SUPPORT, "bind_host_executable", wraps=SUPPORT.bind_host_executable
+        ) as bind, mock.patch.object(
+            SUPPORT, "recheck_host_executable", wraps=SUPPORT.recheck_host_executable
+        ) as recheck, mock.patch.object(
+            SUPPORT.subprocess, "run",
+            side_effect=lambda command, **kwargs: subprocess.CompletedProcess(
+                command, 0, b"", b""
+            ),
+        ) as run:
+            SUPPORT.run_candidate_git(
+                self.root, ["status"], error_factory=SupportError,
+                operation="inspect fixture", runtime_policy="host-compatible",
+            )
+        self.assertEqual(bind.call_count, 1)
+        self.assertEqual(run.call_count, 3)
+        self.assertEqual(recheck.call_count, 6)
+        self.assertTrue(all(call.args[0] is recheck.call_args.args[0]
+                            for call in recheck.call_args_list))
+        with mock.patch.object(
+            SUPPORT, "recheck_host_executable",
+            side_effect=[None, SUPPORT.HostTrustError("changed")],
+        ), mock.patch.object(SUPPORT.subprocess, "run", return_value=subprocess.CompletedProcess(
+            [], 0, b"", b""
+        )) as run:
+            with self.assertRaisesRegex(SupportError, "changed during execution"):
+                SUPPORT.run_candidate_git(
+                    self.root, ["status"], error_factory=SupportError,
+                    operation="inspect fixture", runtime_policy="host-compatible",
+                )
+            self.assertEqual(run.call_count, 1)
+
     def test_candidate_and_semantic_identities_bind_paths_and_bytes(self) -> None:
         subprocess.run(
             ["git", "init", "--quiet", str(self.root)],
@@ -315,7 +428,7 @@ class EvidenceTransportTests(unittest.TestCase):
         source = semantic / "source.txt"
         source.write_text("first\n", encoding="utf-8")
         candidate_before = SUPPORT.candidate_content_identity(
-            self.root, error_factory=SupportError
+            self.root, error_factory=SupportError, runtime_policy="host-compatible"
         )
         semantic_before = SUPPORT.semantic_tree_digest(
             self.root, ("semantic",), error_factory=SupportError
@@ -325,7 +438,9 @@ class EvidenceTransportTests(unittest.TestCase):
 
         self.assertNotEqual(
             candidate_before,
-            SUPPORT.candidate_content_identity(self.root, error_factory=SupportError),
+            SUPPORT.candidate_content_identity(
+                self.root, error_factory=SupportError, runtime_policy="host-compatible"
+            ),
         )
         self.assertNotEqual(
             semantic_before,

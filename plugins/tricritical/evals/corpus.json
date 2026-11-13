@@ -1,6 +1,9 @@
 {
   "execution_isolation": {
-    "with_skill_executor_inputs": ["fixture", "candidate_skill_bundle"],
+    "with_skill_executor_inputs": [
+      "fixture",
+      "candidate_skill_bundle"
+    ],
     "candidate_skill_delivery": "immutable_inline_bundle_or_explicit_mount",
     "candidate_skill_bundle": {
       "identity": "sha256",
@@ -42,7 +45,10 @@
     },
     "critic-isolation.md": {
       "candidate_skill": "review",
-      "grader_expectations": ["independent_contexts", "no_cross_report_leak"]
+      "grader_expectations": [
+        "independent_contexts",
+        "no_cross_report_leak"
+      ]
     },
     "model-selection-record.md": {
       "candidate_skill": "review",
@@ -103,7 +109,11 @@
     },
     "adjudicate-external-feedback.md": {
       "candidate_skill": "adjudicate",
-      "grader_expectations": ["typed_dispositions", "no_mutation", "no_loop"]
+      "grader_expectations": [
+        "typed_dispositions",
+        "no_mutation",
+        "no_loop"
+      ]
     },
     "revise-authority.md": {
       "candidate_skill": "revise",
@@ -125,7 +135,10 @@
     },
     "adapter-thinness.md": {
       "candidate_skill": "intent",
-      "grader_expectations": ["one_persona_to_one_skill", "no_copied_rubric"]
+      "grader_expectations": [
+        "one_persona_to_one_skill",
+        "no_copied_rubric"
+      ]
     },
     "isolated-falsification.md": {
       "candidate_skill": "review",
@@ -389,6 +402,19 @@
         "blocked_before_revise_with_zero_edits",
         "verification_cannot_make_clean",
         "remaining_authority_owner_reported"
+      ]
+    },
+    "topology-valid-cloud-native-tree.md": {
+      "candidate_skill": "review",
+      "grader_expectations": [
+        "ordinary_cloud_profile_preserves_three_distinct_contexts",
+        "optional_native_metadata_not_fabricated",
+        "profile_maximum_not_achieved_evidence",
+        "complete_verified_reports_allow_ordinary_handback_without_receipts",
+        "missing_structure_result_remains_incomplete_non_clean",
+        "shared_context_plan_rejected_before_dispatch",
+        "read_only_authority_closed_membership_and_no_hidden_retry",
+        "witnessed_missing_receipts_block_without_downgrade"
       ]
     }
   }

@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import importlib.util
 import json
 import os
 import re
@@ -15,9 +16,23 @@ import subprocess
 import sys
 import tempfile
 import urllib.parse
-from contextlib import ExitStack
+from contextlib import ExitStack, contextmanager
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterator
+
+# Standalone and installed scripts load only their adjacent generated helper.
+_host_trust_spec = importlib.util.spec_from_file_location(
+    f"{__name__}._host_trust", Path(__file__).with_name("host_trust.py")
+)
+if _host_trust_spec is None or _host_trust_spec.loader is None:
+    raise ImportError("adjacent host trust helper is unavailable")
+_host_trust = importlib.util.module_from_spec(_host_trust_spec)
+sys.modules[_host_trust_spec.name] = _host_trust
+try:
+    _host_trust_spec.loader.exec_module(_host_trust)
+except BaseException:
+    sys.modules.pop(_host_trust_spec.name, None)
+    raise
 
 PUBLISHER_SCRIPTS = Path(__file__).parents[2] / "publishing-reviewable-prs/scripts"
 WRITER_SCRIPTS = (
@@ -228,8 +243,23 @@ def _empty_hooks_path() -> Path:
     return Path(_EMPTY_HOOKS.name).resolve()
 
 
-def _trusted_system_executable(name: str) -> str:
+def _trusted_system_executable(
+    name: str, root: Path | None = None, *, profile: str | None = None,
+    bindings: list[_host_trust.HostExecutable] | None = None,
+) -> str:
     path = TRUSTED_SYSTEM_EXECUTABLES[name]
+    if (profile or _git_config_profile()) == "host-compatible":
+        try:
+            bound = _host_trust.bind_host_executable(
+                path, excluded_roots=() if root is None else (root,)
+            )
+            if bindings is not None:
+                bindings.append(bound)
+            return bound.path
+        except _host_trust.HostTrustError as error:
+            raise GraphiteTransportError(
+                f"trusted {name} executable is unavailable"
+            ) from error
     try:
         resolved = path.resolve(strict=True)
         if resolved != path:
@@ -254,10 +284,21 @@ def _trusted_system_executable(name: str) -> str:
         or stat.S_IMODE(metadata.st_mode) & 0o111 == 0
     ):
         raise GraphiteTransportError(f"trusted {name} executable is unavailable")
+    if bindings is not None:
+        try:
+            bindings.append(
+                _host_trust.bind_host_executable(
+                    resolved, excluded_roots=() if root is None else (root,)
+                )
+            )
+        except _host_trust.HostTrustError as error:
+            raise GraphiteTransportError(
+                f"trusted {name} executable is unavailable"
+            ) from error
     return str(resolved)
 
 
-def _trusted_graphite_executable(root: Path) -> str:
+def _trusted_graphite_executable(root: Path, *, profile: str | None = None) -> str:
     configured = os.environ.get(TRUSTED_GRAPHITE_EXECUTABLE_ENV)
     if configured is not None:
         selected = Path(configured)
@@ -271,13 +312,24 @@ def _trusted_graphite_executable(root: Path) -> str:
     try:
         resolved = selected.resolve(strict=True)
         repository = root.resolve(strict=True)
-        if resolved == repository or repository in resolved.parents:
+        lexical = Path(os.path.abspath(selected))
+        if any(
+            candidate == excluded or excluded in candidate.parents
+            for candidate in (lexical, resolved)
+            for excluded in (Path(os.path.abspath(root)), repository)
+        ):
             raise OSError("Graphite executable is candidate-controlled")
         for parent in reversed(resolved.parents):
             metadata = parent.lstat()
             if (
                 not stat.S_ISDIR(metadata.st_mode)
-                or metadata.st_uid not in {0, os.geteuid()}
+                or (
+                    metadata.st_uid not in {0, os.geteuid()}
+                    and not (
+                        (profile or _git_config_profile()) == "host-compatible"
+                        and _host_trust.is_host_namespace_anchor(parent)
+                    )
+                )
                 or stat.S_IMODE(metadata.st_mode) & 0o022
             ):
                 raise OSError("Graphite executable ancestry is mutable")
@@ -294,14 +346,28 @@ def _trusted_graphite_executable(root: Path) -> str:
     return str(resolved)
 
 
-def _bind_executable(arguments: list[str], root: Path) -> list[str]:
+def _bind_executable(
+    arguments: list[str], root: Path, *, profile: str | None = None,
+    bindings: list[_host_trust.HostExecutable] | None = None,
+) -> list[str]:
     if not arguments:
         raise GraphiteTransportError("command is empty")
     executable = arguments[0]
     if executable in TRUSTED_SYSTEM_EXECUTABLES:
-        bound = _trusted_system_executable(executable)
+        bound = _trusted_system_executable(
+            executable, root, profile=profile, bindings=bindings
+        )
     elif executable == "gt":
-        bound = _trusted_graphite_executable(root)
+        bound = _trusted_graphite_executable(root, profile=profile)
+        if bindings is not None:
+            try:
+                bindings.append(
+                    _host_trust.bind_host_executable(Path(bound), excluded_roots=(root,))
+                )
+            except _host_trust.HostTrustError as error:
+                raise GraphiteTransportError(
+                    "trusted gt executable is unavailable"
+                ) from error
     elif Path(executable).is_absolute():
         bound = executable
     else:
@@ -318,8 +384,12 @@ def _git_config_profile() -> str:
     return profile
 
 
-def _environment(profile: str | None = None) -> dict[str, str]:
+def _environment(
+    profile: str | None = None, *, root: Path | None = None,
+    bindings: list[_host_trust.HostExecutable] | None = None,
+) -> dict[str, str]:
     profile = _git_config_profile() if profile is None else profile
+    ssh = _trusted_system_executable("ssh", root, profile=profile, bindings=bindings)
     environment = {
         key: value for key, value in os.environ.items() if key in SUBPROCESS_ENV_ALLOWLIST
     }
@@ -334,7 +404,7 @@ def _environment(profile: str | None = None) -> dict[str, str]:
             "GIT_PAGER": "cat",
             "GIT_SEQUENCE_EDITOR": "true",
             "GIT_SSH_COMMAND": (
-                f"{_trusted_system_executable('ssh')} "
+                f"{ssh} "
                 "-oBatchMode=yes -oConnectionAttempts=1 "
                 f"-oConnectTimeout={READ_TIMEOUT_SECONDS}"
             ),
@@ -393,12 +463,26 @@ def _run_raw(
     timeout: int = READ_TIMEOUT_SECONDS,
     allowed: tuple[int, ...] = (),
 ) -> subprocess.CompletedProcess[str]:
-    bound_arguments = _bind_executable(arguments, cwd)
+    profile = _git_config_profile()
+    bindings: list[_host_trust.HostExecutable] = []
+    bound_arguments = _bind_executable(
+        arguments, cwd, profile=profile, bindings=bindings
+    )
+    environment = _environment(profile, root=cwd, bindings=bindings)
+
+    def recheck() -> None:
+        try:
+            for bound in bindings:
+                _host_trust.recheck_host_executable(bound)
+        except _host_trust.HostTrustError as error:
+            raise GraphiteTransportError("command executable changed") from error
+
+    recheck()
     try:
         result = subprocess.run(
             bound_arguments,
             cwd=cwd,
-            env=_environment(),
+            env=environment,
             text=True,
             capture_output=True,
             check=False,
@@ -408,6 +492,7 @@ def _run_raw(
         raise GraphiteTransportError(
             f"command did not complete: {arguments[0]}"
         ) from error
+    recheck()
     if result.returncode != 0 and result.returncode not in allowed:
         raise GraphiteTransportError(
             f"command failed with status {result.returncode}: {arguments[0]}"
@@ -551,7 +636,13 @@ def _require_secure_local_ancestry(path: Path) -> None:
     child = path.lstat()
     for parent in path.parents:
         metadata = parent.lstat()
-        if not stat.S_ISDIR(metadata.st_mode) or metadata.st_uid not in trusted_owners:
+        if not stat.S_ISDIR(metadata.st_mode) or (
+            metadata.st_uid not in trusted_owners
+            and not (
+                _git_config_profile() == "host-compatible"
+                and _host_trust.is_host_namespace_anchor(parent)
+            )
+        ):
             raise GraphiteTransportError(
                 "repository local remote is not owner-secure"
             )
@@ -1515,7 +1606,7 @@ def _identity(
     return expected
 
 
-def _common_arguments(expected: ExpectedIdentity, entry: dict[str, Any]) -> list[str]:
+def _identity_arguments(expected: ExpectedIdentity) -> list[str]:
     return [
         "--repository",
         expected.repository,
@@ -1533,8 +1624,6 @@ def _common_arguments(expected: ExpectedIdentity, entry: dict[str, Any]) -> list
         expected.head_owner,
         "--head-repository",
         expected.head_repository,
-        "--review-input",
-        entry["review_input"],
     ]
 
 
@@ -1543,7 +1632,9 @@ def _publisher_arguments(
 ) -> list[str]:
     review_mode, review_bundle, specialists = _review_profile(entry)
     arguments = [
-        *_common_arguments(expected, entry),
+        *_identity_arguments(expected),
+        "--review-input",
+        entry["review_input"],
         "--review-mode",
         review_mode,
         "--selected-specialists",
@@ -1597,6 +1688,63 @@ def _target_publication_candidate_sha256(
     return candidate.content_sha256
 
 
+def _publication_commands(
+    expected: ExpectedIdentity,
+    entry: dict[str, Any],
+    *,
+    transport_title_sha256: str,
+    transport_body_sha256: str,
+    target_body_sha256: str,
+    is_draft: bool,
+    target_is_draft: bool,
+) -> list[list[str]]:
+    common = _publisher_arguments(expected, entry)
+    commands: list[list[str]] = []
+    if (
+        transport_title_sha256 != _sha_text(entry["title"])
+        or transport_body_sha256 != target_body_sha256
+    ):
+        body_flag = (
+            "--body-template"
+            if entry["body_source"]["mode"] == "template"
+            else "--body-file"
+        )
+        commands.append(
+            [
+                sys.executable,
+                str(UPDATE),
+                "text",
+                *common,
+                "--expected-title-sha256",
+                transport_title_sha256,
+                "--expected-body-sha256",
+                transport_body_sha256,
+                "--expected-state",
+                "draft" if is_draft else "ready",
+                "--text-scope",
+                "title-body",
+                "--title",
+                entry["title"],
+                body_flag,
+                entry["body_source"]["path"],
+            ]
+        )
+    if not target_is_draft and is_draft:
+        commands.append(
+            [
+                sys.executable,
+                str(UPDATE),
+                "ready",
+                *common,
+                "--expected-title-sha256",
+                _sha_text(entry["title"]),
+                "--expected-body-sha256",
+                target_body_sha256,
+            ]
+        )
+    return commands
+
+
 def _handoff_entry(
     entry: dict[str, Any],
     preimage: dict[str, Any] | None,
@@ -1629,49 +1777,16 @@ def _handoff_entry(
         if entry["body_source"]["mode"] == "template"
         else source
     )
-    common = _publisher_arguments(expected, entry)
-    audit_common = _common_arguments(expected, entry)
-    commands: list[list[str]] = []
     target_is_draft = True if preimage is None else preimage["is_draft"]
-    if title != entry["title"] or body != target_body:
-        body_flag = (
-            "--body-template"
-            if entry["body_source"]["mode"] == "template"
-            else "--body-file"
-        )
-        commands.append(
-            [
-                sys.executable,
-                str(UPDATE),
-                "text",
-                *common,
-                "--expected-title-sha256",
-                _sha_text(title),
-                "--expected-body-sha256",
-                _sha_text(body),
-                "--expected-state",
-                "draft" if is_draft else "ready",
-                "--text-scope",
-                "title-body",
-                "--title",
-                entry["title"],
-                body_flag,
-                str(source_path),
-            ]
-        )
-    if preimage is not None and preimage["is_draft"] is False and is_draft:
-        commands.append(
-            [
-                sys.executable,
-                str(UPDATE),
-                "ready",
-                *common,
-                "--expected-title-sha256",
-                _sha_text(entry["title"]),
-                "--expected-body-sha256",
-                _sha_text(target_body),
-            ]
-        )
+    commands = _publication_commands(
+        expected,
+        entry,
+        transport_title_sha256=_sha_text(title),
+        transport_body_sha256=_sha_text(body),
+        target_body_sha256=_sha_text(target_body),
+        is_draft=is_draft,
+        target_is_draft=target_is_draft,
+    )
     if commands:
         final_operation = "mark-ready" if commands[-1][2] == "ready" else "update-text"
     else:
@@ -1684,7 +1799,7 @@ def _handoff_entry(
         final_operation=final_operation,
     )
     review_mode, review_bundle, specialists = _review_profile(entry)
-    audit = [sys.executable, str(AUDIT), "audit", *audit_common]
+    audit = [sys.executable, str(AUDIT), "audit", *_identity_arguments(expected)]
     return {
         "repository": repository,
         "pr": expected.pr_number,
@@ -1696,6 +1811,9 @@ def _handoff_entry(
         "is_draft": is_draft,
         "transport_title_sha256": _sha_text(title),
         "transport_body_sha256": _sha_text(body),
+        "target_title": entry["title"],
+        "target_body_source": dict(entry["body_source"]),
+        "target_review_input": entry["review_input"],
         "target_title_sha256": _sha_text(entry["title"]),
         "target_body_sha256": _sha_text(target_body),
         "target_is_draft": target_is_draft,
@@ -1862,43 +1980,6 @@ def _checked_helper_command(command: Any, *, operation: str) -> list[str]:
     return command
 
 
-def _exact_flag_value(command: list[str], flag: str) -> str | None:
-    positions = [index for index, value in enumerate(command) if value == flag]
-    if not positions:
-        return None
-    if len(positions) != 1 or positions[0] + 1 >= len(command):
-        raise GraphiteTransportError(f"publisher handoff {flag} is ambiguous")
-    return command[positions[0] + 1]
-
-
-def _checked_publisher_command(command: Any, item: dict[str, Any]) -> list[str]:
-    checked = _checked_helper_command(command, operation="publish")
-    mode = item.get("target_review_mode")
-    bundle = item.get("target_review_bundle")
-    specialists = item.get("target_selected_specialists")
-    if _exact_flag_value(checked, "--review-mode") != mode:
-        raise GraphiteTransportError("publisher handoff review mode drifted")
-    selected = _exact_flag_value(checked, "--selected-specialists")
-    if not isinstance(specialists, list) or selected != _canonical(specialists).decode(
-        "utf-8"
-    ):
-        raise GraphiteTransportError("publisher handoff specialists drifted")
-    command_bundle = _exact_flag_value(checked, "--review-bundle")
-    if mode == "required":
-        if not isinstance(bundle, str) or not Path(bundle).is_absolute():
-            raise GraphiteTransportError("required review bundle target is invalid")
-        if command_bundle != bundle:
-            raise GraphiteTransportError("publisher handoff review bundle drifted")
-    elif mode == "not-required":
-        if bundle is not None or command_bundle is not None:
-            raise GraphiteTransportError(
-                "not-required publisher handoff carries a review bundle"
-            )
-    else:
-        raise GraphiteTransportError("publisher handoff review mode is invalid")
-    return checked
-
-
 def _run_json_command(
     command: list[str], *, cwd: Path, operation: str
 ) -> dict[str, Any]:
@@ -2033,7 +2114,221 @@ def _audit_matches_target(audit: dict[str, Any], item: dict[str, Any]) -> bool:
     )
 
 
-def repair(handoff: dict[str, Any], output_path: Path) -> dict[str, Any]:
+def _authorized_handoff(handoff: dict[str, Any], expected_sha256: str) -> dict[str, Any]:
+    # Freeze exactly once before hashing; caller-owned nested objects may change.
+    frozen = _parse_strict_json(_canonical(handoff).decode("utf-8"), "handoff")
+    # The caller retains this value from execute's result, independently of the file.
+    unsigned = {key: value for key, value in frozen.items() if key != "content_sha256"}
+    actual = _sha_bytes(_canonical(unsigned))
+    if (
+        not isinstance(expected_sha256, str)
+        or re.fullmatch(r"[0-9a-f]{64}", expected_sha256) is None
+        or frozen.get("content_sha256") != actual
+        or expected_sha256 != actual
+    ):
+        raise GraphiteTransportError("handoff differs from retained authorization digest")
+    return frozen
+
+
+def _repair_commands(
+    item: dict[str, Any],
+) -> tuple[ExpectedIdentity, dict[str, Any], list[list[str]], list[str]]:
+    _exact_keys(
+        item,
+        {
+            "repository", "pr", "url", "base", "base_oid", "head", "head_oid",
+            "is_draft", "transport_title_sha256", "transport_body_sha256",
+            "target_title", "target_body_source", "target_review_input",
+            "target_title_sha256", "target_body_sha256", "target_is_draft",
+            "target_review_input_sha256", "target_review_mode",
+            "target_publication_candidate_sha256", "target_review_bundle",
+            "target_selected_specialists", "target_identity_epoch",
+            "publisher_commands", "final_audit_command",
+        },
+        "handoff target",
+    )
+    _validate_handoff_target(item)
+    epoch = item.get("target_identity_epoch")
+    fields = {
+        "repository", "pr_number", "base", "base_oid", "head", "head_oid",
+        "head_owner", "head_repository",
+    }
+    if not isinstance(epoch, dict) or set(epoch) != fields | {"url"}:
+        raise GraphiteTransportError("handoff identity is invalid")
+    identity = {key: epoch[key] for key in fields}
+    if any(
+        not isinstance(value, str)
+        for key, value in identity.items()
+        if key != "pr_number"
+    ):
+        raise GraphiteTransportError("handoff identity is invalid")
+    try:
+        validate_identity_inputs(**identity)
+    except PublicationError as error:
+        raise GraphiteTransportError(f"handoff identity is invalid: {error}") from error
+    expected = ExpectedIdentity(**identity)
+    if (
+        any(
+            item.get(key) != epoch[key]
+            for key in ("repository", "base", "base_oid", "head", "head_oid")
+        )
+        or type(item.get("pr")) is not int
+        or item["pr"] != expected.pr_number
+        or item.get("url") != expected.url
+        or epoch["url"] != expected.url
+    ):
+        raise GraphiteTransportError("handoff identity drifted")
+    for key in (
+        "transport_title_sha256", "transport_body_sha256", "target_title_sha256",
+        "target_body_sha256", "target_review_input_sha256",
+    ):
+        if (
+            not isinstance(item.get(key), str)
+            or re.fullmatch(r"[0-9a-f]{64}", item[key]) is None
+        ):
+            raise GraphiteTransportError("handoff payload digest is invalid")
+    if (
+        type(item.get("is_draft")) is not bool
+        or type(item.get("target_is_draft")) is not bool
+        or (not item["is_draft"] and item["target_is_draft"])
+    ):
+        raise GraphiteTransportError("handoff readiness is invalid")
+    title = item.get("target_title")
+    source = item.get("target_body_source")
+    review_input = item.get("target_review_input")
+    if not isinstance(title, str) or _sha_text(title) != item["target_title_sha256"]:
+        raise GraphiteTransportError("handoff title drifted")
+    if (
+        not isinstance(source, dict)
+        or set(source) != {"mode", "path"}
+        or not isinstance(source["mode"], str)
+        or source["mode"] not in {"template", "file"}
+        or not isinstance(source["path"], str)
+        or not Path(source["path"]).is_absolute()
+        or not isinstance(review_input, str)
+        or not Path(review_input).is_absolute()
+    ):
+        raise GraphiteTransportError("handoff source paths are invalid")
+    entry = {
+        "title": title,
+        "body_source": source,
+        "review_input": review_input,
+        "review_mode": item["target_review_mode"],
+        "review_bundle": item["target_review_bundle"],
+        "selected_specialists": item["target_selected_specialists"],
+    }
+    commands = _publication_commands(
+        expected,
+        entry,
+        transport_title_sha256=item["transport_title_sha256"],
+        transport_body_sha256=item["transport_body_sha256"],
+        target_body_sha256=item["target_body_sha256"],
+        is_draft=item["is_draft"],
+        target_is_draft=item["target_is_draft"],
+    )
+    audit = [sys.executable, str(AUDIT), "audit", *_identity_arguments(expected)]
+    # Compare complete argv, including inventory/order. Argparse aliases, duplicate
+    # options, --option=value overrides, and extra targets cannot enter execution.
+    if (
+        item.get("publisher_commands") != commands
+        or item.get("final_audit_command") != audit
+    ):
+        raise GraphiteTransportError("handoff commands differ from canonical target")
+    return expected, entry, commands, audit
+
+
+def _validate_repair_payload(
+    item: dict[str, Any],
+    expected: ExpectedIdentity,
+    entry: dict[str, Any],
+    commands: list[list[str]],
+) -> None:
+    source_raw, source = _read_source(Path(entry["body_source"]["path"]))
+    body = (
+        source.replace(PR_NUMBER_TOKEN, str(expected.pr_number))
+        if entry["body_source"]["mode"] == "template"
+        else source
+    )
+    if _sha_text(body) != item["target_body_sha256"]:
+        raise GraphiteTransportError("handoff body source drifted")
+    try:
+        review = load_review_input(Path(entry["review_input"]))
+    except (ReviewInputError, OSError) as error:
+        raise GraphiteTransportError(f"handoff review input is invalid: {error}") from error
+    if review.content_sha256 != item["target_review_input_sha256"]:
+        raise GraphiteTransportError("handoff review input drifted")
+    final_operation = "mark-ready" if commands[-1][2] == "ready" else "update-text"
+    candidate_sha256 = _target_publication_candidate_sha256(
+        entry=entry,
+        expected=expected,
+        source_raw=source_raw,
+        target_body=body,
+        final_operation=final_operation,
+    )
+    if candidate_sha256 != item["target_publication_candidate_sha256"]:
+        raise GraphiteTransportError("handoff publication candidate drifted")
+
+
+@contextmanager
+def _repair_payload_snapshot(
+    item: dict[str, Any],
+    expected: ExpectedIdentity,
+    entry: dict[str, Any],
+    commands: list[list[str]],
+) -> Iterator[list[list[str]]]:
+    # Helpers must consume the bytes validated here, not reopen mutable inputs.
+    # Candidate identity binds bytes, not these private temporary file paths.
+    with tempfile.TemporaryDirectory(prefix="mergecraft-repair-") as directory:
+        root = Path(directory)
+        body_path = root / "body.md"
+        review_path = root / "review-input.json"
+        try:
+            body_raw, _ = _read_source(Path(entry["body_source"]["path"]))
+            review_raw = Path(entry["review_input"]).read_bytes()
+            body_path.write_bytes(body_raw)
+            review_path.write_bytes(review_raw)
+            body_path.chmod(0o400)
+            review_path.chmod(0o400)
+        except OSError as error:
+            raise GraphiteTransportError(f"cannot snapshot repair inputs: {error}") from error
+        frozen_entry = {
+            **entry,
+            "body_source": {**entry["body_source"], "path": str(body_path)},
+            "review_input": str(review_path),
+        }
+        _validate_repair_payload(item, expected, frozen_entry, commands)
+        yield _publication_commands(
+            expected,
+            frozen_entry,
+            transport_title_sha256=item["transport_title_sha256"],
+            transport_body_sha256=item["transport_body_sha256"],
+            target_body_sha256=item["target_body_sha256"],
+            is_draft=item["is_draft"],
+            target_is_draft=item["target_is_draft"],
+        )
+
+
+def repair(
+    handoff: dict[str, Any],
+    output_path: Path,
+    *,
+    expected_handoff_sha256: str,
+) -> dict[str, Any]:
+    handoff = _authorized_handoff(handoff, expected_handoff_sha256)
+    if not isinstance(handoff.get("pull_requests"), list) or not handoff["pull_requests"]:
+        raise GraphiteTransportError("handoff PR inventory is invalid")
+    # Preflight every member before even a read-only helper is launched.
+    prepared = []
+    identities = set()
+    for item in handoff.get("pull_requests", []):
+        if not isinstance(item, dict):
+            raise GraphiteTransportError("handoff PR entry is invalid")
+        expected, entry, commands, audit = _repair_commands(item)
+        key = (expected.repository, expected.pr_number)
+        if key in identities:
+            raise GraphiteTransportError("handoff contains a duplicate target")
+        identities.add(key)
+        prepared.append((item, expected, entry, commands, audit))
     root = Path(handoff["repository_root"])
     if not root.is_absolute() or not root.is_dir():
         raise GraphiteTransportError("handoff repository root is unavailable")
@@ -2046,19 +2341,7 @@ def repair(handoff: dict[str, Any], output_path: Path) -> dict[str, Any]:
     if len(completed) != len(checkpoint["completed"]):
         raise GraphiteTransportError("repair checkpoint PR inventory is invalid")
     repaired: list[dict[str, Any]] = []
-    for item in handoff["pull_requests"]:
-        if not isinstance(item, dict):
-            raise GraphiteTransportError("handoff PR entry is invalid")
-        _validate_handoff_target(item)
-        commands = item.get("publisher_commands")
-        if not isinstance(commands, list):
-            raise GraphiteTransportError("handoff publisher commands are invalid")
-        checked_commands = [
-            _checked_publisher_command(command, item) for command in commands
-        ]
-        audit_command = _checked_helper_command(
-            item.get("final_audit_command"), operation="audit"
-        )
+    for item, expected, entry, checked_commands, audit_command in prepared:
         try:
             current_audit = _run_json_command(
                 audit_command, cwd=root, operation="audit"
@@ -2087,11 +2370,14 @@ def repair(handoff: dict[str, Any], output_path: Path) -> dict[str, Any]:
         command_results: list[dict[str, Any]] = []
         if _audit_matches_target(current_audit, item):
             audit = current_audit
-        elif commands:
-            command_results = [
-                _run_json_command(command, cwd=root, operation="publish")
-                for command in checked_commands
-            ]
+        elif checked_commands:
+            with _repair_payload_snapshot(
+                item, expected, entry, checked_commands
+            ) as frozen_commands:
+                command_results = [
+                    _run_json_command(command, cwd=root, operation="publish")
+                    for command in frozen_commands
+                ]
             audit = _run_json_command(audit_command, cwd=root, operation="audit")
         else:
             audit = current_audit
@@ -2146,6 +2432,10 @@ def main() -> int:
     repair_parser = subparsers.add_parser("repair")
     repair_parser.add_argument("--handoff", required=True, type=Path)
     repair_parser.add_argument("--output", required=True, type=Path)
+    repair_parser.add_argument(
+        "--expected-handoff-sha256", required=True,
+        help="digest retained from execute output, independently of the handoff file",
+    )
     args = parser.parse_args()
     try:
         if args.operation == "plan":
@@ -2159,7 +2449,10 @@ def main() -> int:
         elif args.operation == "execute":
             result = execute(_load_plan(args.plan), args.output)
         else:
-            result = repair(_load_handoff(args.handoff), args.output)
+            result = repair(
+                _load_handoff(args.handoff), args.output,
+                expected_handoff_sha256=args.expected_handoff_sha256,
+            )
     except GraphiteTransportError as error:
         print(f"ERROR: {error}", file=sys.stderr)
         return 1

@@ -260,7 +260,8 @@ def main(argv: Sequence[str] | None = None) -> int:
 
     try:
         if candidate_content_identity(
-            arguments.public_root, error_factory=CompatibilityProjectionError
+            arguments.public_root, error_factory=CompatibilityProjectionError,
+            runtime_policy="hardened",
         ) != arguments.expected_public_candidate_sha256:
             raise CompatibilityProjectionError("public candidate identity mismatch")
         content = compatibility_bytes(arguments.public_root)

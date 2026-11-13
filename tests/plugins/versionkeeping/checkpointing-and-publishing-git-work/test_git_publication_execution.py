@@ -241,6 +241,157 @@ def credential_protocol_fields(output: str) -> dict[str, str]:
     )
 
 
+class WindowsRuntimeIdentityTests(unittest.TestCase):
+    """Portable logic tests; native Windows filesystem/ACL checks remain in CI."""
+
+    @contextmanager
+    def _repository(self, profile="host-compatible"):
+        # Inject selection only: binding, verification and command handling are real.
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            git_root = root / "Program Files" / "Git"
+            executables = {
+                name: git_root / relative
+                for name, relative in adapter.WINDOWS_GIT_RUNTIME.items()
+            }
+            for executable in executables.values():
+                executable.parent.mkdir(parents=True, exist_ok=True)
+                executable.write_bytes(b"inert runtime")
+            command_directories = (git_root / "cmd", git_root / "usr" / "bin")
+            runtime = adapter._TrustedGitRuntime(
+                git_executable=str(executables["git"]),
+                ssh_executable=str(executables["ssh"]),
+                askpass=str(executables["false"]),
+                shell=str(executables["shell"]),
+                command_path=";".join(map(str, command_directories)),
+                windows_root=git_root,
+            )
+            with mock.patch.object(adapter.sys, "platform", "win32"):
+                with mock.patch.object(adapter, "_trusted_git_runtime", return_value=runtime):
+                    repository = adapter.GitRepository(root, config_profile=profile)
+            with repository:
+                yield repository, git_root, executables
+
+    def test_directory_identity_ignores_sibling_entry_churn(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            baseline = adapter._windows_path_identity(root)
+            metadata = root.stat()
+            sibling = root / "unrelated"
+            sibling.write_bytes(b"unrelated")
+            self.assertEqual(adapter._windows_path_identity(root), baseline)
+            sibling.rename(root / "renamed")
+            self.assertEqual(adapter._windows_path_identity(root), baseline)
+            (root / "renamed").unlink()
+            sibling.mkdir()
+            self.assertEqual(adapter._windows_path_identity(root), baseline)
+            sibling.rmdir()
+            self.assertEqual(adapter._windows_path_identity(root), baseline)
+            self.assertEqual(baseline, (metadata.st_dev, metadata.st_ino, metadata.st_mode))
+
+    def test_directory_identity_rejects_replacement_and_type_change(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory).resolve()
+            selected = root / "selected"
+            selected.mkdir()
+            baseline = adapter._windows_path_identity(selected)
+            selected.rename(root / "original")
+            selected.mkdir()
+            self.assertNotEqual(adapter._windows_path_identity(selected), baseline)
+            selected.rmdir()
+            selected.write_bytes(b"not a directory")
+            self.assertNotEqual(adapter._windows_path_identity(selected), baseline)
+
+    def test_regular_file_identity_retains_all_six_fields(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            leaf = Path(directory).resolve() / "git.exe"
+            leaf.write_bytes(b"inert")
+            metadata = leaf.stat()
+            expected = tuple(getattr(metadata, field) for field in (
+                "st_dev", "st_ino", "st_mode", "st_size", "st_mtime_ns", "st_ctime_ns"
+            ))
+            self.assertEqual(adapter._windows_path_identity(leaf), expected)
+            leaf.write_bytes(b"changed runtime content")
+            self.assertNotEqual(adapter._windows_path_identity(leaf), expected)
+
+    def test_runtime_consumer_accepts_sibling_churn_in_both_profiles(self) -> None:
+        for profile in ("host-compatible", "hardened"):
+            for timing in ("before", "during"):
+                with self.subTest(profile=profile, timing=timing):
+                    with self._repository(profile) as fixture:
+                        repository, git_root, executables = fixture
+                        required_paths = {
+                            *executables.values(), git_root / "cmd", git_root / "usr" / "bin",
+                            git_root, git_root.parent, Path(git_root.anchor),
+                        }
+                        self.assertEqual(set(repository._windows_runtime_identities), required_paths)
+                        expected = dict(repository._windows_runtime_identities)
+
+                        def churn():
+                            for parent in (git_root / "cmd", git_root, git_root.parent):
+                                sibling = parent / "unrelated"
+                                sibling.write_bytes(b"temporary sibling")
+                                sibling.rename(parent / "renamed")
+                                (parent / "renamed").unlink()
+                                sibling.mkdir()
+                                sibling.rmdir()
+
+                        if timing == "before":
+                            churn()
+                            repository._verify_windows_runtime_identity()
+                        self.assertEqual(repository._windows_runtime_identities, expected)
+
+                        def inert_run(argv, **kwargs):
+                            self.assertEqual(argv, [str(executables["git"]), "--version"])
+                            self.assertEqual(kwargs["cwd"], str(repository.path))
+                            if timing == "during":
+                                churn()
+                            return subprocess.CompletedProcess(argv, 0, "completed\n", "")
+
+                        with mock.patch.object(adapter.subprocess, "run", side_effect=inert_run) as run:
+                            completed = repository._run_raw(["--version"])
+                        run.assert_called_once()
+                        self.assertEqual((completed.returncode, completed.stdout), (0, "completed\n"))
+                        repository._verify_windows_runtime_identity()
+
+    def test_runtime_consumer_rejects_drift_before_and_after_command(self) -> None:
+        for profile in ("host-compatible", "hardened"):
+            for change in ("directory-replacement", "directory-type", "leaf-content", "leaf-replacement"):
+                for timing in ("before", "during"):
+                    with self.subTest(profile=profile, change=change, timing=timing):
+                        with self._repository(profile) as fixture:
+                            repository, git_root, executables = fixture
+
+                            def mutate():
+                                if change.startswith("directory"):
+                                    selected = git_root / "cmd"
+                                    selected.rename(git_root / "old-cmd")
+                                    if change == "directory-replacement":
+                                        selected.mkdir()
+                                    else:
+                                        selected.write_bytes(b"not a directory")
+                                else:
+                                    selected = executables["git"]
+                                    if change == "leaf-replacement":
+                                        selected.rename(selected.with_suffix(".old"))
+                                    selected.write_bytes(b"changed runtime content")
+
+                            def inert_run(argv, **_kwargs):
+                                mutate()
+                                return subprocess.CompletedProcess(argv, 0, "completed\n", "")
+
+                            if timing == "before":
+                                mutate()
+                                with self.assertRaises(adapter.PolicyGate) as verified:
+                                    repository._verify_windows_runtime_identity()
+                                self.assertEqual(verified.exception.code, "TRUSTED_WINDOWS_RUNTIME_CHANGED")
+                            with mock.patch.object(adapter.subprocess, "run", side_effect=inert_run) as run:
+                                with self.assertRaises(adapter.PolicyGate) as raised:
+                                    repository._run_raw(["--version"])
+                            self.assertEqual(raised.exception.code, "TRUSTED_WINDOWS_RUNTIME_CHANGED")
+                            self.assertEqual(run.call_count, 0 if timing == "before" else 1)
+
+
 class PublicationExecutionTests(unittest.TestCase):
     def setUp(self) -> None:
         self.profile = mock.patch.dict(
@@ -484,57 +635,201 @@ class PublicationExecutionTests(unittest.TestCase):
         self.assertTrue(observed[0][1]["allow_root_owned_symlink"])
 
     def test_windows_https_uses_gcm_from_the_trusted_git_installation(self) -> None:
-        git_root = self.root / "Program Files" / "Git"
-        git_executable = git_root / "cmd" / "git.exe"
-        trusted_helper = (
-            git_root / "mingw64" / "bin" / "git-credential-manager.exe"
-        )
-        git_executable.parent.mkdir(parents=True)
-        trusted_helper.parent.mkdir(parents=True)
-        git_executable.write_bytes(b"git")
-        trusted_helper.write_bytes(b"gcm")
+        for layout in ("ucrt64", "mingw64"):
+            with self.subTest(layout=layout):
+                git_root = (
+                    self.root
+                    / f"provider-{layout}"
+                    / "Program Files"
+                    / "Git"
+                )
+                git_executable = git_root / "cmd" / "git.exe"
+                trusted_helper = (
+                    git_root / layout / "bin" / "git-credential-manager.exe"
+                )
+                git_executable.parent.mkdir(parents=True)
+                trusted_helper.parent.mkdir(parents=True)
+                git_executable.write_bytes(b"git")
+                trusted_helper.write_bytes(b"gcm")
 
-        with adapter.GitRepository(self.repo) as repository:
-            repository.git_executable = str(git_executable)
-            repository._windows_git_root = git_root.resolve()
-            with mock.patch.object(adapter.sys, "platform", "win32"):
-                with mock.patch.object(
-                    repository,
-                    "_configured_classes",
-                    return_value=set(),
-                ):
+                with adapter.GitRepository(self.repo) as repository:
+                    repository.git_executable = str(git_executable)
+                    repository._windows_git_root = git_root.resolve()
+                    with mock.patch.object(adapter.sys, "platform", "win32"):
+                        with mock.patch.object(
+                            repository,
+                            "_configured_classes",
+                            return_value=set(),
+                        ):
+                            with mock.patch.object(
+                                repository,
+                                "output",
+                                return_value=str(
+                                    git_root / layout / "libexec" / "git-core"
+                                ),
+                            ):
+                                repository.enable_https_credentials(
+                                    "https://github.com/example/repository.git"
+                                )
+
+                    config_count = int(repository.env["GIT_CONFIG_COUNT"])
+                    closed_config = [
+                        (
+                            repository.env[f"GIT_CONFIG_KEY_{index}"],
+                            repository.env[f"GIT_CONFIG_VALUE_{index}"],
+                        )
+                        for index in range(config_count)
+                    ]
+
+                helpers = [
+                    value
+                    for key, value in closed_config
+                    if key == "credential.helper"
+                ]
+                self.assertEqual(helpers[0], "")
+                self.assertEqual(
+                    helpers[1],
+                    str(trusted_helper.resolve()).replace(" ", "\\ "),
+                )
+                self.assertIn(
+                    ("credential.credentialStore", "wincredman"),
+                    closed_config,
+                )
+
+    def test_windows_https_fallback_requires_lexical_absence(self) -> None:
+        endpoint = "https://github.com/example/repository.git"
+
+        expected_helpers = (
+            Path("ucrt64/bin/git-credential-manager.exe"),
+            Path("ucrt64/bin/git-credential-manager-core.exe"),
+            Path("mingw64/bin/git-credential-manager.exe"),
+            Path("mingw64/bin/git-credential-manager-core.exe"),
+        )
+        self.assertEqual(
+            adapter.WINDOWS_GCM_HELPERS,
+            expected_helpers,
+            "Windows GCM helper inventory or preference order changed",
+        )
+
+        def enable_credentials(git_root: Path) -> list[str]:
+            with adapter.GitRepository(self.repo) as repository:
+                repository._windows_git_root = git_root.resolve()
+                with mock.patch.object(adapter.sys, "platform", "win32"):
                     with mock.patch.object(
                         repository,
-                        "output",
-                        return_value=str(
-                            git_root / "mingw64" / "libexec" / "git-core"
-                        ),
+                        "_configured_classes",
+                        return_value=set(),
                     ):
-                        repository.enable_https_credentials(
-                            "https://github.com/example/repository.git"
-                        )
+                        with mock.patch.object(
+                            repository,
+                            "output",
+                            return_value=str(
+                                git_root / "libexec" / "git-core"
+                            ),
+                        ):
+                            repository.enable_https_credentials(endpoint)
 
-            config_count = int(repository.env["GIT_CONFIG_COUNT"])
-            closed_config = [
-                (
-                    repository.env[f"GIT_CONFIG_KEY_{index}"],
-                    repository.env[f"GIT_CONFIG_VALUE_{index}"],
+                config_count = int(repository.env["GIT_CONFIG_COUNT"])
+                return [
+                    repository.env[f"GIT_CONFIG_VALUE_{index}"]
+                    for index in range(config_count)
+                    if repository.env[f"GIT_CONFIG_KEY_{index}"]
+                    == "credential.helper"
+                ]
+
+        for fallback_relative in expected_helpers[1:]:
+            with self.subTest(
+                state="absent",
+                fallback=fallback_relative,
+            ):
+                git_root = (
+                    self.root.resolve()
+                    / ("absent-" + "-".join(fallback_relative.parts))
+                    / "Program Files"
+                    / "Git"
                 )
-                for index in range(config_count)
-            ]
+                fallback = git_root / fallback_relative
+                fallback.parent.mkdir(parents=True)
+                fallback.write_bytes(b"gcm")
 
-        helpers = [
-            value for key, value in closed_config if key == "credential.helper"
-        ]
-        self.assertEqual(helpers[0], "")
-        self.assertEqual(
-            helpers[1],
-            str(trusted_helper.resolve()).replace(" ", "\\ "),
-        )
-        self.assertIn(
-            ("credential.credentialStore", "wincredman"),
-            closed_config,
-        )
+                helpers = enable_credentials(git_root)
+
+                self.assertEqual(
+                    helpers,
+                    [
+                        "",
+                        str(fallback.resolve()).replace(" ", "\\ "),
+                    ],
+                )
+
+        for state in (
+            "redirected",
+            "broken",
+            "non-file",
+            "inaccessible",
+            "acl-invalid",
+        ):
+            with self.subTest(state=state):
+                git_root = (
+                    self.root.resolve()
+                    / f"invalid-{state}"
+                    / "Program Files"
+                    / "Git"
+                )
+                preferred = git_root / expected_helpers[0]
+                fallback = git_root / expected_helpers[1]
+                redirected_target = git_root.parent / "redirected-helper.exe"
+                fallback.parent.mkdir(parents=True)
+                fallback.write_bytes(b"fallback")
+                if state == "non-file":
+                    preferred.mkdir()
+                else:
+                    preferred.write_bytes(b"preferred")
+
+                real_resolve = Path.resolve
+
+                def resolve(path, *args, **kwargs):
+                    if path == preferred:
+                        if state == "redirected":
+                            return redirected_target
+                        if state == "broken":
+                            raise FileNotFoundError(
+                                "preferred helper target is missing"
+                            )
+                        if state == "inaccessible":
+                            raise PermissionError(
+                                "preferred helper is inaccessible"
+                            )
+                    return real_resolve(path, *args, **kwargs)
+
+                def protected_acls(requests) -> None:
+                    if (
+                        state == "acl-invalid"
+                        and requests[0][0] == preferred.absolute()
+                    ):
+                        raise OSError("preferred helper ACL is mutable")
+
+                with mock.patch.object(Path, "resolve", resolve):
+                    with mock.patch.object(
+                        adapter,
+                        "_windows_paths_have_protected_acls",
+                        side_effect=protected_acls,
+                    ):
+                        with mock.patch.object(
+                            adapter,
+                            "_trusted_windows_bundled_executable",
+                            wraps=adapter._trusted_windows_bundled_executable,
+                        ) as trust:
+                            with self.assertRaises(
+                                adapter.PolicyGate
+                            ) as raised:
+                                enable_credentials(git_root)
+
+                self.assertEqual(
+                    raised.exception.code,
+                    "HTTPS_CREDENTIAL_PROVIDER_UNAVAILABLE",
+                )
+                trust.assert_called_once_with(preferred, git_root)
 
     def test_windows_repository_uses_only_the_bundled_git_runtime(self) -> None:
         program_files = self.root.resolve() / "Program Files"
@@ -548,7 +843,7 @@ class PublicationExecutionTests(unittest.TestCase):
         for executable in executables.values():
             executable.parent.mkdir(parents=True, exist_ok=True)
             executable.write_bytes(b"trusted")
-        (git_root / "mingw64" / "bin").mkdir(parents=True)
+        (git_root / "ucrt64" / "bin").mkdir(parents=True)
 
         with mock.patch.object(adapter.sys, "platform", "win32"):
             with mock.patch.dict(
@@ -586,9 +881,121 @@ class PublicationExecutionTests(unittest.TestCase):
             observed_env["PATH"],
             ";".join(
                 str((git_root / relative).resolve())
-                for relative in ("cmd", "mingw64/bin", "usr/bin")
+                for relative in ("cmd", "ucrt64/bin", "usr/bin")
             ),
         )
+
+    def test_windows_runtime_rejects_invalid_preferred_layouts(self) -> None:
+        def install_runtime(git_root: Path) -> None:
+            for relative in adapter.WINDOWS_GIT_RUNTIME.values():
+                executable = git_root / relative
+                executable.parent.mkdir(parents=True, exist_ok=True)
+                executable.write_bytes(b"trusted")
+
+        for layout in ("ucrt64/bin", "mingw64/bin"):
+            with self.subTest(layout=layout):
+                program_files = (
+                    self.root.resolve()
+                    / f"valid-{layout.split('/')[0]}"
+                    / "Program Files"
+                )
+                git_root = program_files / "Git"
+                install_runtime(git_root)
+                (git_root / layout).mkdir(parents=True)
+
+                with mock.patch.object(adapter.sys, "platform", "win32"):
+                    with mock.patch.dict(
+                        os.environ,
+                        {
+                            "ProgramFiles": str(program_files),
+                            "ProgramFiles(x86)": str(self.root / "missing-x86"),
+                        },
+                        clear=False,
+                    ):
+                        with mock.patch.object(
+                            adapter,
+                            "_windows_paths_have_protected_acls",
+                        ):
+                            with adapter.GitRepository(self.repo) as repository:
+                                self.assertEqual(
+                                    repository._windows_git_root,
+                                    git_root.resolve(),
+                                )
+                                self.assertEqual(
+                                    repository.env["PATH"],
+                                    ";".join(
+                                        str((git_root / relative).resolve())
+                                        for relative in ("cmd", layout, "usr/bin")
+                                    ),
+                                )
+
+        for state in (
+            "redirected",
+            "broken",
+            "non-directory",
+            "resolution-error",
+        ):
+            with self.subTest(state=state):
+                program_files = (
+                    self.root.resolve() / state / "Program Files"
+                )
+                git_root = program_files / "Git"
+                install_runtime(git_root)
+                (git_root / "mingw64/bin").mkdir(parents=True)
+                preferred = git_root / "ucrt64/bin"
+                preferred.parent.mkdir(parents=True)
+                redirected_target = (
+                    self.root.resolve() / state / "redirected-bin"
+                )
+                if state == "non-directory":
+                    preferred.write_bytes(b"not a directory")
+                else:
+                    preferred.mkdir()
+                if state == "redirected":
+                    redirected_target.mkdir()
+
+                real_resolve = Path.resolve
+
+                def resolve(path, *args, **kwargs):
+                    if path == preferred:
+                        if state == "redirected":
+                            return redirected_target
+                        if state == "broken":
+                            raise FileNotFoundError(
+                                "preferred layout target is missing"
+                            )
+                        if state == "resolution-error":
+                            raise PermissionError(
+                                "preferred layout is inaccessible"
+                            )
+                    return real_resolve(path, *args, **kwargs)
+
+                with mock.patch.object(Path, "resolve", resolve):
+                    with mock.patch.object(adapter.sys, "platform", "win32"):
+                        with mock.patch.dict(
+                            os.environ,
+                            {
+                                "ProgramFiles": str(program_files),
+                                "ProgramFiles(x86)": str(
+                                    self.root / "missing-x86"
+                                ),
+                            },
+                            clear=False,
+                        ):
+                            with mock.patch.object(
+                                adapter,
+                                "_windows_paths_have_protected_acls",
+                            ) as acl_probe:
+                                with self.assertRaises(
+                                    adapter.PolicyGate
+                                ) as raised:
+                                    adapter.GitRepository(self.repo)
+
+                self.assertEqual(
+                    raised.exception.code,
+                    "TRUSTED_WINDOWS_RUNTIME_UNAVAILABLE",
+                )
+                acl_probe.assert_not_called()
 
     def test_windows_repository_rejects_runtime_identity_drift(self) -> None:
         program_files = self.root.resolve() / "Program Files"
@@ -1315,37 +1722,50 @@ class PublicationExecutionTests(unittest.TestCase):
         run_endpoint.assert_not_called()
 
     def test_windows_https_provider_unavailable_blocks_before_use(self) -> None:
-        git_root = self.root / "Program Files" / "Git"
-        git_executable = git_root / "cmd" / "git.exe"
-        git_executable.parent.mkdir(parents=True)
-        git_executable.write_bytes(b"git")
+        for layout in ("ucrt64", "mingw64"):
+            with self.subTest(layout=layout):
+                git_root = (
+                    self.root
+                    / f"unavailable-provider-{layout}"
+                    / "Program Files"
+                    / "Git"
+                )
+                git_executable = git_root / "cmd" / "git.exe"
+                git_executable.parent.mkdir(parents=True)
+                (git_root / layout / "bin").mkdir(parents=True)
+                git_executable.write_bytes(b"git")
 
-        with adapter.GitRepository(self.repo) as repository:
-            repository.git_executable = str(git_executable)
-            repository._windows_git_root = git_root.resolve()
-            with mock.patch.object(adapter.sys, "platform", "win32"):
-                with mock.patch.object(
-                    repository,
-                    "_configured_classes",
-                    return_value=set(),
-                ):
-                    with mock.patch.object(
-                        repository,
-                        "output",
-                        return_value=str(
-                            git_root / "mingw64" / "libexec" / "git-core"
-                        ),
-                    ):
-                        with self.assertRaises(adapter.PolicyGate) as raised:
-                            repository.enable_https_credentials(
-                                "https://github.com/example/repository.git"
-                            )
+                with adapter.GitRepository(self.repo) as repository:
+                    repository.git_executable = str(git_executable)
+                    repository._windows_git_root = git_root.resolve()
+                    with mock.patch.object(adapter.sys, "platform", "win32"):
+                        with mock.patch.object(
+                            repository,
+                            "_configured_classes",
+                            return_value=set(),
+                        ):
+                            with mock.patch.object(
+                                repository,
+                                "output",
+                                return_value=str(
+                                    git_root / layout / "libexec" / "git-core"
+                                ),
+                            ):
+                                with self.assertRaises(
+                                    adapter.PolicyGate
+                                ) as raised:
+                                    repository.enable_https_credentials(
+                                        "https://github.com/example/repository.git"
+                                    )
 
-        self.assertEqual(
-            raised.exception.code,
-            "HTTPS_CREDENTIAL_PROVIDER_UNAVAILABLE",
-        )
-        self.assertEqual(raised.exception.evidence, {"provider": "windows-gcm"})
+                self.assertEqual(
+                    raised.exception.code,
+                    "HTTPS_CREDENTIAL_PROVIDER_UNAVAILABLE",
+                )
+                self.assertEqual(
+                    raised.exception.evidence,
+                    {"provider": "windows-gcm"},
+                )
 
     def test_https_plan_receipt_and_command_config_are_credential_free(self) -> None:
         fingerprint = self.plan["destination"]["endpoint_fingerprint"]
@@ -1666,6 +2086,77 @@ class PublicationExecutionTests(unittest.TestCase):
         self.assertEqual(result["status"], "blocked")
         self.assertFalse(result["push_attempted"])
         self.assertEqual(result["reasons"][0]["code"], "REVIEWED_CONFIG_CHANGED")
+
+    def test_reviewed_profile_change_blocks_before_external_boundaries(self) -> None:
+        events = []
+        endpoint = "https://example.invalid/repository.git"
+        destination = self.plan["destination"]
+        host_home = self.root / "host-home"
+        host_config_home = self.root / "host-config"
+        host_home.mkdir()
+        host_config_home.mkdir()
+
+        def record_credential_activation(_repository, _endpoint):
+            events.append("credential_activation")
+
+        def record_default_branch_probe(*_args, **_kwargs):
+            events.append("endpoint_probe")
+            return destination["default_branch_ref"]
+
+        def record_target_probe(*_args, **_kwargs):
+            events.append("endpoint_probe")
+            return self.start
+
+        def record_push(*_args, **_kwargs):
+            events.append("push")
+            return subprocess.CompletedProcess(["git", "push"], 0, "", "")
+
+        with mock.patch.dict(
+            os.environ,
+            {
+                adapter.GIT_CONFIG_PROFILE_ENV: "host-compatible",
+                "HOME": str(host_home),
+                "XDG_CONFIG_HOME": str(host_config_home),
+                "PATH": "/usr/bin:/bin",
+            },
+            clear=False,
+        ):
+            with mock.patch.object(
+                execution,
+                "_endpoint",
+                return_value=(endpoint, destination["endpoint_fingerprint"]),
+            ):
+                with mock.patch.object(
+                    execution.GitRepository,
+                    "enable_https_credentials",
+                    autospec=True,
+                    side_effect=record_credential_activation,
+                ):
+                    with mock.patch.object(
+                        execution,
+                        "_probe_default_branch",
+                        side_effect=record_default_branch_probe,
+                    ):
+                        with mock.patch.object(
+                            execution,
+                            "_probe_ref",
+                            side_effect=record_target_probe,
+                        ):
+                            with mock.patch.object(
+                                execution,
+                                "_run_endpoint",
+                                side_effect=record_push,
+                            ):
+                                result = execute(self.repo, self.plan)
+
+        self.assertEqual(result["status"], "blocked")
+        self.assertFalse(result["push_attempted"])
+        self.assertEqual(result["reasons"][0]["code"], "REVIEWED_CONFIG_CHANGED")
+        self.assertEqual(events, [])
+        self.assertEqual(
+            git(self.remote, "rev-parse", "refs/heads/topic"),
+            self.start,
+        )
 
     def test_target_lease_change_after_review_blocks_before_push(self) -> None:
         remote_only = commit(self.repo, "remote-only")

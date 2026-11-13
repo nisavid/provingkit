@@ -81,7 +81,9 @@ class ComposedEvidenceError(RuntimeError):
 
 
 def candidate_identity(root: Path) -> str:
-    return candidate_content_identity(root, error_factory=ComposedEvidenceError)
+    return candidate_content_identity(
+        root, error_factory=ComposedEvidenceError, runtime_policy="hardened"
+    )
 
 
 @contextmanager
@@ -113,6 +115,7 @@ def _immutable_candidate_snapshot(
             public_root,
             error_factory=ComposedEvidenceError,
             capture_file=capture_file,
+            runtime_policy="hardened",
         )
         for directory in sorted(
             (path for path in snapshot.rglob("*") if path.is_dir()),

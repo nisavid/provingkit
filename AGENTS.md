@@ -4,8 +4,15 @@
 
 ### Issue tracker
 
-Issues, PRDs, and Wayfinder maps are tracked in GitHub Issues for
+Issues, specs, and Wayfinder maps are tracked in GitHub Issues for
 `nisavid/provingkit`. See `docs/agents/issue-tracker.md`.
+
+For release publication or presentation changes, use
+`docs/agents/release-presentation.md`. For stale Linear release records, use
+`docs/agents/linear-release-reconciliation.md`.
+
+For an installed companion update that changes Provingkit references, use
+`docs/agents/companion-migration-handoffs.md`.
 
 ### Triage labels
 
@@ -15,7 +22,7 @@ Use the canonical `needs-triage`, `needs-info`, `ready-for-agent`,
 
 ### Domain docs
 
-This is a single-context repository with root `CONTEXT.md` and system-wide
+This is a single-context repository with root `GLOSSARY.md` and system-wide
 ADRs under `docs/adr/`. See `docs/agents/domain.md`.
 
 ## Sys1 incidents
@@ -28,15 +35,23 @@ from it and verify byte equality before publishing procedure changes.
 
 ## Project context
 
-Read `CONTEXT.md` before planning or editing, and use its canonical language
+Read `GLOSSARY.md` before planning or editing, and use its canonical language
 in code, tests, documentation, issues, and commits. Where the glossary gives an
 Agent Plugins term and a Claude equivalent, the Agent Plugins term is the
 repository's word. Keep `README.md` as the verified human entrypoint and keep
 detailed contracts, research, and specs under `docs/`.
 
-Each member under `plugins/` is a package whose README names its validator
-(`scripts/validate_<plugin>.py`), tests, evals, governed content identity, and
-supported regeneration commands. Edit canonical source first. Use
+Equipment is designed principle-first. Before writing, revising, or reviewing
+it, read the core maxim that opens `docs/plugin-system/design-principles.md`.
+For software behavior changes, use `docs/agents/consumer-specifications.md` to
+bind consumer examples to the tested interface before implementation.
+
+Each member under `plugins/` is a package. Its README is the front page for
+people using the plugin and ships in installed copies, so its relative links
+name only files the release projection includes. Its developer page,
+`DEVELOPING.md` where the member has one and otherwise the README, names its
+validator (`scripts/validate_<plugin>.py`), tests, evals, governed content
+identity, and supported regeneration commands. Edit canonical source first. Use
 `--write-content-lock` only where the member's validator documents that mode;
 Rolecasting, Versionkeeping, Mergecraft, and Artifact Customs write only their
 content locks, while Tricritical also regenerates its per-skill reference
@@ -46,16 +61,17 @@ lock.
 
 ## Git and validation
 
-Use Conventional Commits for commits and pull request titles. The Cocogitto
-`commit-msg` and `pre-push` hooks installed by `cog install-hook --all` check
-commit messages and history. Every change requires `git diff --check`.
+Keep history machine-checkable: use Conventional Commits for commits and PR
+titles (Cocogitto adapter: `commit-msg`/`pre-push`, installed by
+`cog install-hook --all`).
 
-Before publication, run the validation that owns the touched surface:
-`python scripts/validate_<plugin>.py .` and the plugin's tests through
-`python -m unittest` for a plugin change, and
-`python scripts/validate_source_skill_disposition.py .` whenever `plugins/`,
-`release/`, or the disposition ledger changes. The workflows under
-`.github/workflows/` run the same validators on every pull request.
+Verify changed behavior before publication; failing or unavailable required
+checks hold it. Derive invocation from maintained developer guidance.
+Git adapter: every change requires `git diff --check`.
+Python adapters: plugin changes require their validator
+(`python scripts/validate_<plugin>.py .`) and `python -m unittest` suites;
+changes under `plugins/` or `release/`, or to the disposition ledger, require
+`python scripts/validate_source_skill_disposition.py .`.
 
 ## Operating Policy
 

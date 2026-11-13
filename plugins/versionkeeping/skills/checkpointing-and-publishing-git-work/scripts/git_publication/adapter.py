@@ -30,6 +30,12 @@ from .core import (
     plan_publication,
     request_document,
 )
+from .host_trust import (
+    HostExecutable,
+    bind_host_executable,
+    is_host_namespace_anchor,
+    recheck_host_executable,
+)
 
 
 SHA_RE = re.compile(r"^(?:[0-9a-f]{40}|[0-9a-f]{64})$")
@@ -73,9 +79,18 @@ MACOS_SYSTEM_CREDENTIAL_HELPERS = (
 LINUX_CREDENTIAL_HELPER = "git-credential-cache"
 GIT_CONFIG_PROFILE_ENV = "VERSIONKEEPING_GIT_CONFIG_PROFILE"
 GIT_CONFIG_PROFILES = frozenset(("host-compatible", "hardened"))
+GITHUB_GH_EXECUTABLE = Path("/usr/bin/gh")
+GITHUB_ASKPASS_EXECUTABLE = Path("/usr/bin/false")
+GITHUB_CREDENTIAL_POLICY = "github-gh-environment-v1"
 WINDOWS_GCM_HELPERS = (
+    Path("ucrt64/bin/git-credential-manager.exe"),
+    Path("ucrt64/bin/git-credential-manager-core.exe"),
     Path("mingw64/bin/git-credential-manager.exe"),
     Path("mingw64/bin/git-credential-manager-core.exe"),
+)
+WINDOWS_GIT_TOOLCHAIN_BIN_DIRECTORIES = (
+    Path("ucrt64/bin"),
+    Path("mingw64/bin"),
 )
 WINDOWS_GIT_RUNTIME = {
     "git": Path("cmd/git.exe"),
@@ -152,6 +167,16 @@ GIT_SUBPROCESS_ENV_ALLOWLIST = {
     "http_proxy",
     "no_proxy",
 }
+
+
+def _github_credential_authority(endpoint: str) -> bool:
+    try:
+        parsed = urllib.parse.urlsplit(endpoint)
+        return (parsed.scheme == "https" and parsed.hostname == "github.com"
+                and parsed.port in (None, 443) and parsed.username is None
+                and parsed.password is None and not parsed.query and not parsed.fragment)
+    except ValueError:
+        return False
 
 
 def _trusted_root_owned_executable(
@@ -510,11 +535,14 @@ def _windows_path_has_protected_acl(
     _windows_paths_have_protected_acls(((path, replacement_only),))
 
 
-def _windows_path_identity(path: Path) -> tuple[int, int, int, int, int, int]:
+def _windows_path_identity(path: Path) -> tuple[int, ...]:
     resolved = path.resolve(strict=True)
     if resolved != path.absolute():
         raise OSError("Windows runtime path is redirected")
     metadata = resolved.lstat()
+    if stat.S_ISDIR(metadata.st_mode):
+        # Ancestor directory-content metadata is not runtime object identity.
+        return (metadata.st_dev, metadata.st_ino, metadata.st_mode)
     return (
         metadata.st_dev,
         metadata.st_ino,
@@ -629,16 +657,31 @@ def _windows_trusted_command_path(
     check_acls: bool = True,
 ) -> str:
     directories = []
-    for relative in (Path("cmd"), Path("mingw64/bin"), Path("usr/bin")):
-        path = git_root / relative
-        resolved = path.resolve(strict=True)
-        if (
-            git_root not in resolved.parents
-            or resolved != path.absolute()
-            or not resolved.is_dir()
-        ):
-            raise OSError("trusted command directory is redirected")
-        directories.append(resolved)
+    directory_candidates = (
+        (Path("cmd"),),
+        WINDOWS_GIT_TOOLCHAIN_BIN_DIRECTORIES,
+        (Path("usr/bin"),),
+    )
+    for candidates in directory_candidates:
+        for relative in candidates:
+            path = git_root / relative
+            try:
+                path.lstat()
+            except FileNotFoundError:
+                continue
+            resolved = path.resolve(strict=True)
+            if (
+                git_root not in resolved.parents
+                or resolved != path.absolute()
+                or not resolved.is_dir()
+            ):
+                raise OSError(
+                    "trusted command directory is unavailable"
+                )
+            directories.append(resolved)
+            break
+        else:
+            raise OSError("trusted command directory is unavailable")
     if check_acls:
         _windows_paths_have_protected_acls(
             tuple(
@@ -660,13 +703,26 @@ def _require_windows_credential_provider(git_root: Path | None) -> str:
             provider="windows-gcm",
         )
     for relative in WINDOWS_GCM_HELPERS:
+        candidate = git_root / relative
+        try:
+            candidate.lstat()
+        except FileNotFoundError:
+            continue
+        except OSError as error:
+            raise PolicyGate(
+                "HTTPS_CREDENTIAL_PROVIDER_UNAVAILABLE",
+                provider="windows-gcm",
+            ) from error
         try:
             return _trusted_windows_bundled_executable(
-                git_root / relative,
+                candidate,
                 git_root,
             )
-        except OSError:
-            continue
+        except OSError as error:
+            raise PolicyGate(
+                "HTTPS_CREDENTIAL_PROVIDER_UNAVAILABLE",
+                provider="windows-gcm",
+            ) from error
     raise PolicyGate(
         "HTTPS_CREDENTIAL_PROVIDER_UNAVAILABLE",
         provider="windows-gcm",
@@ -681,17 +737,37 @@ class _TrustedGitRuntime:
     shell: str
     command_path: str
     windows_root: Path | None
+    host_executables: tuple[HostExecutable, ...] = ()
 
 
-def _trusted_git_runtime() -> _TrustedGitRuntime:
+def _trusted_git_runtime(
+    *, config_profile: str, repository_root: Path
+) -> _TrustedGitRuntime:
     if sys.platform != "win32":
+        host_executables = []
+        executables = {}
+        for name, path in TRUSTED_SYSTEM_EXECUTABLES.items():
+            if config_profile == "host-compatible":
+                try:
+                    bound = bind_host_executable(
+                        path, excluded_roots=(repository_root,)
+                    )
+                except OSError as error:
+                    raise PolicyGate(
+                        f"TRUSTED_{name.upper()}_EXECUTABLE_UNAVAILABLE"
+                    ) from error
+                host_executables.append(bound)
+                executables[name] = bound.path
+            else:
+                executables[name] = _trusted_system_executable(name)
         return _TrustedGitRuntime(
-            git_executable=_trusted_system_executable("git"),
-            ssh_executable=_trusted_system_executable("ssh"),
+            git_executable=executables["git"],
+            ssh_executable=executables["ssh"],
             askpass="false",
             shell="/bin/sh",
             command_path=TRUSTED_COMMAND_PATH,
             windows_root=None,
+            host_executables=tuple(host_executables),
         )
 
     for root in _windows_git_install_roots():
@@ -708,17 +784,12 @@ def _trusted_git_runtime() -> _TrustedGitRuntime:
                 )
                 for name, path in executable_paths.items()
             }
-            command_directories = tuple(
-                root / relative
-                for relative in (
-                    Path("cmd"),
-                    Path("mingw64/bin"),
-                    Path("usr/bin"),
-                )
-            )
             command_path = _windows_trusted_command_path(
                 root,
                 check_acls=False,
+            )
+            command_directories = tuple(
+                Path(directory) for directory in command_path.split(";")
             )
             _windows_paths_have_protected_acls(
                 tuple(
@@ -994,6 +1065,7 @@ class GitRepository:
         path: Path,
         timeout_seconds: int = DEFAULT_GIT_TIMEOUT_SECONDS,
         config_profile: str | None = None,
+        publication_credentials: bool = False,
     ):
         self.path = Path(path)
         self.timeout_seconds = timeout_seconds
@@ -1008,12 +1080,15 @@ class GitRepository:
                 profile=self.config_profile,
                 supported_profiles=sorted(GIT_CONFIG_PROFILES),
             )
-        runtime = _trusted_git_runtime()
+        runtime = _trusted_git_runtime(
+            config_profile=self.config_profile, repository_root=self.path
+        )
         self.git_executable = runtime.git_executable
+        self._host_runtime = runtime.host_executables
         self._windows_git_root = runtime.windows_root
         self._windows_runtime_identities: dict[
             Path,
-            tuple[int, int, int, int, int, int],
+            tuple[int, ...],
         ] = {}
         if sys.platform == "win32":
             askpass = _credential_helper_config(runtime.askpass)
@@ -1044,6 +1119,10 @@ class GitRepository:
         self.hooks_path = Path(self._empty_hooks.name).resolve()
         self._policy_established = False
         self._https_credentials_enabled = False
+        self._github_provider: HostExecutable | None = None
+        self._github_askpass: HostExecutable | None = None
+        self._github_policy: dict | None = None
+        self._publication_credentials = publication_credentials is True
         self.env = {
             key: value
             for key, value in os.environ.items()
@@ -1127,9 +1206,139 @@ class GitRepository:
             if observed != expected:
                 raise PolicyGate("TRUSTED_WINDOWS_RUNTIME_CHANGED")
 
+    def _verify_runtime_identity(self) -> None:
+        self._verify_windows_runtime_identity()
+        try:
+            for executable in self._host_runtime:
+                recheck_host_executable(executable)
+            if getattr(self, "_github_provider", None) is not None:
+                recheck_host_executable(self._github_provider)
+            if getattr(self, "_github_askpass", None) is not None:
+                recheck_host_executable(self._github_askpass)
+        except OSError as error:
+            raise PolicyGate("TRUSTED_GIT_RUNTIME_CHANGED") from error
+
+    def publication_credential_policy(self, endpoint: str) -> dict | None:
+        """Bind only a selected Linux gh helper to an existing session token.
+
+        This is an ordinary host-trust exception. Values never enter the base
+        environment, plan identity, arguments, diagnostics, or storage.
+        """
+        if (not getattr(self, "_publication_credentials", False)
+                or self.config_profile != "host-compatible"
+                or not _github_credential_authority(endpoint)):
+            return None
+        source = next((name for name in ("GH_TOKEN", "GITHUB_TOKEN")
+                       if os.environ.get(name)), None)
+        if source is None:
+            if self._github_policy is not None:
+                raise PolicyGate("GITHUB_CREDENTIAL_POLICY_CHANGED")
+            return None
+        expected = f"!{GITHUB_GH_EXECUTABLE} auth git-credential"
+        result = self._run_raw(
+            ["config", "--null", "--get-regexp", r"^credential(\..*)?\.helper$"],
+            check=False,
+        )
+        if result.returncode not in (0, 1):
+            raise PolicyGate("GIT_CONFIGURATION_UNAVAILABLE")
+        declarations = []
+        ambiguous = False
+        for entry in result.stdout.split("\0"):
+            if not entry:
+                continue
+            key, separator, value = entry.partition("\n")
+            if not separator:
+                raise PolicyGate("GIT_CONFIGURATION_INVENTORY_MALFORMED")
+            if key.lower() != "credential.helper":
+                scope = key[len("credential."):-len(".helper")]
+                try:
+                    scoped = urllib.parse.urlsplit(scope)
+                    if (scoped.scheme not in ("http", "https") or not scoped.hostname
+                            or scoped.username is not None or scoped.password is not None
+                            or scoped.query or scoped.fragment or "*" in scope):
+                        raise ValueError("ambiguous credential scope")
+                    if scoped.scheme != "https" or scoped.hostname != "github.com":
+                        continue
+                    if scoped.port not in (None, 443):
+                        continue
+                except ValueError:
+                    ambiguous = True
+            # Check the whole possible chain, not --get-urlmatch's final scalar.
+            # Conservatively reject even a conflicting path-specific helper.
+            declarations.append([key, value])
+        if not any(value == expected for _key, value in declarations):
+            if self._github_policy is not None:
+                raise PolicyGate("GITHUB_CREDENTIAL_POLICY_CHANGED")
+            return None
+        if not sys.platform.startswith("linux"):
+            raise PolicyGate("GITHUB_CREDENTIAL_PROVIDER_UNAVAILABLE", platform=sys.platform)
+        if ambiguous or any(value not in ("", expected) for _key, value in declarations):
+            raise PolicyGate("GITHUB_CREDENTIAL_HELPER_CONFLICT")
+        self._reject_configured_classes(
+            lambda key: ("includeIf.*" if key.lower().startswith("includeif.") else
+                         "http.*" if key.lower().startswith("http.") else
+                         "credential.*" if key.lower().startswith("credential.")
+                         and not key.lower().endswith(".helper") else
+                         "url.*.rewrite" if re.fullmatch(
+                             r"url\..+\.(?:insteadof|pushinsteadof)", key.lower()) else None),
+        )
+        match = self._run_raw(
+            ["config", "--null", "--get-urlmatch", "credential.helper", endpoint],
+            check=False,
+        )
+        if match.returncode != 0 or match.stdout != expected + "\0":
+            raise PolicyGate("GITHUB_CREDENTIAL_HELPER_UNSELECTED")
+        try:
+            if self._github_provider is None:
+                self._github_provider = bind_host_executable(
+                    GITHUB_GH_EXECUTABLE, excluded_roots=(self.path,),
+                )
+            recheck_host_executable(self._github_provider)
+        except OSError:
+            raise PolicyGate("GITHUB_CREDENTIAL_PROVIDER_UNAVAILABLE") from None
+        try:
+            if self._github_askpass is None:
+                self._github_askpass = bind_host_executable(
+                    GITHUB_ASKPASS_EXECUTABLE, excluded_roots=(self.path,),
+                )
+            recheck_host_executable(self._github_askpass)
+        except OSError:
+            raise PolicyGate("GITHUB_CREDENTIAL_FALLBACK_UNAVAILABLE") from None
+        policy = {
+            "policy": GITHUB_CREDENTIAL_POLICY, "authority": "github.com:443",
+            "source": source, "helper": expected, "declarations": declarations,
+            "provider_identity": [[str(path), list(identity)]
+                                  for path, identity in self._github_provider.identities],
+            "askpass_identity": [[str(path), list(identity)]
+                                 for path, identity in self._github_askpass.identities],
+        }
+        if self._github_policy is not None and policy != self._github_policy:
+            raise PolicyGate("GITHUB_CREDENTIAL_POLICY_CHANGED")
+        self._github_policy = policy
+        return policy
+
+    def _credential_environment(self, endpoint: str) -> tuple[dict, list[str]]:
+        env = self.env.copy()
+        policy = self.publication_credential_policy(endpoint)
+        if policy is None:
+            return env, []
+        value = os.environ.get(policy["source"])
+        if not value:
+            raise PolicyGate("GITHUB_CREDENTIAL_POLICY_CHANGED")
+        env.update({policy["source"]: value, "GH_PROMPT_DISABLED": "1",
+                    "GH_NO_UPDATE_NOTIFIER": "1",
+                    "GIT_ASKPASS": self._github_askpass.path,
+                    "SSH_ASKPASS": self._github_askpass.path,
+                    "GIT_TERMINAL_PROMPT": "0", "SSH_ASKPASS_REQUIRE": "never"})
+        return env, ["-c", "credential.helper=", "-c", "credential.helper=" + policy["helper"],
+                     "-c", "http.sslVerify=true", "-c", "http.followRedirects=false",
+                     "-c", "core.fsmonitor=false", "-c", f"core.hooksPath={self.hooks_path}"]
+
     def enable_https_credentials(self, endpoint: str) -> None:
         """Bind one trusted noninteractive provider for one HTTPS execution."""
-        _validate_transport_endpoint(endpoint, self.path)
+        _validate_transport_endpoint(
+            endpoint, self.path, config_profile=self.config_profile
+        )
         if urllib.parse.urlsplit(endpoint).scheme.lower() != "https":
             return
         if self._https_credentials_enabled:
@@ -1188,15 +1397,17 @@ class GitRepository:
             f"host={parsed.netloc}\n"
             f"path={parsed.path.lstrip('/')}\n\n"
         )
+        self._verify_runtime_identity()
+        env, credential_config = self._credential_environment(endpoint)
         try:
             result = subprocess.run(
-                [self.git_executable, "credential", "fill"],
+                [self.git_executable, *credential_config, "credential", "fill"],
                 cwd=str(self.path),
-                env=self.env,
+                env=env,
                 input=query,
                 text=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
                 timeout=self.timeout_seconds,
                 check=False,
             )
@@ -1205,7 +1416,8 @@ class GitRepository:
                 "HTTPS_CREDENTIALS_UNAVAILABLE",
                 profile=self.config_profile,
             ) from error
-        if result.returncode != 0 or not result.stdout.strip():
+        self._verify_runtime_identity()
+        if result.returncode != 0:
             raise PolicyGate(
                 "HTTPS_CREDENTIALS_UNAVAILABLE",
                 profile=self.config_profile,
@@ -1226,16 +1438,18 @@ class GitRepository:
         check: bool = True,
         allowed: Sequence[int] = (),
         env_overrides: Optional[Dict[str, str]] = None,
+        credential_endpoint: str | None = None,
     ) -> subprocess.CompletedProcess:
-        env = self.env.copy()
+        env, credential_config = (self._credential_environment(credential_endpoint)
+                                  if credential_endpoint is not None else (self.env.copy(), []))
         if env_overrides:
             if set(env_overrides) != {"VERSIONKEEPING_PUBLICATION_ENDPOINT"}:
                 raise PolicyGate("GIT_CONFIG_ENVIRONMENT_OVERRIDE_REJECTED")
             env.update(env_overrides)
-        self._verify_windows_runtime_identity()
+        self._verify_runtime_identity()
         try:
             completed = subprocess.run(
-                [self.git_executable, *args],
+                [self.git_executable, *credential_config, *args],
                 cwd=str(self.path),
                 env=env,
                 stdin=subprocess.DEVNULL,
@@ -1250,13 +1464,32 @@ class GitRepository:
                 operation=args[0] if args else "git",
                 timeout_seconds=self.timeout_seconds,
             ) from error
-        self._verify_windows_runtime_identity()
+        self._verify_runtime_identity()
         if check and completed.returncode != 0 and completed.returncode not in allowed:
             raise RuntimeError(
                 f"git command failed ({completed.returncode}): "
                 f"{args[0] if args else 'git'}"
             )
         return completed
+
+    def run_transport(self, args: Sequence[str], endpoint: str, *,
+                      check: bool = True, env_overrides: Optional[Dict[str, str]] = None):
+        self._establish_inert_policy()
+        _validate_transport_endpoint(endpoint, self.path, config_profile=self.config_profile)
+        if env_overrides != {"VERSIONKEEPING_PUBLICATION_ENDPOINT": endpoint}:
+            raise PolicyGate("GIT_CONFIG_ENVIRONMENT_OVERRIDE_REJECTED")
+        index = 0
+        while index < len(args):
+            if args[index] == "-c" and index + 1 < len(args):
+                index += 2
+            elif args[index].startswith("--config-env=remote.versionkeeping-publication-"):
+                index += 1
+            else:
+                break
+        if index == len(args) or args[index] not in {"ls-remote", "fetch", "push"}:
+            raise PolicyGate("GIT_CREDENTIAL_TRANSPORT_REQUIRED")
+        return self._run_raw(args, check=check, env_overrides=env_overrides,
+                             credential_endpoint=endpoint)
 
     def _config_key_inventory(
         self,
@@ -1613,12 +1846,19 @@ def _fingerprint(endpoint: str) -> str:
     return "sha256:" + hashlib.sha256(endpoint.encode("utf-8")).hexdigest()
 
 
-def _require_secure_local_ancestry(path: Path) -> None:
+def _require_secure_local_ancestry(
+    path: Path, *, config_profile: str = "hardened"
+) -> None:
     trusted_owners = {0, os.geteuid()}
     child = path.lstat()
     for parent in path.parents:
         metadata = parent.lstat()
-        if not stat.S_ISDIR(metadata.st_mode) or metadata.st_uid not in trusted_owners:
+        host_anchor = (
+            config_profile == "host-compatible" and is_host_namespace_anchor(parent)
+        )
+        if not stat.S_ISDIR(metadata.st_mode) or (
+            metadata.st_uid not in trusted_owners and not host_anchor
+        ):
             raise PolicyGate(
                 "UNSAFE_GIT_REMOTE",
                 remote_kind="local",
@@ -1657,7 +1897,7 @@ def _reject_untrusted_local_symlink_ancestors(path: Path) -> None:
             )
 
 
-def _guard_local_remote(path: Path) -> None:
+def _guard_local_remote(path: Path, *, config_profile: str = "hardened") -> None:
     try:
         lexical = Path(os.path.abspath(path))
         if lexical.is_symlink():
@@ -1685,7 +1925,7 @@ def _guard_local_remote(path: Path) -> None:
             remote_kind="local",
             reason="ownership_or_mode",
         )
-    _require_secure_local_ancestry(resolved)
+    _require_secure_local_ancestry(resolved, config_profile=config_profile)
 
 
 def _is_scp_endpoint(endpoint: str) -> bool:
@@ -1702,6 +1942,8 @@ def _is_scp_endpoint(endpoint: str) -> bool:
 def _validate_transport_endpoint(
     endpoint: str,
     repository_root: Path | None = None,
+    *,
+    config_profile: str = "hardened",
 ) -> None:
     if not endpoint or CONTROL_RE.search(endpoint):
         raise PolicyGate("UNSAFE_GIT_REMOTE", reason="malformed")
@@ -1762,7 +2004,7 @@ def _validate_transport_endpoint(
         if repository_root is None:
             raise PolicyGate("UNSAFE_GIT_REMOTE", reason="unsupported_protocol")
         local = repository_root / local
-    _guard_local_remote(local)
+    _guard_local_remote(local, config_profile=config_profile)
 
 
 def _endpoint(repo: GitRepository, remote: str) -> Tuple[str, str]:
@@ -1774,7 +2016,9 @@ def _endpoint(repo: GitRepository, remote: str) -> Tuple[str, str]:
     urls = result.stdout.splitlines()
     if len(urls) != 1 or not urls[0]:
         raise PolicyGate("PUSH_ENDPOINT_AMBIGUOUS", count=len(urls))
-    _validate_transport_endpoint(urls[0], repo.path)
+    _validate_transport_endpoint(
+        urls[0], repo.path, config_profile=repo.config_profile
+    )
     return urls[0], _fingerprint(urls[0])
 
 
@@ -1788,7 +2032,7 @@ def _run_endpoint(
 ) -> subprocess.CompletedProcess:
     alias = f"versionkeeping-publication-{secrets.token_hex(16)}"
     env_name = "VERSIONKEEPING_PUBLICATION_ENDPOINT"
-    return repo.run(
+    return repo.run_transport(
         [
             "-c",
             "http.sslVerify=true",
@@ -1800,6 +2044,7 @@ def _run_endpoint(
             alias,
             *suffix,
         ],
+        endpoint,
         check=check,
         env_overrides={env_name: endpoint},
     )
@@ -2038,6 +2283,9 @@ def _snapshot(
         selection = dict(selection)
         selection["default_branch_ref"] = default_branch_ref
         selection["config_profile"] = repo.config_profile
+        credential_policy = repo.publication_credential_policy(endpoint)
+        if credential_policy is not None:
+            selection["credential_environment"] = credential_policy
         digest = _config_digest(selection, fingerprint)
         context["destination"].update(
             {
@@ -2123,7 +2371,7 @@ def plan_repository(path: Path, raw_request: Any) -> dict:
         if isinstance(raw_request, PublicationRequest)
         else parse_request(raw_request)
     )
-    with GitRepository(Path(path)) as repo:
+    with GitRepository(Path(path), publication_credentials=True) as repo:
         try:
             _guard_repository(repo)
             object_format = _object_format(repo)

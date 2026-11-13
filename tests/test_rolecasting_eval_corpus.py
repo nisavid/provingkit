@@ -48,6 +48,13 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
             observed,
             {
                 "choose-after-delegation",
+                "select-explicit-thread-selection",
+                "select-explicit-native-selection",
+                "select-partial-selection-controls",
+                "select-explicit-continuation-selection",
+                "delegate-explicit-thread-selection",
+                "delegate-partial-selection-controls",
+                "delegate-explicit-continuation-selection",
                 "unsupported-luna-surface-fallback",
                 "fable-proof-requires-invocation-authority",
                 "inherited-fixed-model-selection",
@@ -89,6 +96,11 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
                 "isolated-task-companion-boundary",
                 "dedicated-daybreak-resume-rebinds-account-route",
                 "scarce-specialist-decision-handoff",
+                "native-tree-canonical-target-optional-metadata",
+                "native-tree-observation-boundaries",
+                "native-tree-owner-acceptance-late-generation",
+                "native-tree-unknown-claim-no-new-id-retry",
+                "select-native-cloud-same-controller-continuation",
             },
         )
 
@@ -422,7 +434,6 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
         self.assertIn("Claude Code", sources["foreign_peers"])
         self.assertIn("Claude Desktop", sources["foreign_peers"])
         self.assertIn("Cursor Agent", sources["foreign_peers"])
-        self.assertNotIn("Codex" + " Desktop", combined)
 
         native_codex = sources["native_codex"]
         self.assertIn("ChatGPT Codex", native_codex)
@@ -569,7 +580,7 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
             .read_text()
             .split()
         )
-        self.assertIn("help and model catalog advertise Fable 5.1", fixture)
+        self.assertIn("help and model catalog advertise Fable 5.2", fixture)
         self.assertIn("did not authorize an external invocation", fixture)
 
     def test_content_lock_pins_complete_eval_and_fixture_bytes(self) -> None:

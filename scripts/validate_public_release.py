@@ -37,10 +37,11 @@ from types import MappingProxyType, ModuleType
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 _RUNNING_AS_ENTRYPOINT = __name__ == "__main__"
-SOURCE_SHA256 = "e9a83c059c2a6a38440407fce9a92e34a4b87eaddea590ba78825f0f43ccdd23"
+SOURCE_SHA256 = "2c1397dc8853f7e95e3035612542ff20e0dc9cdcf5ff302d42cd8f5d21b2d106"
 PREPARED_SUPERVISOR_SOURCE_OPTION = "--prepared-supervisor-source-sha256"
 MAX_PROOF_SOURCE_BYTES = 2 * 1024 * 1024
 RELEASE_SUPPORT_SOURCES = (
+    ("host_trust", "scripts/host_trust.py"),
     ("evidence_transport", "scripts/evidence_transport.py"),
     ("amberbridge_compatibility_projection", "scripts/amberbridge_compatibility_projection.py"),
     (
@@ -59,6 +60,7 @@ SKILL_PLUGINS = (
     "tricritical",
     "artifact-customs",
     "proseweaving",
+    "surreal-intercom",
 )
 COMMON_SUPPORT_PATHS = {
     ".claude-plugin/marketplace.json",
@@ -69,6 +71,7 @@ COMMON_SUPPORT_PATHS = {
     "evals/control-plane-matrix.json",
     "evals/skill-routing-matrix.json",
     "scripts/run_control_plane_eval.py",
+    "scripts/host_trust.py",
     "scripts/evidence_transport.py",
     "scripts/amberbridge_compatibility_projection.py",
     "scripts/amberbridge_private_evidence_backend_contracts.json",
@@ -161,6 +164,14 @@ BASE_PLUGIN_SUPPORT_PATHS = {
         "evals/artifact-customs",
         "release/plugin-content-locks/artifact-customs.json",
     },
+    "surreal-intercom": {
+        "scripts/refresh_transaction.py",
+        "scripts/validate_surreal_intercom.py",
+        "tests/test_validate_surreal_intercom.py",
+        "evals/surreal-intercom",
+        "tests/plugins/surreal_intercom",
+        "release/plugin-content-locks/surreal-intercom.json",
+    },
 }
 PLUGIN_EVAL_POLICY_PATH = "release/plugin-eval-policy.json"
 PLUGIN_EVAL_BASELINE_PATH = "release/plugin-eval-baseline-v1.json"
@@ -175,6 +186,7 @@ BASE_VALIDATOR_PATHS = {
     "mergecraft": "scripts/validate_mergecraft.py",
     "tricritical": "scripts/validate_tricritical.py",
     "artifact-customs": "scripts/validate_artifact_customs.py",
+    "surreal-intercom": "scripts/validate_surreal_intercom.py",
 }
 BASE_SOURCE_STAGE_VALIDATOR_FLAGS = {
     "rolecasting": (),
@@ -182,6 +194,7 @@ BASE_SOURCE_STAGE_VALIDATOR_FLAGS = {
     "mergecraft": ("--source-stage",),
     "tricritical": (),
     "artifact-customs": ("--source-stage",),
+    "surreal-intercom": (),
 }
 SHA256 = re.compile(r"sha256:[0-9a-f]{64}$")
 GIT_OID = re.compile(r"(?:[0-9a-f]{40}|[0-9a-f]{64})$")
@@ -2438,7 +2451,9 @@ def validate_composed_receipt(repository: Path, path: Path | None) -> dict:
     )
     require(
         receipt["public_candidate_identity"]
-        == candidate_content_identity(repository, error_factory=ReleaseError),
+        == candidate_content_identity(
+            repository, error_factory=ReleaseError, runtime_policy="hardened"
+        ),
         "composed receipt public candidate identity mismatch",
     )
     public_compatibility = compatibility_bytes(repository)

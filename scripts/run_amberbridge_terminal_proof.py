@@ -188,7 +188,9 @@ def run(
         "expected private candidate is malformed",
     )
     require(
-        candidate_content_identity(public_root, error_factory=TerminalProofError)
+        candidate_content_identity(
+            public_root, error_factory=TerminalProofError, runtime_policy="hardened"
+        )
         == expected_public_candidate_sha256,
         "public candidate changed before terminal proof execution",
     )
@@ -239,7 +241,9 @@ def run(
         output=composed_output,
     )
     require(
-        candidate_content_identity(public_root, error_factory=TerminalProofError)
+        candidate_content_identity(
+            public_root, error_factory=TerminalProofError, runtime_policy="hardened"
+        )
         == expected_public_candidate_sha256
         and receipt.get("public_candidate_identity")
         == expected_public_candidate_sha256,

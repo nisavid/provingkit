@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Execute every current repository-contract method in two worker processes."""
+"""Execute every current repository-contract method in one or two worker processes."""
 from __future__ import annotations
 
 import argparse
@@ -25,7 +25,10 @@ MODULE = "tests.test_validate_provingkit"
 
 def cgroup_capacity(membership, mountinfo, available_cpus):
     """Observe affinity and every visible ancestor quota; unknown capacity stays null."""
-    report = {"complete": False, "effective_cpu_capacity": None, "ancestors": [], "issues": []}
+    report = {
+        "complete": False, "effective_cpu_capacity": None, "ancestors": [], "issues": [],
+        "membership": membership, "mountinfo": mountinfo, "available_cpus": available_cpus,
+    }
     try:
         memberships = [line.split(":", 2) for line in membership.splitlines()]
         mounts = [line.split(" - ", 1) for line in mountinfo.splitlines()]
@@ -86,9 +89,34 @@ def cgroup_capacity(membership, mountinfo, available_cpus):
 
 
 def cpu_capacity():
-    affinity = len(os.sched_getaffinity(0)) if hasattr(os, "sched_getaffinity") else os.cpu_count()
-    return cgroup_capacity(Path("/proc/self/cgroup").read_text(),
-                           Path("/proc/self/mountinfo").read_text(), affinity)
+    issues, inputs = [], {}
+    for name, path in (("membership", "/proc/self/cgroup"), ("mountinfo", "/proc/self/mountinfo")):
+        try:
+            inputs[name] = Path(path).read_text()
+        except OSError as error:
+            inputs[name] = ""
+            issues.append(f"{path} unavailable: {error}")
+    try:
+        affinity = sorted(os.sched_getaffinity(0)) if hasattr(os, "sched_getaffinity") else None
+        available = len(affinity) if affinity is not None else os.cpu_count()
+    except OSError as error:
+        affinity, available = None, None
+        issues.append(f"CPU affinity unavailable: {error}")
+    report = cgroup_capacity(inputs["membership"], inputs["mountinfo"], available)
+    report["affinity"] = affinity
+    report["issues"].extend(issues)
+    if issues:
+        report.update(complete=False, effective_cpu_capacity=None)
+    return report
+
+
+def require_worker_capacity(capacity, worker_count):
+    if worker_count not in (1, 2):
+        raise ValueError("workers must be 1 or 2")
+    if worker_count == 2 and (
+        not capacity["complete"] or capacity["effective_cpu_capacity"] < 2
+    ):
+        raise ValueError("two workers require at least two effective CPUs with complete capacity observations: " + str(capacity))
 
 
 def flatten(suite):
@@ -279,6 +307,7 @@ def run_worker(root, output, index):
     own = resource.getrusage(resource.RUSAGE_SELF)
     children = resource.getrusage(resource.RUSAGE_CHILDREN)
     report = {
+        "worker_count": plan["worker_count"], "worker_index": index,
         "successful": result.wasSuccessful(), "records": result.records,
         "selected_ids": plan["workers"][index], "started_ids": result.started_ids,
         "stopped_ids": result.stopped_ids, "tests_run": result.testsRun,
@@ -292,7 +321,7 @@ def run_worker(root, output, index):
     return 0 if report["successful"] else 1
 
 
-def run(root, output, timeout, hints_path):
+def run(root, output, timeout, hints_path, worker_count=2):
     if output.is_relative_to(root):
         print("evidence directory must be outside the candidate repository", file=sys.stderr)
         return 1
@@ -307,12 +336,15 @@ def run(root, output, timeout, hints_path):
             raise InterruptedError(f"suite cancelled by signal {cancellation[0]}")
 
     previous = {sig: signal.signal(sig, interrupted) for sig in (signal.SIGINT, signal.SIGTERM)}
+    context = {"worker_count": worker_count}
     try:
-        status = execute(root, output, timeout, hints_path, check_cancelled)
+        capacity = cpu_capacity()
+        context["cpu_capacity"] = capacity
+        status = execute(root, output, timeout, hints_path, check_cancelled, worker_count, capacity)
         check_cancelled()
         return status
     except (ValueError, OSError, RuntimeError, subprocess.SubprocessError) as error:
-        write_json(output / "result.json", {"successful": False, "error": str(error)})
+        write_json(output / "result.json", {**context, "successful": False, "error": str(error)})
         print(str(error), file=sys.stderr)
         return 1
     finally:
@@ -320,20 +352,19 @@ def run(root, output, timeout, hints_path):
             signal.signal(sig, handler)
 
 
-def execute(root, output, timeout, hints_path, check_cancelled):
+def execute(root, output, timeout, hints_path, check_cancelled, worker_count, capacity):
     if not math.isfinite(timeout) or timeout <= 0:
         raise ValueError("timeout must be a positive finite number of seconds")
     started = time.monotonic()
     deadline = started + timeout
-    capacity = cpu_capacity()
-    if not capacity["complete"] or capacity["effective_cpu_capacity"] < 2:
-        raise ValueError("two workers require at least two effective CPUs with complete capacity observations: " + str(capacity))
+    require_worker_capacity(capacity, worker_count)
     before = source_snapshot(root)
     write_json(output / "source-before.json", before)
     write_json(output / "environment.json", {
         "python": sys.version, "executable": sys.executable,
         "distributions": sorted((d.metadata["Name"], d.version) for d in importlib.metadata.distributions()),
-        "affinity": sorted(os.sched_getaffinity(0)), "cpu_capacity": capacity,
+        "affinity": capacity["affinity"], "cpu_capacity": capacity,
+        "worker_count": worker_count,
         "locale": {key: os.environ.get(key) for key in ("LANG", "LC_ALL", "TZ")},
     })
     discovery = []
@@ -341,7 +372,7 @@ def execute(root, output, timeout, hints_path, check_cancelled):
         with (output / "discovery.log").open("w") as log:
             discovery.append(subprocess.Popen(
                 [sys.executable, "-I", "-B", str(Path(__file__).resolve()), str(root),
-                 "--output-dir", str(output), "--discover"],
+                 "--output-dir", str(output), "--workers", str(worker_count), "--discover"],
                 cwd=root, start_new_session=True, stdout=log, stderr=subprocess.STDOUT,
             ))
             if wait_workers(discovery, deadline, check_cancelled) != [0]:
@@ -362,23 +393,24 @@ def execute(root, output, timeout, hints_path, check_cancelled):
     current_hints = {key: hints[key] for key in ids if key in hints}
     fallback = max(current_hints.values(), default=1)
     estimates = {key: current_hints.get(key, fallback) for key in ids}
-    workers, loads = [[], []], [0.0, 0.0]
+    workers, loads = [[] for _ in range(worker_count)], [0.0] * worker_count
     for key in sorted(ids, key=lambda key: (-estimates[key], key)):
-        index = min(range(2), key=lambda index: (loads[index], len(workers[index]), index))
+        index = min(range(worker_count), key=lambda index: (loads[index], len(workers[index]), index))
         workers[index].append(key)
         loads[index] += estimates[key]
     workers = [[key for key in ids if key in worker] for worker in workers]
-    plan = {"ids": ids, "workers": workers, "estimated_seconds": loads, "cpu_capacity": capacity}
+    plan = {"ids": ids, "workers": workers, "worker_count": worker_count,
+            "estimated_seconds": loads, "cpu_capacity": capacity}
     write_json(output / "plan.json", plan)
     processes = []
     try:
-        for index in range(2):
+        for index in range(worker_count):
             temporary = output / f"tmp-{index}"
             temporary.mkdir()
             with (output / f"worker-{index}.log").open("w") as log:
                 processes.append(subprocess.Popen(
                     [sys.executable, "-I", "-B", str(Path(__file__).resolve()), str(root),
-                     "--output-dir", str(output), "--worker", str(index)],
+                     "--output-dir", str(output), "--workers", str(worker_count), "--worker", str(index)],
                     cwd=root, env={**os.environ, "TMPDIR": str(temporary)}, start_new_session=True,
                     stdout=log, stderr=subprocess.STDOUT,
                 ))
@@ -388,12 +420,12 @@ def execute(root, output, timeout, hints_path, check_cancelled):
         write_json(output / "cleanup.json", cleanup)
         if not cleanup["successful"]:
             raise RuntimeError("worker process cleanup failed")
-        for index in range(2):
+        for index in range(worker_count):
             temporary = output / f"tmp-{index}"
             if temporary.exists():
                 shutil.rmtree(temporary)
     check_cancelled()
-    workers = [json.loads((output / f"worker-{i}.json").read_text()) for i in range(2)]
+    workers = [json.loads((output / f"worker-{i}.json").read_text()) for i in range(worker_count)]
     after = source_snapshot(root)
     write_json(output / "source-after.json", after)
     if after != before:
@@ -408,6 +440,7 @@ def execute(root, output, timeout, hints_path, check_cancelled):
         if any(record["outcome"] == "incomplete" for record in worker["records"]):
             raise ValueError("worker execution has an incomplete method outcome")
     report = {
+        "worker_count": worker_count, "cpu_capacity": capacity,
         "successful": all(code == 0 for code in codes), "workers": workers,
         "records": [record for worker in workers for record in worker["records"]],
         "duration_seconds": time.monotonic() - started,
@@ -422,6 +455,7 @@ def main():
     parser.add_argument("root", type=Path)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--timeout-seconds", type=float, default=4800)
+    parser.add_argument("--workers", type=int, choices=(1, 2), default=2)
     parser.add_argument("--timing-hints", type=Path,
                         default=Path(__file__).with_name("provingkit_test_timings.json"))
     parser.add_argument("--worker", type=int, choices=(0, 1), help=argparse.SUPPRESS)
@@ -431,7 +465,7 @@ def main():
     if args.discover:
         write_json(output / "discovery.json", [test.id() for test in flatten(discover(root))])
         return 0
-    return run(root, output, args.timeout_seconds, args.timing_hints) if args.worker is None else run_worker(root, output, args.worker)
+    return run(root, output, args.timeout_seconds, args.timing_hints, args.workers) if args.worker is None else run_worker(root, output, args.worker)
 
 
 if __name__ == "__main__":

@@ -41,6 +41,22 @@ Each entry records:
 - consumer assurance minimum and observed product-attested, controller-observed,
   or self-reported assurance for each dimension.
 
+An explicitly selected versioned ordinary Cloud native-tree profile may record
+product build as unavailable when this review does not require an observed
+version. It binds the current surface/controller capabilities and each
+canonical observed target; separate agent, task, or session IDs are retained
+only when exposed. Distinct observed execution contexts remain required. A
+canonical target alone or a duplicated ID does not prove isolation. This
+exception does not change Desktop/CLI or witnessed version and identity
+requirements, read-only authority, denied onward action, or the closed set of
+selected critics and specialists.
+
+For that profile, maximum assurance is a ceiling. Achieved evidence for each
+dimension comes from supplied source-tagged observations, not profile maxima
+or worker claims. Missing or unknown facts cannot meet a consumer minimum.
+Strict Boolean usability remains separate from transport completion; a missing
+or unverified result is unusable and keeps the review incomplete.
+
 The leader observes separate worker contexts, launch, completion, and results
 through the native control surface, checks the unchanged inputs, and verifies
 report usability. Worker prose cannot supply those observations. Read-only

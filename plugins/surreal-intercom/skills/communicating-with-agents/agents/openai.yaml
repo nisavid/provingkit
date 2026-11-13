@@ -1,0 +1,4 @@
+interface:
+  display_name: "Communicate With Agents"
+  short_description: "Send peer messages and retain honest outcomes"
+  default_prompt: "Use $surreal-intercom:communicating-with-agents to communicate with the selected agent while preserving original attempts and truthful outcomes."

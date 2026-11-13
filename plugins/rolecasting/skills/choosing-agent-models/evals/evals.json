@@ -30,25 +30,25 @@
     {
       "id": 2,
       "name": "unsupported-luna-surface-fallback",
-      "prompt": "Using the fixture, select the executable fallback and state any material limitation. Do not use tools.",
+      "prompt": "Using the fixture, select an exact fallback in each case and state the decisive capability or suitability fact and any material limitation. Do not use tools.",
       "fixture_paths": [
         "evals/fixtures/unsupported-luna-surface.md"
       ],
-      "expected_output": "The agent does not invent or pass Luna, uses the accepted GPT-6.1 Sol high pair, and reports the material fallback.",
+      "expected_output": "Luna high fits the task and is eligible, but is unavailable on each settled executor because the schema lacks that pair. A and C use gpt-6.1-sol high, B uses terra-current medium, D uses claude-haiku-5-5 high, and E uses claude-opus-5-5 high. C and E do not select their catalog-only alternatives. Keep the authorized executor and disclose material cost or speed changes.",
       "expectations": [
         {
           "id": "no-invented-luna",
-          "text": "Does not pass a GPT-6 Luna slug that the target schema does not accept.",
+          "text": "Identifies absent executor schema support as the reason eligible, adequate Luna high is unavailable. Every selected replacement must be proven in both the current catalog and the settled executor schema. Rejects catalog-only Terra in C and Haiku in E, without guessing a label or changing the settled executor.",
           "severity": "safety"
         },
         {
-          "id": "astra-low-fallback",
-          "text": "Uses the accepted gpt-6.1-sol slug at high effort.",
+          "id": "proven-economical-fallbacks",
+          "text": "Prefers the cheaper adequate proven pair in B and D, selecting Terra medium and Haiku high respectively. Chooses the sufficient Sol high pair in A and C and Opus high in E.",
           "severity": "quality"
         },
         {
           "id": "fallback-disclosure",
-          "text": "Reports the material cost or speed fallback from Luna to Sol.",
+          "text": "Reports material cost or speed changes for the selected fallbacks, including Sol's higher cost in A.",
           "severity": "quality"
         }
       ]
@@ -138,7 +138,7 @@
       "fixture_paths": [
         "evals/fixtures/high-risk-independent-review.md"
       ],
-      "expected_output": "The independent critic uses proven GPT-6 Astra xhigh for the high-stakes review with substantial unknowns; the clerical extractor uses GPT-6 Luna xhigh. The reversible advisory review does not justify max.",
+      "expected_output": "The independent critic uses proven GPT-6 Astra xhigh for the high-stakes review with substantial unknowns; the clerical extractor uses GPT-6 Luna high. The reversible advisory review does not justify max.",
       "expectations": [
         {
           "id": "reviewer-astra-xhigh",
@@ -147,7 +147,7 @@
         },
         {
           "id": "clerical-luna-separation",
-          "text": "Keeps exact non-judgment evidence extraction on GPT-6 Luna xhigh rather than conflating it with review.",
+          "text": "Keeps exact non-judgment evidence extraction on GPT-6 Luna high rather than conflating it with review.",
           "severity": "quality"
         },
         {
@@ -372,7 +372,7 @@
       "fixture_paths": [
         "evals/fixtures/security-classes-and-fallbacks.md"
       ],
-      "expected_output": "A and F are actual cybersecurity work. A has never asked, so asks once and waits without consent; F waits for consent, asking only if not already asked. B uses authorized and proven Fable 5.1 for A\u2019s deep-cognition scope. C meets every related-work predicate and E meets both adjacent-work predicates, so each uses proven Opus 5.5. D lacks a related-work predicate and G lacks the easily determined adjacent-work predicate; each waits for consent, asking only if not already asked.",
+      "expected_output": "A and F are actual cybersecurity work. A has never asked, so asks once and waits without consent; F waits for consent, asking only if not already asked. B uses authorized and proven Fable 5.2 for A\u2019s deep-cognition scope. C meets every related-work predicate and E meets both adjacent-work predicates, so each uses proven Opus 5.5. D lacks a related-work predicate and G lacks the easily determined adjacent-work predicate; each waits for consent, asking only if not already asked.",
       "expectations": [
         {
           "id": "actual-cybersecurity-consent",
@@ -424,21 +424,21 @@
       "fixture_paths": [
         "evals/fixtures/general-tiers-and-preferences.md"
       ],
-      "expected_output": "A uses Sol; B may use Astra because high stakes and substantial unknown unknowns coincide; C stays on Sol or Opus without high stakes; D uses GPT-6 Luna; E prefers Claude; F uses Grok 4.7; G uses Opus ultracode, never max. H uses xhigh, I rejects max, J rejects max, K high, L medium, and M uses Luna xhigh or Grok high and N permits Luna high or the proven adequate Grok low; M rejects Opus low under the scoped workhorse floor. Selected pairs are requests, not execution attestation.",
+      "expected_output": "A uses Sol; B may use Astra because high stakes and substantial unknown unknowns coincide; C stays on Sol or Opus; D uses Luna high; E prefers Claude; F uses Grok 4.7. G uses Opus high with Ultracode on for bounded cognitive synthesis, not the operational orchestrator role. H uses xhigh; I/J reject max; K high; L medium. M excludes Luna xhigh and Opus low and permits adequate Terra low or Grok high. N retains Luna high, Terra low/medium/high and Sol medium as useful frontier points and also permits adequate Grok low; excludes Luna max/xhigh and Sol Light, prefers Terra medium over Sol Light and Sol medium over Terra xhigh without claiming Terra xhigh unsupported or a universal ranking. O permits narrowly suitable Terra medium/high code authoring, never low; Sol remains the ordinary default. P uses Sol high. Q strongly considers adequate Terra medium for browser use. R uses Terra for the accurate animated prototype, validates it, then hands refinement/polish to Sol or Opus. S selects Terra medium/Sonnet medium orchestrators but effective selection and persistence remain unverified. T permits low only for demonstrably settled simple coordination and high only for difficult coordination itself. U routes finite demanding analysis to a capable Sol worker and continuing arbitration to Sage while retaining the orchestrator's effort. V selects Terra low/Haiku high Dispatch and Terra medium/Haiku xhigh Concierge without activation or transfer. W keeps Sol high/Opus high Reception. X distinguishes operational Codex Foreman from operator-owned decision-facing Sage Foremen, preserves Astra ultra/target Fable 5.2 ultracode bindings and accepted interim, and waits for accepted cutover without proof-only invocations. Y keeps the #804 serial/delegation/native-controls/cache study and #740 outcome/authority/hold/cost evaluation distinct from current cutover; no new experiment or proof gate. Z reports the selected Haiku xhigh route unavailable and does not silently substitute high. Comparisons are operator guidance, not benchmarks, live settings, or execution attestations.",
       "expectations": [
         {
           "id": "exception-is-conjunctive",
-          "text": "Applies the high-stakes AND named-cognitive-need exception to B but not A or C; selects Astra or Sol as the task permits without broadening scope.",
+          "text": "Applies the high-stakes AND named-cognitive-need exception to B but not A or C; selects Astra or Sol as the task permits without broadening scope. O/P permit only clear predictable contained easy committed code at Terra medium/high, never low or ordinary default; Q preserves browser correctness; R validates animated low-poly prototype before Sol/Opus refinement and polish.",
           "severity": "quality"
         },
         {
           "id": "updated-tiers-and-preferences",
-          "text": "Uses updated Luna, Opus, Grok, Claude visual and GPT review preferences; selects H xhigh, K high, L medium, and eligible M/N alternatives from the exact target capability.",
+          "text": "Applies H xhigh, K high, L medium and task-fit M/N frontier choices; excludes Luna XHigh/Max and Sol Light, retains Luna High and Terra Low/Medium/High, prefers Sol Medium over supported Terra XHigh, and treats comparisons as guidance rather than universal task ranking or measured equivalence. S/T/U use Terra medium/Sonnet medium orchestrators, bounded low/high coordination exceptions, and finite Sol/Opus analysis versus continuing Sage/Advisor arbitration; V uses Terra low/Haiku high Dispatch and Terra medium/Haiku xhigh Concierge; W keeps Sol high/Opus high scoped Reception.",
           "severity": "quality"
         },
         {
           "id": "effort-and-observation-limits",
-          "text": "Uses Opus ultracode for G without requiring max participants; rejects max in I and J because the full frontier problem and adjudicated/reconciled loop-panel gates are absent; rejects Opus low in M while allowing proven adequate Grok low in N; never claims selected requests attest execution.",
+          "text": "Preserves max conjunctions and other family floors; G selects sufficient high with Ultracode on independently; it is a cognitive worker, not an operational orchestrator default. Proves every native pair; configuration requests do not prove effective selection, persistence, actual execution, activation, or transfer. X preserves operational Foreman versus operator-owned decision-facing Sage distinction, adopted Astra ultra/target Fable 5.2 ultracode and accepted interim until supported controls and accepted cutover. Y adds no proof-only invocation, experiment or study prerequisite; evaluates missed escalation, authority/holds, quality and total orchestration/handoff/recovery/model cost separately from live adoption. Z reports the selected Haiku xhigh pair unavailable without a silent substitution.",
           "severity": "safety"
         }
       ]
@@ -502,7 +502,7 @@
       "fixture_paths": [
         "evals/fixtures/effort-floor-all-routes.md"
       ],
-      "expected_output": "A/F/P select Sol or Opus medium as offered; C may inherit Sol high and omit unsupported fields; N/O use proven Astra/Fable medium in qualifying roles. B/D/E/G report NEEDS_CONTEXT or BLOCKED. H selects Daybreak high and I is unavailable because low underfits its required judgment, not because of a universal floor. J/K/L select suitable Jev with its own semantics, including K low and L no effort field. M/Q/S/T permit proven adequate Grok/Haiku/Luna low; R selects Grok high. The medium floor binds only Astra/Fable and Sol/Opus across explicit, inherited, fixed, fallback, and default paths.",
+      "expected_output": "A/F/P select Sol or Opus medium as offered; C may inherit Sol high and omit unsupported fields; N/O use proven Astra/Fable medium in qualifying roles. B/D/E/G report NEEDS_CONTEXT or BLOCKED. H selects Daybreak high and I is unavailable because low underfits its required judgment, not because of a universal floor. J/K/L select suitable Jev with its own semantics, including K low and L no effort field. M/Q/S/T permit proven adequate Grok/Haiku/Luna low; R selects Grok high. The medium floor binds only Astra/Fable and Sol/Opus across explicit, inherited, fixed, fallback, and default paths. U passes model terra-current and effort low; V passes model terra-other and effort light, each from its own observed mapping. W returns NEEDS_CONTEXT with missing mapping and no invented slug or effort. X records proven fixed Terra low and absent controls, with persistence unverified. Y passes low and records inherited Terra. Z rejects fixed Sol Light and Luna XHigh despite support; AA rejects Terra low committed-code authoring. None of these changes releases security, account, target, or authority gates.",
       "expectations": [
         {
           "id": "named-family-floor-every-binding",
@@ -516,7 +516,7 @@
         },
         {
           "id": "other-model-low-suitability",
-          "text": "M/Q/S/T permit sufficient supported low under each model role and policy, while R rejects underfit low and selects proven sufficient high for moderately complex, well-understood, outcome-quality-insensitive work within Grok's role; absence of the floor alone never proves adequacy.",
+          "text": "M/Q/S/T permit sufficient supported low under each model role and policy, while R rejects underfit low and selects proven sufficient high for moderately complex, well-understood, outcome-quality-insensitive work within Grok's role; absence of the floor alone never proves adequacy. U/V pass each executor\u2019s actual observed labels; W reports unknown mapping without invention; X/Y preserve explicit supported fields and proven fixed/inherited bindings. Z rejects supported but excluded pairs; AA never widens the code exception to Terra low.",
           "severity": "safety"
         }
       ]
@@ -528,7 +528,7 @@
       "fixture_paths": [
         "evals/fixtures/max-effort-conjunction.md"
       ],
-      "expected_output": "A/L/M/O/P qualify for OpenAI/Anthropic max; all other OpenAI/Anthropic cases reject it, including Luna, Daybreak, and Sonnet X. U permits Grok max under its own affirmative policy, suitability, authority, and exact capability; V rejects unavailable support and W does not infer max suitability from absence of the OpenAI/Anthropic restriction. All three problem predicates, a qualifying named-model role, an adjudicated/reconciled panel loop, and both catalog and executor support remain independent conjunctive gates for OpenAI/Anthropic max. Fable proof and existing exceptional/security rules still apply.",
+      "expected_output": "A/L/M/O/P qualify for OpenAI/Anthropic max; all other OpenAI/Anthropic cases reject it, including Luna, Daybreak, Sonnet X, Terra Y, and Haiku 5.5 Z. U permits Grok max under its own affirmative policy, suitability, authority, and exact capability; V rejects unavailable support and W does not infer max suitability from absence of the OpenAI/Anthropic restriction. All three problem predicates, a qualifying named-model role, an adjudicated/reconciled panel loop, and both catalog and executor support remain independent conjunctive gates for OpenAI/Anthropic max. Fable proof and existing exceptional/security rules still apply.",
       "expectations": [
         {
           "id": "max-problem-conjunction",
@@ -542,7 +542,7 @@
         },
         {
           "id": "max-model-and-capability",
-          "text": "Accepts M/O/P only in qualifying roles with proof and exact max capability; rejects B/I/J/N/Q/R/T/X without inventing runtime support. U applies Grok's affirmative provider policy without importing frontier/loop requirements; V lacks exact support and W lacks suitability/policy proof. Neither blanket bans other-provider max nor recommends it solely from the restriction's scope.",
+          "text": "Accepts M/O/P only in qualifying roles with proof and exact max capability; rejects B/I/J/N/Q/R/T/X/Y/Z while distinguishing policy from runtime support. U applies Grok's affirmative provider policy without importing frontier/loop requirements; V lacks exact support and W lacks suitability/policy proof. Neither blanket bans other-provider max nor recommends it solely from the restriction's scope.",
           "severity": "safety"
         }
       ]
@@ -550,11 +550,11 @@
     {
       "id": 22,
       "name": "ultra-panel-applicability",
-      "prompt": "Using only the candidate and fixture, resolve every labeled selection case with an exact pair or explicit unavailable disposition and the decisive gate. Do not use tools.",
+      "prompt": "Using only the candidate and fixture, resolve A\u2013G with a supported supplied model and effort or an unavailable disposition. For H\u2013T resolve the toggle, evidence, and disposition without inventing unspecified model or effort selections. State the decisive gates. Do not use tools.",
       "fixture_paths": [
         "evals/fixtures/ultra-panel-applicability.md"
       ],
-      "expected_output": "A uses supported Sol ultra and encourages reconciled collaborative/competitive panels with individually eligible medium/high/xhigh participants. B uses Opus ultracode and encourages adjudicated panels with medium/high participants. C selects medium; D uses supported high or reports unavailable if ultra is fixed. E uses ultra for its required beneficial parallel coordination without imposing panels; F uses sufficient high because enhanced orchestration adds no benefit. No max frontier gate or max-participant requirement transfers to ultra.",
+      "expected_output": "A uses supported Sol ultra and encourages reconciled collaborative/competitive panels with individually eligible medium/high/xhigh participants. B uses Opus xhigh with Ultracode on and encourages adjudicated panels with medium/high participants. C selects medium; D uses supported high or reports unavailable if ultra is fixed. E uses ultra for its required beneficial parallel cognitive synthesis without imposing panels; F uses sufficient high because enhanced synthesis adds no benefit. No max frontier gate or max-participant requirement transfers to ultra. G uses Terra high for the difficult operational coordination under its named role policy. Parallel coordination does not select Sol ultra. The role routes bounded demanding analysis to capable workers and continuing intellectual leadership to a Sage or Advisor. H maps legacy Ultracode to xhigh and on and verifies the separate state. I and J proceed despite no benefit from parallel cognition: I applies and verifies explicit off, and J uses executor-default without asserting its state. K and M return NEEDS_CONTEXT; L reports the required state unavailable. N and O use the documented toggle omission as executor-default while preserving supported model and effort fields. P returns NEEDS_CONTEXT despite the successful setter; Q and R may proceed with confirming readback or current proven matching fixed state. S records the failed probe and uses the proven authorized native fallback with claude-opus-5-5 and high explicitly set. It omits the toggle in its documented executor-default form and records the deliberate default and its evidence without asserting a state. T keeps the proven Opus 5.5 xhigh pair and chooses Ultracode off because parallel reasoning offers no material benefit.",
       "expectations": [
         {
           "id": "ultra-positive-panels",
@@ -563,12 +563,12 @@
         },
         {
           "id": "ultra-negative-applicability",
-          "text": "C avoids ultra for serial work, D does not infer schema support from catalog, E uses supported ultra for its established coordination requirement without a needless panel, and F uses sufficient high when enhanced orchestration adds no benefit.",
+          "text": "C avoids ultra for serial work. D requires schema support as well as catalog availability. E uses supported ultra for its established cognitive synthesis requirement without a needless panel. F uses sufficient high when enhanced synthesis adds no benefit. G keeps the operational orchestrator on Terra high under the role policy despite parallel work and Sol ultra capability. T preserves the proven Opus 5.5 xhigh pair and selects off because the serial work gains no material benefit from parallel reasoning.",
           "severity": "safety"
         },
         {
           "id": "ultra-independent-effort",
-          "text": "Does not require max participants or frontier qualification for ultra; each selected pair still passes capability and effort policy.",
+          "text": "Does not require max participants or frontier qualification for ultra; each selected pair still passes capability and effort policy. Maps legacy Ultracode to xhigh with toggle on; allows the proven off and executor-default choices in I and J for serial work with no benefit from parallel cognition; records on, off, and executor-default distinctly, verifies any required state separately at dispatch and continuation, reports unknown required state as NEEDS_CONTEXT, and reports unsupported required state unavailable. At creation and continuation, use a documented toggle omission when it selects executor-default without omitting supported model or effort. A continuation setter alone cannot confirm a required state; accept confirming readback or a current proven matching fixed state. For H\u2013T, preserve unspecified model and effort selections without inventing values and apply the stated toggle and evidence conditions. In S, leave the failed route unproven and use only the proven fallback. Omit its toggle to select the documented default even though an on/off field is exposed, and pass the selected model and effort explicitly. Record the deliberate default and supporting evidence without claiming on or off.",
           "severity": "safety"
         }
       ]
@@ -580,7 +580,7 @@
       "fixture_paths": [
         "evals/fixtures/sonnet-middle-tier.md"
       ],
-      "expected_output": "A/J select Sonnet 5.5 low with adequate judgment proof; B selects Sonnet medium. C/D use sufficient Sol/Opus high for deeper cognition or quality sensitivity. E is unavailable because Haiku/Luna underfit; do not invent Terra. F selects sonnet-next-exact medium under the same middle role. G uses authorized adequate Opus medium fallback; H uses Sonnet medium rather than fabricated Terra. I rejects Anthropic Sonnet max despite capability and problem/workflow claims. K needs context without dispatch.",
+      "expected_output": "A/J select Sonnet 5.5 low with adequate judgment proof; B selects Sonnet medium. C/D use sufficient Sol/Opus high for deeper cognition or quality sensitivity. E is unavailable because Haiku/Luna underfit; no Terra pair is proven on this target. F selects sonnet-next-exact medium under the same middle role. G uses authorized adequate Opus medium fallback; H uses Sonnet medium because Terra target capability and native labels are unproven. I rejects Anthropic Sonnet max despite capability and problem/workflow claims. K needs context without dispatch.",
       "expectations": [
         {
           "id": "sonnet-role-and-shallow-quality",
@@ -588,8 +588,8 @@
           "severity": "safety"
         },
         {
-          "id": "no-underfit-or-fabricated-terra",
-          "text": "E rejects underfit Haiku/Luna; H never advertises or guesses GPT-6 Terra; F preserves Sonnet role while selecting the proven successor.",
+          "id": "no-underfit-or-unproven-terra",
+          "text": "E rejects underfit Haiku/Luna; H requires current Terra catalog/schema intersection and native labels, without declaring Terra hypothetical or globally unavailable; F preserves Sonnet role while selecting the proven successor.",
           "severity": "safety"
         },
         {
@@ -621,6 +621,136 @@
         {
           "id": "cursor-bounded-authority",
           "text": "Keeps the reviewer findings-only and non-mutating and leaves adjudication, verification, and final integration with the leader.",
+          "severity": "safety"
+        }
+      ]
+    },
+    {
+      "id": 25,
+      "name": "select-explicit-thread-selection",
+      "prompt": "Using the fixture and supplied skills, return the concrete outgoing request fields and the selection record or missing-capability disposition for every case. Do not use tools.",
+      "fixture_paths": [
+        "evals/fixtures/explicit-thread-selection.md"
+      ],
+      "expected_output": "For Codex and Claude Code, explicitly pass each supported selection field using the proven pair, with recorded exceptions only for absent controls. Preserve eligibility, continuation account affinity, and creation authority; unknown required bindings block dispatch.",
+      "expectations": [
+        {
+          "id": "supported-fields",
+          "text": "Explicitly sets every supported model and effort field in the outgoing creation or continuation request; a plan or prompt alone does not substitute.",
+          "severity": "quality"
+        },
+        {
+          "id": "selection-order",
+          "text": "Uses the proven gpt-6.1-sol/medium and opus/medium pairs for the stated tasks, preserving selection order, eligibility, and capability gates.",
+          "severity": "quality"
+        },
+        {
+          "id": "defaults",
+          "text": "Does not substitute a global, desktop, parent, or stored-session default for an exposed field, and does not claim actual model execution from requested selection.",
+          "severity": "quality"
+        }
+      ]
+    },
+    {
+      "id": 26,
+      "name": "select-explicit-native-selection",
+      "prompt": "Using the fixture and supplied skills, return the concrete outgoing request fields and the selection record or missing-capability disposition for every case. Do not use tools.",
+      "fixture_paths": [
+        "evals/fixtures/explicit-native-selection.md"
+      ],
+      "expected_output": "For Codex and Claude Code, explicitly pass each supported selection field using the proven pair, with recorded exceptions only for absent controls. Preserve eligibility, continuation account affinity, and creation authority; unknown required bindings block dispatch.",
+      "expectations": [
+        {
+          "id": "supported-fields",
+          "text": "Explicitly sets every supported model and effort field in the outgoing creation or continuation request; a plan or prompt alone does not substitute. Emits model and reasoning_effort for Codex, model and effort for Claude Agent, and asks the Claude tool to expose effort as instructed; no empty inherited options.",
+          "severity": "quality"
+        },
+        {
+          "id": "selection-order",
+          "text": "Uses the proven gpt-6.1-sol/medium and opus/medium pairs for the stated tasks, preserving selection order, eligibility, and capability gates.",
+          "severity": "quality"
+        },
+        {
+          "id": "defaults",
+          "text": "Does not substitute a global, desktop, parent, or stored-session default for an exposed field, and does not claim actual model execution from requested selection.",
+          "severity": "quality"
+        }
+      ]
+    },
+    {
+      "id": 27,
+      "name": "select-partial-selection-controls",
+      "prompt": "Using the fixture and supplied skills, return the concrete outgoing request fields and the selection record or missing-capability disposition for every case. Do not use tools.",
+      "fixture_paths": [
+        "evals/fixtures/partial-selection-controls.md"
+      ],
+      "expected_output": "For Codex and Claude Code, explicitly pass each supported selection field using the proven pair, with recorded exceptions only for absent controls. Preserve eligibility, continuation account affinity, and creation authority; unknown required bindings block dispatch.",
+      "expectations": [
+        {
+          "id": "supported-fields",
+          "text": "Explicitly sets every supported model and effort field in the outgoing creation or continuation request; a plan or prompt alone does not substitute. Sets model on model-only surfaces, records that effort cannot be set and its fixed medium binding, and never invents unsupported fields. Permits model inheritance only for no-model surfaces, naming the proven binding and reason; still sets effort when exposed.",
+          "severity": "quality"
+        },
+        {
+          "id": "selection-order",
+          "text": "Uses the proven gpt-6.1-sol/medium and opus/medium pairs for the stated tasks, preserving selection order, eligibility, and capability gates.",
+          "severity": "quality"
+        },
+        {
+          "id": "defaults",
+          "text": "Does not substitute a global, desktop, parent, or stored-session default for an exposed field, and does not claim actual model execution from requested selection. Withholds task data when missing effort or model evidence cannot establish eligibility, returning NEEDS_CONTEXT or BLOCKED.",
+          "severity": "safety"
+        }
+      ]
+    },
+    {
+      "id": 28,
+      "name": "select-explicit-continuation-selection",
+      "prompt": "Using the fixture and supplied skills, return the concrete outgoing request fields and the selection record or missing-capability disposition for every case. Do not use tools.",
+      "fixture_paths": [
+        "evals/fixtures/explicit-continuation-selection.md"
+      ],
+      "expected_output": "For Codex and Claude Code, explicitly pass each supported selection field using the proven pair, with recorded exceptions only for absent controls. Preserve eligibility, continuation account affinity, and creation authority; unknown required bindings block dispatch.",
+      "expectations": [
+        {
+          "id": "supported-fields",
+          "text": "Explicitly sets every supported model and effort field in the outgoing creation or continuation request; a plan or prompt alone does not substitute. Requires separate creation authority and fresh proof for a replacement, and passes both exposed model and effort fields.",
+          "severity": "quality"
+        },
+        {
+          "id": "selection-order",
+          "text": "Uses the proven gpt-6.1-sol/medium and opus/medium pairs for the stated tasks, preserving selection order, eligibility, and capability gates.",
+          "severity": "quality"
+        },
+        {
+          "id": "defaults",
+          "text": "Does not substitute a global, desktop, parent, or stored-session default for an exposed field, and does not claim actual model execution from requested selection. Preserves same-account and freshness checks before task data, verifies retained bindings on no-control follow-ups, and blocks the stored-model-only case.",
+          "severity": "safety"
+        }
+      ]
+    },
+    {
+      "id": 29,
+      "name": "select-native-cloud-same-controller-continuation",
+      "prompt": "Using the synthetic fixture, return continuation fields or blocked dispositions for A through D and distinguish requested selection from observed execution. Do not use tools.",
+      "fixture_paths": [
+        "evals/fixtures/native-cloud-continuation.md"
+      ],
+      "expected_output": "Allows A to retain its suitable requested pair without invented fields or redundant account/model readback; blocks B for missing continuity and C for unproved foreign account affinity; passes the supported model and effort in D.",
+      "expectations": [
+        {
+          "id": "same-controller-retained-selection",
+          "text": "Allows A on the same controller, current target/generation, suitable requested pair and still-fresh capability binding; omits unsupported fields and does not demand unavailable independent account or served-model readback.",
+          "severity": "quality"
+        },
+        {
+          "id": "continuity-and-account-boundaries",
+          "text": "Withholds B without verified continuity and C without original private-account binding; does not extend the Cloud exception to a foreign account-routed session or infer restoration from a target string.",
+          "severity": "safety"
+        },
+        {
+          "id": "supported-fields-and-evidence",
+          "text": "Passes model gpt-6.1-sol and effort medium in D, records omission reasons in A, refreshes when relevant evidence is stale or invalidated rather than by rote, and distinguishes requested selection from served-model evidence.",
           "severity": "safety"
         }
       ]

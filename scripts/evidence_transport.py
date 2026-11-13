@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import importlib.util
 import json
 import math
 import os
@@ -10,9 +11,31 @@ import re
 import shutil
 import stat
 import subprocess
+import sys
 import uuid
 from pathlib import Path, PurePosixPath
 from typing import Any, Callable, NoReturn, TypeVar
+
+
+# Frozen proof loaders install their pinned host_trust module first. Direct
+# imports load the adjacent canonical source rather than ambient import paths.
+_host_trust = sys.modules.get("host_trust")
+if _host_trust is None:
+    _host_trust_spec = importlib.util.spec_from_file_location(
+        "host_trust", Path(__file__).resolve().with_name("host_trust.py")
+    )
+    assert _host_trust_spec is not None and _host_trust_spec.loader is not None
+    _host_trust = importlib.util.module_from_spec(_host_trust_spec)
+    sys.modules[_host_trust_spec.name] = _host_trust
+    try:
+        _host_trust_spec.loader.exec_module(_host_trust)
+    except BaseException:
+        sys.modules.pop(_host_trust_spec.name, None)
+        raise
+HostExecutable = _host_trust.HostExecutable
+HostTrustError = _host_trust.HostTrustError
+bind_host_executable = _host_trust.bind_host_executable
+recheck_host_executable = _host_trust.recheck_host_executable
 
 
 ErrorFactory = Callable[[str], Exception]
@@ -687,14 +710,39 @@ def _trusted_candidate_git_executable(*, error_factory: ErrorFactory) -> str:
     return str(resolved)
 
 
+def _bind_candidate_git_runtime(
+    root: Path,
+    *,
+    error_factory: ErrorFactory,
+    runtime_policy: str,
+) -> HostExecutable:
+    if runtime_policy not in {"host-compatible", "hardened"}:
+        _raise(error_factory, "unsupported candidate Git runtime policy")
+    executable = (
+        _trusted_candidate_git_executable(error_factory=error_factory)
+        if runtime_policy == "hardened"
+        else "/usr/bin/git"
+    )
+    try:
+        return bind_host_executable(Path(executable), excluded_roots=(root,))
+    except HostTrustError as error:
+        raise error_factory("trusted Git executable is unavailable") from error
+
+
 def _run_candidate_git_raw(
     root: Path,
     arguments: list[str],
     *,
     error_factory: ErrorFactory,
     operation: str,
+    runtime: HostExecutable,
+    bind_work_tree: bool = True,
 ) -> bytes:
-    executable = _trusted_candidate_git_executable(error_factory=error_factory)
+    try:
+        recheck_host_executable(runtime)
+    except HostTrustError as error:
+        raise error_factory("trusted Git executable changed before execution") from error
+    executable = runtime.path
     closed_configuration = [
         component
         for key, value in _CANDIDATE_GIT_CONFIG
@@ -704,7 +752,7 @@ def _run_candidate_git_raw(
         result = subprocess.run(
             [
                 executable,
-                "--work-tree=.",
+                *(["--work-tree=."] if bind_work_tree else []),
                 *closed_configuration,
                 *arguments,
             ],
@@ -717,6 +765,10 @@ def _run_candidate_git_raw(
         )
     except (OSError, subprocess.TimeoutExpired) as error:
         raise error_factory(f"cannot {operation}") from error
+    try:
+        recheck_host_executable(runtime)
+    except HostTrustError as error:
+        raise error_factory("trusted Git executable changed during execution") from error
     if result.returncode != 0:
         _raise(error_factory, f"cannot {operation}")
     return result.stdout
@@ -727,6 +779,7 @@ def _candidate_git_config_key_inventory(
     *,
     includes: bool,
     error_factory: ErrorFactory,
+    runtime: HostExecutable,
 ) -> list[tuple[str, str, str]]:
     raw = _run_candidate_git_raw(
         root,
@@ -741,6 +794,7 @@ def _candidate_git_config_key_inventory(
         ],
         error_factory=error_factory,
         operation="inspect candidate Git configuration",
+        runtime=runtime,
     )
     try:
         fields = raw.decode("utf-8", errors="strict").split("\0")
@@ -760,11 +814,13 @@ def _establish_inert_candidate_git_policy(
     root: Path,
     *,
     error_factory: ErrorFactory,
+    runtime: HostExecutable,
 ) -> None:
     without_includes = _candidate_git_config_key_inventory(
         root,
         includes=False,
         error_factory=error_factory,
+        runtime=runtime,
     )
     include_classes = {
         config_class
@@ -783,6 +839,7 @@ def _establish_inert_candidate_git_policy(
         root,
         includes=True,
         error_factory=error_factory,
+        runtime=runtime,
     )
     unsafe_classes = {
         config_class
@@ -798,19 +855,58 @@ def _establish_inert_candidate_git_policy(
         )
 
 
+def candidate_repository_root(
+    start: Path,
+    *,
+    error_factory: ErrorFactory,
+    runtime_policy: str = "host-compatible",
+) -> Path:
+    """Discover the real working-tree root without overriding it with start."""
+    runtime = _bind_candidate_git_runtime(
+        start, error_factory=error_factory, runtime_policy=runtime_policy
+    )
+    _establish_inert_candidate_git_policy(
+        start, error_factory=error_factory, runtime=runtime
+    )
+    raw = _run_candidate_git_raw(
+        start, ["rev-parse", "--show-toplevel"], error_factory=error_factory,
+        operation="discover candidate repository root", runtime=runtime,
+        bind_work_tree=False,
+    )
+    try:
+        result = Path(raw.decode("utf-8", errors="strict").removesuffix("\n"))
+        if not result.is_absolute() or not result.is_dir():
+            raise ValueError("invalid repository root")
+        return result.resolve()
+    except (OSError, UnicodeError, ValueError) as error:
+        raise error_factory("cannot discover candidate repository root") from error
+
+
 def run_candidate_git(
     root: Path,
     arguments: list[str],
     *,
     error_factory: ErrorFactory,
     operation: str,
+    runtime_policy: str = "host-compatible",
 ) -> bytes:
-    _establish_inert_candidate_git_policy(root, error_factory=error_factory)
+    """Inspect candidate Git with closed config and the selected runtime trust.
+
+    Ordinary inspection trusts the host's fixed executable. Stronger evidence
+    callers must explicitly select hardened; no fallback is attempted.
+    """
+    runtime = _bind_candidate_git_runtime(
+        root, error_factory=error_factory, runtime_policy=runtime_policy
+    )
+    _establish_inert_candidate_git_policy(
+        root, error_factory=error_factory, runtime=runtime
+    )
     return _run_candidate_git_raw(
         root,
         arguments,
         error_factory=error_factory,
         operation=operation,
+        runtime=runtime,
     )
 
 
@@ -819,8 +915,13 @@ def candidate_content_identity(
     *,
     error_factory: ErrorFactory,
     capture_file: Callable[[PurePosixPath, bytes | None, bool], None] | None = None,
+    runtime_policy: str = "hardened",
 ) -> str:
-    """Bind every tracked or unignored candidate file by path and exact bytes."""
+    """Bind candidate paths/bytes; retain hardened runtime trust by default.
+
+    This conservative default preserves stronger evidence callers. Ordinary
+    inspection can explicitly request host-compatible without opening config.
+    """
 
     def stable_file_identity(status: os.stat_result) -> tuple[int, ...]:
         return (
@@ -846,12 +947,14 @@ def candidate_content_identity(
         ["ls-files", "-co", "--exclude-standard", "-z"],
         error_factory=error_factory,
         operation="enumerate the candidate",
+        runtime_policy=runtime_policy,
     )
     index_inventory = run_candidate_git(
         root,
         ["ls-files", "--stage", "-z"],
         error_factory=error_factory,
         operation="enumerate the candidate index",
+        runtime_policy=runtime_policy,
     )
 
     files = sorted(item for item in inventory.split(b"\0") if item)

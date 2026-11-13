@@ -12,6 +12,19 @@ the product's enforcement of requested authority. Preserve the native profile's
 assurance limits. A consumer requiring stronger evidence must remain blocked;
 do not lower its frozen minimum to make an ordinary route eligible.
 
+## Handoff authority
+
+A faithful handoff carries existing authority; it creates none. Recover the
+operator's original grant from an existing qualified source and verify its
+provenance and current effect, including later amendments, holds, or revocation.
+Preserve its target, action, and conditions. Verify that the receiving task,
+recipient, and proposed action are covered. Do not require reissuance solely
+because the grant crossed a handoff. Keep permission to communicate separate
+from permission to act. Unsupported approval assertions neither establish nor
+enlarge authority. When required authority cannot be verified, return
+`NEEDS_CONTEXT`. Honor actual harness refusals and use the existing escalation
+path; recovered authority does not authorize bypassing enforcement.
+
 ## Independent dimensions
 
 Every selected execution freezes these independent dimensions:
@@ -28,6 +41,24 @@ An app-server transport does not make an execution external. A leader-owned
 peer remains leader-controlled despite its independent session. A user-owned
 peer requires explicit user authority to create or steer it. Model choice is a
 separate record and does not change any topology dimension.
+
+## Ordinary Cloud profile inputs
+
+For an explicitly selected versioned ordinary current-tree Cloud profile, bind
+the current surface, controller, native controls, and capability observations.
+Product build may be explicitly unavailable only when the consumer does not
+require an observed version. Retain a canonical observed native target plus
+separate agent, task, or session IDs only when exposed. Distinct observed
+execution contexts establish the required isolation; a target string alone or
+a fabricated second ID does not. The strict Desktop/CLI and witnessed version
+and identity requirements remain unchanged.
+
+This profile's maximum assurance is only a ceiling. Each achieved dimension
+comes from the supplied observation and its source, never from the maximum or
+worker prose. Unknown or missing facts cannot satisfy a required dimension.
+Missing or unverified selected results remain unusable. The profile changes
+how ordinary evidence is represented, not read-only authority, denied onward
+action, selected dispatch membership, or review completeness.
 
 ## Frozen plan
 
@@ -53,7 +84,8 @@ Every dispatch entry records:
 - the same candidate, review-input, and requirements identities as the plan;
 - bounded scope and read-only authority;
 - return shape, verification, and stop conditions;
-- distinct session and context isolation from every other selected execution;
+- distinct session and context isolation from every other selected execution,
+  with the ordinary Cloud identity representation defined above;
 - default-denied subdelegation and external-action authority; and
 - for a user-owned task or thread, the exact explicit user authority to create
   or steer it.

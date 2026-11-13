@@ -50,6 +50,7 @@ CANONICAL_SKILL_IDS = (
     "mergecraft:getting-prs-ready-for-review",
     "mergecraft:getting-prs-merged",
     "mergecraft:stacking-pr-fixups",
+    "mergecraft:configuring-repositories",
     "proseweaving:writing-for-people",
 )
 CANONICAL_SCENARIO_IDS = (
@@ -76,6 +77,7 @@ CANONICAL_SCENARIO_IDS = (
     "ready-after-verified-checkpoint",
     "merge-explicit-review-loop",
     "narrow-stacked-fixup",
+    "repository-config-maintained-writer-and-concurrency",
     "stopping-point-report-partial-migration",
 )
 CANONICAL_DIRECT_CALLS = {
@@ -148,6 +150,11 @@ CANONICAL_DIRECT_CALLS = {
         "mergecraft:graphite",
         "versionkeeping:checkpointing-and-publishing-git-work",
         "mergecraft:maintaining-issue-pr-relations",
+    ),
+    "mergecraft:configuring-repositories": (
+        "mergecraft:publishing-reviewable-prs",
+        "versionkeeping:checkpointing-and-publishing-git-work",
+        "tricritical:loop",
     ),
     "proseweaving:writing-for-people": (),
 }

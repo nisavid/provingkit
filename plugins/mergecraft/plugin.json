@@ -2,7 +2,7 @@
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "mergecraft",
   "version": "1.0.0",
-  "description": "Mergecraft: Issue–PR relations, pull-request authoring, publication, Graphite transport, feedback, readiness, merge, and stack repair.",
+  "description": "Mergecraft: GitHub repository configuration, Issue–PR relations, pull-request authoring, publication, Graphite transport, feedback, readiness, merge, and stack repair.",
   "author": {
     "name": "Ivan D Vasin",
     "url": "https://github.com/nisavid"
@@ -17,21 +17,26 @@
     "feedback",
     "merge",
     "stack",
-    "issues"
+    "issues",
+    "repository",
+    "configuration",
+    "ci"
   ],
   "extensions": {
     "com.openai": {
       "interface": {
         "displayName": "Mergecraft",
-        "shortDescription": "Author, publish, maintain, and merge pull requests safely.",
-        "longDescription": "Mergecraft maintains Issue–PR contribution ledgers and Development links, binds PR text to exact pushed state, and coordinates publication, feedback, readiness, merge, and stack repair.",
+        "shortDescription": "Configure repositories and carry pull requests through merge.",
+        "longDescription": "Mergecraft creates and configures GitHub repositories, assesses controls, recommends contextual defaults, applies authorized focused changes and CI hardening, maintains Issue–PR contributions, and coordinates the pull-request lifecycle.",
         "developerName": "Ivan D Vasin",
         "category": "Developer Tools",
         "capabilities": [
+          "Repositories",
           "Pull Requests"
         ],
         "websiteURL": "https://github.com/nisavid/provingkit/tree/main/plugins/mergecraft",
         "defaultPrompt": [
+          "Use $mergecraft:configuring-repositories to create, assess, or configure a GitHub repository and its CI.",
           "Use $mergecraft:maintaining-issue-pr-relations to reconcile these Issue–PR contributions.",
           "Use $mergecraft:writing-github-issue-and-pr-markdown to author the exact GFM body without GitHub actuation.",
           "Use $mergecraft:writing-reviewable-pr-descriptions to prepare and validate the exact PR title and body without forge mutation.",

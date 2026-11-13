@@ -2,12 +2,14 @@
 
 Provingkit equips coding agents with workflows for choosing workers, reviewing
 changes, keeping Git history, managing pull requests, assessing dependencies,
-and writing for people. Its six coordinated Agent Plugins pair instructions
+writing for people, and communicating with other agents. Its seven coordinated Agent Plugins pair instructions
 with checks that make the work reviewable.
 
-A [pinned unsigned preview](https://github.com/nisavid/provingkit/releases/tag/preview-8acd0e2af1f4)
-is available for Agent Plugins/Codex, Claude Code, and Cursor. Stable release
-and live host qualification remain separate gates.
+[Alpha 6](https://github.com/nisavid/provingkit/releases/tag/v0.1.0-alpha.6)
+is available as per-plugin ZIPs for manual OpenAI and Claude account uploads.
+Use the [Alpha 6 upload and update guide](https://github.com/nisavid/provingkit/blob/c557b9471f74afa82df8622313282808911453f7/docs/releases/alpha6-upload-guide.md)
+to choose files, verify downloads, and confirm installation. This is an
+unsigned prerelease; client support and loading follow the guide’s stated scope.
 
 ## What the plugins do
 
@@ -27,6 +29,9 @@ Each plugin owns a part of the work:
   an explicit policy.
 - **[Proseweaving](plugins/proseweaving/README.md)** writes and checks prose for
   clarity, evidence, and the reader's needs.
+- **[Surreal Intercom](plugins/surreal-intercom/README.md)** carries addressed peer
+  messages and retained attempts. This source-stage member is not included in
+  Alpha 6; current app compatibility and operating adoption remain separate.
 
 Use the Kit when you want these workflows to work together across an agent's
 work on a repository. Each plugin has its own identity and version and can be
@@ -36,15 +41,12 @@ delegation, and model selection.
 
 ## Get started
 
-Follow the [install, update, and rollback guide](docs/preview/install-and-update.md)
-to choose a target artifact, verify its recorded hash and receipt, and register
-the marketplace for your client. The guide's commands target Linux with a POSIX shell;
-start with its linked installation preparation before a Linux rollout.
-
-The preview is pinned to source commit
-[`8acd0e2af1f4`](https://github.com/nisavid/provingkit/commit/8acd0e2af1f4508a0e2358d8e01f6a3db7a78ce3).
-Changes on `main` do not update those artifacts. Use the named preview target
-archives; GitHub's automatic source archives include development material.
+Follow the [Alpha 6 upload and update guide](https://github.com/nisavid/provingkit/blob/c557b9471f74afa82df8622313282808911453f7/docs/releases/alpha6-upload-guide.md)
+for the current release. It distinguishes a first installation from updating
+an existing plugin, then checks the saved version and fresh-session loading.
+Use the named per-plugin ZIPs; GitHub's automatic source archives contain
+development material. The older [preview instructions](docs/preview/install-and-update.md)
+remain available as historical documentation.
 
 Open a plugin's README above to see its skills and usage boundaries before
 equipping it. Task Witness is deferred optional equipment outside this Kit;
@@ -53,8 +55,11 @@ the available validation proves.
 
 ## Find your next step
 
+- **Coordinate in Cloud:** use the [manual native-tree profile](docs/cloud-coordination/README.md)
+  for one current thread and its child roles. Its pinned distribution and
+  explicit invocation are separate from automatic startup or account-wide peers.
 - **Understand the design:** read the [plugin system design principles](docs/plugin-system/design-principles.md)
-  and [project glossary](CONTEXT.md).
+  and [project glossary](GLOSSARY.md).
 - **Publish under a permission classifier:** read [binding actuator authority](docs/plugin-system/actuator-authority-binding.md)
   before changing a skill that pushes, opens pull requests, or files tickets.
 - **Check release and evidence limits:** see [source, preview, and release](docs/release-boundary.md)

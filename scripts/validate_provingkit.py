@@ -58,7 +58,7 @@ SOURCE_DISPOSITION_LEDGER_RELATIVE = Path(
 SOURCE_DISPOSITION_REFRESH_RELATIVE = Path(
     "release/source-skill-disposition/release-refresh-contract.json"
 )
-ACTIVE_LEGACY_REPOSITORY_GUIDANCE_RELATIVE = Path("CONTEXT.md")
+ACTIVE_LEGACY_REPOSITORY_GUIDANCE_RELATIVE = Path("GLOSSARY.md")
 LEGACY_IDENTITY_TOKENS = tuple(
     value.encode("ascii")
     for value in (
@@ -163,6 +163,15 @@ EXPECTED_MEMBERS = (
         "plugin-content-lock",
         "plugins/proseweaving/content-lock.json",
     ),
+    (
+        "surreal-intercom",
+        "Surreal Intercom",
+        "agent-plugin",
+        "plugins/surreal-intercom/plugin.json",
+        "plugins/surreal-intercom/.claude-plugin/plugin.json",
+        "plugin-content-lock",
+        "release/plugin-content-locks/surreal-intercom.json",
+    ),
 )
 EXPECTED_EXCLUDED_SOURCE = {
     "paths": [".scratch", "tooling"],
@@ -180,6 +189,10 @@ AUTHORIZED_SOURCE_TAGS = frozenset(
         "8acd0e2af1f4508a0e2358d8e01f6a3db7a78ce3",
         "refs/tags/v0.1.0-alpha.3 commit "
         "df5ffd69cfbe08a82b35ba72baccedadfdaa3b49",
+        "refs/tags/v0.1.0-alpha.4 commit "
+        "e14e818e423abd2f65b336e279284d412e0fcbce",
+        "refs/tags/v0.1.0-alpha.6 commit "
+        "0c47d9d4b936dfb74134a4d7bf0f9354fc67359b",
     }
 )
 EXPECTED_HISTORY_RELOCATIONS = (
@@ -273,7 +286,7 @@ EXPECTED_MARKETPLACE = {
     "name": "provingkit",
     "owner": {"name": "Ivan D Vasin"},
     "description": (
-        "Source projection for Provingkit's six Agent Plugins v1 members. "
+        "Source projection for Provingkit's seven Agent Plugins v1 members. "
         "This manifest is not a marketplace publication."
     ),
     "plugins": [
@@ -289,6 +302,7 @@ EXPECTED_MARKETPLACE = {
             "mergecraft",
             "artifact-customs",
             "proseweaving",
+            "surreal-intercom",
         )
     ],
 }

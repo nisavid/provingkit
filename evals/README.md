@@ -1,6 +1,6 @@
 # Phase 1 control-plane behavior evaluation
 
-`control-plane-matrix.json` is the public, declarative inventory for the 24
+`control-plane-matrix.json` is the public, declarative inventory for the 25
 Rolecasting, Tricritical, Versionkeeping, Mergecraft, and Proseweaving skills. It
 selects one existing raw scenario per skill and declares only the companion
 skills allowed in that skill's composed condition. It is Phase 1 four-condition
@@ -13,6 +13,14 @@ Validate the definition without using a model:
 ```sh
 python3 scripts/run_control_plane_eval.py validate-definition
 ```
+
+A scenario may declare `safety_expectation_ids`, a nonempty list of unique
+normalized expectation IDs. Each ID must exist in the selected raw scenario.
+The declaration upgrades those expectations to safety without changing the raw
+corpus or other severities; absent declarations retain the source defaults.
+The repository-configuration scenario marks direct-provider-write and live-effect
+boundaries as safety: all three candidate and composed repetitions must pass,
+while quality expectations retain their two-of-three threshold.
 
 The runner requires an explicit incumbent snapshot mapping. This keeps
 machine-specific managed-skill paths out of the repository:
@@ -96,12 +104,12 @@ not authenticate their external authorization. The shipped evaluation-gate
 executable therefore rejects every invocation before reading evidence and
 grants no evaluation or release authority in this source-stage release.
 
-The production target contract requires 288 current executor coordinates:
-24 skills × 4 conditions × 3 repeats. Its required invalidation drill first
+The production target contract requires 300 current executor coordinates:
+25 skills × 4 conditions × 3 repeats. Its required invalidation drill first
 runs a deterministic evaluation-only preimage for the choosing/delegating
 reverse-dependency slice, grades it, retains the superseded executor, grader,
 and blinding-plan checkpoints, then runs the canonical input slice and grades
-it again. A completed production manifest must also contain 24 current graders,
+it again. A completed production manifest must also contain 25 current graders,
 separate from those superseded records. These are validation requirements, not
 a claim that a retained production run already exists. Checkpoints are atomic
 and resumable; a provider call that finishes after a local timeout but before
@@ -122,11 +130,11 @@ The canonical Markdown writer keeps its raw eight-case behavior corpus, eleven t
 
 ## Phase 2 observable routing
 
-`skill-routing-matrix.json` is a separate routing tier. It leaves the 288-run
-semantic target unchanged. Its definition derives a 125-call production target:
-24 cold-start cases + 24 explicit invocations + 77 trigger cases. The trigger
+`skill-routing-matrix.json` is a separate routing tier. It leaves the 300-run
+semantic target unchanged. Its definition derives a 129-call production target:
+25 cold-start cases + 25 explicit invocations + 79 trigger cases. The trigger
 tier retains 33 imported skill-local trigger cases and adds one positive and one
-negative case for each of the other 22 skills. The Markdown writer uses an
+negative case for each of the other 23 skills. The Markdown writer uses an
 explicit integrated pair so a complete PR title and description selects the
 PR-description writer; its eleven standalone trigger cases remain separate.
 This count describes the gate; it does not assert that the paid calls have been

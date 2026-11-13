@@ -24,28 +24,6 @@ Repositories without a DCO requirement keep their ordinary commit process.
 | `$versionkeeping:using-persistent-git-worktrees`        | Durable sibling worktree location, creation, movement, repair, and handoff.                                                      |
 | `$versionkeeping:syncing-forks-with-upstream`           | Contract-aware fork synchronization that preserves upstream commit identity.                                                     |
 
-## Layout
-
-```text
-plugins/versionkeeping/
-├── plugin.json                      # Canonical Agent Plugins v1 manifest
-├── .claude-plugin/plugin.json       # Claude adapter manifest
-├── skills/                          # Shared harness-neutral core
-│   └── checkpointing-and-publishing-git-work/
-│       ├── references/              # Publication, cleanup, and eval integrity
-│       └── scripts/                 # Publication and deletion planner/executor routes
-│   └── resolving-merge-conflicts/    # Interpretation and authorized resolution edits
-├── topology.json                    # Canonical component, call, and operation map
-├── CHANGELOG.md
-└── LICENSE
-```
-
-The Claude manifest and `skills/*/agents/openai.yaml` are thin client adapter
-surfaces around the standard package. Shared skills do not assume a client-specific installation location:
-they resolve helper scripts from this plugin root.
-The `schema_version` in `topology.json` versions Versionkeeping's local
-topology shape, not a repository-wide interchange schema.
-
 ## Package validation
 
 From the package root, these checks use only plugin-relative paths:
@@ -56,10 +34,6 @@ python3 skills/checkpointing-and-publishing-git-work/scripts/execute_git_publica
 python3 skills/checkpointing-and-publishing-git-work/scripts/plan_git_remote_ref_deletion.py --help
 python3 skills/checkpointing-and-publishing-git-work/scripts/execute_git_remote_ref_deletion.py --help
 ```
-
-The evaluation-gate regression suite is repository-only evidence, not an
-installed runtime test. From the repository root, run
-`python3 tests/plugins/versionkeeping/checkpointing-and-publishing-git-work/test_eval_gate.py`.
 
 The planner may fetch bounded objects and create target-local temporary refs; it
 is not an installed read-only validation gate.
@@ -77,16 +51,14 @@ request carries a matching, separately verified repository policy decision
 with `direct_push_permitted: true`; topic refs remain subject to the ordinary
 ownership, review, verification, and exact-lease gates.
 
-## Repository release validation
+## Developing this plugin
 
-Repository maintainers additionally run `python3 scripts/validate_versionkeeping.py`
-and `python3 -m unittest tests/test_validate_versionkeeping.py` from the
-repository root. Canonical development and release evidence lives at
-`evals/versionkeeping/`, `tests/plugins/versionkeeping/`, and
-`release/plugin-content-locks/versionkeeping.json`; none of it is installed in
-the runtime root. The validator reads [topology.json](topology.json) as the
-canonical component and ownership inventory and verifies the generated semantic
-content lock.
+This section is for people who want to contribute to Versionkeeping, fork it,
+or work with its internals. An installed copy leaves out the topology
+(`topology.json`), the evaluation corpus, the validator, and the tests; they
+stay in the source repository. The
+[developer page](https://github.com/nisavid/provingkit/blob/main/plugins/versionkeeping/DEVELOPING.md)
+describes the source layout and repository release validation.
 
 ## License and provenance
 

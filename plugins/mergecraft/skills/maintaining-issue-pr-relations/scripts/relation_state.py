@@ -4,10 +4,12 @@
 from __future__ import annotations
 
 import copy
+import errno
 import hashlib
 import re
 import json
 import os
+import stat
 import argparse
 import importlib.util
 import uuid
@@ -106,41 +108,111 @@ def _complete_relations(entity):
 
 
 
+def _cache_directory(root):
+    """Open or create a directory path without following any symlink component."""
+    root = root.absolute()
+    flags = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW
+    directory_fd = os.open(root.anchor, flags)
+    try:
+        for component in root.parts[1:]:
+            try:
+                child_fd = os.open(component, flags, dir_fd=directory_fd)
+            except FileNotFoundError:
+                try:
+                    os.mkdir(component, 0o700, dir_fd=directory_fd)
+                except FileExistsError:
+                    # A concurrent creator won; the no-follow open checks its entry.
+                    pass
+                child_fd = os.open(component, flags, dir_fd=directory_fd)
+            os.close(directory_fd)
+            directory_fd = child_fd
+        return directory_fd
+    except BaseException:
+        os.close(directory_fd)
+        raise
+
+
+def _cache_file(directory_fd, name, flags):
+    """Open a private owned regular cache file without following links."""
+    descriptor = os.open(name, flags | os.O_NOFOLLOW | os.O_NONBLOCK, 0o600,
+                         dir_fd=directory_fd)
+    try:
+        metadata = os.fstat(descriptor)
+        # Legacy locks can be 0644; a private root protects their read access.
+        if (not stat.S_ISREG(metadata.st_mode) or metadata.st_uid != os.geteuid()
+                or metadata.st_nlink != 1 or metadata.st_mode & 0o022):
+            raise ValueError('unsafe-settings-cache-file')
+        return descriptor
+    except BaseException:
+        os.close(descriptor)
+        raise
+
+
+def _sync_cache(descriptor):
+    """Flush a cache descriptor, requesting a drive-cache flush when supported."""
+    import fcntl
+    full_sync = getattr(fcntl, 'F_FULLFSYNC', None)
+    if full_sync is not None:
+        try:
+            fcntl.fcntl(descriptor, full_sync)
+            return
+        except OSError as error:
+            if error.errno not in (errno.EINVAL, errno.ENOTSUP, errno.ENOSYS):
+                raise
+    os.fsync(descriptor)
+
+
+def _write_cache(directory_fd, value):
+    """Replace settings through an exclusive staging file and ordered flushes."""
+    temporary = 'settings.' + uuid.uuid4().hex + '.pending'
+    descriptor = _cache_file(directory_fd, temporary, os.O_WRONLY | os.O_CREAT | os.O_EXCL)
+    try:
+        with os.fdopen(descriptor, 'w') as stream:
+            json.dump(value, stream, sort_keys=True)
+            stream.flush()
+            _sync_cache(stream.fileno())
+        os.replace(temporary, 'settings.json', src_dir_fd=directory_fd, dst_dir_fd=directory_fd)
+        _sync_cache(directory_fd)
+    finally:
+        try:
+            os.unlink(temporary, dir_fd=directory_fd)
+        except FileNotFoundError:
+            # Successful replacement already consumed this staging name.
+            pass
+
+
 @contextmanager
 def _cache(state_root):
+    """Serialize a transaction anchored to an opened private state directory."""
+    # Do not fall back to path-based writes when secure primitives are absent.
+    if (os.name != 'posix' or not all(hasattr(os, flag) for flag in ('O_NOFOLLOW', 'O_DIRECTORY', 'O_NONBLOCK'))
+            or not {os.open, os.mkdir}.issubset(os.supports_dir_fd)):
+        raise ValueError('secure-settings-cache-unavailable')
     root = Path(state_root) if state_root is not None else Path(os.environ.get('XDG_STATE_HOME', Path.home() / '.local/state')) / 'mergecraft/issue-pr-relations'
-    root.mkdir(parents=True, exist_ok=True, mode=0o700)
-    with (root / 'settings.lock').open('a+b') as lock:
-        if os.name == 'nt':
-            import msvcrt
-            if lock.tell() == 0:
-                lock.write(b'0')
-                lock.flush()
-            lock.seek(0)
-            msvcrt.locking(lock.fileno(), msvcrt.LK_LOCK, 1)
-        else:
+    directory_fd = _cache_directory(root)
+    try:
+        metadata = os.fstat(directory_fd)
+        if (not stat.S_ISDIR(metadata.st_mode) or metadata.st_uid != os.geteuid()
+                or metadata.st_mode & 0o077):
+            raise ValueError('unsafe-settings-cache-root')
+        with os.fdopen(_cache_file(directory_fd, 'settings.lock', os.O_RDWR | os.O_CREAT), 'a+b') as lock:
             import fcntl
             fcntl.flock(lock.fileno(), fcntl.LOCK_EX)
-        path = root / 'settings.json'
-        value = json.loads(path.read_text()) if path.exists() else {'version': 1, 'repositories': {}}
-        if value.get('version') != 1 or not isinstance(value.get('repositories'), dict):
-            raise ValueError('invalid-settings-cache')
-        before = json.dumps(value, sort_keys=True)
-        yield value
-        if json.dumps(value, sort_keys=True) != before:
-            temporary = root / 'settings.json.pending'
-            fd = os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
-            with os.fdopen(fd, 'w') as stream:
-                json.dump(value, stream, sort_keys=True)
-                stream.flush()
-                os.fsync(stream.fileno())
-            os.replace(temporary, path)
-            if os.name != 'nt':
-                directory_fd = os.open(root, os.O_RDONLY | os.O_DIRECTORY)
-                try:
-                    os.fsync(directory_fd)
-                finally:
-                    os.close(directory_fd)
+            try:
+                descriptor = _cache_file(directory_fd, 'settings.json', os.O_RDONLY)
+            except FileNotFoundError:
+                value = {'version': 1, 'repositories': {}}
+            else:
+                with os.fdopen(descriptor, 'r') as stream:
+                    value = json.load(stream)
+            if value.get('version') != 1 or not isinstance(value.get('repositories'), dict):
+                raise ValueError('invalid-settings-cache')
+            before = json.dumps(value, sort_keys=True)
+            yield value
+            if json.dumps(value, sort_keys=True) != before:
+                _write_cache(directory_fd, value)
+    finally:
+        os.close(directory_fd)
 
 
 
