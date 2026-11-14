@@ -46,6 +46,58 @@
       }
     },
     {
+      "name": "initializing-repositories",
+      "entrypoint": "skills/initializing-repositories/SKILL.md",
+      "interface": "skills/initializing-repositories/agents/openai.yaml",
+      "references": [],
+      "scripts": [],
+      "modules": [],
+      "calls": [
+        "operation:repository-configuration",
+        "operation:impeccable:impeccable",
+        "operation:mattpocock-skills:grilling"
+      ],
+      "conditional_calls": {},
+      "operations": ["repository-initialization"],
+      "contract": {
+        "trigger": "complete-codex-greenfield-ui-repository-setup-request",
+        "modes": ["greenfield-ui"],
+        "authority": "requested greenfield setup and each component's separately applicable authority",
+        "inputs": [
+          "project-purpose-and-target",
+          "repository-owner-visibility-state-and-policy",
+          "credential-and-effect-boundaries",
+          "component-preferences-and-available-controls"
+        ],
+        "outputs": [
+          "verified-checkout-and-component-results",
+          "git-baseline-and-caller-checkpoint-continuation",
+          "remaining-decisions-and-owner-continuation",
+          "observed-ci-coverage-and-enforcement"
+        ],
+        "forbidden_reverse_calls": [],
+        "loop_owner": null,
+        "terminal_statuses": ["verified", "partial", "blocked", "unknown"],
+        "terminal_handoffs": [
+          {
+            "trigger": "initial-setup-needs-an-authorized-git-checkpoint",
+            "owner": "versionkeeping:checkpointing-and-publishing-git-work",
+            "resume": "fresh-initializer-at-product-setup-after-reviewed-local-commit-and-preservation-verification"
+          },
+          {
+            "trigger": "selected-new-or-materially-revised-third-party-trust-boundary-needs-authorized-adoption",
+            "owner": "artifact-customs:adopting-third-party-components",
+            "resume": "fresh-initializer-at-authorized-stack-continuation-after-verified-identity-and-effects-matched-adopted-result"
+          },
+          {
+            "trigger": "selected-third-party-component-needs-an-authorized-lifecycle-action-under-a-named-existing-policy",
+            "owner": "artifact-customs:maintaining-third-party-components",
+            "resume": "fresh-initializer-at-authorized-stack-continuation-after-verified-exact-candidate-policy-lifecycle-action-authority-and-effects-matched-maintained-result"
+          }
+        ]
+      }
+    },
+    {
       "name": "writing-github-issue-and-pr-markdown",
       "entrypoint": "skills/writing-github-issue-and-pr-markdown/SKILL.md",
       "interface": "skills/writing-github-issue-and-pr-markdown/agents/openai.yaml",
@@ -575,8 +627,44 @@
       "import": null,
       "access": "coordinate",
       "authority": "requested repository outcome, applicable policy, and separately authorized configuration effects",
-      "callers": ["configuring-repositories"],
+      "callers": ["configuring-repositories", "initializing-repositories"],
       "disposition": "public-skill"
+    },
+    {
+      "semantic_id": "repository-initialization",
+      "github_aliases": [],
+      "surface": "workflow",
+      "owner": "initializing-repositories",
+      "implementation": "skills/initializing-repositories/SKILL.md",
+      "import": null,
+      "access": "coordinate",
+      "authority": "requested greenfield setup and each component's separately applicable authority",
+      "callers": ["initializing-repositories"],
+      "disposition": "public-skill"
+    },
+    {
+      "semantic_id": "impeccable:impeccable",
+      "github_aliases": [],
+      "surface": "workflow",
+      "owner": "impeccable:impeccable",
+      "implementation": "impeccable:impeccable",
+      "import": null,
+      "access": "coordinate",
+      "authority": "the component's applicable authority and availability",
+      "callers": ["initializing-repositories"],
+      "disposition": "external-component"
+    },
+    {
+      "semantic_id": "mattpocock-skills:grilling",
+      "github_aliases": [],
+      "surface": "workflow",
+      "owner": "mattpocock-skills:grilling",
+      "implementation": "mattpocock-skills:grilling",
+      "import": null,
+      "access": "coordinate",
+      "authority": "the component's applicable authority and availability",
+      "callers": ["initializing-repositories"],
+      "disposition": "external-component"
     },
     {
       "semantic_id": "github-markdown-content",

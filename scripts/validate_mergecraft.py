@@ -76,6 +76,7 @@ EXTERNAL_TOPOLOGY_RELATIVES = (
 CONTENT_LOCK_EXCLUSIONS = {"CHANGELOG.md", "LICENSE"}
 PUBLIC_SKILLS = (
     "configuring-repositories",
+    "initializing-repositories",
     "writing-github-issue-and-pr-markdown",
     "maintaining-issue-pr-relations",
     "writing-reviewable-pr-descriptions",
@@ -330,6 +331,7 @@ MARKDOWN_AUTHORING_FEATURES = {
     "material-conflict",
 }
 EXPECTED_SKILL_FILES = {
+    "initializing-repositories": COMMON_SKILL_FILES,
     "configuring-repositories": COMMON_SKILL_FILES
     | {
         "references/decisions.md",
@@ -418,6 +420,10 @@ EXPECTED_SKILL_FILES = {
     "stacking-pr-fixups": COMMON_SKILL_FILES,
 }
 CODEX_PROMPTS = {
+    "initializing-repositories": (
+        "Use $mergecraft:initializing-repositories to set up a new UI project "
+        "repository in Codex."
+    ),
     "configuring-repositories": (
         "Use $mergecraft:configuring-repositories to create, assess, or configure "
         "a GitHub repository and its CI."
@@ -2098,6 +2104,7 @@ def validate_topology(root: Path) -> None:
                 "public-skill",
                 "internal-helper",
                 "imported-operation",
+                "external-component",
                 "ordinary-tool",
                 "owned-helper",
                 "owned-adapter",
@@ -2120,7 +2127,17 @@ def validate_topology(root: Path) -> None:
         owner = record["owner"]
         imported = record["import"]
         implementation = record["implementation"]
-        if imported is not None:
+        if record["disposition"] == "external-component":
+            require(
+                imported is None
+                and semantic_id == owner
+                and implementation == owner
+                and re.fullmatch(r"[a-z][a-z0-9-]*:[a-z][a-z0-9-]*", owner)
+                and record["surface"] == "workflow"
+                and record["access"] == "coordinate",
+                "external component import drift",
+            )
+        elif imported is not None:
             require(
                 record["disposition"] == "imported-operation"
                 and imported == owner
@@ -2162,6 +2179,10 @@ def validate_topology(root: Path) -> None:
     require(
         set(aliases) == set(GITHUB_ALIAS_ACCESS),
         "GitHub operation alias coverage drift",
+    )
+    require(
+        "repository-configuration" in operation_by_id,
+        "repository configuration workflow authority drift",
     )
     exported_operations: set[str] = set()
     for component in skills:
@@ -2333,6 +2354,13 @@ def validate_topology(root: Path) -> None:
                         for record in operation_records
                     )
                     or terminal_operation
+                    or (
+                        skill == "initializing-repositories"
+                        and handoff["owner"] in {
+                            "artifact-customs:adopting-third-party-components",
+                            "artifact-customs:maintaining-third-party-components",
+                        }
+                    )
                 )
                 and handoff["owner"] not in component["calls"],
                 f"terminal handoff drift: {skill}",
@@ -2346,6 +2374,68 @@ def validate_topology(root: Path) -> None:
                 "nested loop ownership",
             )
     skills_by_name = {component["name"]: component for component in skills}
+    initialization = skills_by_name["initializing-repositories"]
+    require(
+        set(initialization["calls"])
+        == {
+            "operation:repository-configuration",
+            "operation:impeccable:impeccable",
+            "operation:mattpocock-skills:grilling",
+        },
+        "repository initialization component call drift",
+    )
+    require(
+        all(
+            operation_by_id[owner]["disposition"] == "external-component"
+            for owner in ("impeccable:impeccable", "mattpocock-skills:grilling")
+        ),
+        "repository initialization external component declaration drift",
+    )
+    initialization_handoffs = initialization["contract"].get("terminal_handoffs", [])
+    checkpoint_handoff = {
+        "trigger": "initial-setup-needs-an-authorized-git-checkpoint",
+        "owner": "versionkeeping:checkpointing-and-publishing-git-work",
+        "resume": (
+            "fresh-initializer-at-product-setup-after-reviewed-local-commit-"
+            "and-preservation-verification"
+        ),
+    }
+    require(
+        [
+            handoff for handoff in initialization_handoffs
+            if handoff["trigger"] == checkpoint_handoff["trigger"]
+        ] == [checkpoint_handoff],
+        "repository initialization checkpoint handoff drift",
+    )
+    require(
+        initialization_handoffs == [
+            checkpoint_handoff,
+            {
+                "trigger": (
+                    "selected-new-or-materially-revised-third-party-trust-boundary-"
+                    "needs-authorized-adoption"
+                ),
+                "owner": "artifact-customs:adopting-third-party-components",
+                "resume": (
+                    "fresh-initializer-at-authorized-stack-continuation-after-"
+                    "verified-identity-and-effects-matched-adopted-result"
+                ),
+            },
+            {
+                "trigger": (
+                    "selected-third-party-component-needs-an-authorized-lifecycle-"
+                    "action-under-a-named-existing-policy"
+                ),
+                "owner": "artifact-customs:maintaining-third-party-components",
+                "resume": (
+                    "fresh-initializer-at-authorized-stack-continuation-after-"
+                    "verified-exact-candidate-policy-lifecycle-action-authority-and-"
+                    "effects-matched-maintained-result"
+                ),
+            },
+        ],
+        "repository initialization lifecycle handoff drift",
+    )
     configuration = skills_by_name["configuring-repositories"]
     configuration_references = {
         f"skills/configuring-repositories/{relative}"
@@ -2370,7 +2460,7 @@ def validate_topology(root: Path) -> None:
         },
         "repository configuration operation call drift",
     )
-    configuration_operation = operation_by_id.get("repository-configuration", {})
+    configuration_operation = operation_by_id["repository-configuration"]
     configuration_authority = (
         "requested repository outcome, applicable policy, and separately authorized "
         "configuration effects"
