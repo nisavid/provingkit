@@ -22,7 +22,7 @@
     "skills/communicating-with-agents/scripts/claude_mcp_sender.py": "f192b9e535f4f6df6d4968e34648a32e38a104489f1169b4fbff289f0e3c66b4",
     "skills/communicating-with-agents/scripts/claude_route_nomination.py": "15a16d47b5316532d9302fcdada0e2cf9476bc3636b86430d4c4f95b6833820c",
     "skills/communicating-with-agents/scripts/codex_capture.py": "53f5150a8fdeb4a832628082ca526a294bd92887391b09699c1aa8caa7d2136d",
-    "skills/communicating-with-agents/scripts/codex_daybreak_sender.py": "4e77a746ea2abad38887f7902c4620e5c3ab06164112cff44d48d9ebcd6fdbc1",
+    "skills/communicating-with-agents/scripts/codex_daybreak_sender.py": "647003b1598d96caf10162d4d893a1308aeacc87d291ff64079be3909548e57f",
     "skills/communicating-with-agents/scripts/codex_ipc_core.py": "20eca3006ac9f0749b27c9752a816d7f5b43dd039e2468ae935a8a196d9f3bbb",
     "skills/communicating-with-agents/scripts/codex_ipc_idle_sender.py": "b1cc049aaa73af5e6dc04ac032b807161dab8d380dbf80ddde8b166c3ee91e3d",
     "skills/communicating-with-agents/scripts/codex_ipc_sender.py": "b5646409a67d361d0ea1981dea431caff08cc28ab74ab6bd717eb4db17f83c36",

@@ -175,8 +175,11 @@ def task_observations(directory, result):
     after_ref = None
     evidence_refs = set()
     accepted = result["status"] == "turn_accepted" and text(result.get("turn_id"))
-    recovering = (result["status"] == "submission_unknown"
-                  and bool(result.get("evidence_read_failures")))
+    recovering = (
+        result["status"] == "submission_unknown"
+        and result.get("ipc") == "unknown"
+        and (directory / "claim.json").is_file()
+    )
     bound_turn = result.get("turn_id")
     while True:
         wait_path = task_wait_path(directory, after_ref)
@@ -287,7 +290,19 @@ def retained(directory):
                     "reason": "read-error" if isinstance(exc, OSError) else "invalid-json",
                 })
             else:
-                result.update(record)
+                if (isinstance(record, dict)
+                        and isinstance(record.get("refs"), dict)
+                        and record.get("status") in ("submission_unknown", "turn_accepted")
+                        and (record["status"] != "turn_accepted" or text(record.get("turn_id")))
+                        and record.get("ipc") in ("unknown", "attempted", "not_attempted")
+                        and record.get("child") == result["child"]
+                        and all(record["refs"].get(key) == result["refs"][key]
+                                for key in ("operation_id", "message_id", "attempt_id", "operation_ref"))):
+                    result.update(record)
+                elif name == "claim.json" or not claim_present:
+                    raise ValueError("invalid-retained-result")
+                else:
+                    evidence_read_failures.append({"path": str(path), "reason": "invalid-result"})
     if evidence_read_failures:
         result["evidence_read_failures"] = evidence_read_failures
     for name, key in (("setup.json", "setup_ref"), ("attempt.json", "attempt_ref")):

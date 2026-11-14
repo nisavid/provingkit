@@ -640,6 +640,20 @@ class PendingBootstrapCommandTests(unittest.TestCase):
     def test_interrupted_standing_attempt_keeps_original_decision_discoverable(self):
         self.completed_bootstrap_submission(standing=True, damaged_results=("submission.json",))
 
+    def test_wrong_shaped_standing_result_keeps_the_claim_and_decision(self):
+        for terminal in (b"null", b'{"refs":null}'):
+            with self.subTest(terminal=terminal):
+                self.completed_bootstrap_submission(
+                    standing=True, damaged_results=("submission.json",),
+                    damaged_bytes=terminal, damage_reason="invalid-result",
+                )
+
+    def test_missing_standing_result_keeps_known_waits_without_promoting_outcome(self):
+        self.completed_bootstrap_submission(
+            standing=True, damaged_results=("submission.json",),
+            damaged_bytes=None, task_observation=True,
+        )
+
     def test_standing_gate_rejects_ineligible_reader_results(self):
         for result in ("failed", "unavailable", "replaced", "malformed", "nested",
                        "incomplete", "wrong-grant", "invalid-runtime", "legacy", "ineligible"):
@@ -649,6 +663,7 @@ class PendingBootstrapCommandTests(unittest.TestCase):
     def completed_bootstrap_submission(
         self, pending_first=False, failure=None, continuation=False,
         task_observation=False, accepted_tail=None, damaged_results=None, standing=False,
+        damaged_bytes=b'{"partial":', damage_reason="invalid-json",
     ):
         with tempfile.TemporaryDirectory(prefix="db-task-") as directory:
             scratch=Path(directory).resolve()
@@ -1425,14 +1440,17 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                     operation_dir=Path(accepted["refs"]["operation_ref"]).parent
                     claim=operation_dir/"claim.json"
                     original_claim=claim.read_bytes()
-                    damaged_bytes=b'{"partial":'
                     for name in damaged_results:
-                        (operation_dir/name).write_bytes(damaged_bytes)
+                        damaged = operation_dir / name
+                        if damaged_bytes is None:
+                            damaged.unlink()
+                        else:
+                            damaged.write_bytes(damaged_bytes)
                     seeded={path:path.read_bytes() for path in root.rglob("*") if path.is_file()}
                     original_wire=list(wire)
                     expected_diagnostics=[
-                        {"path":str(operation_dir/name),"reason":"invalid-json"}
-                        for name in damaged_results
+                        {"path":str(operation_dir/name),"reason":damage_reason}
+                        for name in damaged_results if damaged_bytes is not None
                     ]
                     final_valid="submission.json" not in damaged_results
                     expected_refs=dict(accepted["refs"])
@@ -1469,7 +1487,10 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                         self.assertEqual({path:path.read_bytes() for path in root.rglob("*")
                                           if path.is_file()},seeded)
                         for name in damaged_results:
-                            self.assertEqual((operation_dir/name).read_bytes(),damaged_bytes)
+                            if damaged_bytes is None:
+                                self.assertFalse((operation_dir / name).exists())
+                            else:
+                                self.assertEqual((operation_dir / name).read_bytes(), damaged_bytes)
                         self.assertEqual(mailbox("show",request["message_id"]),recorded)
                         self.assertEqual(mailbox("pending"),[recorded])
                         self.assertEqual(wire,original_wire)
