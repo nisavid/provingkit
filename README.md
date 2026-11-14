@@ -60,6 +60,7 @@ the available validation proves.
   before changing a skill that pushes, opens pull requests, or files tickets.
 - **Check release and evidence limits:** see [source and release](docs/release-boundary.md)
   and [Amberbridge](docs/amberbridge.md), the release-evidence bridge.
+- **Version a maintained fork:** use the [stable fork-versioning policy](docs/fork-versioning-policy.md).
 - **Look up the Kit's membership:** consult the [Kit definition](release/provingkit/definition-v1.json)
   and the individual plugin READMEs linked above.
 - **Contribute:** [CONTRIBUTING.md](CONTRIBUTING.md) covers source validation,
