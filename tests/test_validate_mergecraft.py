@@ -300,7 +300,8 @@ class ValidateMergecraftTests(unittest.TestCase):
                 "owner": "artifact-customs:maintaining-third-party-components",
                 "resume": (
                     "fresh-initializer-at-authorized-stack-continuation-after-"
-                    "verified-identity-and-effects-matched-maintained-result"
+                    "verified-exact-candidate-policy-lifecycle-action-authority-and-"
+                    "effects-matched-maintained-result"
                 ),
             },
         ]

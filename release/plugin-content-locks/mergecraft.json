@@ -29,7 +29,7 @@
     "skills/graphite/agents/openai.yaml": "b2e58ad3e22cc7bf4b336b66212d1bc0dc8df558570ecd1c6206eff865d2c80c",
     "skills/graphite/scripts/host_trust.py": "fd95e418f50ed4b3e4e44307836ee3f4401aeac23f3405ab0dd95e56db6825f4",
     "skills/graphite/scripts/submit_draft_stack.py": "b2e75635352dbccc6cd861dc4f51b75fc265e76985bd771f3f86f737c4172444",
-    "skills/initializing-repositories/SKILL.md": "727a818ec4ec2428bed36383d3ea5d1916f13d9686043b09d3693d326088b75a",
+    "skills/initializing-repositories/SKILL.md": "cb047d1a1d87a200e9fa6e6b9de7531fdacd8c59873b455540b33675e42a373d",
     "skills/initializing-repositories/agents/openai.yaml": "0e305225746356b8c800eedad1bdb5757d973809a1bc1db0ddcb97e6bee401b9",
     "skills/interacting-with-pr-review-feedback/SKILL.md": "82292a085eab09fdf2f3313518e4e860ff911dfef55ea0ac91619fb375e956fa",
     "skills/interacting-with-pr-review-feedback/agents/openai.yaml": "e6ac26b75f325b4de2e92c94b62e88f56ad48c33eb19656e438deb7bbd5e8832",
@@ -114,6 +114,6 @@
     "skills/writing-reviewable-pr-descriptions/scripts/change_navigation/urls.py": "ca1fd7b3210320967e47ed5696dc3fb12d1005f3cbbbd4214845247b5a895bf6",
     "skills/writing-reviewable-pr-descriptions/scripts/validate_change_navigation.py": "3942dc548c41b87afd05e0ea7990507a595e7ca5a35095dc1c316f5993054509",
     "skills/writing-reviewable-pr-descriptions/scripts/validate_relation_ledger.py": "fb398f6580a998c95e1fc6d197e4f4eb5712775ae86963722dda950d682b865c",
-    "topology.json": "8591afb0acec5d8305061b73f4cd720a32455777904b907a80051dc69375b3b8"
+    "topology.json": "7029b2c55f77f6725889b8c8382119794604ab846ffdf768bec84c698cacf134"
   }
 }

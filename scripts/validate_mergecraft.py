@@ -2429,7 +2429,8 @@ def validate_topology(root: Path) -> None:
                 "owner": "artifact-customs:maintaining-third-party-components",
                 "resume": (
                     "fresh-initializer-at-authorized-stack-continuation-after-"
-                    "verified-identity-and-effects-matched-maintained-result"
+                    "verified-exact-candidate-policy-lifecycle-action-authority-and-"
+                    "effects-matched-maintained-result"
                 ),
             },
         ],
