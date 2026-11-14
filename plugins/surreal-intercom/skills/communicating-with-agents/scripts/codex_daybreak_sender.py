@@ -325,9 +325,10 @@ def retained_submission_fields(directory, record, result, standing, bound_attemp
             require(accepted_turn is None, "invalid-retained-result")
     projection = {key: record[key] for key in fields}
     if standing:
-        projection["task_write"] = task_write
         require(task_write != "not_attempted" or not write_attempted,
                 "invalid-retained-result")
+        # Positive write state is projected from the bound frame evidence below.
+        projection["task_write"] = "not_attempted" if task_write == "not_attempted" else "unknown"
     if turn_id is not None:
         projection["turn_id"] = turn_id
     if "reason" in record:

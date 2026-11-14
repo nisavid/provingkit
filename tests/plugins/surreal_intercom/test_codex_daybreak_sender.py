@@ -691,6 +691,11 @@ class PendingBootstrapCommandTests(unittest.TestCase):
     def test_mismatched_standing_attempt_supplies_no_retained_evidence(self):
         self.completed_bootstrap_submission(standing=True, mismatched_attempt=True)
 
+    def test_unknown_terminal_summary_requires_bound_write_evidence(self):
+        self.completed_bootstrap_submission(
+            standing=True, failure="lost-task-response", mismatched_attempt=True,
+        )
+
     def completed_bootstrap_submission(
         self, pending_first=False, failure=None, continuation=False,
         task_observation=False, accepted_tail=None, damaged_results=None, standing=False,
@@ -1316,6 +1321,42 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                     self.assertEqual(mailbox("pending"),[recorded])
                     self.assertEqual({path:path.read_bytes() for path in root.rglob("*")
                                       if path.is_file()},retained)
+                    if mismatched_attempt:
+                        attempt_file = operation_dir / "attempt.json"
+                        response_file = operation_dir / "start-response.json"
+                        transport_file = operation_dir / "transport.json"
+                        original_attempt = attempt_file.read_bytes()
+                        original_response = response_file.read_bytes()
+                        original_transport = transport_file.read_bytes()
+                        wrong_attempt = json.loads(original_attempt)
+                        wrong_envelope = wrong_attempt["envelope"]
+                        wrong_envelope["params"]["turnStart"]["request"]["threadId"] = "wrong-child"
+                        response = json.loads(original_response)
+                        response["envelope"] = wrong_envelope
+                        attempt_file.write_text(json.dumps(wrong_attempt))
+                        response_file.write_text(json.dumps(response))
+                        for phase in ("show", "submit"):
+                            shown = command(phase, op)
+                            self.assertEqual(shown["status"], "submission_unknown")
+                            self.assertEqual(shown["task_write"], "unknown")
+                            self.assertEqual(shown["ipc"], "attempted")
+                            self.assertEqual(shown["owned_connection"], accepted["owned_connection"])
+                            self.assertNotIn("standing_decision_ref", shown["refs"])
+                            self.assertIsNone(shown["native_call"])
+                        attempt_file.write_bytes(original_attempt)
+                        response_file.unlink()
+                        transport_file.unlink()
+                        shown = command("show", op)
+                        self.assertEqual(shown["task_write"], "unknown")
+                        self.assertEqual(shown["refs"], accepted["refs"])
+                        response_file.write_bytes(original_response)
+                        transport_file.write_bytes(original_transport)
+                        response_file.chmod(0o600)
+                        transport_file.chmod(0o600)
+                        shown = command("show", op)
+                        self.assertEqual(shown["task_write"], "attempted")
+                        self.assertEqual(shown["status"], "submission_unknown")
+                        self.assertIsNone(shown["native_call"])
                     if false_capture_refusal:
                         submission = operation_dir / "submission.json"
                         terminal = json.loads(submission.read_bytes())
