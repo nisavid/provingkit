@@ -634,6 +634,13 @@ class PendingBootstrapCommandTests(unittest.TestCase):
     def test_standing_decision_survives_missing_task_response(self):
         self.completed_bootstrap_submission(failure="lost-task-response", standing=True)
 
+    def test_write_evidence_overrules_a_false_capture_refusal(self):
+        for failure in ("lost-task-response", "task-write-error"):
+            with self.subTest(failure=failure):
+                self.completed_bootstrap_submission(
+                    failure=failure, standing=True, false_capture_refusal=True,
+                )
+
     def test_standing_decision_capture_failure_withholds_task(self):
         self.completed_bootstrap_submission(failure="decision-capture", standing=True)
 
@@ -684,7 +691,7 @@ class PendingBootstrapCommandTests(unittest.TestCase):
     def completed_bootstrap_submission(
         self, pending_first=False, failure=None, continuation=False,
         task_observation=False, accepted_tail=None, damaged_results=None, standing=False,
-        damaged_bytes=b'{"partial":', damage_reason="invalid-json",
+        damaged_bytes=b'{"partial":', damage_reason="invalid-json", false_capture_refusal=False,
     ):
         with tempfile.TemporaryDirectory(prefix="db-task-") as directory:
             scratch=Path(directory).resolve()
@@ -1305,7 +1312,37 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                     self.assertEqual(mailbox("pending"),[recorded])
                     self.assertEqual({path:path.read_bytes() for path in root.rglob("*")
                                       if path.is_file()},retained)
+                    if false_capture_refusal:
+                        submission = operation_dir / "submission.json"
+                        terminal = json.loads(submission.read_bytes())
+                        terminal.update(
+                            task_write="not_attempted",
+                            reason="standing-decision-capture-failed",
+                            failures=[{"stage": "task-submit", "reason": "standing-decision-capture-failed"}],
+                        )
+                        submission.write_text(json.dumps(terminal))
+                        if failure == "lost-task-response":
+                            (operation_dir / "transport.json").unlink()
+                        evidence = Path(accepted["refs"]["standing_decision_ref"])
+                        original_evidence = evidence.read_bytes()
+                        for phase in ("show", "submit"):
+                            recovered = command(phase, op)
+                            self.assertEqual(recovered["status"], "submission_unknown")
+                            self.assertEqual(recovered["task_write"], "attempted")
+                            self.assertEqual(recovered["refs"]["standing_decision_ref"], str(evidence))
+                            self.assertEqual(recovered["evidence_read_failures"], [
+                                {"path": str(submission), "reason": "invalid-result"},
+                            ])
+                            self.assertIsNone(recovered["native_call"])
+                            self.assertEqual(evidence.read_bytes(), original_evidence)
+                            self.assertEqual(mailbox("show", request["message_id"]), recorded)
                     if failure in {"standing-hold", "decision-capture"}:
+                        if failure == "decision-capture":
+                            unrelated = dict(pending_task, requestId="another-request")
+                            (operation_dir / "start-response.json").write_text(json.dumps({
+                                "envelope": unrelated, "records": [],
+                            }))
+                            (operation_dir / "start-response.json").chmod(0o600)
                         (operation_dir / "submission.json").write_text("{")
                         for fallback in (command("show",op),command("submit",op,observation)):
                             self.assertEqual(fallback["ipc"],"attempted",fallback)

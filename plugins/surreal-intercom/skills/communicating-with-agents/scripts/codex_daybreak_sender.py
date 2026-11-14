@@ -237,6 +237,42 @@ def retained_accepted_turn(directory, result):
     return turn_id
 
 
+def retained_task_write_attempt(directory, result):
+    """Test for evidence written after the standing callback returned."""
+    try:
+        attempt_raw, attempt = read_private_capture(directory / "attempt.json", include_bytes=True)
+        envelope = attempt["envelope"]
+        params = envelope["params"]
+        request = params["turnStart"]["request"]
+        require(envelope["method"] == "thread-follower-start-turn"
+                and params["conversationId"] == request["threadId"] == result["child"]["thread_id"]
+                and request["clientUserMessageId"] == result["refs"]["attempt_id"]
+                and text(envelope["requestId"])
+                and attempt["correlation"] == envelope["requestId"]
+                and all(attempt["refs"][key] == result["refs"][key]
+                        for key in ("operation_id", "message_id", "attempt_id", "operation_ref")),
+                "task-attempt-conflict")
+    except (OSError, ValueError, KeyError, TypeError, RecursionError):
+        return False
+    try:
+        response = read_private_capture(directory / "start-response.json")
+    except (OSError, ValueError, RecursionError):
+        response = None
+    if (isinstance(response, dict) and response.get("envelope") == envelope
+            and isinstance(response.get("records"), list)):
+        return True
+    try:
+        transport = read_private_capture(directory / "transport.json")
+    except (OSError, ValueError, RecursionError):
+        return False
+    return (isinstance(transport, dict) and isinstance(transport.get("outbound"), list)
+            and envelope in transport["outbound"]
+            and transport.get("writeBoundary") == {
+                "pendingExistedBeforeWrite": True,
+                "pendingSha256": hashlib.sha256(attempt_raw).hexdigest(),
+            })
+
+
 def retained_submission_fields(directory, record, result, standing, *, claim):
     fields = (
         "status", "ipc", "saved_selection", "receipt", "task_completion",
@@ -281,6 +317,8 @@ def retained_submission_fields(directory, record, result, standing, *, claim):
     projection = {key: record[key] for key in fields}
     if standing:
         projection["task_write"] = task_write
+        require(task_write != "not_attempted" or not retained_task_write_attempt(directory, result),
+                "invalid-retained-result")
     if turn_id is not None:
         projection["turn_id"] = turn_id
     if "reason" in record:
@@ -468,7 +506,7 @@ def valid_standing_allow(decision):
     )
 
 
-def read_private_capture(path):
+def read_private_capture(path, *, include_bytes=False):
     with os.fdopen(os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK), "rb") as source:
         metadata = os.fstat(source.fileno())
         require(stat.S_ISREG(metadata.st_mode) and metadata.st_uid == os.getuid()
@@ -478,7 +516,8 @@ def read_private_capture(path):
         require(len(raw) == metadata.st_size
                 and binding_identity(metadata) == binding_identity(os.fstat(source.fileno()))
                 == binding_identity(path.lstat()), "changed-private-capture")
-    return json.loads(raw, object_pairs_hook=unique_json_object)
+    decoded = json.loads(raw, object_pairs_hook=unique_json_object)
+    return (raw, decoded) if include_bytes else decoded
 
 
 def retained_standing_decision(directory, intent):
