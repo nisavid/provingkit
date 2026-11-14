@@ -266,6 +266,111 @@ class ValidateMergecraftTests(unittest.TestCase):
                 self.assertNotEqual(result.returncode, 0, result.stdout)
                 self.assertIn("repository initialization external component declaration drift", result.stderr)
 
+    def test_source_stage_accepts_caller_owned_component_lifecycle_handoffs(self) -> None:
+        topology = json.loads((self.plugin / "topology.json").read_text())
+        initializer = next(
+            item for item in topology["skills"]
+            if item["name"] == "initializing-repositories"
+        )
+        initializer["contract"]["terminal_handoffs"] = [
+            {
+                "trigger": "initial-setup-needs-an-authorized-git-checkpoint",
+                "owner": "versionkeeping:checkpointing-and-publishing-git-work",
+                "resume": (
+                    "fresh-initializer-at-product-setup-after-reviewed-local-commit-"
+                    "and-preservation-verification"
+                ),
+            },
+            {
+                "trigger": (
+                    "selected-new-or-materially-revised-third-party-trust-boundary-"
+                    "needs-authorized-adoption"
+                ),
+                "owner": "artifact-customs:adopting-third-party-components",
+                "resume": (
+                    "fresh-initializer-at-authorized-stack-continuation-after-"
+                    "verified-identity-and-effects-matched-adopted-result"
+                ),
+            },
+            {
+                "trigger": (
+                    "selected-third-party-component-needs-an-authorized-lifecycle-"
+                    "action-under-a-named-existing-policy"
+                ),
+                "owner": "artifact-customs:maintaining-third-party-components",
+                "resume": (
+                    "fresh-initializer-at-authorized-stack-continuation-after-"
+                    "verified-identity-and-effects-matched-maintained-result"
+                ),
+            },
+        ]
+        self.write_topology_with_registry(topology)
+
+        result = self.run_validator("--source-stage")
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_source_stage_rejects_incomplete_or_drifted_lifecycle_handoffs(self) -> None:
+        original = json.loads((self.plugin / "topology.json").read_text())
+        for owner in (
+            "artifact-customs:adopting-third-party-components",
+            "artifact-customs:maintaining-third-party-components",
+        ):
+            for drift in ("missing", "trigger", "resume", "duplicate"):
+                with self.subTest(owner=owner, drift=drift):
+                    topology = copy.deepcopy(original)
+                    initializer = next(
+                        item for item in topology["skills"]
+                        if item["name"] == "initializing-repositories"
+                    )
+                    handoffs = initializer["contract"]["terminal_handoffs"]
+                    handoff = next(item for item in handoffs if item["owner"] == owner)
+                    if drift == "missing":
+                        handoffs.remove(handoff)
+                    elif drift == "duplicate":
+                        handoffs.append(copy.deepcopy(handoff))
+                    else:
+                        handoff[drift] = "unverified-continuation"
+                    self.write_topology_with_registry(topology)
+
+                    result = self.run_validator("--source-stage")
+
+                    self.assertNotEqual(result.returncode, 0, result.stdout)
+                    self.assertIn(
+                        "repository initialization lifecycle handoff drift", result.stderr
+                    )
+
+    def test_source_stage_rejects_lifecycle_handoff_on_another_skill(self) -> None:
+        original = json.loads((self.plugin / "topology.json").read_text())
+        for owner in (
+            "artifact-customs:adopting-third-party-components",
+            "artifact-customs:maintaining-third-party-components",
+        ):
+            with self.subTest(owner=owner):
+                topology = copy.deepcopy(original)
+                initializer = next(
+                    item for item in topology["skills"]
+                    if item["name"] == "initializing-repositories"
+                )
+                configuration = next(
+                    item for item in topology["skills"]
+                    if item["name"] == "configuring-repositories"
+                )
+                configuration["contract"]["terminal_handoffs"] = [
+                    copy.deepcopy(next(
+                        item for item in initializer["contract"]["terminal_handoffs"]
+                        if item["owner"] == owner
+                    ))
+                ]
+                self.write_topology_with_registry(topology)
+
+                result = self.run_validator("--source-stage")
+
+                self.assertNotEqual(result.returncode, 0, result.stdout)
+                self.assertIn(
+                    "terminal handoff drift: configuring-repositories", result.stderr
+                )
+
     def test_source_stage_rejects_wrong_initializer_checkpoint_handoff(self) -> None:
         original = json.loads((self.plugin / "topology.json").read_text())
         for drift in ("missing", "owner", "resume"):

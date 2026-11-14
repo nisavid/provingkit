@@ -2354,6 +2354,13 @@ def validate_topology(root: Path) -> None:
                         for record in operation_records
                     )
                     or terminal_operation
+                    or (
+                        skill == "initializing-repositories"
+                        and handoff["owner"] in {
+                            "artifact-customs:adopting-third-party-components",
+                            "artifact-customs:maintaining-third-party-components",
+                        }
+                    )
                 )
                 and handoff["owner"] not in component["calls"],
                 f"terminal handoff drift: {skill}",
@@ -2384,19 +2391,49 @@ def validate_topology(root: Path) -> None:
         ),
         "repository initialization external component declaration drift",
     )
+    initialization_handoffs = initialization["contract"].get("terminal_handoffs", [])
+    checkpoint_handoff = {
+        "trigger": "initial-setup-needs-an-authorized-git-checkpoint",
+        "owner": "versionkeeping:checkpointing-and-publishing-git-work",
+        "resume": (
+            "fresh-initializer-at-product-setup-after-reviewed-local-commit-"
+            "and-preservation-verification"
+        ),
+    }
     require(
-        initialization["contract"].get("terminal_handoffs")
-        == [
-            {
-                "trigger": "initial-setup-needs-an-authorized-git-checkpoint",
-                "owner": "versionkeeping:checkpointing-and-publishing-git-work",
-                "resume": (
-                    "fresh-initializer-at-product-setup-after-reviewed-local-commit-"
-                    "and-preservation-verification"
-                ),
-            }
-        ],
+        [
+            handoff for handoff in initialization_handoffs
+            if handoff["trigger"] == checkpoint_handoff["trigger"]
+        ] == [checkpoint_handoff],
         "repository initialization checkpoint handoff drift",
+    )
+    require(
+        initialization_handoffs == [
+            checkpoint_handoff,
+            {
+                "trigger": (
+                    "selected-new-or-materially-revised-third-party-trust-boundary-"
+                    "needs-authorized-adoption"
+                ),
+                "owner": "artifact-customs:adopting-third-party-components",
+                "resume": (
+                    "fresh-initializer-at-authorized-stack-continuation-after-"
+                    "verified-identity-and-effects-matched-adopted-result"
+                ),
+            },
+            {
+                "trigger": (
+                    "selected-third-party-component-needs-an-authorized-lifecycle-"
+                    "action-under-a-named-existing-policy"
+                ),
+                "owner": "artifact-customs:maintaining-third-party-components",
+                "resume": (
+                    "fresh-initializer-at-authorized-stack-continuation-after-"
+                    "verified-identity-and-effects-matched-maintained-result"
+                ),
+            },
+        ],
+        "repository initialization lifecycle handoff drift",
     )
     configuration = skills_by_name["configuring-repositories"]
     configuration_references = {

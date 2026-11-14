@@ -3,7 +3,7 @@
   "algorithm": "sha256",
   "files": {
     ".claude-plugin/plugin.json": "e8a0c95daa2fa6a1dab3f1cd3816a865ac2ee99e5702c83e6854d34ebb8eb4d6",
-    "DEVELOPING.md": "8f88bef919b47561f303e70a8a32f994d024b5d5c79641c24663bc1571e15105",
+    "DEVELOPING.md": "a6082b239cc947f6a5f72c0411514c0a4ee09a54cc2563de7a239fdd40a16d19",
     "README.md": "d10353cbf2ed1a699c3424a89eaf782d6093b58b1f2daf9f6d9100d8f28c1354",
     "plugin.json": "e482c09e7afeb52c4f0f0e1e5f21bf3ae32b23591cdcdd07e01f643a7fa7e70a",
     "skills/addressing-pr-review-feedback/SKILL.md": "fa4fd7f7dd00fb04d189adf348c843d8c8c19a3669830de87f12b7432e50ec98",
@@ -29,7 +29,7 @@
     "skills/graphite/agents/openai.yaml": "b2e58ad3e22cc7bf4b336b66212d1bc0dc8df558570ecd1c6206eff865d2c80c",
     "skills/graphite/scripts/host_trust.py": "fd95e418f50ed4b3e4e44307836ee3f4401aeac23f3405ab0dd95e56db6825f4",
     "skills/graphite/scripts/submit_draft_stack.py": "b2e75635352dbccc6cd861dc4f51b75fc265e76985bd771f3f86f737c4172444",
-    "skills/initializing-repositories/SKILL.md": "277677f3b5d583d91bf53981ec66729ee756c637a37cbc10409630b793aa0548",
+    "skills/initializing-repositories/SKILL.md": "727a818ec4ec2428bed36383d3ea5d1916f13d9686043b09d3693d326088b75a",
     "skills/initializing-repositories/agents/openai.yaml": "0e305225746356b8c800eedad1bdb5757d973809a1bc1db0ddcb97e6bee401b9",
     "skills/interacting-with-pr-review-feedback/SKILL.md": "82292a085eab09fdf2f3313518e4e860ff911dfef55ea0ac91619fb375e956fa",
     "skills/interacting-with-pr-review-feedback/agents/openai.yaml": "e6ac26b75f325b4de2e92c94b62e88f56ad48c33eb19656e438deb7bbd5e8832",
@@ -114,6 +114,6 @@
     "skills/writing-reviewable-pr-descriptions/scripts/change_navigation/urls.py": "ca1fd7b3210320967e47ed5696dc3fb12d1005f3cbbbd4214845247b5a895bf6",
     "skills/writing-reviewable-pr-descriptions/scripts/validate_change_navigation.py": "3942dc548c41b87afd05e0ea7990507a595e7ca5a35095dc1c316f5993054509",
     "skills/writing-reviewable-pr-descriptions/scripts/validate_relation_ledger.py": "fb398f6580a998c95e1fc6d197e4f4eb5712775ae86963722dda950d682b865c",
-    "topology.json": "91ae06affea05d74a609bee0b683ff8a0fc541b347648109756d9a79d6ebf473"
+    "topology.json": "8591afb0acec5d8305061b73f4cd720a32455777904b907a80051dc69375b3b8"
   }
 }

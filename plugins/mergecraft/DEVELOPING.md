@@ -14,6 +14,11 @@ because it supplies no tracked Kit dependency. Source validation checks the
 declared relationship; the consuming session discovers availability and
 observes the component's own invocation and authority requirements.
 
+A terminal handoff ends the current Skill and returns continuation to the
+ongoing task, which invokes the named owner under its applicable authority.
+The initializer's Artifact Customs handoffs use this caller-owned route;
+they add no imported operation to the initializer invocation.
+
 ## Host-runtime helper projection
 
 Graphite carries an exact-byte skill-local projection of the repository's

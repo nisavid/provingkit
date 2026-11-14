@@ -64,8 +64,36 @@ Invocation coordinates the work; each effect needs authority under its owner.
    useful default, research the latest stable, actively maintained and
    well-supported options that fit the product. Present the recommendations
    by component in `mattpocock-skills:grilling` and confirm consequential
-   choices with the operator. Then choose the layout, scaffold, and verify
-   each selected stack.
+   choices with the operator. Treat comparison and product selection as
+   read-only with respect to third-party adoption. A confirmed selection
+   supplies adoption, maintenance, or execution authority only when it
+   expressly includes that exact authority and its effects; carry its
+   authority identity into the lifecycle handoff rather than asking twice.
+   Before writing a selected third-party component into the repository or
+   running any generator, install, build, or test that resolves, loads, or
+   executes it, bind the exact candidate and policy identities, exact
+   lifecycle action and authority identity, and intended effects. When no
+   policy applies, record that absence instead of inferring one. End this
+   invocation and return the binding, any missing authority, and the intended
+   continuation to the ongoing task. That task either reuses a prior successful
+   result under the match check below or, with matching authority, invokes
+   `artifact-customs:adopting-third-party-components` for a new or materially
+   revised trust boundary, or
+   `artifact-customs:maintaining-third-party-components` for an ordinary
+   lifecycle action under a named matching existing policy. Name any missing
+   operator decision and boundary in the return. If the applicable owner is
+   unavailable, return that owner, action, and evidence needed to continue.
+   Do not perform any dependent component write or execution in this
+   invocation.
+   The ongoing task starts a fresh initializer invocation only after verifying
+   an `adopted` or `maintained` result whose exact candidate, policy, authority,
+   and authorized effects still match. It may reuse a prior successful result
+   only after the same check. A read-only assessment result alone, including
+   `cleared`, cannot resume scaffolding; neither can a negative, `no-go`,
+   `operator decision`, `blocked`, `deeper autonomous investigation`, unknown,
+   or drifted result. After satisfying this gate for each selected third-party
+   component, choose the layout, scaffold, and verify each selected stack
+   within the applicable authority.
 5. Select general CI under the applicable provider policy. Assess scanner
    dependencies, coverage, entitlement, and spending separately. Return to
    `operation:repository-configuration` for GitHub changes through its
