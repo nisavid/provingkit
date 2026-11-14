@@ -1,26 +1,46 @@
 # Contributing to Provingkit
 
-Contributions should leave the public source checkout reviewable, internally
-consistent, and explicit about what their validation proves.
+This guide takes a source change from scope to pull request, in the order of
+the work. Contributions should leave the public source checkout reviewable,
+internally consistent, and explicit about what their validation proves.
 
 ## Scope
 
 Current changes stay within the seven Agent Plugins: Rolecasting, Tricritical,
-Versionkeeping, Mergecraft, Artifact Customs, Proseweaving, and Surreal Intercom. Task Witness is
-shelved optional equipment; its historical records remain available for future
-reassessment.
-Hindsight, Base Loadout, personal tools, and unrelated experiments belong
-elsewhere.
+Versionkeeping, Mergecraft, Artifact Customs, Proseweaving, and Surreal
+Intercom. Task Witness is shelved optional equipment; its historical records
+remain available for future reassessment. Hindsight, Base Loadout, personal
+tools, and unrelated experiments belong elsewhere.
 
 Opening or merging a source change does not authorize a Provingkit release,
 tag, release-manifest instance, marketplace publication, installation, or live
 qualification. Propose those operations separately when their own policy and
 authority exist.
 
+For release notes, download links, and the linked installation guide, use the
+[release presentation procedure](docs/agents/release-presentation.md). It
+includes public readback and Linear reconciliation before release closeout.
+
+## Repository layout
+
+- `plugins/` contains the canonical plugin source trees and identity
+  manifests.
+- `evals/` and `tests/` contain member behavior corpora and contract tests.
+- `scripts/` contains source validators and controlled derived-artifact writers.
+- `release/artifact-projection-policy-v1.json` defines the allowlisted runtime
+  files for each supported marketplace target.
+- `release/provingkit/` defines Kit membership and the future immutable
+  release-manifest boundary.
+- `release/plugin-content-locks/` contains generated content locks owned by
+  member validators.
+- `qualification/historical/` retains explicitly stale host-qualification
+  inputs outside active CI discovery.
+
 ## Prepare a change
 
 1. Link the issue or decision that owns the change.
-2. Update canonical source before any derived lock or projection.
+2. Update canonical source before any derived lock or projection; see
+   [Generated artifacts](#generated-artifacts).
 3. Preserve each member's manifest identity and independent version boundary.
 4. Use Conventional Commits for commit messages.
 5. Run the focused commands under [Validate a source checkout](#validate-a-source-checkout)
@@ -29,6 +49,14 @@ authority exist.
 Do not present historical qualification inputs as current evidence. Files
 under `qualification/historical/` are retained for provenance and design
 review only.
+
+## Generated artifacts
+
+The member validators own their content locks and generated projections. When
+an owning validator supports `--write-content-lock`, run that mode after the
+authored source is stable, review its complete diff, then run the ordinary
+validator. Never edit a digest merely to make validation green. CI regenerates
+supported derived locks and requires a clean diff.
 
 ## Validate a source checkout
 
@@ -87,34 +115,7 @@ identities and exits with status `0`. It does not create a release receipt.
 The [release boundary](docs/release-boundary.md#source-checks-and-release-evidence)
 explains the additional controls required for release and live qualification.
 
-## Repository layout
-
-- `plugins/` contains the canonical plugin source trees and identity
-  manifests.
-- `evals/` and `tests/` contain member behavior corpora and contract tests.
-- `scripts/` contains source validators and controlled derived-artifact writers.
-- `release/artifact-projection-policy-v1.json` defines the allowlisted runtime
-  files for each supported marketplace target.
-- `release/provingkit/` defines Kit membership and the future immutable
-  release-manifest boundary.
-- `release/plugin-content-locks/` contains generated content locks owned by
-  member validators.
-- `qualification/historical/` retains explicitly stale host-qualification
-  inputs outside active CI discovery.
-
-## Generated artifacts
-
-The member validators own their content locks and generated projections. When
-an owning validator supports `--write-content-lock`, run that mode after the
-authored source is stable, review its complete diff, then run the ordinary
-validator. Never edit a digest merely to make validation green. CI regenerates
-supported derived locks and requires a clean diff.
-
 ## Pull requests
-
-For release notes, download links, and the linked installation guide, use the
-[release presentation procedure](docs/agents/release-presentation.md). It
-includes public readback and Linear reconciliation before release closeout.
 
 A pull request should tell a reviewer:
 
@@ -126,6 +127,7 @@ A pull request should tell a reviewer:
 - which compatibility aliases or historical links remain and why; and
 - which source-stage checks passed at the published revision.
 
-Keep release and runtime claims no broader than the evidence. A green
-source-stage check proves only the public source contract exercised by that
-check.
+The [pull request template](.github/pull_request_template.md) has a place for
+each of these. Keep release and runtime claims no broader than the evidence. A
+green source-stage check proves only the public source contract exercised by
+that check.
