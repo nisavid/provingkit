@@ -293,6 +293,11 @@ def retained(directory):
     for name, key in (("setup.json", "setup_ref"), ("attempt.json", "attempt_ref")):
         if (directory / name).exists():
             result["refs"][key] = str(directory / name)
+    result["refs"].pop("standing_decision_ref", None)
+    if claim_present and intent.get("resource_admission") == "standing-v1":
+        decision_ref = retained_standing_decision(directory, intent, result)
+        if decision_ref is not None:
+            result["refs"]["standing_decision_ref"] = decision_ref
     observations = task_observations(directory, result)
     if observations:
         wait_path, _, observation_path, observation = observations[-1]
@@ -350,6 +355,57 @@ def binding_identity(info):
             info.st_mtime_ns, info.st_ctime_ns)
 
 
+def valid_standing_allow(decision):
+    return (
+        isinstance(decision, dict)
+        and decision.keys() == {"schema", "status", "reason", "grant_id", "runtime_id"}
+        and decision["schema"] == "routine-standing-decision/v1"
+        and decision["status"] == "ALLOW"
+        and isinstance(decision["reason"], str)
+        and text(decision["grant_id"])
+        and isinstance(decision["runtime_id"], str)
+        and re.fullmatch("[0-9a-f]{32}", decision["runtime_id"]) is not None
+    )
+
+
+def read_private_capture(path):
+    with os.fdopen(os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK), "rb") as source:
+        metadata = os.fstat(source.fileno())
+        require(stat.S_ISREG(metadata.st_mode) and metadata.st_uid == os.getuid()
+                and stat.S_IMODE(metadata.st_mode) == 0o600
+                and 0 < metadata.st_size <= 1024 * 1024, "invalid-private-capture")
+        raw = source.read(metadata.st_size + 1)
+        require(len(raw) == metadata.st_size
+                and binding_identity(metadata) == binding_identity(os.fstat(source.fileno()))
+                == binding_identity(path.lstat()), "changed-private-capture")
+    return json.loads(raw, object_pairs_hook=unique_json_object)
+
+
+def retained_standing_decision(directory, intent, result):
+    if result.get("task_write") == "not_attempted":
+        return None
+    path = directory / "standing-decision.json"
+    try:
+        record = read_private_capture(path)
+        attempt = read_private_capture(directory / "attempt.json")
+        envelope = attempt["envelope"]
+        request = envelope["params"]["turnStart"]["request"]
+        require(isinstance(record, dict)
+                and record.keys() == {"attempt_id", "correlation_id", "request_id", "decision"}
+                and valid_standing_allow(record["decision"])
+                and record["attempt_id"] == intent["attempt_id"] == request["clientUserMessageId"]
+                and record["correlation_id"] == intent["correlation_id"]
+                and text(record["request_id"])
+                and record["request_id"] == envelope["requestId"] == attempt["correlation"]
+                and envelope["method"] == "thread-follower-start-turn"
+                and all(attempt["refs"][key] == intent[key]
+                        for key in ("operation_id", "message_id", "attempt_id")),
+                "standing-decision-attempt-mismatch")
+    except (OSError, ValueError, KeyError, TypeError, RecursionError):
+        return None
+    return str(path)
+
+
 def standing_binding(arguments):
     if not arguments.standing_eligible or arguments.standing_paused or arguments.standing_independent_hold:
         raise StandingRefusal("standing-independent-ineligible")
@@ -395,13 +451,7 @@ def check_standing(binding, reader_identity):
         require(result.returncode == 0 and 0 < len(result.stdout) <= 4096,
                 "standing-reader-result")
         decision = json.loads(result.stdout, object_pairs_hook=unique_json_object)
-        require(isinstance(decision, dict)
-                and decision.keys() == {"schema", "status", "reason", "grant_id", "runtime_id"}
-                and decision["schema"] == "routine-standing-decision/v1"
-                and decision["status"] == "ALLOW" and isinstance(decision["reason"], str)
-                and decision["grant_id"] == binding["grant_id"]
-                and isinstance(decision["runtime_id"], str)
-                and re.fullmatch("[0-9a-f]{32}", decision["runtime_id"]) is not None,
+        require(valid_standing_allow(decision) and decision["grant_id"] == binding["grant_id"],
                 "standing-decision")
     except (OSError, ValueError, TypeError, RecursionError, subprocess.SubprocessError) as error:
         raise StandingRefusal("standing-decision-withheld") from error

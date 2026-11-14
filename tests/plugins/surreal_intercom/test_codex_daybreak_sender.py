@@ -637,6 +637,9 @@ class PendingBootstrapCommandTests(unittest.TestCase):
     def test_standing_decision_capture_failure_withholds_task(self):
         self.completed_bootstrap_submission(failure="decision-capture", standing=True)
 
+    def test_interrupted_standing_attempt_keeps_original_decision_discoverable(self):
+        self.completed_bootstrap_submission(standing=True, damaged_results=("submission.json",))
+
     def test_standing_gate_rejects_ineligible_reader_results(self):
         for result in ("failed", "unavailable", "replaced", "malformed", "nested",
                        "incomplete", "wrong-grant", "invalid-runtime", "legacy", "ineligible"):
@@ -1209,6 +1212,8 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                         repeated=command("submit",op,observation)
                         self.assertEqual(repeated["task_write"],expected_task_write)
                         self.assertEqual(repeated["reason"],accepted["reason"])
+                        if failure == "decision-capture":
+                            self.assertNotIn("standing_decision_ref", repeated["refs"])
                     recorded=mailbox("show",request["message_id"])
                     self.assertEqual({key:value for key,value in recorded.items()
                                       if key not in {"state","attempts"}},message)
@@ -1471,6 +1476,19 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                         with self.assertRaises(BlockingIOError):
                             connection,_=listener.accept()
                             connection.close()
+                    if standing and not final_valid:
+                        evidence = Path(accepted["refs"]["standing_decision_ref"])
+                        original_evidence = evidence.read_bytes()
+                        mismatched = json.loads(original_evidence)
+                        mismatched["request_id"] = "another-request"
+                        for invalid in (b'{"incomplete":', json.dumps(mismatched).encode()):
+                            evidence.write_bytes(invalid)
+                            shown = command("show", op)
+                            self.assertNotIn("standing_decision_ref", shown["refs"])
+                            self.assertEqual(shown["task_write"], "unknown")
+                            self.assertEqual(evidence.read_bytes(), invalid)
+                        evidence.write_bytes(original_evidence)
+                        self.assertEqual(command("show", op)["refs"], expected_refs)
                     if task_observation and not final_valid:
                         fresh_observation={
                             **pending_observation,"task_wait_ref":latest_wait_ref,

@@ -159,9 +159,12 @@ Before writing the frame, the helper saves that validated decision in the
 original operation directory's private, create-only `standing-decision.json`.
 It binds the decision to the original attempt, exchange correlation, and task
 request ID. The result reports `standing_decision_ref` when that save succeeds.
+If terminal capture is missing after an interruption, `show` recovers the
+reference only when the private record matches the retained standing attempt.
 If the save fails, the helper withholds the task frame. The decision record
 establishes admission at the write boundary. Use the original write and
-response records to determine the task outcome.
+response records to determine the task outcome. Recovery of the decision
+reference leaves an unknown task outcome open.
 A known refusal before the task write records `task_write: not_attempted`. If
 setup ran, retain its saved selection and observed connection closure as
 separate facts. A later eligible decision does not reopen the original attempt.
