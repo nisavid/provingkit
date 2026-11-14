@@ -1,6 +1,17 @@
 {
   "schema_version": 1,
   "skills": {
+    "editing-finished-drafts": {
+      "owns": [
+        "finished-draft-verification"
+      ],
+      "may_call": [
+        {
+          "skill": "writing-for-people",
+          "when": "Apply the general writing procedure while verifying and editing an existing finished draft or batch."
+        }
+      ]
+    },
     "writing-for-people": {
       "owns": [
         "human-facing-register",
