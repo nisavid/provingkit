@@ -52,7 +52,11 @@
       "references": [],
       "scripts": [],
       "modules": [],
-      "calls": ["operation:repository-configuration"],
+      "calls": [
+        "operation:repository-configuration",
+        "operation:impeccable:impeccable",
+        "operation:mattpocock-skills:grilling"
+      ],
       "conditional_calls": {},
       "operations": ["repository-initialization"],
       "contract": {
@@ -73,7 +77,14 @@
         ],
         "forbidden_reverse_calls": [],
         "loop_owner": null,
-        "terminal_statuses": ["verified", "partial", "blocked", "unknown"]
+        "terminal_statuses": ["verified", "partial", "blocked", "unknown"],
+        "terminal_handoffs": [
+          {
+            "trigger": "initial-setup-needs-an-authorized-git-checkpoint",
+            "owner": "versionkeeping:checkpointing-and-publishing-git-work",
+            "resume": "fresh-initializer-at-product-setup-after-reviewed-local-commit-and-preservation-verification"
+          }
+        ]
       }
     },
     {
@@ -620,6 +631,30 @@
       "authority": "requested greenfield setup and each component's separately applicable authority",
       "callers": ["initializing-repositories"],
       "disposition": "public-skill"
+    },
+    {
+      "semantic_id": "impeccable:impeccable",
+      "github_aliases": [],
+      "surface": "workflow",
+      "owner": "impeccable:impeccable",
+      "implementation": "impeccable:impeccable",
+      "import": null,
+      "access": "coordinate",
+      "authority": "the component's applicable authority and availability",
+      "callers": ["initializing-repositories"],
+      "disposition": "external-component"
+    },
+    {
+      "semantic_id": "mattpocock-skills:grilling",
+      "github_aliases": [],
+      "surface": "workflow",
+      "owner": "mattpocock-skills:grilling",
+      "implementation": "mattpocock-skills:grilling",
+      "import": null,
+      "access": "coordinate",
+      "authority": "the component's applicable authority and availability",
+      "callers": ["initializing-repositories"],
+      "disposition": "external-component"
     },
     {
       "semantic_id": "github-markdown-content",

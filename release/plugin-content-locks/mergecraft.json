@@ -3,7 +3,7 @@
   "algorithm": "sha256",
   "files": {
     ".claude-plugin/plugin.json": "e8a0c95daa2fa6a1dab3f1cd3816a865ac2ee99e5702c83e6854d34ebb8eb4d6",
-    "DEVELOPING.md": "ffcb32de11af3e61b7b4e775199c983707ff0340269a41f5dc7daf787cb0d531",
+    "DEVELOPING.md": "8f88bef919b47561f303e70a8a32f994d024b5d5c79641c24663bc1571e15105",
     "README.md": "d10353cbf2ed1a699c3424a89eaf782d6093b58b1f2daf9f6d9100d8f28c1354",
     "plugin.json": "e482c09e7afeb52c4f0f0e1e5f21bf3ae32b23591cdcdd07e01f643a7fa7e70a",
     "skills/addressing-pr-review-feedback/SKILL.md": "fa4fd7f7dd00fb04d189adf348c843d8c8c19a3669830de87f12b7432e50ec98",
@@ -114,6 +114,6 @@
     "skills/writing-reviewable-pr-descriptions/scripts/change_navigation/urls.py": "ca1fd7b3210320967e47ed5696dc3fb12d1005f3cbbbd4214845247b5a895bf6",
     "skills/writing-reviewable-pr-descriptions/scripts/validate_change_navigation.py": "3942dc548c41b87afd05e0ea7990507a595e7ca5a35095dc1c316f5993054509",
     "skills/writing-reviewable-pr-descriptions/scripts/validate_relation_ledger.py": "fb398f6580a998c95e1fc6d197e4f4eb5712775ae86963722dda950d682b865c",
-    "topology.json": "0f6ef8dbd2a037978f493700f4279d78197ddb9055c54643c506d22aaba37fbe"
+    "topology.json": "91ae06affea05d74a609bee0b683ff8a0fc541b347648109756d9a79d6ebf473"
   }
 }

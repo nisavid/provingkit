@@ -164,6 +164,140 @@ class ValidateMergecraftTests(unittest.TestCase):
             encoding="utf-8",
         )
 
+    def write_topology_with_registry(self, topology: dict[str, object]) -> None:
+        self.write_json("topology.json", topology)
+        developer = self.plugin / "DEVELOPING.md"
+        content = developer.read_text(encoding="utf-8")
+        start = content.index(VALIDATE_MERGECRAFT.OPERATION_REGISTRY_START)
+        end = content.index(VALIDATE_MERGECRAFT.OPERATION_REGISTRY_END) + len(
+            VALIDATE_MERGECRAFT.OPERATION_REGISTRY_END
+        )
+        registry = VALIDATE_MERGECRAFT.render_operation_registry(
+            topology["operations"]
+        )
+        developer.write_text(content[:start] + registry + content[end:], encoding="utf-8")
+
+    def test_source_stage_accepts_external_initializer_components(self) -> None:
+        topology = json.loads((self.plugin / "topology.json").read_text())
+        initializer = next(
+            item for item in topology["skills"]
+            if item["name"] == "initializing-repositories"
+        )
+        owners = ("impeccable:impeccable", "mattpocock-skills:grilling")
+        initializer["calls"] = [
+            "operation:repository-configuration",
+            "operation:impeccable:impeccable",
+            "operation:mattpocock-skills:grilling",
+        ]
+        topology["operations"] = [
+            item for item in topology["operations"]
+            if item["semantic_id"] not in owners
+        ]
+        for owner in owners:
+            topology["operations"].append({
+                "semantic_id": owner,
+                "github_aliases": [],
+                "surface": "workflow",
+                "owner": owner,
+                "implementation": owner,
+                "import": None,
+                "access": "coordinate",
+                "authority": "the component's applicable authority and availability",
+                "callers": ["initializing-repositories"],
+                "disposition": "external-component",
+            })
+        self.write_topology_with_registry(topology)
+
+        result = self.run_validator("--source-stage")
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_source_stage_rejects_misbound_external_initializer_component(self) -> None:
+        topology = json.loads((self.plugin / "topology.json").read_text())
+        operation = next(
+            item for item in topology["operations"]
+            if item["semantic_id"] == "impeccable:impeccable"
+        )
+        operation["owner"] = operation["implementation"] = "other:component"
+        self.write_topology_with_registry(topology)
+
+        result = self.run_validator("--source-stage")
+
+        self.assertNotEqual(result.returncode, 0, result.stdout)
+        self.assertIn("external component import drift", result.stderr)
+
+    def test_source_stage_rejects_missing_initializer_components(self) -> None:
+        original = json.loads((self.plugin / "topology.json").read_text())
+        for owner in ("impeccable:impeccable", "mattpocock-skills:grilling"):
+            with self.subTest(owner=owner):
+                topology = copy.deepcopy(original)
+                initializer = next(
+                    item for item in topology["skills"]
+                    if item["name"] == "initializing-repositories"
+                )
+                initializer["calls"].remove(f"operation:{owner}")
+                topology["operations"] = [
+                    item for item in topology["operations"]
+                    if item["semantic_id"] != owner
+                ]
+                self.write_topology_with_registry(topology)
+
+                result = self.run_validator("--source-stage")
+
+                self.assertNotEqual(result.returncode, 0, result.stdout)
+                self.assertIn("repository initialization component call drift", result.stderr)
+
+    def test_source_stage_rejects_reclassified_initializer_components(self) -> None:
+        original = json.loads((self.plugin / "topology.json").read_text())
+        for owner in ("impeccable:impeccable", "mattpocock-skills:grilling"):
+            with self.subTest(owner=owner):
+                topology = copy.deepcopy(original)
+                operation = next(
+                    item for item in topology["operations"]
+                    if item["semantic_id"] == owner
+                )
+                operation["disposition"] = "internal-helper"
+                operation["owner"] = "internal:other"
+                operation["implementation"] = "other:component"
+                self.write_topology_with_registry(topology)
+
+                result = self.run_validator("--source-stage")
+
+                self.assertNotEqual(result.returncode, 0, result.stdout)
+                self.assertIn("repository initialization external component declaration drift", result.stderr)
+
+    def test_source_stage_rejects_wrong_initializer_checkpoint_handoff(self) -> None:
+        original = json.loads((self.plugin / "topology.json").read_text())
+        for drift in ("missing", "owner", "resume"):
+            with self.subTest(drift=drift):
+                topology = copy.deepcopy(original)
+                initializer = next(
+                    item for item in topology["skills"]
+                    if item["name"] == "initializing-repositories"
+                )
+                handoff = {
+                    "trigger": "initial-setup-needs-an-authorized-git-checkpoint",
+                    "owner": "versionkeeping:checkpointing-and-publishing-git-work",
+                    "resume": (
+                        "fresh-initializer-at-product-setup-after-reviewed-local-commit-"
+                        "and-preservation-verification"
+                    ),
+                }
+                if drift == "missing":
+                    initializer["contract"].pop("terminal_handoffs", None)
+                else:
+                    handoff[drift] = (
+                        "getting-prs-merged" if drift == "owner"
+                        else "fresh-initializer-before-checkpoint-verification"
+                    )
+                    initializer["contract"]["terminal_handoffs"] = [handoff]
+                self.write_topology_with_registry(topology)
+
+                result = self.run_validator("--source-stage")
+
+                self.assertNotEqual(result.returncode, 0, result.stdout)
+                self.assertIn("repository initialization checkpoint handoff drift", result.stderr)
+
     def write_atlas_json(self, relative: str, value: object) -> None:
         (self.repo / ATLAS_RELEASE / relative).write_text(
             json.dumps(value, indent=2) + "\n",

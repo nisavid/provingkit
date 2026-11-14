@@ -2104,6 +2104,7 @@ def validate_topology(root: Path) -> None:
                 "public-skill",
                 "internal-helper",
                 "imported-operation",
+                "external-component",
                 "ordinary-tool",
                 "owned-helper",
                 "owned-adapter",
@@ -2126,7 +2127,17 @@ def validate_topology(root: Path) -> None:
         owner = record["owner"]
         imported = record["import"]
         implementation = record["implementation"]
-        if imported is not None:
+        if record["disposition"] == "external-component":
+            require(
+                imported is None
+                and semantic_id == owner
+                and implementation == owner
+                and re.fullmatch(r"[a-z][a-z0-9-]*:[a-z][a-z0-9-]*", owner)
+                and record["surface"] == "workflow"
+                and record["access"] == "coordinate",
+                "external component import drift",
+            )
+        elif imported is not None:
             require(
                 record["disposition"] == "imported-operation"
                 and imported == owner
@@ -2356,6 +2367,37 @@ def validate_topology(root: Path) -> None:
                 "nested loop ownership",
             )
     skills_by_name = {component["name"]: component for component in skills}
+    initialization = skills_by_name["initializing-repositories"]
+    require(
+        set(initialization["calls"])
+        == {
+            "operation:repository-configuration",
+            "operation:impeccable:impeccable",
+            "operation:mattpocock-skills:grilling",
+        },
+        "repository initialization component call drift",
+    )
+    require(
+        all(
+            operation_by_id[owner]["disposition"] == "external-component"
+            for owner in ("impeccable:impeccable", "mattpocock-skills:grilling")
+        ),
+        "repository initialization external component declaration drift",
+    )
+    require(
+        initialization["contract"].get("terminal_handoffs")
+        == [
+            {
+                "trigger": "initial-setup-needs-an-authorized-git-checkpoint",
+                "owner": "versionkeeping:checkpointing-and-publishing-git-work",
+                "resume": (
+                    "fresh-initializer-at-product-setup-after-reviewed-local-commit-"
+                    "and-preservation-verification"
+                ),
+            }
+        ],
+        "repository initialization checkpoint handoff drift",
+    )
     configuration = skills_by_name["configuring-repositories"]
     configuration_references = {
         f"skills/configuring-repositories/{relative}"
