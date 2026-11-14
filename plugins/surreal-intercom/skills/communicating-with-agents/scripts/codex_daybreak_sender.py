@@ -214,10 +214,29 @@ def task_observations(directory, result):
         after_ref = str(observation_path)
 
 
-def retained_accepted_turn(directory, result):
-    attempt = read_private_capture(directory / "attempt.json")
-    capture = read_private_capture(directory / "start-response.json")
+def bound_standing_attempt(directory, result):
+    raw, attempt = read_private_capture(directory / "attempt.json", include_bytes=True)
     envelope = attempt["envelope"]
+    params = envelope["params"]
+    request = params["turnStart"]["request"]
+    require(envelope["method"] == "thread-follower-start-turn"
+            and params["conversationId"] == request["threadId"] == result["child"]["thread_id"]
+            and request["clientUserMessageId"] == result["refs"]["attempt_id"]
+            and text(envelope["requestId"])
+            and attempt["correlation"] == envelope["requestId"]
+            and all(attempt["refs"][key] == result["refs"][key]
+                    for key in ("operation_id", "message_id", "attempt_id", "operation_ref")),
+            "task-attempt-conflict")
+    return envelope, hashlib.sha256(raw).hexdigest()
+
+
+def retained_accepted_turn(directory, result, standing, bound_attempt):
+    capture = read_private_capture(directory / "start-response.json")
+    if standing:
+        require(bound_attempt is not None, "task-attempt-conflict")
+        envelope, _ = bound_attempt
+    else:
+        envelope = read_private_capture(directory / "attempt.json")["envelope"]
     method = "thread-follower-start-turn"
     require(capture["envelope"] == envelope and envelope["method"] == method
             and envelope["params"]["conversationId"] == result["child"]["thread_id"]
@@ -237,23 +256,11 @@ def retained_accepted_turn(directory, result):
     return turn_id
 
 
-def retained_task_write_attempt(directory, result):
+def retained_task_write_attempt(directory, bound_attempt):
     """Test for evidence written after the standing callback returned."""
-    try:
-        attempt_raw, attempt = read_private_capture(directory / "attempt.json", include_bytes=True)
-        envelope = attempt["envelope"]
-        params = envelope["params"]
-        request = params["turnStart"]["request"]
-        require(envelope["method"] == "thread-follower-start-turn"
-                and params["conversationId"] == request["threadId"] == result["child"]["thread_id"]
-                and request["clientUserMessageId"] == result["refs"]["attempt_id"]
-                and text(envelope["requestId"])
-                and attempt["correlation"] == envelope["requestId"]
-                and all(attempt["refs"][key] == result["refs"][key]
-                        for key in ("operation_id", "message_id", "attempt_id", "operation_ref")),
-                "task-attempt-conflict")
-    except (OSError, ValueError, KeyError, TypeError, RecursionError):
+    if bound_attempt is None:
         return False
+    envelope, attempt_digest = bound_attempt
     try:
         response = read_private_capture(directory / "start-response.json")
     except (OSError, ValueError, RecursionError):
@@ -269,11 +276,12 @@ def retained_task_write_attempt(directory, result):
             and envelope in transport["outbound"]
             and transport.get("writeBoundary") == {
                 "pendingExistedBeforeWrite": True,
-                "pendingSha256": hashlib.sha256(attempt_raw).hexdigest(),
+                "pendingSha256": attempt_digest,
             })
 
 
-def retained_submission_fields(directory, record, result, standing, *, claim):
+def retained_submission_fields(directory, record, result, standing, bound_attempt,
+                               write_attempted, *, claim):
     fields = (
         "status", "ipc", "saved_selection", "receipt", "task_completion",
         "effective_program", "owned_connection",
@@ -302,7 +310,8 @@ def retained_submission_fields(directory, record, result, standing, *, claim):
         require(not claim and text(turn_id) and ipc == "attempted"
                 and record["saved_selection"] is True
                 and (not standing or task_write == "attempted")
-                and turn_id == retained_accepted_turn(directory, result), "invalid-retained-result")
+                and turn_id == retained_accepted_turn(directory, result, standing, bound_attempt),
+                "invalid-retained-result")
     else:
         require(status == "submission_unknown" and turn_id is None
                 and (not claim or ipc == "unknown")
@@ -310,14 +319,14 @@ def retained_submission_fields(directory, record, result, standing, *, claim):
                 "invalid-retained-result")
         if not claim:
             try:
-                accepted_turn = retained_accepted_turn(directory, result)
+                accepted_turn = retained_accepted_turn(directory, result, standing, bound_attempt)
             except (OSError, ValueError, KeyError, TypeError, AttributeError, RecursionError):
                 accepted_turn = None
             require(accepted_turn is None, "invalid-retained-result")
     projection = {key: record[key] for key in fields}
     if standing:
         projection["task_write"] = task_write
-        require(task_write != "not_attempted" or not retained_task_write_attempt(directory, result),
+        require(task_write != "not_attempted" or not write_attempted,
                 "invalid-retained-result")
     if turn_id is not None:
         projection["turn_id"] = turn_id
@@ -394,6 +403,13 @@ def retained(directory):
         result["refs"]["bootstrap_completion_ref"] = str(directory / "bootstrap-completed.json")
     claim_present = (directory / "claim.json").exists()
     standing = intent.get("resource_admission") == "standing-v1"
+    bound_attempt = None
+    if claim_present and standing:
+        try:
+            bound_attempt = bound_standing_attempt(directory, result)
+        except (OSError, ValueError, KeyError, TypeError, RecursionError):
+            pass
+    write_attempted = retained_task_write_attempt(directory, bound_attempt)
     decision_capture_failed = False
     if claim_present:
         result.pop("reason", None)
@@ -413,7 +429,8 @@ def retained(directory):
             else:
                 try:
                     projection = retained_submission_fields(
-                        directory, record, result, standing, claim=name == "claim.json",
+                        directory, record, result, standing, bound_attempt, write_attempted,
+                        claim=name == "claim.json",
                     )
                 except (OSError, ValueError, KeyError, TypeError, AttributeError, RecursionError):
                     if name == "claim.json" or not claim_present:
@@ -430,8 +447,10 @@ def retained(directory):
     for name, key in (("setup.json", "setup_ref"), ("attempt.json", "attempt_ref")):
         if (directory / name).exists():
             result["refs"][key] = str(directory / name)
-    if claim_present and standing and not decision_capture_failed:
-        decision_ref = retained_standing_decision(directory, intent)
+    if write_attempted:
+        result.update(ipc="attempted", task_write="attempted")
+    if bound_attempt is not None and not decision_capture_failed:
+        decision_ref = retained_standing_decision(directory, intent, bound_attempt[0])
         if decision_ref is not None:
             result["refs"]["standing_decision_ref"] = decision_ref
             if result.get("task_write") == "not_attempted":
@@ -520,23 +539,16 @@ def read_private_capture(path, *, include_bytes=False):
     return (raw, decoded) if include_bytes else decoded
 
 
-def retained_standing_decision(directory, intent):
+def retained_standing_decision(directory, intent, envelope):
     path = directory / "standing-decision.json"
     try:
         record = read_private_capture(path)
-        attempt = read_private_capture(directory / "attempt.json")
-        envelope = attempt["envelope"]
-        request = envelope["params"]["turnStart"]["request"]
         require(isinstance(record, dict)
                 and record.keys() == {"attempt_id", "correlation_id", "request_id", "decision"}
                 and valid_standing_allow(record["decision"])
-                and record["attempt_id"] == intent["attempt_id"] == request["clientUserMessageId"]
+                and record["attempt_id"] == intent["attempt_id"]
                 and record["correlation_id"] == intent["correlation_id"]
-                and text(record["request_id"])
-                and record["request_id"] == envelope["requestId"] == attempt["correlation"]
-                and envelope["method"] == "thread-follower-start-turn"
-                and all(attempt["refs"][key] == intent[key]
-                        for key in ("operation_id", "message_id", "attempt_id")),
+                and record["request_id"] == envelope["requestId"],
                 "standing-decision-attempt-mismatch")
     except (OSError, ValueError, KeyError, TypeError, RecursionError):
         return None

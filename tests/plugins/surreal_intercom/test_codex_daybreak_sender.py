@@ -688,10 +688,14 @@ class PendingBootstrapCommandTests(unittest.TestCase):
             with self.subTest(result=result):
                 self.completed_bootstrap_submission(failure="standing-" + result, standing=True)
 
+    def test_mismatched_standing_attempt_supplies_no_retained_evidence(self):
+        self.completed_bootstrap_submission(standing=True, mismatched_attempt=True)
+
     def completed_bootstrap_submission(
         self, pending_first=False, failure=None, continuation=False,
         task_observation=False, accepted_tail=None, damaged_results=None, standing=False,
         damaged_bytes=b'{"partial":', damage_reason="invalid-json", false_capture_refusal=False,
+        mismatched_attempt=False,
     ):
         with tempfile.TemporaryDirectory(prefix="db-task-") as directory:
             scratch=Path(directory).resolve()
@@ -1321,6 +1325,7 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                             failures=[{"stage": "task-submit", "reason": "standing-decision-capture-failed"}],
                         )
                         submission.write_text(json.dumps(terminal))
+                        (operation_dir / "failure.json").unlink()
                         if failure == "lost-task-response":
                             (operation_dir / "transport.json").unlink()
                         evidence = Path(accepted["refs"]["standing_decision_ref"])
@@ -1329,6 +1334,7 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                             recovered = command(phase, op)
                             self.assertEqual(recovered["status"], "submission_unknown")
                             self.assertEqual(recovered["task_write"], "attempted")
+                            self.assertEqual(recovered["ipc"], "attempted")
                             self.assertEqual(recovered["refs"]["standing_decision_ref"], str(evidence))
                             self.assertEqual(recovered["evidence_read_failures"], [
                                 {"path": str(submission), "reason": "invalid-result"},
@@ -1369,6 +1375,36 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                     self.assertEqual(accepted["refs"][key],value)
                 self.assertEqual(accepted["child"],child)
                 self.assertEqual(accepted["turn_id"],"invented-accepted-turn")
+                if mismatched_attempt:
+                    operation_dir = Path(accepted["refs"]["operation_ref"]).parent
+                    attempt_path = operation_dir / "attempt.json"
+                    response_path = operation_dir / "start-response.json"
+                    attempt_raw = attempt_path.read_bytes()
+                    response_raw = response_path.read_bytes()
+                    for mismatch in ("outer target", "inner target", "correlation", "operation reference"):
+                        with self.subTest(mismatch=mismatch):
+                            attempt = json.loads(attempt_raw)
+                            envelope = attempt["envelope"]
+                            if mismatch == "outer target":
+                                envelope["params"]["conversationId"] = "another-child"
+                            elif mismatch == "inner target":
+                                envelope["params"]["turnStart"]["request"]["threadId"] = "another-child"
+                            elif mismatch == "correlation":
+                                attempt["correlation"] = "another-request"
+                            else:
+                                attempt["refs"]["operation_ref"] = "/another/intent.json"
+                            response = json.loads(response_raw)
+                            response["envelope"] = envelope
+                            attempt_path.write_text(json.dumps(attempt))
+                            response_path.write_text(json.dumps(response))
+                            for phase in ("show", "submit"):
+                                retained = command(phase, op)
+                                self.assertEqual(retained["status"], "submission_unknown")
+                                self.assertEqual(retained["task_write"], "unknown")
+                                self.assertNotIn("standing_decision_ref", retained["refs"])
+                                self.assertIsNone(retained["native_call"])
+                    attempt_path.write_bytes(attempt_raw)
+                    response_path.write_bytes(response_raw)
                 if standing:
                     self.assertEqual(accepted["task_write"],"attempted")
                     operation_dir=Path(accepted["refs"]["operation_ref"]).parent
@@ -1550,7 +1586,7 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                         self.assertEqual(result.get("turn_id"),
                                          "invented-accepted-turn" if final_valid else None)
                         self.assertIs(result["saved_selection"],True if final_valid else None)
-                        self.assertEqual(result["ipc"],"attempted" if final_valid else "unknown")
+                        self.assertEqual(result["ipc"],"attempted" if final_valid or standing else "unknown")
                         self.assertEqual(result["owned_connection"],
                                          {"started":True,"closed":True} if final_valid
                                          else {"started":None,"closed":None})
@@ -1581,7 +1617,8 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                             evidence.write_bytes(invalid)
                             shown = command("show", op)
                             self.assertNotIn("standing_decision_ref", shown["refs"])
-                            self.assertEqual(shown["task_write"], "unknown")
+                            self.assertEqual(shown["task_write"], "attempted")
+                            self.assertEqual(shown["status"], "submission_unknown")
                             self.assertEqual(evidence.read_bytes(), invalid)
                         evidence.write_bytes(original_evidence)
                         self.assertEqual(command("show", op)["refs"], expected_refs)
