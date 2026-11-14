@@ -71,11 +71,17 @@ Assess existing notes against these criteria before reusing them.
 
 ## Review and publish
 
+This publication procedure supports lightweight tags only. Do not use it to
+publish an annotated tag until that form's release identity and verification
+requirements are settled. Source validation separately accepts both well-formed
+lightweight and annotated tags when they satisfy its history checks.
+
 Bind the approved GitHub host, repository, release tag, permitted tag form, and
 source commit before publication. Independently read the exact tag ref from that
 repository before creating a release draft, before promoting it, and during public
 readback. Verify the observed ref, object form, and resolved commit against the
-approved values at each boundary. An absent, unexpected, or unavailable ref stops
+approved values at each boundary. The lightweight tag ref must point directly to
+the approved commit. An absent, unexpected, or unavailable ref stops
 publication; tag creation requires its separately authorized protection and
 recovery procedure. Use the existing GitHub release route with `--verify-tag` to
 avoid implicit tag creation, but do not treat its existence check as proof of
