@@ -659,13 +659,21 @@ class PendingBootstrapCommandTests(unittest.TestCase):
             {"native_call": {"tool": "untrusted-capture", "arguments": {}}},
             {"turn_id": "another-turn"},
             {"status": "submission_unknown"},
+            {"status": "submission_unknown", "turn_id": None},
+            {"status": "submission_unknown", "turn_id": None, "task_write": "not_attempted"},
         ):
             with self.subTest(changes=changes):
                 self.completed_bootstrap_submission(
-                    standing=True, task_observation="native_call" not in changes,
+                    standing=True, task_observation=not {"native_call", "task_write"} & changes.keys(),
                     damaged_results=("submission.json",), damaged_bytes=changes,
                     damage_reason="invalid-result",
                 )
+
+    def test_deeply_nested_terminal_capture_keeps_original_evidence(self):
+        self.completed_bootstrap_submission(
+            standing=True, task_observation=True,
+            damaged_results=("submission.json",), damaged_bytes=b"[" * 50000 + b"]" * 50000,
+        )
 
     def test_standing_gate_rejects_ineligible_reader_results(self):
         for result in ("failed", "unavailable", "replaced", "malformed", "nested",
@@ -734,6 +742,20 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                 binding.chmod(0o600)
                 standing_args=("--standing-binding",str(binding),"--standing-eligible")
             launcher=SENDER
+            if failure == "decision-capture":
+                launcher = scratch / "occupied-decision-fixture.py"
+                launcher.write_text(
+                    "import sys\n"
+                    f"sys.path.insert(0, {str(SENDER.parent)!r})\n"
+                    "from codex_capture import CaptureWriter\n"
+                    "from codex_daybreak_sender import main\n"
+                    "original_write = CaptureWriter.write_json\n"
+                    "def occupy_decision(self, path, value):\n"
+                    "    original_write(self, path, value)\n"
+                    "    return original_write(self, path, value)\n"
+                    "CaptureWriter.write_json = occupy_decision\n"
+                    "raise SystemExit(main())\n"
+                )
             if failure=="task-write-error":
                 launcher=scratch/"write-error-fixture.py"
                 launcher.write_text(
@@ -970,9 +992,6 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                             discovery_reply[:] = [answer]
                         if refused_by_standing:
                             withhold_at_task()
-                        if failure == "decision-capture":
-                            evidence = Path(refs["operation_ref"]).parent / "standing-decision.json"
-                            evidence.write_bytes(b"existing capture")
                         reply(settings,{"settings":{"daybreakEnabled":failure!="false-readback"}},
                               "invented-owner-client",
                               tail=prefix_tail if failure=="readback-prefix" else b"")
@@ -1213,8 +1232,10 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                         operation_dir=Path(accepted["refs"]["operation_ref"]).parent
                         if failure == "decision-capture":
                             self.assertEqual(
-                                (operation_dir / "standing-decision.json").read_bytes(),
-                                b"existing capture",
+                                json.loads((operation_dir / "standing-decision.json").read_bytes()),
+                                {"attempt_id": request["attempt_id"],
+                                 "correlation_id": request["correlation_id"],
+                                 "request_id": pending_task["requestId"], "decision": allow},
                             )
                         self.assertEqual(
                             (operation_dir / "start-response.json").exists(),
@@ -1284,13 +1305,14 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                     self.assertEqual(mailbox("pending"),[recorded])
                     self.assertEqual({path:path.read_bytes() for path in root.rglob("*")
                                       if path.is_file()},retained)
-                    if failure == "standing-hold":
+                    if failure in {"standing-hold", "decision-capture"}:
                         (operation_dir / "submission.json").write_text("{")
                         for fallback in (command("show",op),command("submit",op,observation)):
                             self.assertEqual(fallback["ipc"],"attempted",fallback)
                             self.assertEqual(fallback["task_write"],"not_attempted")
                             self.assertIs(fallback["saved_selection"],True)
                             self.assertEqual(fallback["owned_connection"],{"started":True,"closed":None})
+                            self.assertNotIn("standing_decision_ref", fallback["refs"])
                     listener.setblocking(False)
                     with self.assertRaises(BlockingIOError):
                         connection,_=listener.accept()

@@ -177,7 +177,6 @@ def task_observations(directory, result):
     accepted = result["status"] == "turn_accepted" and text(result.get("turn_id"))
     recovering = (
         result["status"] == "submission_unknown"
-        and result.get("ipc") == "unknown"
         and (directory / "claim.json").is_file()
     )
     bound_turn = result.get("turn_id")
@@ -233,7 +232,9 @@ def retained_accepted_turn(directory, result):
     ]
     require(len(matches) == 1 and matches[0]["resultType"] == "success",
             "invalid-start-response")
-    return matches[0]["result"]["result"]["turn"]["id"]
+    turn_id = matches[0]["result"]["result"]["turn"]["id"]
+    require(text(turn_id), "invalid-start-response")
+    return turn_id
 
 
 def retained_submission_fields(directory, record, result, standing, *, claim):
@@ -271,6 +272,12 @@ def retained_submission_fields(directory, record, result, standing, *, claim):
                 and (not claim or ipc == "unknown")
                 and (not standing or task_write != "attempted" or ipc == "attempted"),
                 "invalid-retained-result")
+        if not claim:
+            try:
+                accepted_turn = retained_accepted_turn(directory, result)
+            except (OSError, ValueError, KeyError, TypeError, AttributeError, RecursionError):
+                accepted_turn = None
+            require(accepted_turn is None, "invalid-retained-result")
     projection = {key: record[key] for key in fields}
     if standing:
         projection["task_write"] = task_write
@@ -349,6 +356,7 @@ def retained(directory):
         result["refs"]["bootstrap_completion_ref"] = str(directory / "bootstrap-completed.json")
     claim_present = (directory / "claim.json").exists()
     standing = intent.get("resource_admission") == "standing-v1"
+    decision_capture_failed = False
     if claim_present:
         result.pop("reason", None)
     evidence_read_failures = []
@@ -357,7 +365,7 @@ def retained(directory):
         if path.exists():
             try:
                 record = read_json(path)
-            except (ValueError, OSError) as exc:
+            except (ValueError, OSError, RecursionError) as exc:
                 if name == "claim.json" or not claim_present:
                     raise
                 evidence_read_failures.append({
@@ -374,16 +382,22 @@ def retained(directory):
                         raise ValueError("invalid-retained-result")
                     evidence_read_failures.append({"path": str(path), "reason": "invalid-result"})
                 else:
+                    if (projection.get("task_write") == "not_attempted"
+                            and {"stage": "task-submit", "reason": "standing-decision-capture-failed"}
+                            in projection.get("failures", ())):
+                        decision_capture_failed = True
                     result.update(projection)
     if evidence_read_failures:
         result["evidence_read_failures"] = evidence_read_failures
     for name, key in (("setup.json", "setup_ref"), ("attempt.json", "attempt_ref")):
         if (directory / name).exists():
             result["refs"][key] = str(directory / name)
-    if claim_present and standing:
-        decision_ref = retained_standing_decision(directory, intent, result)
+    if claim_present and standing and not decision_capture_failed:
+        decision_ref = retained_standing_decision(directory, intent)
         if decision_ref is not None:
             result["refs"]["standing_decision_ref"] = decision_ref
+            if result.get("task_write") == "not_attempted":
+                result["task_write"] = "unknown"
     observations = task_observations(directory, result)
     if observations:
         wait_path, _, observation_path, observation = observations[-1]
@@ -467,9 +481,7 @@ def read_private_capture(path):
     return json.loads(raw, object_pairs_hook=unique_json_object)
 
 
-def retained_standing_decision(directory, intent, result):
-    if result.get("task_write") == "not_attempted":
-        return None
+def retained_standing_decision(directory, intent):
     path = directory / "standing-decision.json"
     try:
         record = read_private_capture(path)
