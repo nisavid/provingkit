@@ -155,6 +155,13 @@ operation claim and refusal before opening its mailbox or socket. After a valid
 settings readback and task frame check, the helper rechecks the reader identity
 and requests a current decision. Only a complete `routine-standing-decision/v1`
 `ALLOW` with the bound grant and a runtime ID permits the task frame write.
+Before writing the frame, the helper saves that validated decision in the
+original operation directory's private, create-only `standing-decision.json`.
+It binds the decision to the original attempt, exchange correlation, and task
+request ID. The result reports `standing_decision_ref` when that save succeeds.
+If the save fails, the helper withholds the task frame. The decision record
+establishes admission at the write boundary. Use the original write and
+response records to determine the task outcome.
 A known refusal before the task write records `task_write: not_attempted`. If
 setup ran, retain its saved selection and observed connection closure as
 separate facts. A later eligible decision does not reopen the original attempt.

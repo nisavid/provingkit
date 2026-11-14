@@ -405,6 +405,7 @@ def check_standing(binding, reader_identity):
                 "standing-decision")
     except (OSError, ValueError, TypeError, RecursionError, subprocess.SubprocessError) as error:
         raise StandingRefusal("standing-decision-withheld") from error
+    return decision
 
 
 def submit_task(directory, intent, root, writer, arguments):
@@ -545,7 +546,18 @@ def submit_task(directory, intent, root, writer, arguments):
         stage = "task-submit"
 
         def before_task_write():
-            check_standing(gate_binding, reader_identity)
+            decision = check_standing(gate_binding, reader_identity)
+            decision_path = directory / "standing-decision.json"
+            try:
+                writer.write_json(decision_path, {
+                    "attempt_id": intent["attempt_id"],
+                    "correlation_id": intent["correlation_id"],
+                    "request_id": start["requestId"],
+                    "decision": decision,
+                })
+            except (OSError, StorageRefusal) as error:
+                raise StandingRefusal("standing-decision-capture-failed") from error
+            result["refs"]["standing_decision_ref"] = str(decision_path)
             result["task_write"] = "unknown"
 
         response = exchange(start, "start", before_write=before_task_write if standing else None)

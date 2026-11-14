@@ -631,6 +631,12 @@ class PendingBootstrapCommandTests(unittest.TestCase):
     def test_standing_gate_preserves_the_original_daybreak_task(self):
         self.completed_bootstrap_submission(standing=True, pending_first=True)
 
+    def test_standing_decision_survives_missing_task_response(self):
+        self.completed_bootstrap_submission(failure="lost-task-response", standing=True)
+
+    def test_standing_decision_capture_failure_withholds_task(self):
+        self.completed_bootstrap_submission(failure="decision-capture", standing=True)
+
     def test_standing_gate_rejects_ineligible_reader_results(self):
         for result in ("failed", "unavailable", "replaced", "malformed", "nested",
                        "incomplete", "wrong-grant", "invalid-runtime", "legacy", "ineligible"):
@@ -933,11 +939,15 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                             discovery_reply[:] = [answer]
                         if refused_by_standing:
                             withhold_at_task()
+                        if failure == "decision-capture":
+                            evidence = Path(refs["operation_ref"]).parent / "standing-decision.json"
+                            evidence.write_bytes(b"existing capture")
                         reply(settings,{"settings":{"daybreakEnabled":failure!="false-readback"}},
                               "invented-owner-client",
                               tail=prefix_tail if failure=="readback-prefix" else b"")
                         if refused_by_standing or failure in {
                             "false-readback","outgoing-frame","readback-prefix","task-write-error",
+                            "decision-capture",
                         }:
                             self.assertEqual(connection.recv(1),b"")
                             closed.set()
@@ -959,6 +969,15 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                         })
                         shown=captured(start,"attempt_ref")
                         self.assertEqual(shown["refs"]["setup_ref"],prewrite[0][1])
+                        if standing:
+                            evidence = Path(shown["refs"]["operation_ref"]).parent / "standing-decision.json"
+                            self.assertEqual(evidence.stat().st_mode & 0o777, 0o600)
+                            self.assertEqual(json.loads(evidence.read_bytes()), {
+                                "attempt_id": request["attempt_id"],
+                                "correlation_id": request["correlation_id"],
+                                "request_id": start["requestId"],
+                                "decision": allow,
+                            })
                         pending=mailbox("show",request["message_id"])
                         self.assertEqual(len(pending["attempts"]),1)
                         self.assertEqual(pending["attempts"][0]["attempt_id"],request["attempt_id"])
@@ -1054,6 +1073,7 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                         references.append("attempt_ref")
                     if refused_by_standing or failure in {
                         "outgoing-frame","readback-prefix","task-write-error",
+                        "decision-capture",
                     }:
                         references.append("attempt_ref")
                         path=Path(accepted["refs"]["attempt_ref"])
@@ -1072,6 +1092,7 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                     self.assertIs(accepted["saved_selection"],
                                   True if refused_by_standing or failure in {
                                       "lost-task-response","outgoing-frame","readback-prefix","task-write-error",
+                                      "decision-capture",
                                   } else None)
                     self.assertEqual(accepted["receipt"],"unknown")
                     self.assertEqual(accepted["task_completion"],"unknown")
@@ -1083,7 +1104,13 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                         self.assertEqual(accepted["refs"][key],value)
                     self.assertEqual(accepted["child"],child)
                     self.assertEqual([item[0] for item in prewrite],references)
-                    self.assertEqual(set(accepted["refs"]),set(refs)|set(references))
+                    expected_refs = set(refs) | set(references)
+                    if standing and failure in {"lost-task-response", "task-write-error"}:
+                        expected_refs.add("standing_decision_ref")
+                        evidence = Path(accepted["refs"]["standing_decision_ref"])
+                        self.assertEqual(evidence.name, "standing-decision.json")
+                        self.assertEqual(json.loads(evidence.read_bytes())["decision"], allow)
+                    self.assertEqual(set(accepted["refs"]), expected_refs)
                     for reference,path,retained in prewrite:
                         self.assertEqual(accepted["refs"][reference],path)
                         self.assertEqual(Path(path).read_bytes(),retained)
@@ -1138,6 +1165,7 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                             "task-write-error":("task-submit","synthetic-task-write-error"),
                             "outgoing-frame":("task-submit","outgoing-frame-limit"),
                             "false-readback":("daybreak-readback","saved-selection-unconfirmed"),
+                            "decision-capture":("task-submit","standing-decision-capture-failed"),
                         }
                         if refused_by_standing:
                             failure_point = ("task-submit","standing-decision-withheld")
@@ -1146,15 +1174,27 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                         self.assertEqual(first,dict(zip(("stage","reason"),failure_point)))
                     if standing:
                         write_raised=failure=="task-write-error"
-                        expected_task_write="attempted" if write_raised else "not_attempted"
+                        expected_task_write = (
+                            "attempted" if write_raised or failure == "lost-task-response"
+                            else "not_attempted"
+                        )
                         self.assertEqual(accepted["task_write"],expected_task_write)
                         operation_dir=Path(accepted["refs"]["operation_ref"]).parent
-                        self.assertFalse((operation_dir/"start-response.json").exists())
+                        if failure == "decision-capture":
+                            self.assertEqual(
+                                (operation_dir / "standing-decision.json").read_bytes(),
+                                b"existing capture",
+                            )
+                        self.assertEqual(
+                            (operation_dir / "start-response.json").exists(),
+                            failure == "lost-task-response",
+                        )
                         transport=json.loads((operation_dir/"transport.json").read_bytes())
                         expected_outbound=[*wire[:4],*discovery_reply,*wire[4:]]
                         expected_boundary={}
-                        if write_raised:
-                            expected_outbound.append(pending_task)
+                        if expected_task_write == "attempted":
+                            if write_raised:
+                                expected_outbound.append(pending_task)
                             expected_boundary={
                                 "pendingExistedBeforeWrite":True,
                                 "pendingSha256":hashlib.sha256(Path(accepted["refs"]["attempt_ref"]).read_bytes()).hexdigest(),
@@ -1240,6 +1280,10 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                 if standing:
                     self.assertEqual(accepted["task_write"],"attempted")
                     operation_dir=Path(accepted["refs"]["operation_ref"]).parent
+                    self.assertEqual(
+                        accepted["refs"]["standing_decision_ref"],
+                        str(operation_dir / "standing-decision.json"),
+                    )
                     transport=json.loads((operation_dir/"transport.json").read_bytes())
                     self.assertEqual(transport["outbound"],[*wire[:4],*discovery_reply,*wire[4:]])
                     pending_capture=Path(accepted["refs"]["attempt_ref"]).read_bytes()
