@@ -183,18 +183,6 @@ EXPECTED_EXCLUDED_SOURCE = {
     ],
 }
 EXPECTED_SOURCE_ISSUES = (43, 44, 45, 52, 53, 56, 59, 65, 79, 80)
-AUTHORIZED_SOURCE_TAGS = frozenset(
-    {
-        "refs/tags/preview-8acd0e2af1f4 commit "
-        "8acd0e2af1f4508a0e2358d8e01f6a3db7a78ce3",
-        "refs/tags/v0.1.0-alpha.3 commit "
-        "df5ffd69cfbe08a82b35ba72baccedadfdaa3b49",
-        "refs/tags/v0.1.0-alpha.4 commit "
-        "e14e818e423abd2f65b336e279284d412e0fcbce",
-        "refs/tags/v0.1.0-alpha.6 commit "
-        "0c47d9d4b936dfb74134a4d7bf0f9354fc67359b",
-    }
-)
 EXPECTED_HISTORY_RELOCATIONS = (
     (
         ".github/workflows/task-witness-linux-qualification.yml",
@@ -2370,6 +2358,48 @@ def _validate_history(repository: Path) -> None:
         if retained_in_ref.returncode != 1:
             raise ValidationError("Git history attestation unavailable")
 
+    tag_inventory = _require_git_bytes(
+        repository, "for-each-ref", "--format=%(refname) %(objectname) x%(symref)", "refs/tags"
+    )
+    if tag_inventory and not tag_inventory.endswith(b"\n"):
+        raise ValidationError("tag ref inventory drift")
+    for record in tag_inventory.split(b"\n")[:-1]:
+        try:
+            ref_bytes, object_bytes, symbolic_bytes = record.split(b" ")
+            ref_name = ref_bytes.decode("utf-8", errors="surrogateescape")
+            object_id = object_bytes.decode("ascii")
+            symbolic = symbolic_bytes.decode("utf-8", errors="surrogateescape")
+        except (ValueError, UnicodeDecodeError) as error:
+            raise ValidationError("tag ref inventory drift") from error
+        if not OID_SHA1_PATTERN.fullmatch(object_id):
+            raise ValidationError("tag ref inventory drift")
+        if symbolic != "x":
+            raise ValidationError("symbolic tag is not allowed")
+        if (
+            ref_name == "refs/tags/preview-8acd0e2af1f4"
+            and object_id != "8acd0e2af1f4508a0e2358d8e01f6a3db7a78ce3"
+        ):
+            raise ValidationError("pinned preview tag drift")
+        peeled = _run_git(
+            repository, "rev-parse", "--verify", f"{object_id}^{{commit}}"
+        )
+        if peeled.returncode != 0:
+            raise ValidationError(f"tag does not resolve to a commit: {ref_name}")
+        commit = peeled.stdout.strip()
+        retained_bases = _run_git(
+            repository, "merge-base", "--all", retained, commit
+        )
+        if retained_bases.returncode != 0:
+            raise ValidationError("Git history attestation unavailable")
+        retained_bases_in_head = [
+            _run_git(repository, "merge-base", "--is-ancestor", base, "HEAD")
+            for base in retained_bases.stdout.splitlines()
+        ]
+        if any(result.returncode not in (0, 1) for result in retained_bases_in_head):
+            raise ValidationError("Git history attestation unavailable")
+        if any(result.returncode == 1 for result in retained_bases_in_head):
+            raise ValidationError("retained extraction input was accepted into a tag")
+
     integrity = _run_git(
         repository,
         "fsck",
@@ -2380,23 +2410,12 @@ def _validate_history(repository: Path) -> None:
     if integrity.returncode != 0:
         raise ValidationError("Git ref/history integrity validation failed")
 
-    tags = {
-        tag.rstrip()
-        for tag in _require_git_output(
-            repository,
-            "for-each-ref",
-            "--format=%(refname) %(objecttype) %(objectname) %(symref)",
-            "refs/tags",
-        ).splitlines()
-    }
-    if not tags.issubset(AUTHORIZED_SOURCE_TAGS):
-        raise ValidationError("source-stage repository contains an unauthorized tag")
-
     history_paths = _require_git_output(
         repository,
         "log",
         "--format=",
         "--name-only",
+        "--diff-merges=first-parent",
         "-z",
         "--all",
     ).split("\0")
