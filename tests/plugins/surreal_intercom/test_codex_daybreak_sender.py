@@ -654,6 +654,19 @@ class PendingBootstrapCommandTests(unittest.TestCase):
             damaged_bytes=None, task_observation=True,
         )
 
+    def test_inconsistent_standing_result_cannot_override_original_evidence(self):
+        for changes in (
+            {"native_call": {"tool": "untrusted-capture", "arguments": {}}},
+            {"turn_id": "another-turn"},
+            {"status": "submission_unknown"},
+        ):
+            with self.subTest(changes=changes):
+                self.completed_bootstrap_submission(
+                    standing=True, task_observation="native_call" not in changes,
+                    damaged_results=("submission.json",), damaged_bytes=changes,
+                    damage_reason="invalid-result",
+                )
+
     def test_standing_gate_rejects_ineligible_reader_results(self):
         for result in ("failed", "unavailable", "replaced", "malformed", "nested",
                        "incomplete", "wrong-grant", "invalid-runtime", "legacy", "ineligible"):
@@ -1440,6 +1453,9 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                     operation_dir=Path(accepted["refs"]["operation_ref"]).parent
                     claim=operation_dir/"claim.json"
                     original_claim=claim.read_bytes()
+                    if isinstance(damaged_bytes, dict):
+                        terminal = json.loads((operation_dir / "submission.json").read_bytes())
+                        damaged_bytes = json.dumps({**terminal, **damaged_bytes}).encode()
                     for name in damaged_results:
                         damaged = operation_dir / name
                         if damaged_bytes is None:

@@ -215,6 +215,80 @@ def task_observations(directory, result):
         after_ref = str(observation_path)
 
 
+def retained_accepted_turn(directory, result):
+    attempt = read_private_capture(directory / "attempt.json")
+    capture = read_private_capture(directory / "start-response.json")
+    envelope = attempt["envelope"]
+    method = "thread-follower-start-turn"
+    require(capture["envelope"] == envelope and envelope["method"] == method
+            and envelope["params"]["conversationId"] == result["child"]["thread_id"]
+            and envelope["params"]["turnStart"]["request"]["clientUserMessageId"]
+            == result["refs"]["attempt_id"], "invalid-start-response")
+    matches = [
+        item for _, item in capture["records"]
+        if item.get("type") == "response"
+        and item.get("requestId") == envelope["requestId"]
+        and item.get("method") == method
+        and item.get("handledByClientId") == envelope["targetClientId"]
+    ]
+    require(len(matches) == 1 and matches[0]["resultType"] == "success",
+            "invalid-start-response")
+    return matches[0]["result"]["result"]["turn"]["id"]
+
+
+def retained_submission_fields(directory, record, result, standing, *, claim):
+    fields = (
+        "status", "ipc", "saved_selection", "receipt", "task_completion",
+        "effective_program", "owned_connection",
+    )
+    require(isinstance(record, dict) and isinstance(record.get("refs"), dict)
+            and record.get("child") == result["child"]
+            and record.get("native_call") is None
+            and all(key in record for key in fields)
+            and all(record["refs"].get(key) == result["refs"][key]
+                    for key in ("operation_id", "message_id", "attempt_id", "operation_ref")),
+            "invalid-retained-result")
+    connection = record["owned_connection"]
+    require(isinstance(connection, dict) and connection.keys() == {"started", "closed"}
+            and all(value is None or type(value) is bool for value in connection.values())
+            and (record["saved_selection"] is None or record["saved_selection"] is True)
+            and all(record[key] == "unknown" for key in ("receipt", "task_completion", "effective_program")),
+            "invalid-retained-result")
+    status = record["status"]
+    ipc = record["ipc"]
+    task_write = record.get("task_write")
+    turn_id = record.get("turn_id")
+    require(ipc in ("unknown", "attempted", "not_attempted")
+            and (task_write in ("unknown", "attempted", "not_attempted") if standing
+                 else "task_write" not in record), "invalid-retained-result")
+    if status == "turn_accepted":
+        require(not claim and text(turn_id) and ipc == "attempted"
+                and record["saved_selection"] is True
+                and (not standing or task_write == "attempted")
+                and turn_id == retained_accepted_turn(directory, result), "invalid-retained-result")
+    else:
+        require(status == "submission_unknown" and turn_id is None
+                and (not claim or ipc == "unknown")
+                and (not standing or task_write != "attempted" or ipc == "attempted"),
+                "invalid-retained-result")
+    projection = {key: record[key] for key in fields}
+    if standing:
+        projection["task_write"] = task_write
+    if turn_id is not None:
+        projection["turn_id"] = turn_id
+    if "reason" in record:
+        require(text(record["reason"]), "invalid-retained-result")
+        projection["reason"] = record["reason"]
+    if "failures" in record:
+        failures = record["failures"]
+        require(isinstance(failures, list)
+                and all(isinstance(item, dict) and item.keys() == {"stage", "reason"}
+                        and all(text(value) for value in item.values()) for item in failures),
+                "invalid-retained-result")
+        projection["failures"] = failures
+    return projection
+
+
 def retained(directory):
     intent = read_json(directory / "intent.json")
     result = {
@@ -274,6 +348,7 @@ def retained(directory):
         result["status"] = "bootstrap_" + completion["bootstrap"]["state"]
         result["refs"]["bootstrap_completion_ref"] = str(directory / "bootstrap-completed.json")
     claim_present = (directory / "claim.json").exists()
+    standing = intent.get("resource_admission") == "standing-v1"
     if claim_present:
         result.pop("reason", None)
     evidence_read_failures = []
@@ -290,26 +365,22 @@ def retained(directory):
                     "reason": "read-error" if isinstance(exc, OSError) else "invalid-json",
                 })
             else:
-                if (isinstance(record, dict)
-                        and isinstance(record.get("refs"), dict)
-                        and record.get("status") in ("submission_unknown", "turn_accepted")
-                        and (record["status"] != "turn_accepted" or text(record.get("turn_id")))
-                        and record.get("ipc") in ("unknown", "attempted", "not_attempted")
-                        and record.get("child") == result["child"]
-                        and all(record["refs"].get(key) == result["refs"][key]
-                                for key in ("operation_id", "message_id", "attempt_id", "operation_ref"))):
-                    result.update(record)
-                elif name == "claim.json" or not claim_present:
-                    raise ValueError("invalid-retained-result")
-                else:
+                try:
+                    projection = retained_submission_fields(
+                        directory, record, result, standing, claim=name == "claim.json",
+                    )
+                except (OSError, ValueError, KeyError, TypeError, AttributeError, RecursionError):
+                    if name == "claim.json" or not claim_present:
+                        raise ValueError("invalid-retained-result")
                     evidence_read_failures.append({"path": str(path), "reason": "invalid-result"})
+                else:
+                    result.update(projection)
     if evidence_read_failures:
         result["evidence_read_failures"] = evidence_read_failures
     for name, key in (("setup.json", "setup_ref"), ("attempt.json", "attempt_ref")):
         if (directory / name).exists():
             result["refs"][key] = str(directory / name)
-    result["refs"].pop("standing_decision_ref", None)
-    if claim_present and intent.get("resource_admission") == "standing-v1":
+    if claim_present and standing:
         decision_ref = retained_standing_decision(directory, intent, result)
         if decision_ref is not None:
             result["refs"]["standing_decision_ref"] = decision_ref
@@ -388,7 +459,7 @@ def read_private_capture(path):
         metadata = os.fstat(source.fileno())
         require(stat.S_ISREG(metadata.st_mode) and metadata.st_uid == os.getuid()
                 and stat.S_IMODE(metadata.st_mode) == 0o600
-                and 0 < metadata.st_size <= 1024 * 1024, "invalid-private-capture")
+                and 0 < metadata.st_size <= 2 * 1024 * 1024, "invalid-private-capture")
         raw = source.read(metadata.st_size + 1)
         require(len(raw) == metadata.st_size
                 and binding_identity(metadata) == binding_identity(os.fstat(source.fileno()))
