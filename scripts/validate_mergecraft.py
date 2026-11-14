@@ -76,6 +76,7 @@ EXTERNAL_TOPOLOGY_RELATIVES = (
 CONTENT_LOCK_EXCLUSIONS = {"CHANGELOG.md", "LICENSE"}
 PUBLIC_SKILLS = (
     "configuring-repositories",
+    "initializing-repositories",
     "writing-github-issue-and-pr-markdown",
     "maintaining-issue-pr-relations",
     "writing-reviewable-pr-descriptions",
@@ -330,6 +331,7 @@ MARKDOWN_AUTHORING_FEATURES = {
     "material-conflict",
 }
 EXPECTED_SKILL_FILES = {
+    "initializing-repositories": COMMON_SKILL_FILES,
     "configuring-repositories": COMMON_SKILL_FILES
     | {
         "references/decisions.md",
@@ -418,6 +420,10 @@ EXPECTED_SKILL_FILES = {
     "stacking-pr-fixups": COMMON_SKILL_FILES,
 }
 CODEX_PROMPTS = {
+    "initializing-repositories": (
+        "Use $mergecraft:initializing-repositories to set up a new UI project "
+        "repository in Codex."
+    ),
     "configuring-repositories": (
         "Use $mergecraft:configuring-repositories to create, assess, or configure "
         "a GitHub repository and its CI."
@@ -2163,6 +2169,10 @@ def validate_topology(root: Path) -> None:
         set(aliases) == set(GITHUB_ALIAS_ACCESS),
         "GitHub operation alias coverage drift",
     )
+    require(
+        "repository-configuration" in operation_by_id,
+        "repository configuration workflow authority drift",
+    )
     exported_operations: set[str] = set()
     for component in skills:
         skill = component["name"]
@@ -2370,7 +2380,7 @@ def validate_topology(root: Path) -> None:
         },
         "repository configuration operation call drift",
     )
-    configuration_operation = operation_by_id.get("repository-configuration", {})
+    configuration_operation = operation_by_id["repository-configuration"]
     configuration_authority = (
         "requested repository outcome, applicable policy, and separately authorized "
         "configuration effects"
