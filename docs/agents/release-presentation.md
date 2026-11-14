@@ -56,13 +56,25 @@ checksum file exists, provide an inline archive hash verified against the
 frozen inputs. An unavailable download does not establish absence; resolve
 missing or conflicting checksum evidence before publication. Distinguish
 installable artifacts from forge-generated source archives.
-Link detailed installation and update steps to a maintained document at an
-immutable published revision. The repository's human entrypoint should expose
-the same guide. Explain first installation, replacement/update, required
-companions, enablement/loading, verification, and supported recovery at the
-level of detail their actual route requires. Qualify provider, account, and
-client claims from applicable evidence; do not turn menu availability into a
-successful installation claim.
+Maintain one [installation and update guide](../install-and-update.md) for the
+current release. Link its stable published path from release notes and the
+repository's human entrypoint. Update the method when it changes; do not create
+a guide per version or retain older installation routes as supported choices.
+Keep version-specific filenames, hashes, and upgrade changes in the release's
+assets and notes. Record the reviewed guide revision in the publication evidence.
+
+Write the guide for someone installing plugins: short steps for installation,
+update, and loading, with only useful troubleshooting. Keep account-specific
+observations, past validation results, pending qualification, release-upload protocols, and
+agent coordination requirements in their owning maintainer records. State only
+user-relevant limitations in the guide. Verify instructions against provider
+documentation and applicable observations; neither source alone establishes a
+successful installation.
+
+Use `proseweaving:writing-for-people` to write and edit the release notes and
+installation guide. Use the archive filenames from the selected release
+inventory for each target. Name each checksum file `<archive>.sha256`; its
+filename entry and digest must match the archive in that inventory.
 
 For GitHub and Linear, use the same verified semantic inputs and retain one
 maintained authoring source for the release. Adapt presentation to each

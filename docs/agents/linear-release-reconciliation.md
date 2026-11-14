@@ -66,7 +66,7 @@ field nor evidence that the whole product lacks the operation.
    next action; do not close issues merely to make a percentage reach 100.
    If the pipeline represents a broader outcome, preserve its unfinished stage
    and explain the completed publication within it.
-3. Link the tracked release to its forge page and applicable version-pinned
+3. Link the tracked release to its forge page and maintained current installation
    guide through native release resources, with further verification links as
    useful. Use the
    [presentation procedure](release-presentation.md) to author notes from the

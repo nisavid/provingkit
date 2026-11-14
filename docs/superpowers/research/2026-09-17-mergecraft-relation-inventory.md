@@ -164,7 +164,7 @@ relation change unless it deliberately includes their affected requalification.
 
 The reviewed public entry points are
 [Linux installation preparation](../../preview/linux-installation.md) and
-[pinned preview installation and update](../../preview/install-and-update.md).
+[pinned preview installation and update](https://github.com/nisavid/provingkit/blob/147e1ddfc969b5119001488ce1556627d3b2449b/docs/preview/install-and-update.md).
 They require a qualified target projection, the accepted exact root
 `RECEIPT.json` bytes and digest, retained mode evidence, saved registration and
 enablement state, and separate verification of discovery and fresh runtime
