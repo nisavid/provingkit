@@ -1,0 +1,640 @@
+{
+  "schema_version": 1,
+  "title": "Capability-scoped signing and custody public-source manifest",
+  "date": "2026-09-16",
+  "retrieved_at": "2026-09-16T08:15:57Z",
+  "report": "docs/superpowers/research/2026-09-16-signing-custody-mechanisms.md",
+  "report_sha256": "450f70e9bfd94165f888c68b203229013c75c4abfb43ebdeeec4f7e7806844b4",
+  "repository_baseline": {
+    "repository": "https://github.com/nisavid/provingkit",
+    "revision": "8783281f165676d5202c455efc10018fb3b4ec07",
+    "branch_at_research_time": "ivan/research-signing-custody-44"
+  },
+  "source_policy": {
+    "allowed": [
+      "public issue records",
+      "public immutable repository source",
+      "official product source and release metadata",
+      "official product documentation",
+      "public pinned API definitions"
+    ],
+    "moving_document_rule": "Moving official documentation is dated and hashed as the exact retrieved HTML response bytes.",
+    "pinned_source_rule": "Repository sources use an immutable commit or release tag resolved to a commit.",
+    "evidence_layers": [
+      "decision_or_contract",
+      "documented_mechanism",
+      "pinned_implementation_or_api_source",
+      "platform_applicability",
+      "credentialed_operation",
+      "qualification"
+    ],
+    "highest_layer_reached": "platform_applicability",
+    "prohibited_and_not_performed": [
+      "account or configuration inspection",
+      "authentication or login",
+      "installation",
+      "key generation or import",
+      "signing or verification execution",
+      "hosted service invocation",
+      "host or runner inspection",
+      "secret or credential access",
+      "provider infrastructure mutation",
+      "personal Mac access"
+    ]
+  },
+  "correction_revalidation": {
+    "retrieved_at": "2026-09-17T03:44:46Z",
+    "method": "Unauthenticated fresh retrieval from immutable raw GitHub URLs for only the two OpenBao sources required to adjudicate the derivation finding.",
+    "historical_capture_limit": "These current captures matched the already-declared immutable source digests. This check does not claim recovery or identity of any lost historical capture bytes.",
+    "captures": [
+      {
+        "source_id": "O-TRANSIT",
+        "url": "https://raw.githubusercontent.com/openbao/openbao/dd9c19c37a878cf4a81b18efb8d6f0599c7da923/website/content/docs/api/secret/transit.mdx",
+        "bytes": 65644,
+        "sha256": "b33d55562c172cac8f0a7740f3ae7f1148b11c4ac60c8e4acd9c9b069b2e3373",
+        "check": "The pinned documentation defines derived=false by default, Ed25519 derivation by context, required base64 context for derived Ed25519 signing, and different returned public keys for different sample contexts under one version."
+      },
+      {
+        "source_id": "O-SOURCE",
+        "url": "https://raw.githubusercontent.com/openbao/openbao/dd9c19c37a878cf4a81b18efb8d6f0599c7da923/builtin/logical/transit/path_sign_verify.go",
+        "bytes": 23200,
+        "sha256": "a33989fe01e339beb889b52484805a15788e73a609387f7a0021cd64aa1135e1",
+        "check": "The pinned handler decodes caller context, passes it with the selected version to SignWithOptions, and returns both key_version and the effective public_key when present."
+      }
+    ]
+  },
+  "context7_discovery": {
+    "consumed": true,
+    "retrieved_at": "2026-09-16T08:12:38.888364+00:00",
+    "receipt_sha256": "8bac475e1a2ea19cb3d3b41be4aa8ded7dc50eb721088b726e670186d0fa4cf2",
+    "queries": [
+      "OpenBao Transit secrets engine signing API key versioning ACL and audit behavior",
+      "Google Cloud KMS asymmetricSign CryptoKeyVersion IAM audit logging and lifecycle"
+    ],
+    "command_counts": {
+      "OpenBao": 2,
+      "GoogleCloudKMS": 3
+    },
+    "results": [
+      {
+        "query": "OpenBao Transit secrets engine signing API key versioning ACL and audit behavior",
+        "selected_library_id": "/openbao/openbao",
+        "disposition": "The official source corpus corroborated current documentation for path ACLs, key configuration and trimming, and audit behavior. It is discovery support only; candidate claims continue to cite direct pinned or dated-and-hashed official primary sources."
+      },
+      {
+        "query": "Google Cloud KMS asymmetricSign CryptoKeyVersion IAM audit logging and lifecycle",
+        "dedicated_api_library_id": null,
+        "locator_library_id": "/websites/cloud_google_sdk",
+        "disposition": "Neither lookup returned a dedicated Cloud KMS API corpus. The official Cloud SDK snippets are locators only and establish neither KMS API coverage nor absence; candidate claims continue to cite direct Google Cloud documentation and the pinned googleapis proto."
+      }
+    ],
+    "consumed_artifacts": [
+      {
+        "file": "context7-openbao-library.txt",
+        "sha256": "d55325f7e821d53b643c070f51dc89d5ac76e686527a1e5b8cad29b63e0ad6c8"
+      },
+      {
+        "file": "context7-openbao-docs.txt",
+        "sha256": "9999e18f63a953bda46ca6ab851a0f38b981ef7d64c36a454a6023b88d381855"
+      },
+      {
+        "file": "context7-gcp-library.txt",
+        "sha256": "eba8ac8647f0ec172e9f79cdfc10fa91fa8fff7792a177ce03916d1f1d3db1e5"
+      },
+      {
+        "file": "context7-gcp-library-refined.txt",
+        "sha256": "34114dd6b95f71bf24c68200b2eba6d13453df18e2d9cd3f9a0f48e9fcc5b531"
+      },
+      {
+        "file": "context7-gcp-docs.txt",
+        "sha256": "4be76fed7564b2ce4e0a6164eaad84997b8c211ce918d322e53a53f20f1563ff"
+      }
+    ],
+    "effect": {
+      "factual_claim_change": false,
+      "source_coverage_change": false,
+      "method_change": "Records that the discovery results were consumed after drafting.",
+      "limitation_change": "Clarifies that the Cloud SDK snippets are locators only and cannot establish KMS API coverage or absence."
+    }
+  },
+  "sources": [
+    {
+      "id": "P44",
+      "title": "provingkit#44 complete public contract",
+      "url": "https://api.github.com/repos/nisavid/provingkit/issues/44",
+      "content_kind": "GitHub REST JSON",
+      "revision": "moving issue snapshot",
+      "sha256": "353feecbdaec9c0ba9d6089d6a860f02e9bb99930278f379eef5e11c91bbd87f",
+      "evidence_layer": "decision_or_contract"
+    },
+    {
+      "id": "P44-CLAIM",
+      "title": "provingkit#44 public claim",
+      "url": "https://github.com/nisavid/provingkit/issues/44#issuecomment-5694085035",
+      "content_kind": "GitHub REST JSON",
+      "revision": "issue comment 5694085035",
+      "sha256": "5bd333062e7a357c95ae494fb39c3a6afc7aaeb77277eaed631e42de6bddd08a",
+      "evidence_layer": "decision_or_contract"
+    },
+    {
+      "id": "P44-COMMENTS",
+      "title": "provingkit#44 complete comments page",
+      "url": "https://api.github.com/repos/nisavid/provingkit/issues/44/comments?per_page=100&page=1",
+      "content_kind": "GitHub REST JSON array",
+      "revision": "one-comment snapshot",
+      "sha256": "3b70c2f7883b5c681cd2ff330b0cf043d5794d264e48d284ca01561c99749729",
+      "evidence_layer": "decision_or_contract",
+      "pagination": {
+        "page": 1,
+        "per_page": 100,
+        "items": 1,
+        "complete": true
+      }
+    },
+    {
+      "id": "A42",
+      "title": "agents#42 predecessor state",
+      "url": "https://api.github.com/repos/nisavid/agents/issues/42",
+      "content_kind": "GitHub REST JSON",
+      "revision": "moving issue snapshot",
+      "sha256": "71642752dfdb0f4104a26acf96b1bc9aeca3f2e0a9fa615a804baa5eff185944",
+      "evidence_layer": "decision_or_contract",
+      "observed_state": "closed completed"
+    },
+    {
+      "id": "A46",
+      "title": "agents#46 predecessor state",
+      "url": "https://api.github.com/repos/nisavid/agents/issues/46",
+      "content_kind": "GitHub REST JSON",
+      "revision": "moving issue snapshot",
+      "sha256": "17567eced6344930acb938040f094f69f4f3d90ab1334cebb9f671608c9e4598",
+      "evidence_layer": "decision_or_contract",
+      "observed_state": "closed completed"
+    },
+    {
+      "id": "P8",
+      "title": "provingkit#8 decision contract",
+      "url": "https://api.github.com/repos/nisavid/provingkit/issues/8",
+      "content_kind": "GitHub REST JSON",
+      "revision": "moving issue snapshot",
+      "sha256": "416d06e92fee1bfb316b440a9eaec48c633085717c9650a8fd31be0edb97c205",
+      "evidence_layer": "decision_or_contract"
+    },
+    {
+      "id": "P8-COMMENTS",
+      "title": "provingkit#8 complete comments page containing accepted Q1-Q11",
+      "url": "https://api.github.com/repos/nisavid/provingkit/issues/8/comments?per_page=100&page=1",
+      "content_kind": "GitHub REST JSON array",
+      "revision": "six-comment snapshot",
+      "sha256": "269db4a7c9ee8742d09e4024e8dbc170b895e90c7c9e9a5a07ec64e9faf42da5",
+      "evidence_layer": "decision_or_contract",
+      "pagination": {
+        "page": 1,
+        "per_page": 100,
+        "items": 6,
+        "complete": true
+      },
+      "accepted_decision_comments": [
+        "https://github.com/nisavid/provingkit/issues/8#issuecomment-5565178275",
+        "https://github.com/nisavid/provingkit/issues/8#issuecomment-5567698314",
+        "https://github.com/nisavid/provingkit/issues/8#issuecomment-5568191158"
+      ]
+    },
+    {
+      "id": "A-INVENTORY",
+      "title": "Live harness inventory: Hatchery and work Mac",
+      "url": "https://github.com/nisavid/agents/blob/3e30fec6f0379b15ded9ba71fbd83114872390a7/docs/superpowers/research/2026-09-07-live-harness-inventory.md",
+      "content_kind": "Markdown",
+      "revision": "3e30fec6f0379b15ded9ba71fbd83114872390a7",
+      "sha256": "0f734c65dca89c80dcbcf4fd32b11feb36b6612192ff12a2a76baac31e4891b1",
+      "evidence_layer": "decision_or_contract",
+      "limit": "Historical documentary inventory, not available-host or qualification evidence."
+    },
+    {
+      "id": "A-COMPOSITION",
+      "title": "Base and Host Loadout Composition",
+      "url": "https://github.com/nisavid/agents/blob/537ff5d38b334598aab8c8abec092dbd7e827c7a/docs/superpowers/specs/2026-09-08-base-host-loadout-composition.md#secret-handoff",
+      "content_kind": "Markdown",
+      "revision": "537ff5d38b334598aab8c8abec092dbd7e827c7a",
+      "sha256": "034cef5c72fff9cdeeaf7d393fc55d65ec971342be7e80a0ec232379aab0cc76",
+      "evidence_layer": "decision_or_contract"
+    },
+    {
+      "id": "D258",
+      "title": "dotfiles#258 platform assurance",
+      "url": "https://github.com/nisavid/dotfiles/issues/258#platform-assurance",
+      "content_kind": "GitHub REST JSON",
+      "revision": "moving issue snapshot",
+      "sha256": "3c0927401136b15cfe47bb8798054eb4e20e6a1d7655944b9b5f0695a50d3d6f",
+      "evidence_layer": "decision_or_contract"
+    },
+    {
+      "id": "PK-CONTEXT",
+      "title": "Provingkit canonical context",
+      "url": "https://github.com/nisavid/provingkit/blob/8783281f165676d5202c455efc10018fb3b4ec07/CONTEXT.md",
+      "content_kind": "Markdown",
+      "revision": "8783281f165676d5202c455efc10018fb3b4ec07",
+      "sha256": "7e9dac9fe2bdf9eec0e2cea0f7d3a23c042cbc53de3818b3aa6fced9ee085901",
+      "evidence_layer": "decision_or_contract"
+    },
+    {
+      "id": "PK-DESIGN",
+      "title": "Task Witness canonical client and deployment design",
+      "url": "https://github.com/nisavid/provingkit/blob/8783281f165676d5202c455efc10018fb3b4ec07/docs/superpowers/specs/2026-07-27-task-witness-canonical-client-design.md",
+      "content_kind": "Markdown",
+      "revision": "8783281f165676d5202c455efc10018fb3b4ec07",
+      "sha256": "d292248053dc6ce1ccc23648dfa26a120158e56c5f5c88f512f36d9e616266ea",
+      "evidence_layer": "decision_or_contract"
+    },
+    {
+      "id": "PK-ROLE",
+      "title": "Rolecasting Task Witness provider declaration",
+      "url": "https://github.com/nisavid/provingkit/blob/8783281f165676d5202c455efc10018fb3b4ec07/plugins/rolecasting/task-witness-provider.json",
+      "content_kind": "JSON",
+      "revision": "8783281f165676d5202c455efc10018fb3b4ec07",
+      "sha256": "cfc5bf01814ffacc82bccaa83f02dcd03ee8c2c9dc3a498eab805182f4b8670b",
+      "evidence_layer": "pinned_implementation_or_api_source"
+    },
+    {
+      "id": "PK-TRI",
+      "title": "Tricritical Task Witness provider declaration",
+      "url": "https://github.com/nisavid/provingkit/blob/8783281f165676d5202c455efc10018fb3b4ec07/plugins/tricritical/task-witness-provider.json",
+      "content_kind": "JSON",
+      "revision": "8783281f165676d5202c455efc10018fb3b4ec07",
+      "sha256": "d0a1cde7adc12794e793ac6ad0af05839c897ef87f35a437104e0f4903d88bb8",
+      "evidence_layer": "pinned_implementation_or_api_source"
+    },
+    {
+      "id": "O-RELEASE",
+      "title": "OpenBao v2.6.2 release metadata",
+      "url": "https://api.github.com/repos/openbao/openbao/releases/tags/v2.6.2",
+      "content_kind": "GitHub REST JSON",
+      "revision": "v2.6.2 resolved to dd9c19c37a878cf4a81b18efb8d6f0599c7da923",
+      "sha256": "1f092aaaa2fa755a075a389285c5b4196cbe91ceba70a342f61f955e3db4c9d4",
+      "evidence_layer": "platform_applicability"
+    },
+    {
+      "id": "O-TRANSIT",
+      "title": "OpenBao Transit API",
+      "url": "https://github.com/openbao/openbao/blob/dd9c19c37a878cf4a81b18efb8d6f0599c7da923/website/content/docs/api/secret/transit.mdx",
+      "content_kind": "MDX",
+      "revision": "dd9c19c37a878cf4a81b18efb8d6f0599c7da923",
+      "sha256": "b33d55562c172cac8f0a7740f3ae7f1148b11c4ac60c8e4acd9c9b069b2e3373",
+      "evidence_layer": "pinned_implementation_or_api_source"
+    },
+    {
+      "id": "O-POLICY",
+      "title": "OpenBao policies",
+      "url": "https://github.com/openbao/openbao/blob/dd9c19c37a878cf4a81b18efb8d6f0599c7da923/website/content/docs/concepts/policies.mdx",
+      "content_kind": "MDX",
+      "revision": "dd9c19c37a878cf4a81b18efb8d6f0599c7da923",
+      "sha256": "cf12c2a0731724f48758a0487ede806e7a3925729c2e1f42a29708ae73b0816b",
+      "evidence_layer": "pinned_implementation_or_api_source"
+    },
+    {
+      "id": "O-APPROLE",
+      "title": "OpenBao AppRole authentication",
+      "url": "https://github.com/openbao/openbao/blob/dd9c19c37a878cf4a81b18efb8d6f0599c7da923/website/content/docs/auth/approle.mdx",
+      "content_kind": "MDX",
+      "revision": "dd9c19c37a878cf4a81b18efb8d6f0599c7da923",
+      "sha256": "e0f000af4caeb9d3eb35c4452be489efeda9a96ec25a7ec9bfdddddb4b68bffa",
+      "evidence_layer": "pinned_implementation_or_api_source"
+    },
+    {
+      "id": "O-AUDIT",
+      "title": "OpenBao audit devices",
+      "url": "https://github.com/openbao/openbao/blob/dd9c19c37a878cf4a81b18efb8d6f0599c7da923/website/content/docs/audit/index.mdx",
+      "content_kind": "MDX",
+      "revision": "dd9c19c37a878cf4a81b18efb8d6f0599c7da923",
+      "sha256": "561fe03853a842976153d346daca427ed355aaf65b2937e7b9a1d87e49630e05",
+      "evidence_layer": "pinned_implementation_or_api_source"
+    },
+    {
+      "id": "O-SOURCE",
+      "title": "OpenBao Transit sign and verify handler",
+      "url": "https://github.com/openbao/openbao/blob/dd9c19c37a878cf4a81b18efb8d6f0599c7da923/builtin/logical/transit/path_sign_verify.go",
+      "content_kind": "Go source",
+      "revision": "dd9c19c37a878cf4a81b18efb8d6f0599c7da923",
+      "sha256": "a33989fe01e339beb889b52484805a15788e73a609387f7a0021cd64aa1135e1",
+      "evidence_layer": "pinned_implementation_or_api_source"
+    },
+    {
+      "id": "O-BUILD",
+      "title": "OpenBao Go module",
+      "url": "https://github.com/openbao/openbao/blob/dd9c19c37a878cf4a81b18efb8d6f0599c7da923/go.mod",
+      "content_kind": "Go module",
+      "revision": "dd9c19c37a878cf4a81b18efb8d6f0599c7da923",
+      "sha256": "3d766e83c9d8abbe8f5f3c5bff11c2c88e43db90c08495921a12568197eecd15",
+      "evidence_layer": "pinned_implementation_or_api_source"
+    },
+    {
+      "id": "G-PROTO",
+      "title": "Google Cloud KMS v1 service proto",
+      "url": "https://github.com/googleapis/googleapis/blob/5f61cd5a991506c795a2b0a3639eb5e1b0cb6b27/google/cloud/kms/v1/service.proto",
+      "content_kind": "Protocol Buffers source",
+      "revision": "5f61cd5a991506c795a2b0a3639eb5e1b0cb6b27",
+      "sha256": "f54956a732d3b3a4698c6f3172a091721b721d5ba0f78dc6f767de03dc9ad5a7",
+      "evidence_layer": "pinned_implementation_or_api_source"
+    },
+    {
+      "id": "G-RESOURCES",
+      "title": "Google Cloud KMS v1 resource proto",
+      "url": "https://github.com/googleapis/googleapis/blob/5f61cd5a991506c795a2b0a3639eb5e1b0cb6b27/google/cloud/kms/v1/resources.proto",
+      "content_kind": "Protocol Buffers source",
+      "revision": "5f61cd5a991506c795a2b0a3639eb5e1b0cb6b27",
+      "sha256": "b44fe1a629ae4ffa78763de726c74a632db8a62aebbe2248a8b529fc8e55a289",
+      "evidence_layer": "pinned_implementation_or_api_source"
+    },
+    {
+      "id": "G-SIGN",
+      "title": "Cloud KMS AsymmetricSign REST method",
+      "url": "https://cloud.google.com/kms/docs/reference/rest/v1/projects.locations.keyRings.cryptoKeys.cryptoKeyVersions/asymmetricSign",
+      "content_kind": "official HTML documentation",
+      "revision": "moving; page last updated 2026-09-10 UTC",
+      "sha256": "3ce0d0e868b9709e076224b57cf1100971f122a2c7ab31b22a8f02365089a2e3",
+      "evidence_layer": "documented_mechanism"
+    },
+    {
+      "id": "G-PUBLIC",
+      "title": "Cloud KMS GetPublicKey REST method",
+      "url": "https://cloud.google.com/kms/docs/reference/rest/v1/projects.locations.keyRings.cryptoKeys.cryptoKeyVersions/getPublicKey",
+      "content_kind": "official HTML documentation",
+      "revision": "moving; page last updated 2026-09-10 UTC",
+      "sha256": "1e3ff8c8a6ec3dd1050e7b5891a8e7d64928cd2eaf8bf06fab330e95c8faa4d9",
+      "evidence_layer": "documented_mechanism"
+    },
+    {
+      "id": "G-ALGORITHMS",
+      "title": "Cloud KMS algorithms",
+      "url": "https://cloud.google.com/kms/docs/algorithms",
+      "content_kind": "official HTML documentation",
+      "revision": "moving; page last updated 2026-09-03 UTC",
+      "sha256": "4dc274e0910feb155f7567c9c184458618811cd63a35042e6de5189c884e37a9",
+      "evidence_layer": "documented_mechanism"
+    },
+    {
+      "id": "G-STATES",
+      "title": "Cloud KMS key version states",
+      "url": "https://cloud.google.com/kms/docs/key-states",
+      "content_kind": "official HTML documentation",
+      "revision": "moving; page last updated 2026-09-03 UTC",
+      "sha256": "44ea563fa4fb3859c713230c9568f2d59693f69a92ce7a79f00e8bcccaab6a71",
+      "evidence_layer": "documented_mechanism"
+    },
+    {
+      "id": "G-ROTATION",
+      "title": "Cloud KMS key rotation",
+      "url": "https://cloud.google.com/kms/docs/key-rotation",
+      "content_kind": "official HTML documentation",
+      "revision": "moving; page last updated 2026-09-03 UTC",
+      "sha256": "fbfd2d55ac308082c88e506fffa38b1fd597f5d63273176f13ee5e6ad987ffa2",
+      "evidence_layer": "documented_mechanism"
+    },
+    {
+      "id": "G-IMPORT",
+      "title": "Cloud KMS key import",
+      "url": "https://cloud.google.com/kms/docs/importing-a-key",
+      "content_kind": "official HTML documentation",
+      "revision": "moving; page last updated 2026-09-01 UTC",
+      "sha256": "818570d94974b20258ff50bf501ffa5c69283be560b739382fb1c67f2ee429a7",
+      "evidence_layer": "documented_mechanism"
+    },
+    {
+      "id": "G-IAM",
+      "title": "Cloud KMS IAM roles and permissions",
+      "url": "https://cloud.google.com/iam/docs/roles-permissions/cloudkms",
+      "content_kind": "official HTML documentation",
+      "revision": "moving; page last updated 2026-09-16 UTC",
+      "sha256": "a51d964cda45328e74c27ef3edf9063557873f02e54cdeb35f49fccb7348cb9f",
+      "evidence_layer": "documented_mechanism"
+    },
+    {
+      "id": "G-AUDIT",
+      "title": "Cloud KMS audit logging",
+      "url": "https://cloud.google.com/kms/docs/audit-logging",
+      "content_kind": "official HTML documentation",
+      "revision": "moving; page last updated 2026-09-03 UTC",
+      "sha256": "5c8d4b6d56c0e8ee35b371e3784301a27503a2ed39e3f36ed585903814c4b142",
+      "evidence_layer": "documented_mechanism"
+    },
+    {
+      "id": "G-QUOTAS",
+      "title": "Cloud KMS quotas",
+      "url": "https://cloud.google.com/kms/quotas",
+      "content_kind": "official HTML documentation",
+      "revision": "moving; page last updated 2026-09-03 UTC",
+      "sha256": "3d1dd191dc4d83050a867da23987c83d3466413946e1bb50ce7c931d9f3907c5",
+      "evidence_layer": "documented_mechanism"
+    },
+    {
+      "id": "G-WIF",
+      "title": "Google Cloud Workload Identity Federation",
+      "url": "https://cloud.google.com/iam/docs/workload-identity-federation",
+      "content_kind": "official HTML documentation",
+      "revision": "moving document retrieved 2026-09-16",
+      "sha256": "1d3cbee149ed7fa1dbb28ede94e2ddc6be60c828b3bc7b667dcb9aa2c25b7eed",
+      "evidence_layer": "documented_mechanism"
+    },
+    {
+      "id": "G-ADC",
+      "title": "Google Cloud Application Default Credentials",
+      "url": "https://cloud.google.com/docs/authentication/application-default-credentials",
+      "content_kind": "official HTML documentation",
+      "revision": "moving document retrieved 2026-09-16",
+      "sha256": "3a2ce5ff213b209e590b40ca123dcb6aec9d0fe3b19acdd5fad25445b1bf1ee1",
+      "evidence_layer": "documented_mechanism"
+    }
+  ],
+  "candidate_field_coverage": {
+    "openbao_transit": {
+      "disposition": "credible_with_mandatory_conditions",
+      "signature_scheme_and_stable_identifier": {
+        "source_ids": ["P8-COMMENTS", "O-TRANSIT", "O-SOURCE"],
+        "limit": "No algorithm is selected; the native signature version prefix is not a complete authority-generation identifier. The retained identity must also bind derived mode and, for derived Ed25519, exact decoded context bytes or their collision-resistant digest plus the effective public-key digest."
+      },
+      "canonical_message_or_prehash_constraints": {
+        "source_ids": ["P8-COMMENTS", "O-TRANSIT", "O-SOURCE"],
+        "limit": "Task Witness canonicalization and every signing parameter require a later exact contract and tests."
+      },
+      "key_generation_import_export_public_verification": {
+        "source_ids": ["O-TRANSIT", "O-SOURCE"],
+        "limit": "No key operation or recovery configuration was exercised. Derived Ed25519 public material is context-specific and must be retained from the admitted signing response."
+      },
+      "exact_interface_version_platform": {
+        "source_ids": ["O-RELEASE", "O-TRANSIT", "O-SOURCE", "O-BUILD", "D258", "A-INVENTORY"],
+        "limit": "Release artifacts establish distribution applicability, not CachyOS or GitHub-runner qualification."
+      },
+      "execution_boundary": {
+        "source_ids": ["P8-COMMENTS", "O-TRANSIT", "PK-DESIGN"],
+        "limit": "Local versus hosted placement, storage, seal, TLS, and availability are undecided."
+      },
+      "capability_and_caller_controls": {
+        "source_ids": ["P8-COMMENTS", "O-POLICY", "O-APPROLE", "O-TRANSIT", "O-SOURCE"],
+        "limit": "Path policy does not understand Task Witness claim semantics or constrain derivation context. One key path per capability authority, an exact explicit key_version, and either derived=false with no context or independently enforced exact decoded context on every single request and batch item are required conditions."
+      },
+      "unattended_and_interactive_behavior": {
+        "source_ids": ["O-APPROLE"],
+        "limit": "Selected authentication and operator recovery behavior are undecided."
+      },
+      "authority_generation_identity": {
+        "source_ids": ["P8-COMMENTS", "O-TRANSIT", "O-SOURCE"],
+        "limit": "The exact authority-generation schema is not implemented. One OpenBao version is not a unique derived-Ed25519 identity without bound derivation mode, context, and effective public key."
+      },
+      "rotation_disablement_revocation_historical_verification": {
+        "source_ids": ["P8-COMMENTS", "O-TRANSIT"],
+        "limit": "Provider version controls do not replace Task Witness compromise revocation or retained public material."
+      },
+      "audit_and_invocation_correlation": {
+        "source_ids": ["O-AUDIT", "O-TRANSIT"],
+        "limit": "No exact portable mapping from Q10 attempt identity to the service-generated audit request ID is qualified."
+      },
+      "concurrency_failure_retry_recovery": {
+        "source_ids": ["P8-COMMENTS", "O-TRANSIT", "O-AUDIT"],
+        "limit": "No idempotency or readback contract, HA design, concurrency test, backup, or recovery procedure is qualified."
+      },
+      "source_and_build_dependencies": {
+        "source_ids": ["O-RELEASE", "O-SOURCE", "O-BUILD"],
+        "limit": "Deployment configuration and the Task Witness adapter/verifier closure remain unselected."
+      },
+      "operational_tradeoffs": {
+        "source_ids": ["O-AUDIT", "O-TRANSIT", "O-RELEASE"],
+        "limit": "No operational deployment was observed."
+      }
+    },
+    "google_cloud_kms": {
+      "disposition": "credible_with_mandatory_conditions",
+      "signature_scheme_and_stable_identifier": {
+        "source_ids": ["P8-COMMENTS", "G-ALGORITHMS", "G-PROTO", "G-PUBLIC"],
+        "limit": "No algorithm is selected."
+      },
+      "canonical_message_or_prehash_constraints": {
+        "source_ids": ["P8-COMMENTS", "G-SIGN", "G-PROTO"],
+        "limit": "Task Witness canonicalization and exact data-versus-digest mapping require a later contract and tests."
+      },
+      "key_generation_import_export_public_verification": {
+        "source_ids": ["G-PUBLIC", "G-IMPORT", "G-PROTO", "G-RESOURCES"],
+        "limit": "No key operation occurred; generated and imported origins carry different custody and recovery claims."
+      },
+      "exact_interface_version_platform": {
+        "source_ids": ["G-SIGN", "G-PUBLIC", "G-PROTO", "D258", "A-INVENTORY"],
+        "limit": "Network API applicability is not exact-client, CachyOS, runner, or credentialed qualification."
+      },
+      "execution_boundary": {
+        "source_ids": ["G-SIGN", "G-PROTO", "P8-COMMENTS"],
+        "limit": "Provider, protection level, location, network, and client runtime are undecided."
+      },
+      "capability_and_caller_controls": {
+        "source_ids": ["P8-COMMENTS", "G-IAM", "G-STATES"],
+        "limit": "IAM is grantable to a CryptoKey, not a CryptoKeyVersion; one key per capability and disabled historical versions are mandatory conditions."
+      },
+      "unattended_and_interactive_behavior": {
+        "source_ids": ["G-ADC", "G-WIF"],
+        "limit": "No workload identity, credential, or host binding is selected or exercised."
+      },
+      "authority_generation_identity": {
+        "source_ids": ["P8-COMMENTS", "G-PUBLIC", "G-PROTO", "G-RESOURCES"],
+        "limit": "The exact authority-generation schema is not implemented."
+      },
+      "rotation_disablement_revocation_historical_verification": {
+        "source_ids": ["P8-COMMENTS", "G-ROTATION", "G-STATES", "G-RESOURCES", "G-PUBLIC"],
+        "limit": "Asymmetric rotation is manual; provider lifecycle does not replace Task Witness compromise revocation or retained public material."
+      },
+      "audit_and_invocation_correlation": {
+        "source_ids": ["G-AUDIT", "G-PROTO"],
+        "limit": "The sign request has no caller-supplied attempt ID; no lossless attempt-to-audit mapping is qualified."
+      },
+      "concurrency_failure_retry_recovery": {
+        "source_ids": ["P8-COMMENTS", "G-PROTO", "G-QUOTAS", "G-STATES", "G-IMPORT"],
+        "limit": "No idempotency token or signature-operation readback exists in the pinned request; no credentialed failure or recovery case was run."
+      },
+      "source_and_build_dependencies": {
+        "source_ids": ["G-PROTO", "G-RESOURCES", "G-ADC", "G-WIF"],
+        "limit": "The managed service implementation/build is not publicly pinnable; adapter, client, verifier, and transport closure remain unselected."
+      },
+      "operational_tradeoffs": {
+        "source_ids": ["G-IAM", "G-AUDIT", "G-QUOTAS", "G-STATES"],
+        "limit": "No account, service, quota, log, credential, or operation was observed."
+      }
+    }
+  },
+  "unsupported_or_rejected_cases": [
+    {
+      "case": "shared_secret_mac",
+      "disposition": "rejected_by_accepted_Q11",
+      "source_ids": ["P8-COMMENTS"],
+      "reason": "Every verifier holding the secret could mint indistinguishable evidence."
+    },
+    {
+      "case": "delegating_certificate_root_as_authority",
+      "disposition": "rejected_by_accepted_Q11",
+      "source_ids": ["P8-COMMENTS"],
+      "reason": "It grants broader authority than direct pinning to the exact capability generation."
+    },
+    {
+      "case": "one_broad_program_persona_or_product_key",
+      "disposition": "rejected_by_accepted_Q7",
+      "source_ids": ["P8-COMMENTS"],
+      "reason": "It can authenticate unrelated claim types and does not follow exact observation capability."
+    },
+    {
+      "case": "direct_file_key_keychain_hardware_token_or_pkcs11_object",
+      "disposition": "insufficient_public_evidence",
+      "source_ids": ["P44", "P8-COMMENTS"],
+      "reason": "Custody alone does not establish canonical-message enforcement, capability and caller scope, generation lifecycle, audit correlation, or Q10 recovery; no reviewed narrow broker is an input."
+    },
+    {
+      "case": "openbao_without_audit_or_with_shared_sign_path",
+      "disposition": "incomplete",
+      "source_ids": ["O-AUDIT", "O-POLICY"],
+      "reason": "Audit starts disabled and shared path authority collapses external capability separation."
+    },
+    {
+      "case": "cloud_kms_shared_key_or_enabled_historical_versions",
+      "disposition": "incomplete",
+      "source_ids": ["G-IAM", "G-STATES"],
+      "reason": "IAM cannot target an individual version, so every enabled version of the permitted key remains usable for signing."
+    }
+  ],
+  "assumptions": [
+    "The accepted exclusion of compromise within the shared Task Witness runtime/control domain remains controlling.",
+    "The parallel invocation-evidence study in provingkit#43 remains independent and is not evidence for this signing-custody comparison.",
+    "A later implementation can review and content-pin the Task Witness signing adapter and offline verifier.",
+    "One external key resource may be allocated per exact capability authority.",
+    "Offline validators may retain public, value-free verification material and immutable generation metadata.",
+    "Evidence-receipt signing remains separate from release-artifact signing and provider descriptors owned by provingkit#3."
+  ],
+  "unresolved_decision_inputs": [
+    "signature scheme, parameters, encoding, prehash rule, and canonical domain separation",
+    "every effective-verification-key input, including OpenBao named mount/key resource, exact explicit version, derivation mode, and any normalized Ed25519 derivation context",
+    "generated versus imported key origin and the custody, protection, export, backup, destruction, and recovery claim",
+    "self-operated versus hosted execution and its service-build, network, storage, seal, TLS, and availability assurance",
+    "product authentication, value-free Host Binding, credential lifetime, and principal scope",
+    "capability-to-key and version-to-generation mapping",
+    "audit enablement, integrity, retention, access, and attempt correlation",
+    "concurrency limits, bounded retry, lost-response handling, readback, and recovery",
+    "exact adapter, client, and verifier source/build closure",
+    "Linux x86_64 and GitHub-hosted macOS arm64 qualification policy and cases",
+    "independent security-review and acceptance ownership"
+  ],
+  "validation": {
+    "method": "static public-source feasibility assessment",
+    "criteria": [
+      "exact interface and immutable authority-generation representation",
+      "separate capability/caller authorization, product authentication, and custody",
+      "rotation, disablement, revocation, and offline historical verification",
+      "honest concurrency, retry, failure, recovery, and audit semantics",
+      "correctly bounded Linux and GitHub-hosted macOS applicability"
+    ],
+    "dynamic_validation": "not authorized and not performed",
+    "review_status": "corrected candidate only; the prior review is stale and a fresh independent whole-candidate review remains with root",
+    "staleness_rule": "Any change to a candidate, its evidence dependency, the accepted Q1-Q11 contract, or the report bytes invalidates the corresponding pass."
+  },
+  "procedure_capture": {
+    "required": true,
+    "disposition": "proposal_only",
+    "reason": "The derivation finding exposes a reusable review gap: every configuration and request parameter that changes the effective verification key must be enumerated and explicitly disabled or bound into immutable generation identity and caller admission.",
+    "owner_decision": "The operator must choose canonical maintained source and authorize any shared or installed procedure edit.",
+    "downstream_invocation": "Future signing-custody researchers apply the gate to stable-identifier, public-material, caller-control, and authority-generation rows; independent reviewers rerun it against complete pinned key-configuration and signing-request schemas."
+  },
+  "later_issue_8_frontier": "For each accepted capability-scoped producer or issuer authority, decide whether an authority generation uses the self-operated Transit combination, the managed KMS combination, or neither, and freeze its exact scheme/prehash, capability-resource mapping, every effective-verification-key parameter, caller authentication, custody/origin, historical-key retention, disable/revoke, attempt/audit correlation, retry/recovery, source/build, and two-platform qualification contract before successor implementation and review tickets."
+}
