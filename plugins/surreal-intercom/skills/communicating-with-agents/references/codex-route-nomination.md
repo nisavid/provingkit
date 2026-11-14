@@ -78,7 +78,7 @@ incomplete enumeration, unsupported roles, changed identities, or exceeded
 bounds refuse.
 
 One five-second watchdog covers the whole sample: at most 16 admitted ancestors,
-512 descriptor entries, 4,096 Unix-table rows, 512 KiB of Unix-table data, 256
+1,024 descriptor entries, 4,096 Unix-table rows, 512 KiB of Unix-table data, 256
 KiB of descriptor-link data, and 8 KiB per metadata read. Before publication,
 the adapter rechecks every ancestor's parent edge, start ticks, executable, role
 discriminator, and namespace, plus boot, selected descriptor, and filesystem

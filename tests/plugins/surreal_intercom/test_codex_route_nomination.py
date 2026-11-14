@@ -333,7 +333,7 @@ class CodexRouteNominationTests(unittest.TestCase):
 
     def consume(self, change_peer=None, *, now_milliseconds=None, change_after_discovery=None,
                 mutate_sender=None, same_actor=False, second_original=None,
-                second_attempt_id=None):
+                second_attempt_id=None, prepare_observer=None):
         temporary = tempfile.TemporaryDirectory(prefix="codex-nomination-consume-")
         self.addCleanup(temporary.cleanup)
         root = Path(temporary.name).resolve()
@@ -343,7 +343,10 @@ class CodexRouteNominationTests(unittest.TestCase):
             producer_request["submitter"] = producer_request["producer"]
             producer_request["permissions"]["routeUse"]["actor"] = producer_request["producer"]
         observer = FixtureObservation(root / "codex-home" / "ipc" / "ipc.sock")
+        if prepare_observer is not None:
+            prepare_observer(observer)
         _, publication = self.invoke(producer_request, root, observer)
+        self.assertTrue(publication["published"], publication["reason"])
         nomination_path = Path(publication["path"])
         nomination_bytes = nomination_path.read_bytes()
         nomination = json.loads(nomination_bytes)
@@ -536,7 +539,7 @@ class CodexRouteNominationTests(unittest.TestCase):
             ),
             "descriptor-bound-hit": (
                 lambda request, observer: setattr(
-                    observer, "descriptors", [str(index) for index in range(513)]
+                    observer, "descriptors", [str(index) for index in range(1025)]
                 ),
                 "incomplete-or-oversized-sample",
             ),
@@ -640,6 +643,19 @@ class CodexRouteNominationTests(unittest.TestCase):
                                              "host_id": "forwarder-host"})
         self.assertEqual(envelope["owner"], {"thread_id": "task-owner",
                                              "host_id": "owner-host"})
+
+    def test_route_can_be_consumed_with_listener_after_512_descriptor_entries(self):
+        def populate(observer):
+            prefix = [str(index) for index in range(12, 1035)]
+            for entry in prefix:
+                observer.links[f"/proc/300/fd/{entry}"] = "anon_inode:[eventfd]"
+            observer.descriptors[:0] = prefix
+
+        exit_code, result, stream = self.consume(prepare_observer=populate)
+
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(result["peer_input"], "possible_submission")
+        self.assertTrue(stream.closed)
 
     def test_same_codex_actor_can_produce_and_submit_when_each_grant_matches(self):
         exit_code, result, stream = self.consume(same_actor=True)

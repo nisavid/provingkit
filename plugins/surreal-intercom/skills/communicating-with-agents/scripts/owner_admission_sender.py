@@ -95,7 +95,7 @@ def _validate_v2_nomination(record, specification, request, planned, consumed_mi
                 "unixBytes", "descriptorLinkBytes", "selectedDescriptor", "socketInode",
             ))
             or acquisition["finishedMilliseconds"] - acquisition["startedMilliseconds"] > 5000
-            or acquisition["descriptorEntries"] > 512
+            or acquisition["descriptorEntries"] > 1024
             or acquisition["unixRows"] > 4096
             or acquisition["unixBytes"] > 524288
             or acquisition["descriptorLinkBytes"] > 262144

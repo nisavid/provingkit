@@ -17,7 +17,7 @@ from codex_ipc_core import Refusal, bounded_bytes, print_result
 EXECUTABLE_KEYS = {"path", "device", "inode"}
 SAMPLE_LIMITS = {
     "sharedWatchdogMilliseconds": 5000,
-    "descriptorEntries": 512,
+    "descriptorEntries": 1024,
     "unixRows": 4096,
     "unixBytes": 524288,
     "descriptorLinkBytes": 262144,
