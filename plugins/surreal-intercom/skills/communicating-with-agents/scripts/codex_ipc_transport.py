@@ -181,18 +181,32 @@ class CliTransport:
         if not isinstance(identity, dict):
             raise ReceiveFailure("peer-identity-unavailable")
         return identity
-    def send(self, envelope):
+    def send(self, envelope, *, before_write=None):
         self.connect()
+        pending_boundary = None
         if envelope['method'] in {'thread-follower-steer-turn', 'thread-follower-start-turn'}:
             if self.pending_path is None or not self.pending_path.is_file():
                 raise ReceiveFailure('missing-pre-write-capture')
-            self.write_boundary = {'pendingExistedBeforeWrite': True,
-                                   'pendingSha256': hashlib.sha256(self.pending_path.read_bytes()).hexdigest()}
+            pending_boundary = {'pendingExistedBeforeWrite': True,
+                                'pendingSha256': hashlib.sha256(self.pending_path.read_bytes()).hexdigest()}
+            if before_write is None:
+                self.write_boundary = pending_boundary
         data = json.dumps(envelope, separators=(',', ':')).encode()
         self._check_outgoing_frame(data)
-        self.outbound.append(envelope)
-        deadline = self.clock() + self.wait
-        self.stream.write(struct.pack('<I', len(data)) + data, self.wait)
+        frame = struct.pack('<I', len(data)) + data
+        if before_write is None:
+            self.outbound.append(envelope)
+            deadline = self.clock() + self.wait
+            self.stream.write(frame, self.wait)
+        else:
+            before_write()
+            deadline = self.clock() + self.wait
+            if pending_boundary is not None:
+                self.write_boundary = pending_boundary
+            try:
+                self.stream.write(frame, self.wait)
+            finally:
+                self.outbound.append(envelope)
         if self.receiver.incomplete:
             self.receive_status.append('receive-disabled:' + self.receiver.incomplete)
             return []

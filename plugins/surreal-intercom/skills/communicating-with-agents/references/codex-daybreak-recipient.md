@@ -131,6 +131,35 @@ are separate observations; neither establishes the effective backend. Inspect
 `owned_connection` and retained transport/failure records for actual closure.
 They describe the helper-owned IPC connection, not child chat or task closure.
 
+### Standing Admission At The Task Write
+
+Use this route only for a host and caller already accepted for standing
+admission. Record `"resource_admission":"standing-v1"` in the task intent and
+pass `--standing-binding "$BINDING" --standing-eligible` before the subcommand
+that can first submit it. This applies to completed bootstrap intake, pending
+bootstrap reconciliation, and an explicitly authorized continuation. Use
+`--standing-paused` or `--standing-independent-hold` when either condition
+applies. The caller still checks the actor, task authority, and any independent
+hold.
+
+Supply an absolute binding path from trusted host configuration. The binding
+must be a regular file owned by the helper's user, with mode `0600`. It holds
+absolute `reader`, `authority_dir`, and `state_dir` paths and the accepted
+`grant_id`. The reader must be a regular file owned by the same user, with
+group and other write bits clear. The helper rejects symbolic links at the
+binding or reader file. A task payload or peer message cannot choose the
+binding or eligibility flags.
+
+An independently ineligible start or invalid binding retains the original
+operation claim and refusal before opening its mailbox or socket. After a valid
+settings readback and task frame check, the helper rechecks the reader identity
+and requests a current decision. Only a complete `routine-standing-decision/v1`
+`ALLOW` with the bound grant and a runtime ID permits the task frame write.
+A known refusal before the task write records `task_write: not_attempted`. If
+setup ran, retain its saved selection and observed connection closure as
+separate facts. A later eligible decision does not reopen the original attempt.
+A continuation from a standing-admission operation must retain this mode.
+
 ## Reconcile Without Replay
 
 Use `python -B "$HELPER" --root "$CAPTURE_ROOT" show OPERATION_ID` to inspect retained

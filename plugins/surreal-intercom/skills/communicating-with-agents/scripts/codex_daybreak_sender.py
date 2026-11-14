@@ -5,7 +5,10 @@ import argparse
 import hashlib
 import json
 import os
+import re
 import sqlite3
+import stat
+import subprocess
 import uuid
 from pathlib import Path
 import sys
@@ -29,12 +32,16 @@ CREATE = {
 ALLOWED_SUBMISSION_KEYS = {
     "operation_id", "message_id", "attempt_id", "correlation_id", "sender",
     "actor", "owner", "authority_ref", "holds", "payload", "endpoint",
-    "mailbox", "capture", "observation_seconds",
+    "mailbox", "capture", "observation_seconds", "resource_admission",
 }
 
 def parser():
     result = argparse.ArgumentParser(description=__doc__)
     result.add_argument("--root", required=True, help="private operation capture root")
+    result.add_argument("--standing-binding", help="trusted host-local standing admission binding")
+    result.add_argument("--standing-eligible", action="store_true")
+    result.add_argument("--standing-paused", action="store_true")
+    result.add_argument("--standing-independent-hold", action="store_true")
     phases = result.add_subparsers(dest="phase", required=True)
     for name in ("prepare", "continue"):
         phase = phases.add_parser(name)
@@ -309,6 +316,8 @@ def retained(directory):
 def validate_submission_intent(intent, continuation=False):
     allowed = ALLOWED_SUBMISSION_KEYS | ({"previous_operation_id"} if continuation else set())
     require(not intent.keys() - allowed, "unsupported-submission-input")
+    if "resource_admission" in intent:
+        require(intent["resource_admission"] == "standing-v1", "unsupported-resource-admission")
     for key in ("operation_id", "message_id", "attempt_id", "authority_ref", "payload", "endpoint"):
         require(text(intent.get(key)), "invalid-" + key)
     if continuation:
@@ -325,12 +334,89 @@ def validate_submission_intent(intent, continuation=False):
     require(intent.get("capture") is not None, "missing-submission-capture-settings")
 
 
-def submit_task(directory, intent, root, writer):
+class StandingRefusal(ValueError):
+    """A task write was withheld by the standing route."""
+
+
+def unique_json_object(pairs):
+    value = dict(pairs)
+    if len(value) != len(pairs):
+        raise ValueError("duplicate-json-key")
+    return value
+
+
+def binding_identity(info):
+    return (info.st_dev, info.st_ino, info.st_uid, info.st_mode, info.st_size,
+            info.st_mtime_ns, info.st_ctime_ns)
+
+
+def standing_binding(arguments):
+    if not arguments.standing_eligible or arguments.standing_paused or arguments.standing_independent_hold:
+        raise StandingRefusal("standing-independent-ineligible")
+    if not arguments.standing_binding:
+        raise StandingRefusal("standing-binding-required")
+    path = Path(arguments.standing_binding)
+    try:
+        require(path.is_absolute(), "relative-binding")
+        fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+        with os.fdopen(fd, "rb") as source:
+            metadata = os.fstat(source.fileno())
+            require(stat.S_ISREG(metadata.st_mode) and metadata.st_uid == os.getuid()
+                    and stat.S_IMODE(metadata.st_mode) == 0o600
+                    and 0 < metadata.st_size <= 4096, "unqualified-binding")
+            raw = source.read(4097)
+            require(len(raw) == metadata.st_size
+                    and binding_identity(metadata) == binding_identity(os.fstat(source.fileno()))
+                    == binding_identity(path.lstat()), "changed-binding")
+        binding = json.loads(raw, object_pairs_hook=unique_json_object)
+        require(isinstance(binding, dict)
+                and binding.keys() == {"reader", "authority_dir", "state_dir", "grant_id"}
+                and all(text(value) for value in binding.values()), "invalid-binding")
+        for key in ("reader", "authority_dir", "state_dir"):
+            require(Path(binding[key]).is_absolute(), "relative-standing-path")
+        reader = Path(binding["reader"]).lstat()
+        require(stat.S_ISREG(reader.st_mode) and reader.st_uid == os.getuid()
+                and not reader.st_mode & 0o022, "unqualified-reader")
+    except (OSError, ValueError, TypeError) as error:
+        raise StandingRefusal("standing-binding-invalid") from error
+    return binding, binding_identity(reader)
+
+
+def check_standing(binding, reader_identity):
+    reader = Path(binding["reader"])
+    argv = [sys.executable, "-E", "-S", "-B", binding["reader"], "standing-check",
+            "--authority-dir", binding["authority_dir"], "--state-dir", binding["state_dir"],
+            "--eligible"]
+    try:
+        require(binding_identity(reader.lstat()) == reader_identity, "changed-standing-reader")
+        result = subprocess.run(argv, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
+                                stderr=subprocess.DEVNULL, env={}, timeout=5, check=False)
+        require(binding_identity(reader.lstat()) == reader_identity, "changed-standing-reader")
+        require(result.returncode == 0 and 0 < len(result.stdout) <= 4096,
+                "standing-reader-result")
+        decision = json.loads(result.stdout, object_pairs_hook=unique_json_object)
+        require(isinstance(decision, dict)
+                and decision.keys() == {"schema", "status", "reason", "grant_id", "runtime_id"}
+                and decision["schema"] == "routine-standing-decision/v1"
+                and decision["status"] == "ALLOW" and isinstance(decision["reason"], str)
+                and decision["grant_id"] == binding["grant_id"]
+                and isinstance(decision["runtime_id"], str)
+                and re.fullmatch("[0-9a-f]{32}", decision["runtime_id"]) is not None,
+                "standing-decision")
+    except (OSError, ValueError, TypeError, RecursionError, subprocess.SubprocessError) as error:
+        raise StandingRefusal("standing-decision-withheld") from error
+
+
+def submit_task(directory, intent, root, writer, arguments):
     """Claim once before effects; later public reads only project retained evidence."""
     result = retained(directory)
     if (directory / "claim.json").exists():
         return result
     validate_submission_intent(intent, continuation=(directory / "continuation.json").exists())
+    standing = intent.get("resource_admission") == "standing-v1"
+    require(standing or not (arguments.standing_binding or arguments.standing_eligible
+                            or arguments.standing_paused or arguments.standing_independent_hold),
+            "standing-intent-required")
     require(result["child"]["host_id"] == "local", "unsupported-remote-child")
     seconds = intent["observation_seconds"]
     message = {key: intent[key] for key in
@@ -342,6 +428,8 @@ def submit_task(directory, intent, root, writer):
                   saved_selection=None, receipt="unknown", task_completion="unknown",
                   effective_program="unknown", owned_connection={"started": None, "closed": None})
     result.pop("reason", None)
+    if standing:
+        result["task_write"] = "unknown"
     # Exclusive logical operation claim is also the crash/interrupt replay barrier.
     try:
         writer.write(directory / "claim.json", encode(result))
@@ -362,6 +450,14 @@ def submit_task(directory, intent, root, writer):
         result.setdefault("reason", failures[0]["reason"])
         result["failures"] = list(failures)
 
+    def observe_transport_start():
+        result["owned_connection"]["started"] = transport.stream is not None
+        if transport.outbound:
+            result["ipc"] = "attempted"
+        if standing and any(item.get("method") == "thread-follower-start-turn"
+                            for item in transport.outbound):
+            result["task_write"] = "attempted"
+
     def usable():
         require(receive_failure is None and not transport.closed
                 and transport.stream is not None and transport.receiver.incomplete is None,
@@ -372,12 +468,12 @@ def submit_task(directory, intent, root, writer):
                 "sourceClientId": client, "targetClientId": binding["owner"],
                 "version": version, "method": method, "params": params}
 
-    def exchange(request, name):
+    def exchange(request, name, *, before_write=None):
         nonlocal receive_failure
         # CliTransport can write before noticing receive incompleteness.
         usable()
         try:
-            records = transport.send(request)
+            records = transport.send(request, before_write=before_write)
         except ReceivePrefixFailure as exc:
             receive_failure = exc
             failure(stage, exc)
@@ -401,6 +497,11 @@ def submit_task(directory, intent, root, writer):
         result["refs"][reference] = str(directory / name)
 
     try:
+        if standing:
+            stage = "standing-preflight"
+            result.update(ipc="not_attempted", task_write="not_attempted")
+            gate_binding, reader_identity = standing_binding(arguments)
+        stage = "mailbox-claim"
         mailbox = Mailbox(intent["mailbox"])
         mailbox.plan(message)
         claimed = mailbox.claim(intent["message_id"], intent["attempt_id"], intent["actor"])
@@ -442,7 +543,14 @@ def submit_task(directory, intent, root, writer):
         prewrite(start, "attempt.json", "attempt_ref")
         transport.pending_path = directory / "attempt.json"
         stage = "task-submit"
-        response = exchange(start, "start")
+
+        def before_task_write():
+            check_standing(gate_binding, reader_identity)
+            result["task_write"] = "unknown"
+
+        response = exchange(start, "start", before_write=before_task_write if standing else None)
+        if standing:
+            result["task_write"] = "attempted"
         turn_id = response.get("result", {}).get("result", {}).get("turn", {}).get("id")
         require(text(turn_id), "accepted-turn-id-unavailable")
         result.update(status="turn_accepted", turn_id=turn_id, ipc="attempted")
@@ -451,6 +559,10 @@ def submit_task(directory, intent, root, writer):
                         str(directory / "start-response.json"),
                         "Correlated accepted turn; receipt and task completion unknown.")
     except BaseException as exc:
+        if standing and transport is not None:
+            observe_transport_start()
+            if result["owned_connection"]["started"]:
+                result["owned_connection"]["closed"] = None
         failure(stage, exc)
         try:
             save("failure.json", result)
@@ -458,9 +570,7 @@ def submit_task(directory, intent, root, writer):
             failure("failure-capture", saving_error)
     finally:
         if transport is not None:
-            result["owned_connection"]["started"] = transport.stream is not None
-            if transport.outbound:
-                result["ipc"] = "attempted"
+            observe_transport_start()
             try:
                 transport.close()
             except BaseException as exc:
@@ -538,6 +648,9 @@ def run(arguments):
         previous = guarded_directory(value["previous_operation_id"])
         parent = read_json(previous / "intent.json")
         require(parent["operation_id"] == value["previous_operation_id"], "operation-conflict")
+        require(parent.get("resource_admission") != "standing-v1"
+                or value.get("resource_admission") == "standing-v1",
+                "standing-continuation-downgrade")
         for key in ("operation_id", "message_id", "attempt_id"):
             require(value[key] != parent[key], "continuation-" + key + "-not-fresh")
         # Follow only retained operation links to the original child/bootstrap.
@@ -579,7 +692,7 @@ def run(arguments):
             return retained(directory)
         save([(directory / "intent.json", raw),
               (directory / "continuation.json", encode(continuation))])
-        return submit_task(directory, value, root, writer)
+        return submit_task(directory, value, root, writer, arguments)
 
     if arguments.phase == "prepare":
         validate_submission_intent(value)
@@ -761,10 +874,10 @@ def run(arguments):
             # A retained completion is also an interruption barrier: only its first
             # explicit intake may proceed to the original one-attempt claim.
             save([(completion, encode(value))])
-            return submit_task(directory, intent, root, writer)
+            return submit_task(directory, intent, root, writer, arguments)
         save([(directory / "bootstrap.json", encode(value))])
         if bootstrap["state"] == "completed":
-            return submit_task(directory, intent, root, writer)
+            return submit_task(directory, intent, root, writer, arguments)
         return retained(directory)
     require(value is None, "unsupported-phase-input")
     return result
