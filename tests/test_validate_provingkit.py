@@ -131,6 +131,8 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
             "release/source-skill-lineage/source-manifest.json",
             "release/source-skill-disposition/disposition-ledger.json",
             "release/source-skill-disposition/release-refresh-contract.json",
+            "scripts/validate_source_skill_lineage.py",
+            "tests/test_validate_source_skill_lineage.py",
             "tests/plugins/mergecraft/writing-reviewable-pr-descriptions/test_review_input.py",
         ):
             shutil.copy2(REPOSITORY / relative, destination / relative)
