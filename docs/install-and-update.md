@@ -102,6 +102,10 @@ and [account sync](https://code.claude.com/docs/en/plugins/loading#synced-plugin
 
 ## ChatGPT
 
+In a managed workspace, you need [**Upload plugins** permission](https://learn.chatgpt.com/docs/enterprise/apps-and-connectors#choose-what-members-can-do-with-plugins).
+If the upload action is unavailable, ask a workspace owner or administrator to
+check that permission in **Permissions & roles**.
+
 Upload the compressed ZIP through [ChatGPT on the web](https://chatgpt.com/):
 
 | Action | Steps |
