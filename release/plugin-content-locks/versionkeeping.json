@@ -19,7 +19,7 @@
       "mode": 420
     },
     "skills/checkpointing-and-publishing-git-work/SKILL.md": {
-      "sha256": "01ca4151554adad2f8ff4d734f9877c66cce0d5f3f97b2844b454053dd6da846",
+      "sha256": "3bbf1568e4a11d4a2cb6cd6a15bed607310aa8b209614d0e1f6645a5e00390de",
       "mode": 420
     },
     "skills/checkpointing-and-publishing-git-work/agents/openai.yaml": {
@@ -35,7 +35,7 @@
       "mode": 420
     },
     "skills/checkpointing-and-publishing-git-work/references/publication-execution.md": {
-      "sha256": "086522621e79844434f65ac47c5563a208f5e2957e4873c6ac9dbb3fec776f4d",
+      "sha256": "ef9c7f3bb8a14bf74f58c22bb4b727c63e97a474edf12818b89c1342b31fe1ec",
       "mode": 420
     },
     "skills/checkpointing-and-publishing-git-work/references/terminal-cleanup.md": {

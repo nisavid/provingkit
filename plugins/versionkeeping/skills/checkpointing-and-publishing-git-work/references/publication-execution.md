@@ -71,7 +71,10 @@ a fresh planner run and review; never recompute the trusted digest for an edited
 plan.
 
 Invoke the executor only after publication authority is bound as `SKILL.md`
-describes (Bind Publication Authority).
+describes (Bind Publication Authority). Match the applicable grant to this
+reviewed operation and destination; a valid standing grant or verified original
+human request does not need to be elicited again for each covered push. A
+`ready` plan and its digest prove no operator authority themselves.
 
 The executor then requires the current destination remote, full ref, endpoint
 fingerprint, default-branch ref, config digest, expected lease, and immutable

@@ -2361,7 +2361,7 @@ class ValidateMergecraftTests(unittest.TestCase):
         # Review each changed artifact against its owning sources before updating them.
         expected_digests = {
             "review-atlas-contract.json": (
-                "bd06aad8c284cd1bf794a0de50497082bee4622d1e680e313667568172882fed"
+                "bcce413d4740580101adbdfcf9a70b22c6f20a0995107ce02871b4ddf0bec27d"
             ),
             "review-atlas-contribution-ledger.json": (
                 "5804803a8abb18e26c2b7700670d036aadf6d44cab2b0457f7b8a69e1a9e0046"

@@ -10,7 +10,7 @@ from .parsing import summary
 from .stack_inventory import inventory, validate_inventory
 
 
-def validate_stack(block: list[str], errors: list[str]) -> None:
+def validate_stack(block: list[str], errors: list[str], *, history_only: bool = False) -> None:
     text = "\n".join(block)
     stack_summary = summary(block, errors, "Stack")
     if 'alt="STACK"' not in stack_summary:
