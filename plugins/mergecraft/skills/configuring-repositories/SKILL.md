@@ -1,6 +1,6 @@
 ---
 name: configuring-repositories
-description: Use when creating a GitHub repository, assessing repository settings, adopting good defaults, changing a repository control, or hardening project-specific CI and its merge gates. Ordinary code edits, test fixes, PR reviews, and already-qualified merges do not themselves request repository configuration.
+description: Use when creating a GitHub repository; selecting, assessing, or changing GitHub repository controls; configuring repository security reporting or support commitments; planning dependency maintenance; or hardening project-specific CI and merge gates. Ordinary code edits, test fixes, application-security reviews, code-quality reviews, PR reviews, and already-qualified merges do not themselves request repository configuration.
 ---
 
 # Configuring Repositories
@@ -32,7 +32,7 @@ deletion, or unrelated repository work from a configuration request.
 Read [decision guidance](references/decisions.md) for contextual starting
 choices, [GitHub controls](references/github-controls.md) for enforcement
 relationships, and [CI hardening](references/ci-hardening.md) when checks or
-workflows are involved. Fetch current primary documentation for controls,
+workflows are involved. Read [security and quality guidance](references/security-and-quality.md) when selecting or assessing dependency inventory, vulnerability scanning, secret protection, update automation, or their gates, and when configuring or assessing repository security reporting and support commitments. Fetch current primary documentation for controls,
 plans, APIs, or behavior on which the proposed result depends. Inspect the
 target's actual capabilities; documented availability alone proves no access
 or effective enforcement. Preserve conflicting evidence until target evidence

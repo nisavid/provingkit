@@ -10,7 +10,8 @@
         "skills/configuring-repositories/references/decisions.md",
         "skills/configuring-repositories/references/github-controls.md",
         "skills/configuring-repositories/references/ci-hardening.md",
-        "skills/configuring-repositories/references/apply-and-verify.md"
+        "skills/configuring-repositories/references/apply-and-verify.md",
+    "skills/configuring-repositories/references/security-and-quality.md"
       ],
       "scripts": [],
       "modules": [],

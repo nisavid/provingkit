@@ -1,4 +1,4 @@
 interface:
   display_name: "Configuring Repositories"
-  short_description: "Configure GitHub repositories and useful CI gates"
-  default_prompt: "Use $mergecraft:configuring-repositories to create, assess, or configure a GitHub repository and its CI."
+  short_description: "GitHub controls, dependency updates, security reporting, and CI"
+  default_prompt: "Use $mergecraft:configuring-repositories to create a GitHub repository; select, assess, or change its controls; configure security reporting or support commitments; plan dependency maintenance; or harden its CI and merge gates. Do not use it for ordinary code changes, application-security review, code-quality review, or a bug fix alone."
