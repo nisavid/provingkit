@@ -58,6 +58,8 @@ class SnapshotIssuanceTests(unittest.TestCase):
         if not self.transport.exists():
             self.transport.mkdir()
             self.git("init", "-q")
+            self.git("commit", "--allow-empty", "-qm", "test: transport creation base")
+            self.initial_transport_base = self.git("rev-parse", "HEAD")
         directory = self.transport / "ad-hoc" / record["source_commit"] / record["version"] / target
         directory.mkdir(parents=True, exist_ok=True)
         preparation_bytes = (json.dumps(record, sort_keys=True, separators=(",", ":")) + "\n").encode()
@@ -69,7 +71,9 @@ class SnapshotIssuanceTests(unittest.TestCase):
         (directory / "modes.tsv").write_bytes(b"path\tmode\torigin\n")
         self.git("add", ".")
         self.git("commit", "-qm", "test: prepared transport")
+        boundary = getattr(self, "published_commit", self.initial_transport_base)
         plan = {"status": "ready", "source_sha": self.git("rev-parse", "HEAD"),
+                "outgoing_shas": self.git("rev-list", boundary + "..HEAD").splitlines(),
                 "destination": {"ref": "refs/heads/ivan/provingkit-ad-hoc-artifacts",
                                 "remote": "origin", "endpoint_fingerprint": "sha256:" + "a" * 64}}
         path = self.root / (record["request_id"] + "-" + target + "-plan.json")
@@ -91,8 +95,11 @@ class SnapshotIssuanceTests(unittest.TestCase):
                                   "sha": plan["source_sha"]}] if verified else []}
         path = self.root / (request["request_id"] + "-result.json")
         path.write_text(json.dumps(result))
-        return self.call({"operation": "reconcile", "request_id": request["request_id"],
-                          "publication_result": str(path)})
+        response = self.call({"operation": "reconcile", "request_id": request["request_id"],
+                              "publication_result": str(path)})
+        if response["exposure"] == "verified":
+            self.published_commit = plan["source_sha"]
+        return response
 
     def test_owner_prepares_a_snapshot_and_recovers_the_same_request(self):
         self.initialize()
@@ -220,8 +227,7 @@ class SnapshotIssuanceTests(unittest.TestCase):
         retained_inputs = self.root / "earlier-inputs"
         shutil.copytree(Path(earlier["variants"]["claude"]["RECEIPT.json"]).parent, retained_inputs)
         earlier["variants"]["claude"] = {name: str(retained_inputs / name) for name in earlier["variants"]["claude"]}
-        earlier_preparation = self.call({"operation": "prepare", "request_id": "earlier", "source_commit": SOURCE})
-        shutil.rmtree(self.transport / "ad-hoc" / SOURCE / earlier_preparation["version"])
+        self.git("reset", "--hard", self.initial_transport_base)
         later = self.publication(self.prepare("later"))
         processes = []
         for request in (earlier, later):
@@ -255,16 +261,30 @@ class SnapshotIssuanceTests(unittest.TestCase):
         self.assertIn("publication changes", self.call(request, accepted=False)["reason"])
         self.assertIsNone(self.call({"operation": "inspect"})["last_issued"])
 
-    def test_cancelled_unattempted_generation_is_not_forced_into_a_later_publication(self):
+    def test_cancelled_generation_must_be_excluded_from_later_publication_ancestry(self):
         self.initialize()
         prepared = self.prepare()
         request = self.publication(prepared)
         self.call(request)
         self.assertEqual(self.reconcile(request, verified=False, attempted=False)["exposure"], "cancelled")
         shutil.rmtree(self.transport / "ad-hoc" / prepared["source_commit"] / prepared["version"])
-        later = self.publication(self.prepare("later"))
-        self.assertEqual(self.call(later)["version"], "0.1.0-alpha.7.snapshot.2")
+        later_preparation = self.prepare("later")
+        later = self.publication(later_preparation)
+        self.assertIn("unrecorded snapshot", self.call(later, accepted=False)["reason"])
+        self.git("reset", "--hard", self.initial_transport_base)
+        reconstructed = self.publication(later_preparation)
+        self.assertEqual(self.call(reconstructed)["version"], "0.1.0-alpha.7.snapshot.2")
         self.assertIn(prepared["version"], self.call({"operation": "inspect"})["versions"])
+
+    def test_unrecorded_intermediate_variant_is_rejected_even_when_absent_at_tip(self):
+        self.initialize()
+        prepared = self.prepare()
+        self.publication(prepared)
+        self.publication(prepared, "cursor", b"unrecorded intermediate target")
+        shutil.rmtree(self.transport / "ad-hoc" / SOURCE / prepared["version"] / "cursor")
+        tip = self.publication(prepared)
+        self.assertIn("unrecorded snapshot", self.call(tip, accepted=False)["reason"])
+        self.assertIsNone(self.call({"operation": "inspect"})["pending"])
 
     def test_publication_cannot_expose_a_target_missing_from_the_issuance_record(self):
         self.initialize()

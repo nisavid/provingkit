@@ -125,7 +125,12 @@ def ready_publication(state: dict, request: dict) -> dict:
     commit = plan.get("source_sha")
     if not isinstance(commit, str) or re.fullmatch(r"[0-9a-f]{40}", commit) is None:
         raise ValueError("publication plan needs a full publication commit")
-    return {"commit": commit, "destination": destination, "plan_sha256": digest}
+    outgoing = plan.get("outgoing_shas")
+    if (not isinstance(outgoing, list) or not outgoing
+            or any(not isinstance(sha, str) or re.fullmatch(r"[0-9a-f]{40}", sha) is None for sha in outgoing)
+            or len(set(outgoing)) != len(outgoing) or commit not in outgoing):
+        raise ValueError("publication plan needs its complete outgoing commit set")
+    return {"commit": commit, "destination": destination, "plan_sha256": digest, "outgoing_shas": outgoing}
 
 
 def read_variants(connection: sqlite3.Connection, supplied: object, prepared: dict) -> dict:
@@ -156,33 +161,40 @@ def read_variants(connection: sqlite3.Connection, supplied: object, prepared: di
 
 
 def verify_transport(repository: str, publication: dict, versions: dict) -> None:
-    expected_paths = set()
+    expected_paths = {}
     for version, identity in versions.items():
         for target, files in identity["variants"].items():
             for name, expected in files.items():
                 path = f"ad-hoc/{identity['source_commit']}/{version}/{target}/{name}"
-                expected_paths.add(path)
-                metadata = run_candidate_git(Path(repository),
-                    ["ls-tree", publication["commit"], "--", path], error_factory=ValueError,
-                    operation="inspect snapshot transport mode", runtime_policy="host-compatible")
-                if not metadata.startswith((b"100644 blob ", b"100755 blob ")):
-                    raise ValueError("publication omits a regular retained variant file")
-                raw = run_candidate_git(Path(repository), ["show", f"{publication['commit']}:{path}"],
-                    error_factory=ValueError, operation="inspect snapshot transport bytes",
-                    runtime_policy="host-compatible")
-                if len(raw) != expected["bytes"] or hashlib.sha256(raw).hexdigest() != expected["sha256"]:
-                    raise ValueError("publication changes retained variant bytes")
-    inventory = run_candidate_git(Path(repository),
-        ["ls-tree", "-r", "--name-only", "-z", publication["commit"], "--", "ad-hoc"],
-        error_factory=ValueError, operation="inspect snapshot transport inventory", runtime_policy="host-compatible")
-    for raw in inventory.split(b"\0"):
-        if not raw:
-            continue
-        path = raw.decode("utf-8")
-        parts = path.split("/")
-        if len(parts) >= 3 and re.fullmatch(r"[0-9a-f]{40}", parts[1]) and ".snapshot." in parts[2]:
+                expected_paths[path] = expected
+    # The existing publisher owns computation and revalidation of this reviewed
+    # outgoing set. A ref push exposes its reachable history, not just its tip.
+    for commit in publication["outgoing_shas"]:
+        inventory = run_candidate_git(Path(repository),
+            ["ls-tree", "-r", "-z", commit, "--", "ad-hoc"], error_factory=ValueError,
+            operation="inspect snapshot publication history", runtime_policy="host-compatible")
+        found = set()
+        for row in inventory.split(b"\0"):
+            if not row:
+                continue
+            metadata, raw_path = row.split(b"\t", 1)
+            path = raw_path.decode("utf-8")
+            parts = path.split("/")
+            if len(parts) < 3 or re.fullmatch(r"[0-9a-f]{40}", parts[1]) is None or ".snapshot." not in parts[2]:
+                continue
             if path not in expected_paths:
-                raise ValueError("publication contains an unrecorded snapshot file or variant")
+                raise ValueError("publication history contains an unrecorded snapshot file or variant")
+            if not metadata.startswith((b"100644 blob ", b"100755 blob ")):
+                raise ValueError("publication omits a regular retained variant file")
+            raw = run_candidate_git(Path(repository), ["show", f"{commit}:{path}"],
+                error_factory=ValueError, operation="inspect snapshot transport bytes",
+                runtime_policy="host-compatible")
+            expected = expected_paths[path]
+            if len(raw) != expected["bytes"] or hashlib.sha256(raw).hexdigest() != expected["sha256"]:
+                raise ValueError("publication changes retained variant bytes")
+            found.add(path)
+        if commit == publication["commit"] and found != set(expected_paths):
+            raise ValueError("publication omits a regular retained variant file")
 
 
 def transition(connection: sqlite3.Connection, state: dict | None, request: object) -> tuple[dict, dict]:

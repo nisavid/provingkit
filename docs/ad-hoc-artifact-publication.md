@@ -158,8 +158,9 @@ files byte for byte, then run the extraction check below against the first
 stage before freezing it. Record each file's size and lowercase SHA-256, the
 three archive root names, and the accepted tree digests in the adoption handoff.
 Keep that record outside the transport generation. Do not repack reviewed
-archives during publication. If an existing generation for this source has
-different bytes, stop and reconcile the producer or selection before publishing.
+archives during publication. If that same generation identity has different
+bytes, stop and reconcile the producer or selection before publishing. Separate
+delivered snapshot versions from one source commit are separate generations.
 
 ## Publish with ordinary branch ancestry
 
@@ -212,7 +213,7 @@ creation-base ancestry check blocks, prepare the artifact-only change on the
 newly observed `main` tip and review the replacement commit and plan. Keep the
 product source and all nine artifact bytes unchanged. Stop on conflicting
 paths or unexpected remote commits. For later generations, append to the
-existing transport branch, preserving every earlier generation and publication
+existing transport branch, preserving every published generation and publication
 commit. No history rewrite, automatic adoption of other commits, raw-push
 fallback, branch deletion, tag, or Release object belongs to this route.
 
@@ -222,6 +223,13 @@ and immediately before invoking the executor. The transaction binds that exact
 plan, publication commit, and retained files. Reconcile the original executor
 result through the same state before another issuance or cut transition. An
 uncertain outcome keeps its original record and blocks continuation.
+
+The issuer checks every outgoing commit named by that reviewed plan, including
+snapshot artifacts removed before its tip. Exclude cancelled unpublished
+generations from the later publication's ancestry: reconstruct the next
+artifact-only change from the verified published tip or qualified creation
+base. Removing their files only from the new tree does not exclude their Git
+objects from a push. Keep the cancelled generation's local recovery records.
 
 ## Read back all nine pinned URLs
 

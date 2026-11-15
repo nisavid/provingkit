@@ -145,14 +145,15 @@ objects, submit an `issue` request:
 
 The example binds one target. Include every target present in the transport
 commit; the three-target packing recipe requires three entries. Extra
-unrecorded snapshot files or variants in that commit are rejected.
+unrecorded snapshot files or variants in its outgoing history are rejected.
 
 This transaction checks the stored current interval and last-issued position,
 the original preparation, reviewed plan digest and destination, each variant's
-source/version binding, and the actual immutable transport Git blobs. Every
-previously exposed variant must remain in that publication commit unchanged.
-Cancelled unattempted generations keep their local records and bytes without
-being forced into a later publication.
+source/version binding, and the immutable Git blobs across the reviewed plan's
+complete outgoing commit set. Versionkeeping owns computation and revalidation
+of that set. Every previously exposed variant must remain at the publication
+tip unchanged. Intermediate snapshot files must also match an exposed or
+currently issuing identity, even if they disappear before the tip.
 It stores the artifact bytes, advances the issuance position, and records a
 pending exposure together. A competing issuer or cut transition is blocked
 until that pending request is reconciled. An earlier reservation cannot finish
@@ -173,6 +174,13 @@ conclusive original `blocked` result with `push_attempted:false` cancels that
 attempt, consuming the version and retaining its bytes. Cancelled deliveries
 are unavailable for redelivery. Preserve the original invocation's provenance;
 a later unattempted result cannot describe an earlier uncertain attempt.
+
+Cancelled unattempted generations keep their local records and bytes. Exclude
+their unpublished commits from later publication ancestry by reconstructing
+the next artifact-only change from the verified published tip or qualified
+creation base, through Versionkeeping's normal ownership and ancestry checks.
+Deleting their files at a later tip is insufficient: a push also transfers
+the newly reachable historical commits.
 
 A lost response, attempted failure, missing result, or incomplete postcheck
 keeps the request pending. Recover it with `{"operation":"inspect"}` or the
