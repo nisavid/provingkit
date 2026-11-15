@@ -4,10 +4,10 @@
     {
       "id": 0,
       "name": "new-branch-publish-and-closeout",
-      "prompt": "Using the provided scenario fixture, respond as the agent handling this request: \"Get this branch merged. There are local changes, no PR yet, and I want you to keep going unless you hit a real blocker.\" Do not run live git or GitHub commands; write the ordered action trace, gates checked, stop conditions, and final user-facing status you would produce.",
+      "prompt": "Use only Case 0 in the supplied raw fixture. Using the provided scenario fixture, respond as the agent handling this request: \"Get this branch merged. There are local changes, no PR yet, and I want you to keep going unless you hit a real blocker.\" Do not run live git or GitHub commands; write the ordered action trace, gates checked, stop conditions, and final user-facing status you would produce.",
       "expected_output": "The first merge invocation invokes the standalone readiness coordinator when policy and authority permit, while retaining one terminal readiness handoff when it cannot invoke readiness safely. After readiness succeeds, the caller starts a fresh merge invocation from live state. Each leaf runs once in its owning invocation; cleanup is routed through Versionkeeping, exact remote-ref deletion stops when its separate authorization is absent, and no deployment is invented.",
       "files": [
-        "getting-prs-merged/fixtures/new-branch-publish-and-closeout.md"
+        "getting-prs-merged/fixtures/attended-asynchronous-review-cycle.md"
       ],
       "expectations": [
         "The response starts from discovered repo and branch state instead of asking broad scope questions.",
@@ -24,7 +24,9 @@
       "name": "draft-pr-resume",
       "prompt": "Using the provided scenario fixture, respond as the agent handling this request: \"PR #42 is already open as a draft. Mark it review-ready and drive it to merge.\" Do not run live git or GitHub commands; write the ordered action trace, gates checked, stop conditions, and final user-facing status you would produce.",
       "expected_output": "The merge invocation invokes readiness-outcome when policy and authority permit, or returns a terminal readiness handoff naming the gate when it cannot invoke readiness safely. After a ready result, it starts a fresh merge invocation from live state.",
-      "files": ["getting-prs-merged/fixtures/draft-pr-resume.md"],
+      "files": [
+        "getting-prs-merged/fixtures/draft-pr-resume.md"
+      ],
       "expectations": [
         "The agent does not create a duplicate PR or replay completed publish work.",
         "The first merge invocation invokes readiness-outcome when policy and authority permit, without performing readiness writes itself.",
@@ -39,7 +41,9 @@
       "name": "review-comments-to-merge",
       "prompt": "Using the provided scenario fixture, respond as the agent handling this request: \"Address the unresolved review comments on this PR, rerun the review loop, and merge once it is clean.\" Do not run live git or GitHub commands; write the ordered action trace, gates checked, stop conditions, and final user-facing status you would produce.",
       "expected_output": "The merge invocation acquires complete feedback and invokes the authorized feedback-outcome owner in author-outcome mode. The feedback owner fixes and publishes independently safe work, then returns blocked for the maintainer-owned decision. Merge closeout returns the bound feedback gate and leaves the requested Tricritical loop and merge pending.",
-      "files": ["getting-prs-merged/fixtures/review-comments-to-merge.md"],
+      "files": [
+        "getting-prs-merged/fixtures/review-comments-to-merge.md"
+      ],
       "expectations": [
         "The merge invocation uses read-only feedback-acquisition and invokes feedback-outcome in author-outcome mode under the existing source and feedback authority without asking for another instruction.",
         "The addressing-pr-review-feedback owner performs adjudication, revision, publication, and authorized interactions; merge coordination does not acquire those write capabilities.",
@@ -53,7 +57,9 @@
       "name": "local-policy-limits-autonomy",
       "prompt": "Using the provided scenario fixture, respond as the agent handling this request: \"Get this merged, but check the repo-local instructions first; this repo may require maintainer approval before resolving threads or merging.\" Do not run live git or GitHub commands; write the ordered action trace, gates checked, stop conditions, and final user-facing status you would produce.",
       "expected_output": "The agent still uses the merge-closeout wrapper, discovers local policy before acting, follows any autonomy limits, and reports owner-controlled gates instead of forcing full autonomous closeout.",
-      "files": ["getting-prs-merged/fixtures/local-policy-limits-autonomy.md"],
+      "files": [
+        "getting-prs-merged/fixtures/local-policy-limits-autonomy.md"
+      ],
       "expectations": [
         "The agent treats local policy discovery as an early step, not a final afterthought.",
         "The agent applies repo-local guidance to ready-for-review, thread resolution, merge method, branch cleanup, and deploy closeout.",
@@ -66,7 +72,9 @@
       "name": "stalled-external-review",
       "prompt": "Using the provided scenario fixture, respond as the agent handling this request: \"Drive this PR to merge. It already had two completed bot review cycles, and the latest review has one stale-looking unresolved thread.\" Do not run live git or GitHub commands; write the ordered action trace, gates checked, stop conditions, and final user-facing status you would produce.",
       "expected_output": "The agent refreshes complete feedback state, classifies the stale thread with evidence, and does not request another review loop unless review and revision are explicitly requested. The number of completed reviews creates no approval gate.",
-      "files": ["getting-prs-merged/fixtures/stalled-external-review.md"],
+      "files": [
+        "getting-prs-merged/fixtures/stalled-external-review.md"
+      ],
       "expectations": [
         "The agent does not immediately rerun the external reviewer.",
         "The agent does not start a fresh tricritical:loop for this ordinary merge closeout.",
@@ -81,7 +89,9 @@
       "name": "pure-merge-current-state",
       "prompt": "Using the provided scenario fixture, respond as the agent handling this request: \"Merge this PR using its current review state. Do not request a new review unless the repository requires one.\" Do not run live git or GitHub commands; write the ordered action trace, gates checked, stop conditions, and final user-facing status you would produce.",
       "expected_output": "The merge coordinator acquires current complete feedback through the read-only feedback-acquisition leaf, finds no actionable work requiring a handoff, does not start a fresh Tricritical loop, and merges only when all refreshed gates and merge authority pass.",
-      "files": ["getting-prs-merged/fixtures/pure-merge-current-state.md"],
+      "files": [
+        "getting-prs-merged/fixtures/pure-merge-current-state.md"
+      ],
       "expectations": [
         "The agent does not invoke tricritical:loop for ordinary merge closeout.",
         "The agent obtains current complete feedback through the read-only feedback-acquisition capability without calling the feedback outcome coordinator.",
@@ -94,7 +104,9 @@
       "name": "coderabbit-skipped-review",
       "prompt": "Using the provided scenario fixture, respond as the agent handling this request: \"Get this PR merged. The latest checks are green, but CodeRabbit skipped review and branch protection still wants review.\" Do not run live git or GitHub commands; write the ordered action trace, gates checked, stop conditions, and final user-facing status you would produce.",
       "expected_output": "The agent does not treat a skipped CodeRabbit check as completed review evidence; after local readiness and authority gates pass, it comments on the PR to request CodeRabbit explicitly, refreshes PR state, and merges only after approval and branch-protection gates pass.",
-      "files": ["getting-prs-merged/fixtures/coderabbit-skipped-review.md"],
+      "files": [
+        "getting-prs-merged/fixtures/coderabbit-skipped-review.md"
+      ],
       "expectations": [
         "The agent recognizes that a skipped CodeRabbit review is not a completed external review cycle.",
         "The agent checks local readiness, current review authority, and any explicit operator or repository limits before requesting CodeRabbit again.",
@@ -109,7 +121,9 @@
       "name": "pr-description-only-near-miss",
       "prompt": "Using the provided scenario fixture, respond as the agent handling this request: \"Please just write a better PR description for this pull request.\" Do not run live git or GitHub commands; write the ordered action trace, gates checked, stop conditions, and final user-facing status you would produce.",
       "expected_output": "The wrapper should not be used as the main workflow; the agent should use the PR-description skill to return a complete body, preserve the current title, and avoid merge-oriented actions. Publishing is required only when the request authorizes an actual PR-body update.",
-      "files": ["getting-prs-merged/fixtures/pr-description-only-near-miss.md"],
+      "files": [
+        "getting-prs-merged/fixtures/pr-description-only-near-miss.md"
+      ],
       "expectations": [
         "The agent does not mark ready, address comments, request review, or merge.",
         "The agent narrows the task to PR body work, routes content to writing-reviewable-pr-descriptions, and preserves the current title byte-for-byte; a guarded publisher handoff is optional unless mutation is authorized.",
@@ -121,7 +135,9 @@
       "name": "review-only-near-miss",
       "prompt": "Using the provided scenario fixture, respond as the agent handling this request: \"Can you review PR #17 and tell me what you think?\" Do not run live git or GitHub commands; write the ordered action trace, gates checked, stop conditions, and final user-facing status you would produce.",
       "expected_output": "The wrapper should not turn a review request into a merge attempt; the agent should take a code-review stance and report findings.",
-      "files": ["getting-prs-merged/fixtures/review-only-near-miss.md"],
+      "files": [
+        "getting-prs-merged/fixtures/review-only-near-miss.md"
+      ],
       "expectations": [
         "The agent does not publish, mark ready, resolve threads, or merge.",
         "The agent treats the request as review-only unless the user adds a merge goal.",
@@ -149,7 +165,9 @@
       "name": "gh-fix-ci-adapter-boundary",
       "prompt": "Using the provided scenario fixture, diagnose the failed required Actions job while preserving every unrelated PR and Git surface. Do not run live git or GitHub commands; write the ordered diagnostic trace, authority gate for any scoped source fix, forbidden actions, and final status you would produce.",
       "expected_output": "The agent uses the internal adapter to delegate Actions-only inspection and diagnosis to the updateable upstream github:gh-fix-ci skill, requires separate scoped authority before any source fix, and refuses PR text, readiness, comment, thread, merge, or ref mutation.",
-      "files": ["getting-prs-merged/fixtures/gh-fix-ci-adapter-boundary.md"],
+      "files": [
+        "getting-prs-merged/fixtures/gh-fix-ci-adapter-boundary.md"
+      ],
       "expectations": [
         "The agent limits upstream delegation to GitHub Actions inspection and diagnosis.",
         "The agent requires separate explicit authority bound to owned paths before a scoped source or workflow fix.",
@@ -177,7 +195,9 @@
       "name": "owned-feedback-continuation",
       "prompt": "Using the provided scenario fixture, respond as the agent handling the authorized closeout. Do not use live Git or forge tools; give the ordered owner invocations, result handling, renewed gates, and final status.",
       "expected_output": "The merge coordinator invokes feedback-outcome in author-outcome mode within the existing scope, consumes addressed, and continues the same authorized task with a fresh merge invocation. It reacquires the new head and every merge gate before one merge actuation, without treating addressed as clean-review evidence or stopping at the ownership boundary.",
-      "files": ["getting-prs-merged/fixtures/owned-feedback-continuation.md"],
+      "files": [
+        "getting-prs-merged/fixtures/owned-feedback-continuation.md"
+      ],
       "expectations": [
         "The response invokes addressing-pr-review-feedback through feedback-outcome in author-outcome mode with the original scope and separate source, publication, and interaction authorities.",
         "The feedback owner performs adjudication and its authorized revision, publication, and response handoffs; the merge coordinator does not perform those writes directly.",
@@ -192,7 +212,9 @@
       "name": "feedback-continuation-gates",
       "prompt": "Using the provided independent cases, state the next allowed action and stopping status for each. Do not use live Git or forge tools.",
       "expected_output": "The merge coordinator preserves each independent authority and outcome gate: absent source authority prevents the feedback author invocation; snapshot is read-only and cannot satisfy it; blocked with an unknown write prevents retry and merge; addressed followed by a new live finding and failed checks leaves those fresh gates unresolved.",
-      "files": ["getting-prs-merged/fixtures/feedback-continuation-gates.md"],
+      "files": [
+        "getting-prs-merged/fixtures/feedback-continuation-gates.md"
+      ],
       "expectations": [
         "For case A, merge authority does not grant source, publication, or interaction authority; the response returns a feedback-handoff naming the missing authority before author-side work.",
         "For case B, snapshot does not become addressed, authorize edits, or satisfy merge readiness; the response keeps the author-outcome continuation gated.",
@@ -207,7 +229,9 @@
       "name": "persistent-request-changes-after-addressed",
       "prompt": "Using the independent fresh acquisitions in the provided fixture, give the next owner or gate for each case after the feedback owner returned addressed. Do not use live Git or forge tools. Describe what evidence is reused, revalidated, or no longer applicable and whether author work or merge can proceed.",
       "expected_output": "The merge caller revalidates the feedback owner's existing dispositions, source/head bindings, and receipts against fresh complete acquisition. Unchanged reviewer-owned approval or resolution state remains a merge gate without another feedback-outcome invocation or repeated reply. New or changed feedback and stale or uncertain disposition coverage return to the feedback owner under the existing scope; the merge coordinator does not adjudicate them or merge from a prior addressed result.",
-      "files": ["getting-prs-merged/fixtures/persistent-request-changes-after-addressed.md"],
+      "files": [
+        "getting-prs-merged/fixtures/persistent-request-changes-after-addressed.md"
+      ],
       "expectations": [
         "For A and B, the response carries forward and freshly validates the existing owner dispositions and receipts against the exact current source identities, revisions, and head; a matching orientation summary alone is insufficient.",
         "For A, unchanged CHANGES_REQUESTED and review_not_approved remain a reviewer approval gate; the response does not invoke feedback-outcome again, repeat a fix or reply, or merge.",
@@ -215,6 +239,96 @@
         "For C, the response routes the new source and edited finding to addressing-pr-review-feedback under the existing scope, with no merge-side classification or adjudication and no automatic coverage from the earlier addressed result.",
         "For D, the changed head and unavailable completion proof make the old disposition applicability uncertain; the response routes revalidation and any adjudication to the feedback owner without reusing stale completion or blindly replaying a provider write.",
         "For E, complete acquisition contains no source feedback to adjudicate; the empty requested-changes review remains an approval gate rather than author work, and merge remains blocked."
+      ]
+    },
+    {
+      "id": 15,
+      "name": "attended-reviewers-still-running",
+      "prompt": "Use only Case 15 in the supplied raw fixture. Respond as the agent handling that attended merge request. Give the next owner operations, evidence needed and current user-facing status. Forge effects are inert; claim only supplied observations.",
+      "expected_output": "Continue with fresh individual reviewer observations and truthful incomplete-cycle status.",
+      "files": [
+        "getting-prs-merged/fixtures/attended-asynchronous-review-cycle.md"
+      ],
+      "expectations": [
+        "Distinguishes the first review snapshot from the later check-run evidence and keeps Greptile and CodeRabbit pending.",
+        "Does not count Copilot quota exhaustion or local independent review as hosted review completion or counted approval.",
+        "Continues the attended task through fresh individual feedback and check observations without requesting an operator-arranged reviewer from this early snapshot.",
+        "Preserves approval and feedback gates and invents no later review, new review request, or merge outcome."
+      ]
+    },
+    {
+      "id": 16,
+      "name": "attended-no-review-integration",
+      "prompt": "Use only Case 16 in the supplied raw fixture. Respond as the agent handling that attended merge request. Give the next owner operations, evidence needed and current user-facing status. Forge effects are inert; claim only supplied observations.",
+      "expected_output": "Use the actual repository policy and merge gates without introducing an absent review service.",
+      "files": [
+        "getting-prs-merged/fixtures/attended-asynchronous-review-cycle.md"
+      ],
+      "expectations": [
+        "Uses supplied complete integration and policy evidence to establish the applicable reviewer set.",
+        "Does not require CodeRabbit, Greptile, Copilot or another service absent from this repository.",
+        "Refreshes the actual current merge and publication gates before merge actuation.",
+        "Uses the existing merge owner and authority without requesting a new review solely to populate a reviewer set."
+      ]
+    },
+    {
+      "id": 17,
+      "name": "attended-no-check-reviewer",
+      "prompt": "Use only Case 17 in the supplied raw fixture. Respond as the agent handling that attended merge request. Give the next owner operations, evidence needed and current user-facing status. Forge effects are inert; claim only supplied observations.",
+      "expected_output": "Retain the missing completion evidence without inferring a clean cycle from quiet time.",
+      "files": [
+        "getting-prs-merged/fixtures/attended-asynchronous-review-cycle.md"
+      ],
+      "expectations": [
+        "Keeps the expected ReviewApp as pending or unknown, identifying the missing completion signal.",
+        "Does not infer reviewer absence or completion from elapsed quiet time or the absence of check runs.",
+        "Uses current individual review and comment observations to continue the attended task where supported.",
+        "Does not promise an autonomous wake that was not armed."
+      ]
+    },
+    {
+      "id": 18,
+      "name": "attended-required-review-quota",
+      "prompt": "Use only Case 18 in the supplied raw fixture. Respond as the agent handling that attended merge request. Give the next owner operations, evidence needed and current user-facing status. Forge effects are inert; claim only supplied observations.",
+      "expected_output": "Report the unavailable required-reviewer gate with its actual policy owner.",
+      "files": [
+        "getting-prs-merged/fixtures/attended-asynchronous-review-cycle.md"
+      ],
+      "expectations": [
+        "Distinguishes a quota non-review from a completed review or counted approval.",
+        "Preserves the repository approval requirement and identifies the existing policy owner for the specific exception decision.",
+        "Invents no waiver, substitute review authority or approval bypass.",
+        "Reports the concrete unmet gate without declaring the hosted review cycle clean."
+      ]
+    },
+    {
+      "id": 19,
+      "name": "attended-head-change",
+      "prompt": "Use only Case 19 in the supplied raw fixture. Respond as the agent handling that attended merge request. Give the next owner operations, evidence needed and current user-facing status. Forge effects are inert; claim only supplied observations.",
+      "expected_output": "Reestablish review and check applicability on the newly pushed head.",
+      "files": [
+        "getting-prs-merged/fixtures/attended-asynchronous-review-cycle.md"
+      ],
+      "expectations": [
+        "Binds the fresh invocation to the new observed head and its push trigger.",
+        "Does not carry the dismissed old-head approval into the new merge decision.",
+        "Accounts for pending current-head tests and review using the actual repository policy.",
+        "Continues under existing authority without fabricating a completion or merge."
+      ]
+    },
+    {
+      "id": 20,
+      "name": "attended-reviewer-owned-gate",
+      "prompt": "Use only Case 20 in the supplied raw fixture. Respond as the agent handling that attended merge request. Give the next owner operations, evidence needed and current user-facing status. Forge effects are inert; claim only supplied observations.",
+      "expected_output": "Preserve the remaining reviewer gate without repeating completed author work.",
+      "files": [
+        "getting-prs-merged/fixtures/attended-asynchronous-review-cycle.md"
+      ],
+      "expectations": [
+        "Verifies that the addressed result and exact response receipts remain applicable to current feedback and head.",
+        "Reports the actual reviewer-owned approval gate separately from completed author feedback work.",
+        "Does not repeat author edits or replies merely because approval metadata remains unchanged.",
+        "Uses no unauthorized thread resolution, reviewer request or approval bypass."
       ]
     }
   ]
