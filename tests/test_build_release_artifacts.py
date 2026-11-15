@@ -44,10 +44,140 @@ def is_relative(link: str) -> bool:
 
 
 class ReleaseArtifactBuilderTests(unittest.TestCase):
+    def test_snapshot_copy_loads_delivered_identity_and_retains_source(self):
+        commit = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
+        preparation = {
+            "schema": "provingkit-snapshot-preparation-v1",
+            "request_id": "projection-example",
+            "release_unit": "provingkit",
+            "target_release": "0.1.0",
+            "preceding_cut": "0.1.0-alpha.7",
+            "next_named_release": "0.1.0-alpha.8",
+            "sequence": 41,
+            "version": "0.1.0-alpha.7.snapshot.41",
+            "source_commit": commit,
+        }
+        with tempfile.TemporaryDirectory() as tmp:
+            record = Path(tmp) / "preparation.json"
+            record.write_text(json.dumps(preparation))
+            output = Path(tmp) / "claude"
+            result = subprocess.run(
+                [sys.executable, str(ROOT / "scripts/build_release_artifacts.py"),
+                 "--source", str(ROOT), "--output", str(output), "--target", "claude",
+                 "--snapshot-record", str(record)], capture_output=True, text=True,
+            )
+            self.assertEqual(result.returncode, 0, result.stderr)
+            catalog = json.loads((output / ".claude-plugin/marketplace.json").read_text())
+            self.assertTrue(catalog["plugins"])
+            for entry in catalog["plugins"]:
+                self.assertEqual(entry["version"], "0.1.0-alpha.7.snapshot.41")
+                for name in ("plugin.json", ".claude-plugin/plugin.json"):
+                    manifest = json.loads((output / "plugins" / entry["name"] / name).read_text())
+                    self.assertEqual(manifest["version"], "0.1.0-alpha.7.snapshot.41")
+            receipt = json.loads((output / "RECEIPT.json").read_text())
+            self.assertEqual(receipt["source"]["commit"], commit)
+            self.assertEqual(receipt["delivery"]["version"], "0.1.0-alpha.7.snapshot.41")
+            source_manifest = json.loads((ROOT / "plugins/proseweaving/plugin.json").read_text())
+            self.assertNotEqual(source_manifest["version"], "0.1.0-alpha.7.snapshot.41")
+
     def stage(self, target: str, slate=None):
         with tempfile.TemporaryDirectory() as tmp:
             path = build(ROOT, Path(tmp) / target, target, slate or [], "preview", False)
             yield Path(tmp) / target, json.loads(path.read_text())
+
+    def test_snapshot_projection_refuses_another_source_and_partial_slate(self):
+        commit = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
+        record = {"schema": "provingkit-snapshot-preparation-v1", "request_id": "refusal-example",
+                  "release_unit": "provingkit", "target_release": "0.1.0",
+                  "preceding_cut": "0.1.0-alpha.7", "next_named_release": "0.1.0-alpha.8",
+                  "sequence": 1, "version": "0.1.0-alpha.7.snapshot.1", "source_commit": "0" * 40}
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "preparation.json"
+            path.write_text(json.dumps(record))
+            with self.assertRaisesRegex(ValueError, "another source"):
+                build(ROOT, Path(tmp) / "wrong", "claude", [], "main", False, path)
+            record["source_commit"] = commit
+            path.write_text(json.dumps(record))
+            with self.assertRaisesRegex(ValueError, "complete plugin slate"):
+                build(ROOT, Path(tmp) / "partial", "claude", ["proseweaving"], "main", False, path)
+            for target, adapter in (("agent-plugins", "plugin.json"), ("cursor", ".cursor-plugin/plugin.json")):
+                output = Path(tmp) / target
+                receipt = json.loads(build(ROOT, output, target, [], "main", False, path).read_text())
+                for member in receipt["plugin_slate"]:
+                    manifest = json.loads((output / "plugins" / member / adapter).read_text())
+                    self.assertEqual(manifest["version"], "0.1.0-alpha.7.snapshot.1")
+
+    def test_snapshot_receipt_distinguishes_projector_revision_from_product_source(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            source = Path(tmp) / "source"
+            (source / "release").mkdir(parents=True)
+            policy = (ROOT / builder.POLICY_PATH).read_bytes()
+            (source / builder.POLICY_PATH).write_bytes(policy)
+            for member in json.loads(policy)["slate"]:
+                directory = source / "plugins" / member
+                (directory / ".claude-plugin").mkdir(parents=True)
+                manifest = json.dumps({"name": member, "version": "0.1.0-trunk"})
+                (directory / "plugin.json").write_text(manifest)
+                (directory / ".claude-plugin/plugin.json").write_text(manifest)
+            subprocess.run(["git", "init", "-q", str(source)], check=True)
+            subprocess.run(["git", "add", "."], cwd=source, check=True)
+            subprocess.run(["git", "-c", "user.name=Test", "-c", "user.email=test@example.invalid",
+                            "-c", "commit.gpgsign=false", "commit", "-qm", "test: direct source fixture"],
+                           cwd=source, check=True)
+            commit = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=source, text=True).strip()
+            record = {"schema": "provingkit-snapshot-preparation-v1", "request_id": "source-separation",
+                      "release_unit": "provingkit", "target_release": "0.1.0",
+                      "preceding_cut": "0.1.0-alpha.7", "next_named_release": "0.1.0-alpha.8",
+                      "sequence": 1, "version": "0.1.0-alpha.7.snapshot.1", "source_commit": commit}
+            path = Path(tmp) / "preparation.json"
+            path.write_text(json.dumps(record))
+            receipt = json.loads(build(source, Path(tmp) / "delivery", "claude", [], "main", False, path).read_text())
+            self.assertEqual(receipt["source"]["commit"], commit)
+            projector_commit = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
+            self.assertEqual(receipt["builder"]["revision"], projector_commit)
+            self.assertEqual(json.loads((source / "plugins/proseweaving/plugin.json").read_text())["version"],
+                             "0.1.0-trunk")
+
+    def test_snapshot_packing_procedure_preserves_receipts_bytes_and_modes(self):
+        procedure = (ROOT / "docs/ad-hoc-artifact-publication.md").read_text()
+        blocks = re.findall(r"```sh\npython - <<'PY'\n(.*?)\nPY\n", procedure, re.DOTALL)
+        self.assertEqual(len(blocks), 3)
+        commit = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
+        prepared = {"schema": "provingkit-snapshot-preparation-v1", "request_id": "packing-example",
+                    "release_unit": "provingkit", "target_release": "0.1.0",
+                    "preceding_cut": "0.1.0-alpha.7", "next_named_release": "0.1.0-alpha.8",
+                    "sequence": 1, "version": "0.1.0-alpha.7.snapshot.1", "source_commit": commit}
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            record = root / "preparation.json"
+            record.write_text(json.dumps(prepared))
+            trees, modes = root / "trees", root / "modes"
+            trees.mkdir()
+            modes.mkdir()
+            for target in TARGETS:
+                output = trees / target
+                build(ROOT, output, target, [], "main", False, record)
+                rows = ["path\tmode\torigin\n"]
+                for path in sorted(output.rglob("*")):
+                    if path.is_file() and path.name != "RECEIPT.json":
+                        rows.append(f"{path.relative_to(output).as_posix()}\t{stat.S_IMODE(path.stat().st_mode):04o}\tfixture\n")
+                (modes / (target + ".modes.tsv")).write_text("".join(rows))
+            generation = commit + "/" + prepared["version"]
+            environment = {**os.environ, "PROVINGKIT_SOURCE_COMMIT": commit,
+                           "PROVINGKIT_DELIVERY_VERSION": prepared["version"],
+                           "PROVINGKIT_GENERATION": generation,
+                           "PROVINGKIT_PROJECTION_ROOT": str(trees), "PROVINGKIT_MODE_ROOT": str(modes),
+                           "PROVINGKIT_TRANSPORT_STAGE": str(root / "packed"),
+                           "PROVINGKIT_CHECK_INPUT": str(root / "packed/ad-hoc" / generation),
+                           "PROVINGKIT_EXTRACTED": str(root / "extracted")}
+            for block in (blocks[0], blocks[2]):
+                result = subprocess.run([sys.executable, "-c", block], env=environment, capture_output=True, text=True)
+                self.assertEqual(result.returncode, 0, result.stderr)
+            for target in TARGETS:
+                packed = root / "packed/ad-hoc" / generation / target
+                self.assertEqual((packed / "RECEIPT.json").read_bytes(), (trees / target / "RECEIPT.json").read_bytes())
+                extracted = root / "extracted" / f"provingkit-ad-hoc-{commit}-{prepared['version']}-{target}"
+                self.assertTrue(extracted.is_dir())
 
     def test_agent_plugins_projection_has_catalog_and_receipt(self):
         for output, receipt in self.stage("agent-plugins", ["proseweaving"]):
@@ -56,6 +186,10 @@ class ReleaseArtifactBuilderTests(unittest.TestCase):
             self.assertFalse(any("evals" in p.parts or "fixtures" in p.parts for p in output.rglob("*")))
             self.assertNotIn("task-witness", receipt["plugin_slate"])
             self.assertEqual(receipt["schema"], "provingkit-artifact-receipt-v1")
+            self.assertEqual(set(receipt), {"schema", "builder", "source", "target",
+                                            "plugin_slate", "policy_sha256", "artifact_sha256", "files"})
+            self.assertEqual(receipt["builder"], {"name": "provingkit-artifact-projector-v1",
+                                                 "revision": receipt["source"]["commit"]})
             self.assertEqual(len(receipt["artifact_sha256"]), 64)
 
     def test_assigned_local_alpha_projects_all_six_claude_versions(self):

@@ -33,6 +33,15 @@ release. Use `--slate proseweaving` for a one-plugin candidate. The command
 fails if the output exists unless `--force` is supplied, and refuses symlinks
 or files outside the policy.
 
+For a changing copied developer package, use
+[snapshot issuance](agents/snapshot-issuance.md) and pass its exact preparation
+bytes with `--snapshot-record`. Run the reviewed projector from its own checkout
+and select product source with `--source`; the two commits can differ. Snapshot
+projection requires the complete slate, stamps delivered manifests and catalog
+versions, and records delivery identity separately from source identity. It
+preserves directly loaded working source, including an `X-trunk` version.
+Preparation and projection alone do not authorize exposure or installation.
+
 The candidate's policy is configuration, not filesystem authority. Its source,
 plugin-output, and catalog paths must be normalized relative POSIX paths;
 plugin IDs must be single path components. Absolute paths, empty or dot
@@ -65,8 +74,10 @@ clients:
 
 Publish the candidate tree or archive and its receipt together. Harness update,
 install, cache, and cleanup behavior remains the harness's concern. A pinned
-preview is the reproducibility default. A `main` candidate is intentionally
-moving: each resolved source commit produces a new receipt and artifact digest.
+preview is the reproducibility default. A `main` source selection can move.
+Newly issued copied snapshots receive a recorded delivered version; repeated
+source commits can receive distinct snapshots. An unchanged redelivery uses the
+original version and retained bytes rather than replacing an existing variant.
 
 For a pinned ad hoc installation, follow
 [retained ad hoc artifact publication](ad-hoc-artifact-publication.md) to publish
