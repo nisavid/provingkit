@@ -404,28 +404,101 @@ def transition(connection: sqlite3.Connection, state: dict | None, request: obje
     raise ValueError("unsupported issuance operation")
 
 
+def pinned_state_path(state_path: Path) -> tuple[int, Path]:
+    search_flag = getattr(os, "O_PATH", None)
+    if search_flag is None:
+        search_flag = getattr(os, "O_SEARCH", None)
+    if (
+        search_flag is None
+        or not hasattr(os, "O_DIRECTORY")
+        or not hasattr(os, "O_NOFOLLOW")
+        or os.open not in os.supports_dir_fd
+        or os.stat not in os.supports_dir_fd
+    ):
+        raise ValueError(
+            "safe issuance state requires search-capable no-follow directory operations"
+        )
+    state_path = Path(os.path.abspath(state_path))
+    if state_path == Path(state_path.anchor) or state_path.name in {"", ".", ".."}:
+        raise ValueError("issuance state needs a file path below a private directory")
+
+    root = Path(state_path.anchor)
+    root_metadata = root.stat()
+    first = root / state_path.parts[1]
+    try:
+        first_metadata = first.lstat()
+    except FileNotFoundError:
+        first_metadata = None
+    if (
+        len(state_path.parts) > 2
+        and first_metadata is not None
+        and stat.S_ISLNK(first_metadata.st_mode)
+        and first_metadata.st_uid == root_metadata.st_uid
+        and not root_metadata.st_mode & 0o022
+    ):
+        target = first.readlink()
+        if not target.is_absolute():
+            target = first.parent / target
+        state_path = Path(os.path.abspath(target.joinpath(*state_path.parts[2:])))
+
+    flags = search_flag | os.O_DIRECTORY | os.O_NOFOLLOW | getattr(os, "O_CLOEXEC", 0)
+    descriptor = os.open(state_path.anchor, flags)
+    try:
+        namespace = Path(state_path.anchor)
+        for component in state_path.parent.parts[1:]:
+            namespace /= component
+            child = os.open(component, flags, dir_fd=descriptor)
+            os.close(descriptor)
+            descriptor = child
+            metadata = os.fstat(descriptor)
+            if (metadata.st_uid not in {root_metadata.st_uid, os.geteuid()}
+                    or metadata.st_mode & 0o022 and not metadata.st_mode & stat.S_ISVTX):
+                raise ValueError(
+                    f"issuance state ancestor is writable by other users: {namespace}"
+                )
+        metadata = os.fstat(descriptor)
+        if (not stat.S_ISDIR(metadata.st_mode) or metadata.st_uid != os.geteuid()
+                or metadata.st_mode & 0o077):
+            raise ValueError("issuance state needs a private owned parent directory")
+        for root in (Path("/proc/self/fd"), Path("/dev/fd")):
+            pinned_parent = root / str(descriptor)
+            try:
+                visible = pinned_parent.stat()
+            except OSError:
+                continue
+            if (visible.st_dev, visible.st_ino) == (metadata.st_dev, metadata.st_ino):
+                return descriptor, pinned_parent / state_path.name
+        raise ValueError("safe issuance state requires descriptor-backed filesystem paths")
+    except BaseException:
+        os.close(descriptor)
+        raise
+
+
 def perform(state_path: Path, request: object) -> dict:
-    parent = state_path.absolute().parent
-    metadata = parent.lstat()
-    if not stat.S_ISDIR(metadata.st_mode) or metadata.st_uid != os.geteuid() or metadata.st_mode & 0o077:
-        raise ValueError("issuance state needs a private owned parent directory")
-    if state_path.exists() or state_path.is_symlink():
-        metadata = state_path.lstat()
-        if not stat.S_ISREG(metadata.st_mode) or metadata.st_uid != os.geteuid():
-            raise ValueError("issuance state must be an owned regular file")
-    elif not isinstance(request, dict) or request.get("operation") != "initialize":
-        raise ValueError("issuance state has not been initialized")
-    with sqlite3.connect(state_path, timeout=10, isolation_level=None) as connection:
-        connection.execute("PRAGMA synchronous=FULL")
-        connection.execute("BEGIN IMMEDIATE")
-        connection.execute("CREATE TABLE IF NOT EXISTS state (id INTEGER PRIMARY KEY CHECK(id=1), document TEXT NOT NULL)")
-        connection.execute("CREATE TABLE IF NOT EXISTS artifacts (sha256 TEXT PRIMARY KEY, data BLOB NOT NULL)")
-        row = connection.execute("SELECT document FROM state WHERE id=1").fetchone()
-        state = decode_json(row[0].encode()) if row else None
-        state, response = transition(connection, state, request)
-        connection.execute("INSERT OR REPLACE INTO state VALUES (1, ?)", (canonical_json(state).decode(),))
-        connection.execute("COMMIT")
-    return response
+    descriptor, state_path = pinned_state_path(state_path)
+    try:
+        try:
+            metadata = os.stat(state_path.name, dir_fd=descriptor, follow_symlinks=False)
+        except FileNotFoundError:
+            metadata = None
+        if metadata is not None:
+            if not stat.S_ISREG(metadata.st_mode) or metadata.st_uid != os.geteuid():
+                raise ValueError("issuance state must be an owned regular file")
+        elif not isinstance(request, dict) or request.get("operation") != "initialize":
+            raise ValueError("issuance state has not been initialized")
+        with sqlite3.connect(state_path, timeout=10, isolation_level=None) as connection:
+            connection.execute("PRAGMA synchronous=FULL")
+            connection.execute("BEGIN IMMEDIATE")
+            connection.execute("CREATE TABLE IF NOT EXISTS state (id INTEGER PRIMARY KEY CHECK(id=1), document TEXT NOT NULL)")
+            connection.execute("CREATE TABLE IF NOT EXISTS artifacts (sha256 TEXT PRIMARY KEY, data BLOB NOT NULL)")
+            row = connection.execute("SELECT document FROM state WHERE id=1").fetchone()
+            state = decode_json(row[0].encode()) if row else None
+            state, response = transition(connection, state, request)
+            connection.execute("INSERT OR REPLACE INTO state VALUES (1, ?)", (canonical_json(state).decode(),))
+            connection.execute("COMMIT")
+        return response
+    finally:
+        os.close(descriptor)
 
 
 def main() -> int:

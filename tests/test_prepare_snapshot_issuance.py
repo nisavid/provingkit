@@ -21,7 +21,8 @@ class SnapshotIssuanceTests(unittest.TestCase):
         self.root = Path(self.temporary.name)
         self.state = self.root / "state.sqlite"
 
-    def call(self, request, *, accepted=True, clock=None):
+    def call(self, request, *, accepted=True, clock=None, state=None,
+             swap_before_connect=None, system_alias=None):
         path = self.root / "request.json"
         path.write_text(json.dumps(request))
         command = [sys.executable, str(SCRIPT)]
@@ -30,8 +31,67 @@ class SnapshotIssuanceTests(unittest.TestCase):
                        "import runpy,sys,time; time.time=lambda: " + str(clock)
                        + "; script=sys.argv.pop(1); sys.path.insert(0,str(__import__('pathlib').Path(script).parent));"
                        + "runpy.run_path(script,run_name='__main__')", str(SCRIPT)]
+        if swap_before_connect is not None:
+            selected, displaced, replacement = map(str, swap_before_connect)
+            command = [sys.executable, "-c", """
+import os
+import runpy
+import sqlite3
+import sys
+
+script, selected, displaced, replacement = sys.argv[1:5]
+sys.argv = [script, *sys.argv[5:]]
+real_connect = sqlite3.connect
+
+def raced_connect(database, *args, **kwargs):
+    os.rename(selected, displaced)
+    os.rename(replacement, selected)
+    return real_connect(database, *args, **kwargs)
+
+sqlite3.connect = raced_connect
+sys.path.insert(0, str(__import__('pathlib').Path(script).parent))
+runpy.run_path(script, run_name='__main__')
+""", str(SCRIPT), selected, displaced, replacement]
+        if system_alias is not None:
+            alias, target = map(str, system_alias)
+            command = [sys.executable, "-c", """
+import os
+import runpy
+import stat
+import sys
+from pathlib import Path
+
+script, alias_value, target_value = sys.argv[1:4]
+sys.argv = [script, *sys.argv[4:]]
+alias = Path(alias_value)
+target = Path(target_value)
+real_lstat = Path.lstat
+real_readlink = Path.readlink
+real_resolve = Path.resolve
+root_metadata = alias.parent.stat()
+resolved_target = real_resolve(target, strict=True)
+fields = list(root_metadata)
+fields[0] = stat.S_IFLNK | 0o777
+alias_metadata = os.stat_result(fields)
+
+def alias_lstat(path):
+    return alias_metadata if path == alias else real_lstat(path)
+
+def alias_readlink(path):
+    return target if path == alias else real_readlink(path)
+
+def alias_resolve(path, *args, **kwargs):
+    return resolved_target if path == alias else real_resolve(path, *args, **kwargs)
+
+Path.lstat = alias_lstat
+Path.readlink = alias_readlink
+Path.resolve = alias_resolve
+sys.path.insert(0, str(Path(script).parent))
+runpy.run_path(script, run_name='__main__')
+""", str(SCRIPT), alias, target]
+        state = self.state if state is None else state
         result = subprocess.run(
-            [*command, "--state", str(self.state), "--request", str(path)],
+            [*command, "--state", str(state), "--request", str(path)],
             capture_output=True, text=True,
         )
         self.assertEqual(result.returncode == 0, accepted, result.stdout + result.stderr)
@@ -288,6 +348,127 @@ class SnapshotIssuanceTests(unittest.TestCase):
         state = self.call({"operation": "inspect"})
         self.assertEqual(state["pending"], winner["request_id"])
         self.assertEqual(state["last_issued"], winner["version"])
+
+    def test_ancestor_swap_cannot_redirect_the_state_database(self):
+        selected = self.root / "selected"
+        displaced = self.root / "displaced"
+        replacement = self.root / "replacement"
+        selected.mkdir(mode=0o700)
+        replacement.mkdir(mode=0o700)
+        selected_state = selected / "state.sqlite"
+        replacement_state = replacement / "state.sqlite"
+        request = {"operation": "initialize", "custody_owner": "selected-owner",
+                   "endpoint_fingerprint": "sha256:" + "a" * 64,
+                   "target_release": "0.1.0", "preceding_cut": "0.1.0-alpha.7",
+                   "next_named_release": "0.1.0-alpha.8"}
+        self.call(request, state=selected_state)
+        self.call(dict(request, custody_owner="replacement-owner"), state=replacement_state)
+
+        state = self.call({"operation": "inspect"}, state=selected_state,
+                          swap_before_connect=(selected, displaced, replacement))
+
+        self.assertEqual(state["custody_owner"], "selected-owner")
+
+    def test_nonsticky_writable_state_ancestor_is_refused(self):
+        shared = self.root / "shared"
+        private = shared / "private"
+        private.mkdir(parents=True, mode=0o700)
+        shared.chmod(0o777)
+        request = {"operation": "initialize", "custody_owner": "selected-owner",
+                   "endpoint_fingerprint": "sha256:" + "a" * 64,
+                   "target_release": "0.1.0", "preceding_cut": "0.1.0-alpha.7",
+                   "next_named_release": "0.1.0-alpha.8"}
+
+        refused = self.call(request, state=private / "state.sqlite", accepted=False)
+
+        self.assertIn("ancestor is writable by other users", refused["reason"])
+        self.assertFalse((private / "state.sqlite").exists())
+        shared.chmod(0o700)
+
+    def test_symlinked_state_ancestor_is_refused_without_touching_its_target(self):
+        target = self.root / "target"
+        private = target / "private"
+        private.mkdir(parents=True, mode=0o700)
+        alias = self.root / "alias"
+        alias.symlink_to(target, target_is_directory=True)
+        request = {"operation": "initialize", "custody_owner": "selected-owner",
+                   "endpoint_fingerprint": "sha256:" + "a" * 64,
+                   "target_release": "0.1.0", "preceding_cut": "0.1.0-alpha.7",
+                   "next_named_release": "0.1.0-alpha.8"}
+
+        self.call(request, state=alias / "private/state.sqlite", accepted=False)
+
+        self.assertFalse((private / "state.sqlite").exists())
+
+    def test_private_state_below_a_sticky_shared_ancestor_is_supported(self):
+        shared = self.root / "shared"
+        private = shared / "private"
+        private.mkdir(parents=True, mode=0o700)
+        shared.chmod(0o1777)
+        request = {"operation": "initialize", "custody_owner": "selected-owner",
+                   "endpoint_fingerprint": "sha256:" + "a" * 64,
+                   "target_release": "0.1.0", "preceding_cut": "0.1.0-alpha.7",
+                   "next_named_release": "0.1.0-alpha.8"}
+
+        initialized = self.call(request, state=private / "state.sqlite")
+
+        self.assertEqual(initialized["outcome"], "initialized")
+        shared.chmod(0o700)
+
+    def test_search_only_state_ancestor_supports_initialization_and_reentry(self):
+        searchable = self.root / "searchable"
+        private = searchable / "private"
+        private.mkdir(parents=True, mode=0o700)
+        state_path = private / "state.sqlite"
+        searchable.chmod(0o111)
+        request = {"operation": "initialize", "custody_owner": "selected-owner",
+                   "endpoint_fingerprint": "sha256:" + "a" * 64,
+                   "target_release": "0.1.0", "preceding_cut": "0.1.0-alpha.7",
+                   "next_named_release": "0.1.0-alpha.8"}
+
+        try:
+            self.call(request, state=state_path)
+            inspected = self.call({"operation": "inspect"}, state=state_path)
+        finally:
+            searchable.chmod(0o700)
+
+        self.assertEqual(inspected["custody_owner"], "selected-owner")
+
+    def test_system_alias_cannot_hide_a_nested_symlink(self):
+        target = self.root / "target"
+        private = target / "private"
+        private.mkdir(parents=True, mode=0o700)
+        state_path = private / "state.sqlite"
+        request = {"operation": "initialize", "custody_owner": "selected-owner",
+                   "endpoint_fingerprint": "sha256:" + "a" * 64,
+                   "target_release": "0.1.0", "preceding_cut": "0.1.0-alpha.7",
+                   "next_named_release": "0.1.0-alpha.8"}
+        self.call(request, state=state_path)
+        nested_alias = self.root / "nested-alias"
+        nested_alias.symlink_to(target, target_is_directory=True)
+        system_alias = Path(self.root.anchor) / "provingkit-snapshot-state-alias"
+
+        self.call({"operation": "inspect"},
+                  state=system_alias / "private/state.sqlite", accepted=False,
+                  system_alias=(system_alias, nested_alias))
+
+    def test_safe_one_hop_system_alias_is_supported(self):
+        target = self.root / "target"
+        private = target / "private"
+        private.mkdir(parents=True, mode=0o700)
+        state_path = private / "state.sqlite"
+        request = {"operation": "initialize", "custody_owner": "selected-owner",
+                   "endpoint_fingerprint": "sha256:" + "a" * 64,
+                   "target_release": "0.1.0", "preceding_cut": "0.1.0-alpha.7",
+                   "next_named_release": "0.1.0-alpha.8"}
+        self.call(request, state=state_path)
+        system_alias = Path(self.root.anchor) / "provingkit-snapshot-state-alias"
+
+        inspected = self.call({"operation": "inspect"},
+                              state=system_alias / "private/state.sqlite",
+                              system_alias=(system_alias, target))
+
+        self.assertEqual(inspected["custody_owner"], "selected-owner")
 
     def test_immutable_retry_rejects_rebuilt_bytes_and_new_source(self):
         self.initialize()

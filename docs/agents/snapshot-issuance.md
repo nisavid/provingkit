@@ -22,9 +22,10 @@ original receipt, and mode inventory. The issuer binds these three files; the
 projection and packing owners qualify their contents and modes.
 
 SQLite serializes callers sharing one state file. Local CLI tests establish
-that boundary, including competing processes and recovery through another
-process. They do not establish shared custody, participation by another clone
-or route, provider object visibility, or installed client behavior.
+that boundary, including competing processes, recovery through another
+process, and state-path confinement during an ancestor swap. They do not
+establish shared custody, participation by another clone or route, provider
+object visibility, or installed client behavior.
 
 Before live use, the delivery owner establishes one authoritative state path,
 its custody owner, and every selected-route issuer's participation. Named-cut
@@ -81,10 +82,21 @@ python "$PROVINGKIT_ISSUER_SOURCE/scripts/prepare_snapshot_issuance.py" \
   > "$PROVINGKIT_ISSUANCE_RESULT"
 ```
 
-The state file needs an existing private owned parent directory. It is local
-operational state, outside the source checkout and transport branch. Once its
-custody is qualified, initialize it with a request shaped as follows, using the
-existing publisher's reviewed endpoint fingerprint and the owner's current cut:
+The state file needs an existing parent owned by the current user with no
+group or other permissions. Below the filesystem root, each ancestor must be
+owned by the current user or the host root identity and must not be writable by
+other users unless it is a sticky directory such as `/tmp`. The issuer rejects
+symlinked ancestors except for a root-identity-owned system alias directly below
+a non-writable filesystem root, such as a host's `/tmp` or `/var`. It opens the
+database through a pinned parent descriptor; platforms without no-follow
+search-capable directory operations or descriptor-backed paths are unsupported.
+These checks exclude other local users, not processes running with the current
+user's authority.
+
+The database is local operational state, outside the source checkout and
+transport branch. Once its custody is qualified, initialize it with a request
+shaped as follows, using the existing publisher's reviewed endpoint fingerprint
+and the owner's current cut:
 
 ```json
 {
