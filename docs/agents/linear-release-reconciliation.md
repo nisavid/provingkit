@@ -90,9 +90,12 @@ field nor evidence that the whole product lacks the operation.
    identities and operational evidence in their owning records; use aggregate
    coverage and appropriate public references in public tracking.
 5. Refresh the affected record immediately before mutation. Apply only the
-   prepared change, then read back the description, resource links, note
-   content and coverage, stage, source/version, actual and planned dates, and
-   changed associations. Check rendered headings, tables, and navigation as a
+   prepared change, then read back every changed field and entity across the
+   applicable graph, including descriptions, resource links, note content and
+   coverage, stages, source/version, dates, checklists, relationships, and
+   associations when changed. Verify actual propagation across the affected
+   surfaces; a synced issue body does not prove its relations propagated.
+   Check rendered headings, tables, and navigation as a
    reader would, including the displayed release timestamp. A successful write
    response alone is not completion.
 
