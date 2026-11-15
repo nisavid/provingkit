@@ -6,9 +6,10 @@ ChatGPT, and Claude.
 ## Download
 
 Download the plugins you want from [Releases](https://github.com/nisavid/provingkit/releases).
-Choose the files ending in `-agent-plugins.zip` for **Codex or ChatGPT**, or
-`-claude.zip` for **Claude Code or Claude**. Check the release inventory for
-the exact filenames. GitHub's **Source code** archives are for development.
+Choose `provingkit-<plugin>-<version>.zip` for **Codex or ChatGPT**, or
+`provingkit-<plugin>-<version>-claude.zip` for **Claude Code or Claude**.
+The release page gives the plugin names and versions. GitHub's **Source code**
+archives are for development.
 
 The release page lists the plugins available in that release. For partial
 installs, these common workflows need companions in the same format:
