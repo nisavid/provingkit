@@ -1,0 +1,114 @@
+name: Python dependency inventory
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: python-dependencies-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Python dependency snapshot contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      report: ${{ steps.inventory.outputs.report }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.13"
+      - name: Resolve the validation dependencies
+        run: |
+          set -eu
+          python -m venv .validation-venv
+          .validation-venv/bin/python -m pip --isolated install \
+            --disable-pip-version-check --no-cache-dir --only-binary=:all: \
+            --index-url https://pypi.org/simple \
+            --report "$RUNNER_TEMP/python-install-report.json" -r requirements.txt
+      - name: Pass dependency metadata to the submission job
+        id: inventory
+        if: github.repository == 'nisavid/provingkit' && github.ref == 'refs/heads/main'
+        run: |
+          set -eu
+          jq -c '{version, environment, install: [.install[] |
+            {requested, is_direct, metadata: (.metadata | {name, version} +
+              (if has("requires_dist") then {requires_dist} else {} end))} +
+            (if has("requested_extras") then {requested_extras} else {} end)]}' \
+            "$RUNNER_TEMP/python-install-report.json" > "$RUNNER_TEMP/dependency-metadata.json"
+          test "$(wc -c < "$RUNNER_TEMP/dependency-metadata.json")" -le 65536
+          printf 'report=%s\n' "$(base64 -w0 "$RUNNER_TEMP/dependency-metadata.json")" >> "$GITHUB_OUTPUT"
+      - name: Verify the snapshot and caller contracts
+        run: .validation-venv/bin/python -B -m unittest tests.test_python_dependency_submission
+
+  submit:
+    name: Submit resolved Python validation dependencies
+    needs: verify
+    if: >-
+      github.repository == 'nisavid/provingkit' && github.ref == 'refs/heads/main' &&
+      (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.13"
+      - name: Bind the checked-out main revision
+        env:
+          EXPECTED_SHA: ${{ github.sha }}
+        run: |
+          test "$GITHUB_REF" = refs/heads/main
+          test "$GITHUB_REPOSITORY" = nisavid/provingkit
+          test "$(git rev-parse HEAD)" = "$EXPECTED_SHA"
+      - name: Install the reviewed metadata parser
+        run: |
+          set -eu
+          grep -qx 'packaging==26.3' requirements.txt
+          python -m venv .dependency-venv
+          wheel_dir="$(mktemp -d "$RUNNER_TEMP/python-wheels.XXXXXX")"
+          .dependency-venv/bin/python -m pip --isolated download \
+            --disable-pip-version-check --no-cache-dir --only-binary=:all: --no-deps \
+            --index-url https://pypi.org/simple --dest "$wheel_dir" packaging==26.3
+          printf '%s  %s\n' \
+            d7193f7c8e4e93f444fde0262bf90af30e16fa0ad0ad44cb553c87339b23cd1c \
+            "$wheel_dir/packaging-26.3-py3-none-any.whl" | sha256sum --check --strict
+          .dependency-venv/bin/python -m pip --isolated install \
+            --disable-pip-version-check --no-cache-dir --no-index --no-deps \
+            "$wheel_dir/packaging-26.3-py3-none-any.whl"
+      - name: Read the same-run dependency metadata
+        env:
+          REPORT_BASE64: ${{ needs.verify.outputs.report }}
+        run: |
+          set -eu
+          test -n "$REPORT_BASE64"
+          printf '%s' "$REPORT_BASE64" | base64 --decode > "$RUNNER_TEMP/python-install-report.json"
+      - name: Build the dependency snapshot
+        run: |
+          set -eu
+          .dependency-venv/bin/python -I scripts/build_python_dependency_snapshot.py \
+            --requirements requirements.txt --report "$RUNNER_TEMP/python-install-report.json" \
+            --sha "$GITHUB_SHA" --ref "$GITHUB_REF" --repository "$GITHUB_REPOSITORY" \
+            --run-id "$GITHUB_RUN_ID" --output "$RUNNER_TEMP/python-dependency-snapshot.json"
+      - name: Submit the dependency snapshot
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eu
+          test "$(gh api "repos/$GITHUB_REPOSITORY/commits/main" --jq .sha)" = "$GITHUB_SHA"
+          gh api --method POST "repos/$GITHUB_REPOSITORY/dependency-graph/snapshots" \
+            --input "$RUNNER_TEMP/python-dependency-snapshot.json" --jq '{id, result}'
