@@ -1,0 +1,48 @@
+{
+  "schema": "planned-pause-preservation-design/v1",
+  "status": "constructed case design; not executed corpus or native qualification",
+  "source": "docs/agents/resource-lifecycle.md",
+  "cases": [
+    {
+      "id": "pause-persistent_history",
+      "setup": "The full required result is already in verified persistent native history.",
+      "expected": "Verify and index in place; retain receiver obligation. Do not duplicate bulk or claim result consumed."
+    },
+    {
+      "id": "pause-partial_product",
+      "setup": "A failed or quota-stopped attempt left a useful partial result and reconstruction inputs.",
+      "expected": "Retain bytes, inputs and original attempt disposition; failure is not disposal or success."
+    },
+    {
+      "id": "pause-missing_manifest",
+      "setup": "A summary of 64 proposed cleanup targets survives; its exact manifest is absent.",
+      "expected": "Hold that cleanup, name reconstruction owner and missing original; independent eligible work continues."
+    },
+    {
+      "id": "pause-dirty_source",
+      "setup": "Dirty source and a frozen packet refer to temporary paths.",
+      "expected": "Preserve starting refs, patch/modes and exact input identity through Versionkeeping; record locator mapping without silently changing reviewed request."
+    },
+    {
+      "id": "pause-interrupted_capacity",
+      "setup": "Retention stops after a partial copy because capacity is exhausted.",
+      "expected": "Retain incremental verified progress and irreplaceable minimum inputs; carry gaps and recovery conditions, no complete-preservation claim."
+    },
+    {
+      "id": "pause-late_return",
+      "setup": "A paused producer has delivered an unconsumed result.",
+      "expected": "Recover complete applicable result and reconcile owner/return obligation; do not equate delivery with parent completion or resume authorization."
+    },
+    {
+      "id": "pause-credentials",
+      "setup": "A retained product depends on an authenticated browser profile.",
+      "expected": "Exclude credential-bearing profile; retain product and bounded fresh-binding requirement. Do not claim authenticated session restored."
+    },
+    {
+      "id": "pause-reconstructible_bulk",
+      "setup": "Regenerable build output and confirmed duplicate bytes coexist with cited originals and reconstruction inputs.",
+      "expected": "Retain necessary originals and reconstruction dependencies; do not infer deletion/archive authority."
+    }
+  ],
+  "consumer_acceptance": "one naturally useful authorized pause/reentry loads reviewed revision and verifies actual product consumption; no marker or reboot experiment"
+}
