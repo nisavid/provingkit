@@ -104,10 +104,11 @@ checksums, links, and tag retain their expected identities. Withdrawn URLs cease
 to be supported downloads; record observed retirement without promising instant
 cache eviction. A naming correction alone grants no withdrawal authority.
 
-Prepare standard aliases with the local CLI from the reviewed source revision,
-before any withdrawal. Its snapshot contract requires both originals and
-canonical copies; after withdrawal, the publisher verifies the frozen withdrawn
-and retained sets directly. The helper is not a post-withdrawal validator:
+When legacy standard aliases need preparation, use the local CLI from the
+reviewed source revision before withdrawing their originals. Its snapshot
+contract requires both originals and canonical copies; after withdrawal, the
+publisher verifies the frozen withdrawn and retained sets directly. The helper
+is not a post-withdrawal validator:
 
 ```sh
 python scripts/prepare_release_archive_aliases.py \
