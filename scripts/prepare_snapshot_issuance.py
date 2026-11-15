@@ -310,8 +310,12 @@ def transition(connection: sqlite3.Connection, state: dict | None, request: obje
             previous = state["versions"][version]["variants"]
             if any(target in previous and files != previous[target] for target, files in variants.items()):
                 raise ValueError("variant addition changes existing variant bytes")
-            if not set(variants) - set(previous):
-                raise ValueError("variant addition must add a previously absent target")
+            exposed = {target for delivery in state["deliveries"].values()
+                       if delivery["version"] == version and delivery["exposure"] == "verified"
+                       for target in delivery["variants"]}
+            unexposed = set(variants) - exposed
+            if not unexposed:
+                raise ValueError("variant addition must include a target without verified exposure")
             previous.update(variants)
         required_versions = {}
         for retained_version, identity in state["versions"].items():
@@ -327,6 +331,10 @@ def transition(connection: sqlite3.Connection, state: dict | None, request: obje
         record = {"operation": operation, "request_id": request_id, "version": version,
                   "source_commit": prepared["source_commit"], "publication": publication,
                   "variants": variants, "exposure": "pending"}
+        if operation == "add-variants":
+            record["retry_of"] = sorted(delivery["request_id"] for delivery in state["deliveries"].values()
+                if delivery["version"] == version and delivery["exposure"] == "cancelled"
+                and set(delivery["variants"]) & unexposed)
         state["pending"] = request_id
         state["deliveries"][request_id] = record
         return state, record

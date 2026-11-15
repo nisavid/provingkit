@@ -182,6 +182,14 @@ creation base, through Versionkeeping's normal ownership and ancestry checks.
 Deleting their files at a later tip is insufficient: a push also transfers
 the newly reachable historical commits.
 
+For a cancelled target addition, keep its immutable recorded bytes and submit
+a fresh `add-variants` request after reconstruction. A recorded target without
+verified exposure remains eligible with those same bytes; the new request's
+`retry_of` field links the cancelled attempts. The cancelled request stays
+closed. Source, version, existing variants, and high-water position are
+unchanged. An uncertain attempted addition remains pending and blocks this
+retry path.
+
 A lost response, attempted failure, missing result, or incomplete postcheck
 keeps the request pending. Recover it with `{"operation":"inspect"}` or the
 identical `issue` request. Retry recovers the original identity; it does not
@@ -193,7 +201,7 @@ clear the hold by constructing a successful result or initializing new state.
 
 | Operation | Request and result |
 | --- | --- |
-| Add a target | Use `add-variants` with a fresh `request_id`, existing `version`, matching `source_commit`, and the same publication fields and variant map as `issue`. At least one target must be absent. Existing bytes and the issuance position stay unchanged; reconcile the addition's own pending exposure. |
+| Add a target | Use `add-variants` with a fresh `request_id`, existing `version`, matching `source_commit`, and the same publication fields and variant map as `issue`. At least one target must lack verified exposure. A recorded unexposed target requires its exact retained bytes. Existing bytes and the issuance position stay unchanged; reconcile the addition's own pending exposure. |
 | Redeliver or roll back | Use `redeliver` with `version`, `target`, and a fresh `output` directory. It exports retained original bytes only for a variant with verified exposure. It leaves the last-issued position unchanged. |
 | Withdraw | Use `withdraw` with `version`. The record and bytes remain retained. Explicit redelivery can still select those retained bytes; withdrawal cannot permit replacement. |
 | Record a consumed cut | While the qualified owner excludes cut publication and snapshot issuance, use `advance-cut` with `preceding_cut` equal to the stored successor and the new `next_named_release`. Pending exposures block this operation. Stale preparations then fail issuance. |
