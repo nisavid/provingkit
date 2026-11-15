@@ -8,8 +8,11 @@ Issues, specs, and Wayfinder maps are tracked in GitHub Issues for
 `nisavid/provingkit`. See `docs/agents/issue-tracker.md`.
 
 For release publication or presentation changes, use
-`docs/agents/release-presentation.md`. For stale Linear release records, use
+`docs/agents/release-presentation.md`. For release changes, release-associated
+rollout results that affect tracked outcomes, or stale Linear release records, use
 `docs/agents/linear-release-reconciliation.md`.
+For a commissioned internal Provingkit rollout, including a standalone change,
+use `docs/agents/internal-plugin-rollout.md`.
 
 For an installed companion update that changes Provingkit references, use
 `docs/agents/companion-migration-handoffs.md`.

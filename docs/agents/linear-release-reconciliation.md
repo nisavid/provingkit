@@ -73,15 +73,29 @@ field nor evidence that the whole product lacks the operation.
    accepted changes and evidence. Existing GitHub or Linear prose is an input
    to assess, not a quality standard to copy. Keep both surfaces factually
    consistent while adapting their layout and audience.
-4. Reconcile the release's selected issues and actual dependencies. Retain
-   genuine open work and future-release scope. Correct mistaken associations
-   within the authorized scope, and preserve ownership when work moves to an
-   existing successor. Use current native relations where required; do not
-   assume GitHub issue sync carries Linear Release objects, notes, or blockers.
+4. Reconcile the finite graph applicable to this release as outcomes arrive:
+   release and note, selected issues and their checklists, milestones,
+   projects, initiatives, parents, children, dependencies, and dependents.
+   Follow connections whose requirements or evidence affect the release, or
+   whose tracked state changes with its result. Deduplicate visited entities;
+   stop at unrelated branches and record why they do not apply. For each
+   applicable entity, identify its outcome, owner, evidence, and smallest
+   needed change to notes, descriptions, states, dates, checklists, release
+   associations, relationships, or completion progress. Retain genuine open
+   work and future-release scope, its accountable owner, and next action.
+   Correct mistaken associations within the authorized scope and preserve
+   ownership when work moves to an existing successor. Use current native
+   relations where required; do not assume GitHub issue sync carries Linear
+   Release objects, notes, milestones, or blockers. Keep private account
+   identities and operational evidence in their owning records; use aggregate
+   coverage and appropriate public references in public tracking.
 5. Refresh the affected record immediately before mutation. Apply only the
-   prepared change, then read back the description, resource links, note
-   content and coverage, stage, source/version, actual and planned dates, and
-   changed associations. Check rendered headings, tables, and navigation as a
+   prepared change, then read back every changed field and entity across the
+   applicable graph, including descriptions, resource links, note content and
+   coverage, stages, source/version, dates, checklists, relationships, and
+   associations when changed. Verify actual propagation across the affected
+   surfaces; a synced issue body does not prove its relations propagated.
+   Check rendered headings, tables, and navigation as a
    reader would, including the displayed release timestamp. A successful write
    response alone is not completion.
 
@@ -117,6 +131,11 @@ standing policy makes it recurring. Do not generalize it into automatic
 deletion of release history.
 
 ## Close the loop
+
+When the selected outcome includes internal installation and use, invoke the
+[internal rollout procedure](internal-plugin-rollout.md) for its named
+accounts and harnesses. Publication and tracker reconciliation alone do not
+establish that rollout; keep its actual results and outstanding owners visible.
 
 Return the forge and Linear release URLs, note URL or identity, observed
 lifecycle and issue-progress disposition, source/version correspondence,
