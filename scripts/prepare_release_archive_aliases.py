@@ -198,6 +198,8 @@ def main():
     try:
         inventory = load_json(args.inventory)
         release = load_json(args.release) if args.release else None
+        if args.release is not None and not isinstance(release, dict):
+            raise ValueError('release snapshot must be an object')
         result = prepare(inventory, args.source_dir, args.output_dir, release)
     except (ValueError, OSError, KeyError, TypeError) as error:
         print('error: ' + str(error), file=sys.stderr)

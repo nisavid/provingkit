@@ -117,6 +117,12 @@ class ArchiveAliasCLITests(unittest.TestCase):
         path.write_text(json.dumps(release))
         return self.invoke('--release', str(path))
 
+    def test_rejects_explicit_null_release_snapshot_before_preparing_files(self):
+        result = self.invoke_release(None)
+        self.assertEqual(result.returncode, 2, result.stderr)
+        self.assertIn('release snapshot', result.stderr)
+        self.assertFalse(self.output.exists())
+
     def test_checks_release_snapshot_keeps_old_ids_and_canonical_links(self):
         release = self.release_snapshot()
         result = self.invoke_release(release)
