@@ -20,6 +20,14 @@ Keep exposure held until that selected route is reviewed and qualified. The
 source-keyed form below supports retained existing generations; it does not
 permit another changed package under an exposed version.
 
+Snapshot receipts are unsupported by the existing dotfiles installer: they add
+`delivery`, and their builder revision can differ from the product source.
+That installer requires the ordinary receipt's exact field set and equal
+builder/source revisions. Using snapshots with it requires a separately
+reviewed consumer update. The selected snapshot consumer is a disposable native
+Codex marketplace installing only `proseweaving@provingkit` from the complete
+seven-plugin projection; its qualification remains with the installation owner.
+
 ## Bind the inputs
 
 Keep these identities distinct:
@@ -395,10 +403,12 @@ for target in ("agent-plugins", "claude", "cursor"):
 PY
 ```
 
-Record the nine final URLs and hashes only after public readback passes. The
-dotfiles profile uses the existing archive/receipt/mode download fields and
-one-component stripping. Its `source.commit` remains `S`, while URLs contain
-`P`; no installer or acquisition mechanism changes. Return the public adoption
+Record the nine final URLs and hashes only after public readback passes. For
+ordinary retained generations, the dotfiles profile uses the existing
+archive/receipt/mode download fields and one-component stripping. Its
+`source.commit` remains `S`, while URLs contain `P`; that existing receipt form
+needs no installer or acquisition change. Snapshot receipts require the consumer
+update described above before dotfiles adoption. Return the public adoption
 record, source/transport identities, exact nine-file record, public readback
 results, and retained recovery references to the installation owner. Failed or
 incomplete publication/readback is not a usable new profile.

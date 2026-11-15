@@ -232,6 +232,8 @@ def transition(connection: sqlite3.Connection, state: dict | None, request: obje
             if existing["source_commit"] != request["source_commit"]:
                 raise ValueError("request identifier is bound to another source")
             return state, existing
+        if request_id in state["deliveries"]:
+            raise ValueError("request identifier is already bound to a variant addition")
         if state["preceding_cut"] == state["target_release"]:
             raise ValueError("the normal target is closed; record the next normal target")
         record = preparation(state, request_id, request["source_commit"], state["next_sequence"])
@@ -358,16 +360,18 @@ def transition(connection: sqlite3.Connection, state: dict | None, request: obje
         expected = [{"kind": "remote_ref_equals",
                      "endpoint_fingerprint": publication["destination"]["endpoint_fingerprint"],
                      "ref": ARTIFACT_REF, "sha": publication["commit"]}]
+        if result["push_attempted"]:
+            record["attempt_observed"] = True
         if result.get("status") == "verified":
             if result["push_attempted"] is not True or result.get("reasons") != [] or result.get("postchecks") != expected:
-                raise ValueError("verified result lacks its required publication postcheck")
+                record["result_sha256"] = digest
+                return state, {"outcome": "rejected",
+                               "reason": "verified result lacks its required publication postcheck"}
             record["exposure"] = "verified"
         elif result["push_attempted"] is False and result.get("status") == "blocked":
             if record.get("attempt_observed"):
                 raise ValueError("a later unattempted result cannot settle an earlier uncertain attempt")
             record["exposure"] = "cancelled"
-        if result["push_attempted"]:
-            record["attempt_observed"] = True
         record["result_sha256"] = digest
         if record["exposure"] != "pending":
             state["pending"] = None
@@ -435,7 +439,7 @@ def main() -> int:
         print(canonical_json({"outcome": "rejected", "reason": str(error)}).decode(), end="")
         return 1
     print(canonical_json(response).decode(), end="")
-    return 0
+    return 1 if response.get("outcome") == "rejected" else 0
 
 
 if __name__ == "__main__":

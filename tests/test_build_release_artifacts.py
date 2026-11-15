@@ -186,6 +186,10 @@ class ReleaseArtifactBuilderTests(unittest.TestCase):
             self.assertFalse(any("evals" in p.parts or "fixtures" in p.parts for p in output.rglob("*")))
             self.assertNotIn("task-witness", receipt["plugin_slate"])
             self.assertEqual(receipt["schema"], "provingkit-artifact-receipt-v1")
+            self.assertEqual(set(receipt), {"schema", "builder", "source", "target",
+                                            "plugin_slate", "policy_sha256", "artifact_sha256", "files"})
+            self.assertEqual(receipt["builder"], {"name": "provingkit-artifact-projector-v1",
+                                                 "revision": receipt["source"]["commit"]})
             self.assertEqual(len(receipt["artifact_sha256"]), 64)
 
     def test_assigned_local_alpha_projects_all_six_claude_versions(self):

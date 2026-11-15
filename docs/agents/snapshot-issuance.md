@@ -100,8 +100,10 @@ existing publisher's reviewed endpoint fingerprint and the owner's current cut:
 Prepare using `{"operation":"prepare","request_id":"delivery-1",
 "source_commit":"<full source commit>"}`. Retain the exact successful stdout
 as `PROVINGKIT_SNAPSHOT_RECORD`; it is the projector's preparation input.
-An identical request recovers that record. Reusing its identifier with another
-source is rejected. Preparation reserves a number; it grants no exposure.
+An identical request recovers that record. Reusing a preparation identifier
+with another source, or preparing under a target addition's identifier, is
+rejected without reserving another number. Preparation reserves a number; it
+grants no exposure.
 
 Project each selected target with the complete slate and the same preparation:
 
@@ -116,6 +118,10 @@ The projector stamps copied manifests, generated adapters, and the applicable
 catalog. The receipt preserves the product commit, identifies the actual
 projector revision, and records the delivered version and exact preparation
 digest. Source manifests remain unchanged. Partial-slate snapshots are refused.
+The existing dotfiles installer does not accept snapshot receipts: their
+additional `delivery` field and independently identified projector revision
+require a separately reviewed consumer update. The selected isolated native
+Codex marketplace consumer remains subject to its own qualification.
 Complete the owning projection checks, mode checks, and packing procedure before
 constructing a publication commit. Use the versioned generation
 `ad-hoc/<source-commit>/<delivered-version>/<target>/`; retain older paths.
@@ -174,6 +180,9 @@ conclusive original `blocked` result with `push_attempted:false` cancels that
 attempt, consuming the version and retaining its bytes. Cancelled deliveries
 are unavailable for redelivery. Preserve the original invocation's provenance;
 a later unattempted result cannot describe an earlier uncertain attempt.
+A matching attempted result with an incomplete verification postcheck is
+rejected by the CLI, but its attempt observation and result digest are retained
+durably. Exposure remains pending; a later unattempted result cannot clear it.
 
 Cancelled unattempted generations keep their local records and bytes. Exclude
 their unpublished commits from later publication ancestry by reconstructing

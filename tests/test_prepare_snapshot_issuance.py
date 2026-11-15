@@ -85,7 +85,7 @@ class SnapshotIssuanceTests(unittest.TestCase):
                 "variants": {target: {name: str(directory / name)
                                       for name in ("artifact.tar.gz", "RECEIPT.json", "modes.tsv")}}}
 
-    def reconcile(self, request, *, verified=True, attempted=True):
+    def reconcile(self, request, *, verified=True, attempted=True, accepted=True, **result_changes):
         plan = json.loads(Path(request["publication_plan"]).read_text())
         result = {"status": "verified" if verified else "blocked", "source_sha": plan["source_sha"],
                   "destination": plan["destination"], "push_attempted": attempted,
@@ -93,11 +93,12 @@ class SnapshotIssuanceTests(unittest.TestCase):
                   "postchecks": [{"kind": "remote_ref_equals", "ref": plan["destination"]["ref"],
                                   "endpoint_fingerprint": plan["destination"]["endpoint_fingerprint"],
                                   "sha": plan["source_sha"]}] if verified else []}
+        result.update(result_changes)
         path = self.root / (request["request_id"] + "-result.json")
         path.write_text(json.dumps(result))
         response = self.call({"operation": "reconcile", "request_id": request["request_id"],
-                              "publication_result": str(path)})
-        if response["exposure"] == "verified":
+                              "publication_result": str(path)}, accepted=accepted)
+        if response.get("exposure") == "verified":
             self.published_commit = plan["source_sha"]
         return response
 
@@ -165,6 +166,29 @@ class SnapshotIssuanceTests(unittest.TestCase):
         self.assertEqual(state["last_issued"], "0.1.0-alpha.7.snapshot.2")
         self.assertEqual(set(state["versions"][first["version"]]["variants"]), {"claude", "cursor"})
 
+    def test_addition_identifier_cannot_become_a_preparation_or_break_recovery(self):
+        self.initialize()
+        prepared = self.prepare()
+        initial = self.publication(prepared)
+        self.call(initial)
+        self.reconcile(initial)
+        addition = self.publication(prepared, "cursor", b"cursor archive")
+        addition.update(operation="add-variants", request_id="add-cursor", version=prepared["version"],
+                        source_commit=SOURCE)
+        original = self.call(addition)
+        for exposure in ("pending", "verified"):
+            before = self.call({"operation": "inspect"})
+            refused = self.call({"operation": "prepare", "request_id": "add-cursor",
+                                 "source_commit": SOURCE}, accepted=False)
+            self.assertIn("identifier", refused["reason"])
+            self.assertEqual(self.call({"operation": "inspect"}), before)
+            recovered = self.call(addition)
+            self.assertEqual(recovered["variants"], original["variants"])
+            self.assertEqual(recovered["exposure"], exposure)
+            if exposure == "pending":
+                self.reconcile(addition)
+        self.assertEqual(self.prepare("next")["version"], "0.1.0-alpha.7.snapshot.2")
+
     def test_withdrawal_preserves_bytes_and_deliberate_rollback_keeps_high_water(self):
         self.initialize()
         first = self.prepare()
@@ -220,6 +244,26 @@ class SnapshotIssuanceTests(unittest.TestCase):
                              "next_named_release": "0.1.0-beta.1"}, accepted=False)
         self.assertIn("pending", refused["reason"])
         self.assertEqual(self.reconcile(request)["exposure"], "verified")
+
+    def test_rejected_verification_retains_attempt_and_pending_hold_across_reentry(self):
+        self.initialize()
+        request = self.publication(self.prepare())
+        self.call(request)
+        refused = self.reconcile(request, postchecks=[], accepted=False)
+        self.assertIn("postcheck", refused["reason"])
+        state = self.call({"operation": "inspect"})
+        self.assertEqual(state["pending"], "first")
+        self.assertEqual(state["deliveries"]["first"]["exposure"], "pending")
+        self.assertTrue(state["deliveries"]["first"].get("attempt_observed"))
+        refused = self.reconcile(request, verified=False, attempted=False, accepted=False)
+        self.assertIn("earlier uncertain attempt", refused["reason"])
+        later = self.publication(self.prepare("later"))
+        self.assertIn("pending", self.call(later, accepted=False)["reason"])
+        cut = {"operation": "advance-cut", "preceding_cut": "0.1.0-alpha.8",
+               "next_named_release": "0.1.0-beta.1"}
+        self.assertIn("pending", self.call(cut, accepted=False)["reason"])
+        self.assertEqual(self.reconcile(request)["exposure"], "verified")
+        self.assertIsNone(self.call({"operation": "inspect"})["pending"])
 
     def test_competing_issuers_cannot_both_cross_the_pending_exposure_boundary(self):
         self.initialize()
