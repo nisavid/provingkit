@@ -88,14 +88,27 @@ tag's leading `v`. Name each checksum `<archive>.sha256`; its bytes are the
 lowercase SHA-256 digest, two spaces, the exact archive basename, and a newline.
 Keep target labels in the download table explicit.
 
-When correcting a published standard archive with the legacy
-`-agent-plugins.zip` suffix, add a canonical copy and matching checksum while
-preserving the ZIP bytes and all existing assets and download URLs. Do not
-remove or rename an existing asset or rely on an unverified redirect. Claude
-archives already follow the rule. Link canonical names only after the owning
-publisher verifies those assets are present.
+Keep active published downloads and their URLs stable. When correcting a
+standard archive with the legacy `-agent-plugins.zip` suffix, prepare a canonical
+copy with unchanged ZIP bytes and a matching checksum. Claude archives already
+follow the rule. Link canonical names only after the owning publisher verifies
+the replacements; preserve existing downloads unless the operator's scope
+explicitly withdraws them.
 
-Prepare standard aliases with the local CLI from the reviewed source revision:
+For a deliberate withdrawal, bind the exact release and withdrawn asset IDs,
+names, digests, URLs, reason, and replacement mapping. Verify any promised
+replacements and the retained release before removing only the specified
+assets. Retain each actual outcome and reconcile uncertainty before retrying.
+Then verify the withdrawn IDs are absent and the surviving assets, payloads,
+checksums, links, and tag retain their expected identities. Withdrawn URLs cease
+to be supported downloads; record observed retirement without promising instant
+cache eviction. A naming correction alone grants no withdrawal authority.
+
+When legacy standard aliases need preparation, use the local CLI from the
+reviewed source revision before withdrawing their originals. Its snapshot
+contract requires both originals and canonical copies; after withdrawal, the
+publisher verifies the frozen withdrawn and retained sets directly. The helper
+is not a post-withdrawal validator:
 
 ```sh
 python scripts/prepare_release_archive_aliases.py \
