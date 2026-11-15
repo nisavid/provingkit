@@ -259,6 +259,12 @@ auditor and publisher parsers with live operation handlers replaced by inert
 observers. They establish offline command compatibility, not live forge,
 receipt-store, installation, or deployment acceptance.
 
+## Repository security and quality guidance
+
+The repository-configuration Skill keeps security, dependency inventory, update maintenance, reporting, secret protection, and billing relationships in [security and quality](skills/configuring-repositories/references/security-and-quality.md). Refresh product facts against the cited primary documentation and current target evidence; the guide delegates CI and application mechanics to their existing references.
+
+The [raw corpus](https://github.com/nisavid/provingkit/blob/main/evals/mergecraft/skills/configuring-repositories/evals.json) includes dependency inventory and update-source assessment, CodeQL native-rule scope, and target-scoped secret-validity cases. Keep fixtures separate from grader expectations. Use the existing source validator and validator suite for registration, discovery, and fixture isolation; structural checks do not establish behavior, hosted coverage, or installed discovery.
+
 ## Evaluation evidence
 
 The feedback-response [experiment](skills/interacting-with-pr-review-feedback/evals/response-evidence.json)

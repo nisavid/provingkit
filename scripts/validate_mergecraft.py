@@ -175,6 +175,9 @@ RAW_SKILL_EVAL_FIXTURES = {
         "partial-effect-and-reconciliation.md",
         "conflicting-provider-evidence.md",
         "ordinary-edit-near-miss.md",
+        "dependency-inventory-and-update-source.md",
+        "codeql-native-rule-scope.md",
+        "secret-validity-without-ai.md",
     ),
     "maintaining-issue-pr-relations": (
         "absent-pr-creation.md",
@@ -344,6 +347,7 @@ EXPECTED_SKILL_FILES = {
         "references/github-controls.md",
         "references/ci-hardening.md",
         "references/apply-and-verify.md",
+        "references/security-and-quality.md",
     },
     "maintaining-issue-pr-relations": COMMON_SKILL_FILES
     | {
@@ -431,8 +435,11 @@ CODEX_PROMPTS = {
         "repository in Codex."
     ),
     "configuring-repositories": (
-        "Use $mergecraft:configuring-repositories to create, assess, or configure "
-        "a GitHub repository and its CI."
+        "Use $mergecraft:configuring-repositories to create a GitHub repository; "
+        "select, assess, or change its controls; configure security reporting or "
+        "support commitments; plan dependency maintenance; or harden its CI and "
+        "merge gates. Do not use it for ordinary code changes, application-"
+        "security review, code-quality review, or a bug fix alone."
     ),
     "maintaining-issue-pr-relations": (
         "Use $mergecraft:maintaining-issue-pr-relations to reconcile these "
@@ -473,10 +480,7 @@ CODEX_PROMPTS = {
     ),
 }
 MANIFEST_PROMPTS = [
-    (
-        "Use $mergecraft:configuring-repositories to create, assess, or configure "
-        "a GitHub repository and its CI."
-    ),
+    CODEX_PROMPTS["configuring-repositories"],
     (
         "Use $mergecraft:maintaining-issue-pr-relations to reconcile these "
         "Issue–PR contributions."

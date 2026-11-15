@@ -184,6 +184,57 @@
         "Only the bug's parser/test surface is changed; no workflow, repository setting, provider call, live PR/merge, or publication is performed.",
         "If the Skill is explicitly supplied for this source behavior exercise, the agent recognizes that the request does not require its configuration operation; this result is not counted as fresh installed discovery."
       ]
+    },
+    {
+      "id": 12,
+      "name": "dependency-inventory-and-update-source",
+      "prompt": "Assess dependency coverage and prepare the semantic maintained-source change plan described in the attached fixture. Use only the synthetic records; do not invent canonical fields or generated output, run the writer, or contact hosted services.",
+      "expected_output": "An attributed assessment based only on the supplied records treats graph enablement, observed inventory, and update delivery as separate results. It gives a useful semantic maintained-source plan for the selected monthly pnpm and Actions policy while preserving separate security remediation and immutable Action references, and leaves exact source and projection bytes pending discovery of the canonical preimage, accepted schema, renderer contract, and applicable product syntax. It assesses the pending development-scope automatic dismissal against the supplied execution, reachability, privilege, and artifact facts rather than treating the classification alone as low impact, and does not confuse dismissal with remediation or a live change.",
+      "files": [
+        "configuring-repositories/fixtures/dependency-inventory-and-update-source.md"
+      ],
+      "expectations": [
+        "Enabled graph state is not reported as complete coverage; the supplied direct nodes and missing lockfile transitive node are reconciled explicitly.",
+        "Workflow references are inventoried without inventing static transitive Action coverage, and full-SHA references remain selected.",
+        "The absence of recent updater pull requests and error records establishes neither successful production nor a diagnosed failure; proposed configuration is not called a delivered update.",
+        "The response identifies the canonical preimage, accepted schema, renderer contract, and applicable Dependabot syntax as missing evidence required before any exact edit or projection; it does not invent fields or generated output, describe an update as delivered, hand-edit the projection, or compete with the organization App.",
+        "Monthly routine updates, separate security remediation, and the existing provider are preserved without paid activation, hosted execution, or live-effect claims.",
+        "The proposed development-scope automatic dismissal is not justified by the classification alone: the response weighs build execution and pull-request-controlled reachability against the read-only/no-secret PR context, trusted release publication authority, and published-artifact influence; dismissal remains triage rather than remediation, with alert-retention, narrower-rule, and dependency-remediation alternatives and the supplied unknowns preserved."
+      ]
+    },
+    {
+      "id": 13,
+      "name": "codeql-native-rule-scope",
+      "prompt": "Assess the supplied CodeQL and ruleset records and prepare the focused maintained-source proposal. Preserve the settled setup, queue, checks, and actors; perform no analysis or hosted mutation.",
+      "expected_output": "The source proposal uses the target-only maintained configuration for only the selected default-setup query change. It scopes observed analysis and native-rule enforcement to their actual languages, events, diff semantics, and applicable actors while retaining content validation and queue controls.",
+      "files": [
+        "configuring-repositories/fixtures/codeql-native-rule-scope.md"
+      ],
+      "expectations": [
+        "The attachment record is used to establish that the maintained configuration is target-only; the source proposal changes only its query suite to `security-extended`, conditionally on current target support, while retaining default setup and JavaScript/TypeScript. It introduces no unnecessary override, advanced workflow, or substitute scanner.",
+        "The successful default-suite record does not establish extraction, query, or upload coverage for the proposed suite; later qualification is tied to the final source and relevant events.",
+        "CodeQL is not presented as validating the JSON and Markdown contracts, and `quality/content` remains required for pull requests and merge groups.",
+        "The native code-scanning rule is kept distinct from status checks and is not claimed to protect merge-group or qualifying Dependabot cases; its pull-request-diff alert semantics and bypass scope remain explicit.",
+        "Fork, Dependabot, and merge-group records are attributed to the fixture, and neither a new analysis nor effective live enforcement is claimed by the evaluation agent."
+      ]
+    },
+    {
+      "id": 14,
+      "name": "secret-validity-without-ai",
+      "prompt": "Prepare the focused secret-validity proposal from the attached synthetic records. Respect the settled transmission approval and spending boundary, and return maintained-source changes only.",
+      "expected_output": "The source proposal uses the maintained target-scoped override to change only `validityChecks` for `sample-labs/credential-proxy`. It states that the credential and sometimes host or URL context leave GitHub for the issuer, while GitHub typically uses minimally intrusive GET requests and selects endpoints that do not return personal information. It classifies the fictional writer-facing `aiDetectedSecrets` field as unavailable for this target at target-contract validation while retaining inherited `aiDetectedSecrets: false` as catalog intent rather than observed hosted disabled state, without inventing a substitute or blocking the independently supported provider field `validityChecks`, which remains the only proposed override. The shared configuration, other attached repository, AI-related catalog values, and budgets remain untouched, and alert prioritization remains separate from credential remediation and live feature evidence.",
+      "files": [
+        "configuring-repositories/fixtures/secret-validity-without-ai.md"
+      ],
+      "expectations": [
+        "The response recognizes that the base source is shared and proposes the documented repository-specific override containing only `validityChecks: true`; all other fields remain inherited, and the shared base and `sample-labs/audit-gateway` remain unchanged. An unconditional shared-base edit is rejected because authority and issuer-transmission approval cover only the target repository; no fresh broad approval ceremony is requested.",
+        "The response states that validity checks periodically send detected credentials, and sometimes context, to issuers; current eligibility, permissions, and exact live behavior remain pre-application checks.",
+        "The privacy explanation distinguishes outbound disclosure from issuer response data: the credential, and sometimes host or URL context, leave GitHub for the issuer, while GitHub says it typically makes GET requests, chooses the least intrusive endpoints, and selects endpoints that do not return personal information. It makes no blanket claim that no personal data is sent and retains the target's governance check.",
+        "`active`, `inactive`, or `unknown` validity is treated as prioritization evidence, not remediation; alert S-9 remains unresolved without revocation or rotation evidence.",
+        "No semantics are inferred from `suggestionAutofix`; inherited `aiDetectedSecrets: false` is retained as catalog intent rather than observed hosted disabled state, the `suggestionAutofix: false` catalog value remains unchanged, and ordinary validity checking is not conflated with AI-credit features.",
+        "The explicit synthetic target API-capability record is used to classify the fictional writer-facing `aiDetectedSecrets` field as unavailable for this target, not as omitted, permission-denied, entitlement-uncertain, or globally unavailable; the fixture-only App contract name is not presented as an actual GitHub REST field spelling. Target-contract validation finds no setter mapping for `aiDetectedSecrets` before permission or entitlement checks, and no request is attempted. The response keeps inherited `aiDetectedSecrets: false` as catalog intent rather than observed hosted disabled state. No substitute field, new scenario, operation, or actual feature effect is introduced; the independently supported provider field `validityChecks` remains the only proposed override.",
+        "Public visibility, an existing toggle, or standard feature access is not used to infer AI allowance or spending safety; no paid activation, budget mutation, issuer call, SLA, or live result is claimed."
+      ]
     }
   ]
 }

@@ -36,7 +36,7 @@
         ],
         "websiteURL": "https://github.com/nisavid/provingkit/tree/main/plugins/mergecraft",
         "defaultPrompt": [
-          "Use $mergecraft:configuring-repositories to create, assess, or configure a GitHub repository and its CI.",
+          "Use $mergecraft:configuring-repositories to create a GitHub repository; select, assess, or change its controls; configure security reporting or support commitments; plan dependency maintenance; or harden its CI and merge gates. Do not use it for ordinary code changes, application-security review, code-quality review, or a bug fix alone.",
           "Use $mergecraft:maintaining-issue-pr-relations to reconcile these Issue–PR contributions.",
           "Use $mergecraft:writing-github-issue-and-pr-markdown to author the exact GFM body without GitHub actuation.",
           "Use $mergecraft:writing-reviewable-pr-descriptions to prepare and validate the exact PR title and body without forge mutation.",
