@@ -138,23 +138,29 @@ ADDRESS_FIXTURES = (
     "paginated_requests_checks_page_2.json",
     "requested_reviewer.json",
 )
-MERGE_EVAL_FIXTURES = (
-    "coderabbit-skipped-review.md",
-    "draft-pr-resume.md",
-    "explicit-review-loop-before-merge.md",
-    "stalled-external-review.md",
-    "gh-fix-ci-adapter-boundary.md",
-    "latest-publication-receipt-drift.md",
-    "local-policy-limits-autonomy.md",
-    "new-branch-publish-and-closeout.md",
-    "pr-description-only-near-miss.md",
-    "pure-merge-current-state.md",
-    "review-comments-to-merge.md",
-    "review-only-near-miss.md",
-    "owned-feedback-continuation.md",
-    "feedback-continuation-gates.md",
-    "persistent-request-changes-after-addressed.md",
-)
+MERGE_EVAL_FIXTURES = {
+    'new-branch-publish-and-closeout': 'attended-asynchronous-review-cycle.md',
+    'draft-pr-resume': 'draft-pr-resume.md',
+    'review-comments-to-merge': 'review-comments-to-merge.md',
+    'local-policy-limits-autonomy': 'local-policy-limits-autonomy.md',
+    'stalled-external-review': 'stalled-external-review.md',
+    'pure-merge-current-state': 'pure-merge-current-state.md',
+    'coderabbit-skipped-review': 'coderabbit-skipped-review.md',
+    'pr-description-only-near-miss': 'pr-description-only-near-miss.md',
+    'review-only-near-miss': 'review-only-near-miss.md',
+    'explicit-review-loop-before-merge': 'explicit-review-loop-before-merge.md',
+    'gh-fix-ci-adapter-boundary': 'gh-fix-ci-adapter-boundary.md',
+    'latest-publication-receipt-drift': 'latest-publication-receipt-drift.md',
+    'owned-feedback-continuation': 'owned-feedback-continuation.md',
+    'feedback-continuation-gates': 'feedback-continuation-gates.md',
+    'persistent-request-changes-after-addressed': 'persistent-request-changes-after-addressed.md',
+    'attended-reviewers-still-running': 'attended-asynchronous-review-cycle.md',
+    'attended-no-review-integration': 'attended-asynchronous-review-cycle.md',
+    'attended-no-check-reviewer': 'attended-asynchronous-review-cycle.md',
+    'attended-required-review-quota': 'attended-asynchronous-review-cycle.md',
+    'attended-head-change': 'attended-asynchronous-review-cycle.md',
+    'attended-reviewer-owned-gate': 'attended-asynchronous-review-cycle.md',
+}
 RAW_SKILL_EVAL_FIXTURES = {
     "configuring-repositories": (
         "create-solo.md",
@@ -3790,7 +3796,7 @@ def validate_merge_eval_isolation(repo_root: Path) -> None:
         isinstance(evals, list) and len(evals) == len(MERGE_EVAL_FIXTURES),
         "merge eval coverage drift",
     )
-    expected_names = {Path(name).stem for name in MERGE_EVAL_FIXTURES}
+    expected_names = set(MERGE_EVAL_FIXTURES)
     observed_names = set()
     observed_fixtures = set()
     for position, item in enumerate(evals):
@@ -3823,7 +3829,7 @@ def validate_merge_eval_isolation(repo_root: Path) -> None:
             and item["expected_output"],
             f"merge eval prose drift: {name}",
         )
-        fixture = f"getting-prs-merged/fixtures/{name}.md"
+        fixture = f"getting-prs-merged/fixtures/{MERGE_EVAL_FIXTURES[name]}"
         require(item["files"] == [fixture], f"merge eval fixture binding drift: {name}")
         require(
             isinstance(item["expectations"], list)
@@ -3838,6 +3844,7 @@ def validate_merge_eval_isolation(repo_root: Path) -> None:
             repo_root, EVAL_RELATIVE / f"skills/{fixture}"
         ).lower()
         for marker in (
+            "required lifecycle trace",
             "expected behavior",
             "expected_output",
             "expectations",
@@ -3853,7 +3860,7 @@ def validate_merge_eval_isolation(repo_root: Path) -> None:
         observed_fixtures.add(Path(fixture).name)
     require(observed_names == expected_names, "merge eval name coverage drift")
     require(
-        observed_fixtures == set(MERGE_EVAL_FIXTURES),
+        observed_fixtures == set(MERGE_EVAL_FIXTURES.values()),
         "merge eval fixture coverage drift",
     )
 
