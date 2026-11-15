@@ -17,6 +17,10 @@ use `docs/agents/internal-plugin-rollout.md`.
 For an installed companion update that changes Provingkit references, use
 `docs/agents/companion-migration-handoffs.md`.
 
+For commissioned Worker-recovery preparation, review, or qualification
+planning, read [the project reference](docs/agents/worker-recovery.md) before
+dependent work.
+
 ### Triage labels
 
 Use the canonical `needs-triage`, `needs-info`, `ready-for-agent`,
