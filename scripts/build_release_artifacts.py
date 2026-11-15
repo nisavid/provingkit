@@ -25,9 +25,11 @@ from pathlib import Path
 if __package__:
     from .evidence_transport import candidate_repository_root, run_candidate_git
     from .host_trust import is_host_namespace_anchor
+    from .prepare_snapshot_issuance import decode_json, validate_preparation
 else:
     from evidence_transport import candidate_repository_root, run_candidate_git
     from host_trust import is_host_namespace_anchor
+    from prepare_snapshot_issuance import decode_json, validate_preparation
 
 
 SCHEMA = "provingkit-artifact-receipt-v1"
@@ -260,15 +262,26 @@ def build(
     slate: list[str],
     channel: str,
     force: bool,
+    snapshot_record: Path | None = None,
 ) -> Path:
     source = Path(git("rev-parse", "--show-toplevel", cwd=source)).resolve()
     # Canonicalization is only for the overlap comparison, never deletion.
     validate_non_overlapping_paths(source, output.resolve())
     source_commit = git("rev-parse", "HEAD", cwd=source)
     short_commit = git("rev-parse", "--short=12", "HEAD", cwd=source)
+    delivery = None
+    builder_revision = source_commit
+    if snapshot_record is not None:
+        raw = snapshot_record.read_bytes()
+        preparation = validate_preparation(decode_json(raw))
+        if preparation["source_commit"] != source_commit:
+            raise ValueError("snapshot preparation identifies another source commit")
+        delivery = {"version": preparation["version"], "request_id": preparation["request_id"],
+                    "preparation_sha256": sha256_bytes(raw)}
+        builder_revision = git("rev-parse", "HEAD", cwd=Path(__file__).resolve().parents[1])
     with source_snapshot(source, source_commit) as snapshot:
         return _build_snapshot(
-            snapshot, output, target, slate, channel, force, source_commit, short_commit
+            snapshot, output, target, slate, channel, force, source_commit, short_commit, delivery, builder_revision
         )
 
 
@@ -281,6 +294,8 @@ def _build_snapshot(
     force: bool,
     source_commit: str,
     short_commit: str,
+    delivery: dict | None = None,
+    builder_revision: str | None = None,
 ) -> Path:
     source = source.resolve(strict=True)
     policy = json.loads(contained_path(source, POLICY_PATH).read_text())
@@ -301,6 +316,8 @@ def _build_snapshot(
         raise ValueError("task-witness is code-only and has no install projection")
     if len(set(slate)) != len(slate):
         raise ValueError("plugin slate contains duplicates")
+    if delivery is not None and set(slate) != known:
+        raise ValueError("a synchronized snapshot requires the complete plugin slate")
 
     # Validate every source read before preparing (and possibly replacing) the
     # output. Manifests are read even if the inclusion policy excludes them.
@@ -314,6 +331,8 @@ def _build_snapshot(
             contained_path(source, path.relative_to(source))
         manifest_path = contained_path(source, source_root / plugin_id / "plugin.json")
         manifest = json.loads(manifest_path.read_text())
+        if delivery is not None:
+            manifest["version"] = delivery["version"]
         plugins.append((plugin_id, src, selected, manifest))
 
     policy_digest = sha256_bytes(canonical_json(policy))
@@ -324,6 +343,10 @@ def _build_snapshot(
         for path in selected:
             rel = path.relative_to(src)
             copy_file(path, contained_path(output, destination / rel))
+            if delivery is not None and rel.as_posix() in ("plugin.json", ".claude-plugin/plugin.json"):
+                delivered_manifest = json.loads(path.read_text())
+                delivered_manifest["version"] = delivery["version"]
+                write_json(contained_path(output, destination / rel), delivered_manifest)
         if target == "cursor":
             has_agents = any(path.relative_to(src).parts[:1] == ("agents",) for path in selected)
             write_json(
@@ -350,7 +373,7 @@ def _build_snapshot(
     artifact_digest, inventory = tree_digest(output)
     receipt = {
         "schema": SCHEMA,
-        "builder": {"name": BUILDER_VERSION, "revision": source_commit},
+        "builder": {"name": BUILDER_VERSION, "revision": builder_revision or source_commit},
         "source": {"repository": "https://github.com/nisavid/provingkit", "commit": source_commit, "preview_label": f"preview-{short_commit}", "channel": channel},
         "target": target,
         "plugin_slate": slate,
@@ -359,6 +382,8 @@ def _build_snapshot(
         "files": inventory,
     }
     receipt_path = contained_path(output, Path("RECEIPT.json"))
+    if delivery is not None:
+        receipt["delivery"] = delivery
     write_json(receipt_path, receipt)
     return receipt_path
 
@@ -371,9 +396,11 @@ def main() -> int:
     parser.add_argument("--slate", help="comma-separated plugin ids; defaults to the complete agent-plugin slate")
     parser.add_argument("--channel", choices=["preview", "main", "release"], default="preview")
     parser.add_argument("--force", action="store_true")
+    parser.add_argument("--snapshot-record", type=Path, help="snapshot preparation; stamps copies, never source")
     args = parser.parse_args()
     slate = [x for x in (args.slate.split(",") if args.slate else []) if x]
-    receipt = build(args.source.resolve(), args.output, args.target, slate, args.channel, args.force)
+    receipt = build(args.source.resolve(), args.output, args.target, slate, args.channel, args.force,
+                    args.snapshot_record)
     print(receipt)
     return 0
 
