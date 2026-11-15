@@ -351,17 +351,97 @@ class PythonDependencySubmissionTests(unittest.TestCase):
         resolution = "\n".join(step.get("run", "") for step in verify["steps"])
         self.assertIn("--report", resolution)
         self.assertIn("-r requirements.txt", resolution)
+        self.assertIn("scripts/build_python_dependency_snapshot.py", resolution)
+        self.assertNotIn("gh api", resolution)
         self.assertIn("scripts/build_python_dependency_snapshot.py", commands)
         self.assertIn("--input", commands)
+
+    def test_pr_fresh_report_is_compacted_and_converted_offline(self):
+        workflow = yaml.load(WORKFLOW.read_text(encoding="utf-8"), Loader=yaml.BaseLoader)
+        steps = workflow["jobs"]["verify"]["steps"]
+        preparation = next(step for step in steps
+                           if step.get("name") == "Prepare dependency metadata for offline validation")
+        validation = next(step for step in steps
+                          if step.get("name") == "Convert the freshly resolved inventory offline")
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / "scripts").mkdir()
+            shutil.copyfile(CLI, root / "scripts" / CLI.name)
+            (root / "requirements.txt").write_text("direct==1.0\n", encoding="utf-8")
+            (root / ".validation-venv").symlink_to(sys.prefix, target_is_directory=True)
+            runtime = root / "runtime"
+            runtime.mkdir()
+            report_path = runtime / "python-install-report.json"
+            metadata_path = runtime / "dependency-metadata.json"
+            snapshot_path = runtime / "offline-validation-snapshot.json"
+            environment = {
+                **os.environ, "RUNNER_TEMP": str(runtime), "GITHUB_SHA": "a" * 40,
+                "GITHUB_REF": "refs/pull/12/merge", "GITHUB_REPOSITORY": "example/project",
+                "GITHUB_RUN_ID": "123", "BASH_ENV": "", "ENV": "",
+            }
+            valid = self.direct_report(requires_dist=["leaf>=2"])
+            valid["install"].append({"requested": False, "is_direct": False,
+                                     "metadata": {"name": "leaf", "version": "2.0"}})
+            cases = (
+                ("valid", valid, 0, 0),
+                ("rejected", self.direct_report(requires_dist=["missing>=2"]), 0, 1),
+                ("oversized", self.direct_report(requires_dist=["leaf" + " " * 66000]), 1, None),
+            )
+            valid_snapshot = None
+            for name, report, preparation_exit, conversion_exit in cases:
+                for path in (metadata_path, snapshot_path):
+                    path.unlink(missing_ok=True)
+                report_path.write_text(json.dumps(report), encoding="utf-8")
+                prepared = subprocess.run(
+                    ["bash", "-c", preparation["run"]], cwd=root, env=environment,
+                    capture_output=True, text=True, timeout=15, check=False,
+                )
+                self.assertEqual(prepared.returncode, preparation_exit,
+                                 f"{name}: {prepared.stderr}")
+                if conversion_exit is None:
+                    self.assertGreater(metadata_path.stat().st_size, 65536)
+                    self.assertFalse(snapshot_path.exists())
+                    continue
+                if name == "valid":
+                    report_path.write_text(json.dumps(self.direct_report()), encoding="utf-8")
+                converted = subprocess.run(
+                    ["bash", "-c", validation["run"]], cwd=root, env=environment,
+                    capture_output=True, text=True, timeout=15, check=False,
+                )
+                self.assertEqual(converted.returncode, conversion_exit, converted.stderr)
+                if name == "valid":
+                    valid_snapshot = json.loads(snapshot_path.read_text())
+                else:
+                    self.assertIn("missing resolved dependency", converted.stderr)
+                    self.assertFalse(snapshot_path.exists())
+            self.assertEqual(valid_snapshot["ref"], "refs/heads/main")
+            resolved = valid_snapshot["manifests"]["requirements.txt"]["resolved"]
+            self.assertEqual(resolved["pkg:pypi/direct@1.0"]["dependencies"],
+                             ["pkg:pypi/leaf@2.0"])
 
     def test_same_run_metadata_transfer_preserves_dependency_evidence(self):
         workflow = yaml.load(WORKFLOW.read_text(encoding="utf-8"), Loader=yaml.BaseLoader)
         steps = workflow["jobs"]["verify"]["steps"]
+        preparation = next(step for step in steps
+                           if step.get("name") == "Prepare dependency metadata for offline validation")
         producer = next(step for step in steps
                         if step.get("id") == "inventory")
+        validation = next(step for step in steps
+                          if step.get("name") == "Convert the freshly resolved inventory offline")
         resolution = next(step for step in steps if "--report" in step.get("run", ""))
         verification = next(step for step in steps if "-m unittest" in step.get("run", ""))
-        self.assertLess(steps.index(resolution), steps.index(producer))
+        self.assertIsNone(preparation.get("if"))
+        self.assertEqual(
+            producer["if"],
+            "github.repository == 'nisavid/provingkit' && github.ref == 'refs/heads/main'",
+        )
+        self.assertIsNone(validation.get("if"))
+        self.assertNotIn("GITHUB_OUTPUT", preparation["run"] + validation["run"])
+        self.assertLess(steps.index(resolution), steps.index(preparation))
+        self.assertLess(steps.index(preparation), steps.index(producer))
+        self.assertLess(steps.index(producer), steps.index(validation),
+                        "Seal trusted-main metadata before offline conversion")
+        self.assertLess(steps.index(validation), steps.index(verification))
         self.assertLess(steps.index(producer), steps.index(verification),
                         "Capture pip metadata before tests execute installed dependency code")
         self.assertIsNone(verification.get("if"), "Tests must still gate the whole verify job")
@@ -384,6 +464,12 @@ class PythonDependencySubmissionTests(unittest.TestCase):
             report["install"][0]["metadata"]["description"] = "Omit presentation metadata"
             (source / "python-install-report.json").write_text(json.dumps(report), encoding="utf-8")
             environment = {**os.environ, "BASH_ENV": "", "ENV": ""}
+            prepared = subprocess.run(
+                ["bash", "-c", preparation["run"]],
+                env={**environment, "RUNNER_TEMP": str(source)},
+                capture_output=True, text=True, timeout=15, check=False,
+            )
+            self.assertEqual(prepared.returncode, 0, prepared.stderr)
             encoded = subprocess.run(
                 ["bash", "-c", producer["run"]],
                 env={**environment, "RUNNER_TEMP": str(source), "GITHUB_OUTPUT": str(output)},
@@ -393,7 +479,7 @@ class PythonDependencySubmissionTests(unittest.TestCase):
             lines = output.read_text().splitlines()
             self.assertEqual(len(lines), 1)
             self.assertTrue(lines[0].startswith("report="))
-            (source / "python-install-report.json").write_text(
+            (source / "dependency-metadata.json").write_text(
                 json.dumps(self.direct_report()), encoding="utf-8",
             )
             decoded = subprocess.run(

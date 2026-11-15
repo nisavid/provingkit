@@ -36,9 +36,7 @@ jobs:
             --disable-pip-version-check --no-cache-dir --only-binary=:all: \
             --index-url https://pypi.org/simple \
             --report "$RUNNER_TEMP/python-install-report.json" -r requirements.txt
-      - name: Pass dependency metadata to the submission job
-        id: inventory
-        if: github.repository == 'nisavid/provingkit' && github.ref == 'refs/heads/main'
+      - name: Prepare dependency metadata for offline validation
         run: |
           set -eu
           jq -c '{version, environment, install: [.install[] |
@@ -47,7 +45,20 @@ jobs:
             (if has("requested_extras") then {requested_extras} else {} end)]}' \
             "$RUNNER_TEMP/python-install-report.json" > "$RUNNER_TEMP/dependency-metadata.json"
           test "$(wc -c < "$RUNNER_TEMP/dependency-metadata.json")" -le 65536
+      - name: Capture dependency metadata for submission
+        id: inventory
+        if: github.repository == 'nisavid/provingkit' && github.ref == 'refs/heads/main'
+        run: |
+          set -eu
           printf 'report=%s\n' "$(base64 -w0 "$RUNNER_TEMP/dependency-metadata.json")" >> "$GITHUB_OUTPUT"
+      - name: Convert the freshly resolved inventory offline
+        run: |
+          set -eu
+          .validation-venv/bin/python -I scripts/build_python_dependency_snapshot.py \
+            --requirements requirements.txt --report "$RUNNER_TEMP/dependency-metadata.json" \
+            --sha "$GITHUB_SHA" --ref refs/heads/main \
+            --repository "$GITHUB_REPOSITORY" --run-id "$GITHUB_RUN_ID" \
+            --output "$RUNNER_TEMP/offline-validation-snapshot.json"
       - name: Verify the snapshot and caller contracts
         run: .validation-venv/bin/python -B -m unittest tests.test_python_dependency_submission
 
