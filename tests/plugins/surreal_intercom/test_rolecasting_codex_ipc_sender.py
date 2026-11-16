@@ -10,6 +10,7 @@ import subprocess
 import sys
 import tempfile
 import threading
+import time
 import unittest
 
 
@@ -18,6 +19,83 @@ SCRIPTS = (
     / "plugins" / "surreal-intercom" / "skills" / "communicating-with-agents"
     / "scripts"
 )
+sys.path.insert(0, str(SCRIPTS))
+from codex_ipc_transport import CliTransport, connect_unix  # noqa: E402
+
+
+class CliTransportTimingTests(unittest.TestCase):
+    def delayed_exchange(self, *, network_seconds=None):
+        with tempfile.TemporaryDirectory(prefix="codex-ipc-transport-") as temporary:
+            endpoint = Path(temporary) / "peer.sock"
+            errors = []
+
+            def receive(connection):
+                header = connection.recv(4)
+                self.assertEqual(len(header), 4)
+                length = struct.unpack("<I", header)[0]
+                body = b""
+                while len(body) < length:
+                    body += connection.recv(length - len(body))
+                return json.loads(body)
+
+            def serve(listener):
+                try:
+                    connection, _ = listener.accept()
+                    with connection:
+                        receive(connection)
+                        time.sleep(0.05)
+                        response = {
+                            "type": "response", "requestId": "initialize",
+                            "method": "initialize", "resultType": "success",
+                            "result": {"clientId": "native-client"},
+                        }
+                        body = json.dumps(response).encode()
+                        connection.sendall(struct.pack("<I", len(body)) + body)
+                except BaseException as error:
+                    errors.append(error)
+
+            def delayed_real_connection(path, timeout):
+                stream = connect_unix(path, timeout)
+                time.sleep(0.08)
+                return stream
+
+            with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as listener:
+                listener.bind(str(endpoint))
+                listener.listen(1)
+                server = threading.Thread(target=serve, args=(listener,))
+                server.start()
+                transport = CliTransport(
+                    str(endpoint), {"incomingBytes": 262144, "frameBytes": 65536, "events": 64},
+                    0.1, connector=delayed_real_connection, network_seconds=network_seconds,
+                    io_seconds=1 if network_seconds is not None else None,
+                )
+                try:
+                    records = transport.send({
+                        "type": "request", "requestId": "initialize", "version": 0,
+                        "method": "initialize", "params": {"clientType": "cli"},
+                    })
+                finally:
+                    transport.close()
+                server.join(timeout=2)
+
+            return records, transport.receive_status, errors, server.is_alive()
+
+    def test_legacy_response_window_starts_after_connection_returns(self):
+        records, statuses, errors, server_alive = self.delayed_exchange()
+
+        self.assertFalse(server_alive)
+        self.assertEqual(errors, [])
+        self.assertEqual(statuses, [])
+        self.assertEqual(len(records), 1)
+        self.assertEqual(records[0][1]["result"]["clientId"], "native-client")
+
+    def test_diagnostic_network_budget_includes_connection_delay(self):
+        records, statuses, errors, server_alive = self.delayed_exchange(network_seconds=0.1)
+
+        self.assertFalse(server_alive)
+        self.assertTrue(all(isinstance(error, BrokenPipeError) for error in errors), errors)
+        self.assertEqual(records, [])
+        self.assertEqual(statuses, ["observation-deadline-unknown"])
 
 
 class CodexIpcSenderTests(unittest.TestCase):
@@ -921,6 +999,25 @@ class CommandFailureTests(unittest.TestCase):
         self.assertFalse((self.capture / "attempt.json").exists())
         self.assertFalse((self.capture / "rpc.json").exists())
         self.assertNotIn("capture_failure", result)
+
+    def test_clean_eof_after_busy_snapshot_refuses_before_input(self):
+        def conversation(connection, receive, send, follow):
+            send(self.snapshot(active=True))
+            connection.shutdown(socket.SHUT_WR)
+            follow["params"]["following"] = False
+            self.assertEqual(receive(), follow)
+            self.assertEqual(connection.recv(1), b"")
+
+        result, wire, _sent = self.peer_exchange(conversation)
+
+        self.assertEqual(result["reason"], "connection-incomplete-before-write")
+        self.assertEqual(result["peer_input"], "not_attempted")
+        self.assertEqual([message["method"] for message in wire], [
+            "initialize", "thread-owner-discovery",
+            "thread-stream-following-changed", "thread-stream-following-changed",
+        ])
+        self.assertFalse((self.capture / "attempt.json").exists())
+        self.assertFalse((self.capture / "rpc.json").exists())
 
     def test_active_peer_without_a_turn_id_refuses_before_peer_input(self):
         self.refuses_unusable_active_turn_id(None)

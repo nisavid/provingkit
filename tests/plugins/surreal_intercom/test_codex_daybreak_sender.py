@@ -580,6 +580,9 @@ class PendingBootstrapCommandTests(unittest.TestCase):
     def test_false_saved_selection_stops_before_the_original_task(self):
         self.completed_bootstrap_submission(failure="false-readback")
 
+    def test_clean_eof_after_saved_selection_stops_before_the_original_task(self):
+        self.completed_bootstrap_submission(failure="readback-eof")
+
     def test_lost_task_response_retains_unknown_without_replay(self):
         self.completed_bootstrap_submission(failure="lost-task-response")
 
@@ -823,6 +826,11 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                         reply(settings,{"settings":{"daybreakEnabled":failure!="false-readback"}},
                               "invented-owner-client",
                               tail=prefix_tail if failure=="readback-prefix" else b"")
+                        if failure=="readback-eof":
+                            connection.shutdown(socket.SHUT_WR)
+                            self.assertEqual(connection.recv(1),b"")
+                            closed.set()
+                            return
                         if failure in {"false-readback","outgoing-frame","readback-prefix"}:
                             self.assertEqual(connection.recv(1),b"")
                             closed.set()
@@ -921,7 +929,7 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                     if failure=="lost-task-response":
                         methods.append("thread-follower-start-turn")
                         references.append("attempt_ref")
-                    if failure in {"outgoing-frame","readback-prefix"}:
+                    if failure in {"outgoing-frame","readback-prefix","readback-eof"}:
                         references.append("attempt_ref")
                         path=Path(accepted["refs"]["attempt_ref"])
                         retained=path.read_bytes()
@@ -937,7 +945,8 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                     self.assertEqual(accepted["status"],"submission_unknown",accepted)
                     self.assertIsNone(accepted.get("turn_id"),accepted)
                     self.assertIs(accepted["saved_selection"],
-                                  True if failure in {"lost-task-response","outgoing-frame","readback-prefix"} else None)
+                                  True if failure in {"lost-task-response","outgoing-frame",
+                                                      "readback-prefix","readback-eof"} else None)
                     self.assertEqual(accepted["receipt"],"unknown")
                     self.assertEqual(accepted["task_completion"],"unknown")
                     self.assertEqual(accepted["effective_program"],"unknown")
@@ -996,6 +1005,21 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                         if failure=="readback-prefix":
                             selection=json.loads((operation_dir/"selection.json").read_bytes())
                             self.assertEqual(selection,{"saved_selection":True,"response":expected_response})
+                    elif failure=="readback-eof":
+                        self.assertEqual(accepted["failures"],[{
+                            "stage":"task-submit",
+                            "reason":"connection-incomplete-before-write",
+                        }])
+                        operation_dir=Path(accepted["refs"]["operation_ref"]).parent
+                        selection=json.loads((operation_dir/"selection.json").read_bytes())
+                        self.assertIs(selection["saved_selection"],True)
+                        self.assertEqual(selection["response"]["result"],{
+                            "settings":{"daybreakEnabled":True},
+                        })
+                        transport=json.loads((operation_dir/"transport.json").read_bytes())
+                        self.assertEqual(transport["incomplete"],"stream-eof-unknown")
+                        self.assertIn("stream-eof-unknown",transport["receiveStatus"])
+                        self.assertEqual(transport["outbound"],wire)
                     else:
                         self.assertEqual(len(accepted["failures"]),1)
                         expected_failure={

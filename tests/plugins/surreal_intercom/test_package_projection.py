@@ -50,6 +50,7 @@ class IntercomProjectionTests(unittest.TestCase):
                         "codex_ipc_sender.py", "codex_ipc_idle_sender.py",
                         "owner_admission_sender.py",
                         "codex_daybreak_sender.py",
+                        "codex_worker_observer.py",
                     ):
                         result = subprocess.run([
                             sys.executable, "-B", str(plugin / "skills/"
@@ -66,6 +67,10 @@ class IntercomProjectionTests(unittest.TestCase):
                     self.assertEqual(
                         (plugin / "skills/communicating-with-agents/agents/"
                          "openai.yaml").exists(), target == "agent-plugins",
+                    )
+                    self.assertTrue(
+                        (plugin / "skills/communicating-with-agents/references/"
+                         "codex-worker-observation-diagnostic.md").is_file()
                     )
 
     def test_intercom_can_be_selected_without_other_members(self):
