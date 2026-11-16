@@ -16,7 +16,9 @@ Separate semantic requirements from adapter details. A specification says which 
 
 ## Bind the observation
 
-Confirm the public test boundary before writing a test. State what real component executes, which external effects are replaced, and what those replacements prevent the result from proving. Use independently specified outcomes; deriving the expected result from the generated command cannot reveal a generator error.
+Before writing a test, identify its consumer, the outcome to prove, and why the selected boundary can establish that outcome. State which real component and interface execute, which external effects are replaced, and what those replacements leave unproved. Specify expected outcomes independently; deriving them from the generated command cannot reveal a generator error.
+
+This method governs boundary selection for Provingkit work, including when a general TDD skill is also loaded. The implementing agent owns this assessment within settled requirements and existing authority. Escalate consequential unresolved choices or effects requiring additional authority before dependent work.
 
 Exercise the actual consuming interface. A mocked successful subprocess result does not show that the command it received is accepted. Distinguish parser rejection, entry into an inert operation handler, and completion of a live operation.
 
@@ -26,7 +28,7 @@ Qualify the driver on its claimed observation: deliberately wrong expected ident
 
 Start from one committed candidate for the procedure, fixtures, driver, and implementation. Keep task-owned TDD changes together in that worktree and retain the diff and input identities for each run; preparation tools and fixtures must not come from another revision. A producer may validate its own draft; independent consumer acceptance identifies the reviewed method revision it actually loaded.
 
-1. Write one semantic example at the confirmed boundary. Run it against unchanged behavior and preserve the failure, source identity, command, original output, and exit. Verify that it fails for the intended reason; an import error or unavailable environment is not the causal RED.
+1. Write one semantic example at the selected boundary. Run it against unchanged behavior and preserve the failure, source identity, command, original output, and exit. Verify that it fails for the intended reason; an import error or unavailable environment is not the causal RED.
 2. Make the smallest behavior change that satisfies that example. Run the same assertion and retain its GREEN result. Preserve original failures; do not replace them with a later successful record.
 3. Add the next needed example as another RED–GREEN slice. Cover misleading successes and relevant refusal branches without writing a horizontal catalogue of speculative tests.
 4. Review the resulting design and refactor where it reduces cost or clarifies responsibility. Rerun the same consumer assertions after refactoring. A simpler driver must still detect the original defect and wrong expectations.
