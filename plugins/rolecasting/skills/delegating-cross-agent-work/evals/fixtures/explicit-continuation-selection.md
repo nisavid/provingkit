@@ -1,7 +1,8 @@
 # Explicit Continuation Selection
 
 Delegation, same-purpose ownership, authority, isolation, and assurance are
-settled. These are ordinary recoverable implementation tasks, with judgment
+settled. Each case deliberately continues selected execution of a recoverable
+implementation assignment; none is an ordinary peer message. Judgment is
 adequate at medium effort. Current exact-surface catalog and executor-schema
 observations prove gpt-6.1-sol/medium on the Codex targets and opus/medium
 (Claude Opus 5.5) on the Claude Code targets. No newer same-name successor is

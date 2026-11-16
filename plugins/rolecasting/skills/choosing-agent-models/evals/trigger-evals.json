@@ -30,5 +30,17 @@
   {
     "query": "Parse this generic Markdown inventory and print every record; no model routing or account operation is involved.",
     "should_trigger": false
+  },
+  {
+    "query": "Send a status acknowledgment to the existing peer within its accepted assignment. No new execution or settings change is requested; the message schema has optional model and effort overrides.",
+    "should_trigger": false
+  },
+  {
+    "query": "Return this source-window readback to the existing peer in its accepted coordination assignment, calling it a continuation. Preserve its settings; no new execution is assigned.",
+    "should_trigger": false
+  },
+  {
+    "query": "Select model and effort for an authorized new implementation assignment to the existing worker; current capability observations are supplied.",
+    "should_trigger": true
   }
 ]
