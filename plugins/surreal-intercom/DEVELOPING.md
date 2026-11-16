@@ -48,6 +48,15 @@ write checks, including protocol-generated responses, and require refusal before
 the oversized frame reaches the peer. Ordinary existing transport profiles retain
 their current limits.
 
+The [Codex Worker observation diagnostic](skills/communicating-with-agents/references/codex-worker-observation-diagnostic.md)
+owns the source-only, one-shot `codex_worker_observer.py` contract. Its CLI tests
+must use test-owned Unix peers and files, exercise the actual command, prove the
+read-only traffic allowlist and finite aggregate limits, and distinguish useful
+selected views from binding, freshness, history, finalization, and closure
+unknowns. Shared transport and snapshot changes retain the busy sender,
+reconciler, and idle sender suites as regression gates. Native acquisition,
+installation, recurring supervision, and recovery activation remain separate.
+
 Run source checks and synthetic cases through the maintained test schedule;
 retain the candidate revision and actual results. Procedure discovery and
 caller application need their own consumer checks. None of these checks proves

@@ -27,6 +27,7 @@ class FrameReceiver:
         self.events = 0
         self.incomplete = None
         self.rejected_frame = None
+        self.frame_boundary_eof = False
 
     def receive(self, read, clock, deadline):
         # Every header (including cleanup) must fit before any acquisition.
@@ -74,6 +75,9 @@ class FrameReceiver:
             # Supported receive failures have one terminal contract. Completed
             # messages belong to the exchange; this failure cannot erase them.
             reason = str(exc) if isinstance(exc, ReceiveFailure) else 'frame-decode-error'
+            self.frame_boundary_eof = (
+                reason == 'stream-eof-unknown' and self.acquired == started
+            )
             if self.acquired != started or reason != 'observation-deadline-unknown':
                 self.incomplete = reason
             if isinstance(exc, ReceiveFailure):
@@ -107,12 +111,22 @@ def connect_unix(endpoint, timeout):
 
 class CliTransport:
     production = True
-    def __init__(self, endpoint, limits, observation_seconds, connector=connect_unix, clock=time.monotonic):
+    def __init__(self, endpoint, limits, observation_seconds, connector=connect_unix, clock=time.monotonic,
+                 *, network_seconds=None, io_seconds=None, cleanup_reserve_seconds=0,
+                 max_writes=None, allowed_methods=None, receipt_clock=None):
         self.endpoint = endpoint
         self.limits = limits
         self.wait = observation_seconds
         self.connector = connector
         self.clock = clock
+        self.started_at = clock() if network_seconds is not None else None
+        self.network_deadline = (self.started_at + network_seconds
+                                 if self.started_at is not None else None)
+        self.io_seconds = io_seconds
+        self.cleanup_reserve_seconds = cleanup_reserve_seconds
+        self.max_writes = max_writes
+        self.allowed_methods = allowed_methods
+        self.receipt_clock = receipt_clock
         self.generation = str(uuid.uuid4())
         self.receiver = FrameReceiver(self.limits)
         self.stream = None
@@ -122,6 +136,7 @@ class CliTransport:
         self.receive_status = []
         self.retained = []
         self.closed = False
+        self.write_count = 0
     @property
     def acquired(self):
         return self.receiver.acquired
@@ -132,9 +147,45 @@ class CliTransport:
         limit = self.receiver.limits.get("outgoingFrameBytes")
         if limit is not None and len(data) > limit:
             raise ReceiveFailure("outgoing-frame-limit")
-    def send(self, envelope):
+    def _phase_deadline(self, *, reserve_cleanup):
+        deadline = self.clock() + self.wait
+        if self.network_deadline is None:
+            return deadline
+        network_deadline = self.network_deadline
+        if reserve_cleanup:
+            network_deadline -= self.cleanup_reserve_seconds
+        deadline = min(deadline, network_deadline)
+        if deadline <= self.clock():
+            raise ReceiveFailure("network-deadline-unknown")
+        return deadline
+    def _io_timeout(self, deadline):
+        remaining = deadline - self.clock()
+        if remaining <= 0:
+            raise ReceiveFailure("network-deadline-unknown")
+        return min(remaining, self.io_seconds) if self.io_seconds is not None else remaining
+    def _write(self, data, deadline, *, full_legacy_wait=False):
+        if self.max_writes is not None and self.write_count >= self.max_writes:
+            raise ReceiveFailure("outgoing-write-limit")
+        self.write_count += 1
+        timeout = (self.wait if full_legacy_wait and self.network_deadline is None
+                   and self.io_seconds is None else self._io_timeout(deadline))
+        self.stream.write(data, timeout)
+    def send(self, envelope, *, reserve_cleanup=False):
+        method = envelope.get("method")
+        if self.allowed_methods is not None and method not in self.allowed_methods:
+            raise ReceiveFailure("outgoing-method-forbidden")
+        legacy_timing = self.network_deadline is None and self.io_seconds is None
         if self.stream is None:
-            self.stream = self.connector(self.endpoint, self.wait)
+            if legacy_timing:
+                timeout = self.wait
+            else:
+                deadline = self._phase_deadline(reserve_cleanup=reserve_cleanup)
+                timeout = self._io_timeout(deadline)
+            self.stream = self.connector(self.endpoint, timeout)
+        # Diagnostic mode keeps one constructor-owned network budget. Legacy
+        # mode starts its response window after required pre-write work.
+        if not legacy_timing:
+            deadline = self._phase_deadline(reserve_cleanup=reserve_cleanup)
         if envelope['method'] in {'thread-follower-steer-turn', 'thread-follower-start-turn'}:
             if self.pending_path is None or not self.pending_path.is_file():
                 raise ReceiveFailure('missing-pre-write-capture')
@@ -143,16 +194,24 @@ class CliTransport:
         data = json.dumps(envelope, separators=(',', ':')).encode()
         self._check_outgoing_frame(data)
         self.outbound.append(envelope)
-        deadline = self.clock() + self.wait
-        self.stream.write(struct.pack('<I', len(data)) + data, self.wait)
+        if legacy_timing:
+            deadline = self._phase_deadline(reserve_cleanup=reserve_cleanup)
+        self._write(struct.pack('<I', len(data)) + data, deadline, full_legacy_wait=True)
         if self.receiver.incomplete:
             self.receive_status.append('receive-disabled:' + self.receiver.incomplete)
             return []
         records = []
         try:
             while self.clock() < deadline:
-                message = self.receiver.receive(self.stream.read, self.clock, deadline)
+                message = self.receiver.receive(
+                    lambda maximum, timeout: self.stream.read(
+                        maximum, min(timeout, self.io_seconds)
+                        if self.io_seconds is not None else timeout),
+                    self.clock, deadline,
+                )
                 record = {'at': self.clock(), 'generation': self.generation}
+                if self.receipt_clock is not None:
+                    record['receivedAtUnixNs'] = self.receipt_clock()
                 records.append((record, message))
                 self.retained.append((record, message))
                 if message.get('type') == 'client-discovery-request':
@@ -163,7 +222,7 @@ class CliTransport:
                               'response': {'canHandle': False}}
                     body = json.dumps(answer).encode()
                     self._check_outgoing_frame(body)
-                    self.stream.write(struct.pack('<I', len(body)) + body, max(0.001, deadline - self.clock()))
+                    self._write(struct.pack('<I', len(body)) + body, deadline)
                     self.outbound.append(answer)
                 if (envelope['method'] in {'initialize', 'thread-owner-discovery'}
                         and message.get('type') == 'response'
@@ -187,7 +246,7 @@ class CliTransport:
         self.closed = True
 
 
-def discover_owner(transport, binding, *, text, refusal):
+def discover_owner(transport, binding, *, text, refusal, record_consumer=None, exchange=None):
     """Initialize and bind the exact target's owner on this connection.
 
     Populate binding["owner"] as soon as the correlated discovery proves it,
@@ -195,7 +254,8 @@ def discover_owner(transport, binding, *, text, refusal):
     Caller-supplied text validation and refusal keep its diagnostic contract.
     This does not select a turn operation or establish authenticated identity.
     """
-    records = transport.send({
+    send = exchange or transport.send
+    records = send({
         "type": "request", "requestId": "initialize", "version": 0,
         "method": "initialize", "params": {"clientType": "cli"},
     })
@@ -204,22 +264,50 @@ def discover_owner(transport, binding, *, text, refusal):
                and message.get("requestId") == "initialize"
                and message.get("method") == "initialize"
                and message.get("resultType") == "success"]
-    if len(matches) != 1 or not isinstance(matches[0].get("result"), dict):
+    result = matches[0].get("result") if len(matches) == 1 else None
+    if len(matches) != 1 or not isinstance(result, dict):
+        if record_consumer is not None:
+            record_consumer(records)
         raise refusal("initialize-unavailable")
-    client = text(matches[0].get("result", {}).get("clientId"), "native-client")
-    records = transport.send({
+    client_error = None
+    try:
+        client = text(result.get("clientId"), "native-client")
+    except Exception as error:
+        if record_consumer is None:
+            raise
+        client = None
+        client_error = error
+    if record_consumer is not None:
+        if client is not None:
+            binding["client"] = client
+        try:
+            record_consumer(records)
+        finally:
+            binding.pop("client", None)
+    if client_error is not None:
+        raise client_error
+    records = send({
         "type": "request", "requestId": "owner", "sourceClientId": client,
         "version": 1, "method": "thread-owner-discovery",
-        "params": {"hostId": "local", "conversationId": binding["target"]},
+        "params": {"hostId": binding.get("host", "local"), "conversationId": binding["target"]},
     })
     matches = [message for _, message in records
                if message.get("type") == "response"
                and message.get("requestId") == "owner"
                and message.get("method") == "thread-owner-discovery"
                and message.get("resultType") == "success"]
+    owner = matches[0].get("handledByClientId") if len(matches) == 1 else None
+    if isinstance(owner, str) and owner.strip():
+        binding["owner"] = owner
+    if record_consumer is not None:
+        binding["client"] = client
+        try:
+            record_consumer(records)
+        finally:
+            binding.pop("client", None)
     if len(matches) != 1:
         raise refusal("owner-unavailable")
-    binding["owner"] = text(matches[0].get("handledByClientId"), "native-owner")
+    binding["owner"] = text(owner, "native-owner")
     if transport.receiver.incomplete is not None:
         raise refusal("connection-incomplete-before-write")
     return client

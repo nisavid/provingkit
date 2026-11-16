@@ -116,6 +116,14 @@ class SurrealIntercomValidatorTests(unittest.TestCase):
             document = json.loads(original)
             self.assertIn("skills/communicating-with-agents/scripts/peer_message.py",
                           document["files"])
+            self.assertIn(
+                "skills/communicating-with-agents/scripts/codex_worker_observer.py",
+                document["files"],
+            )
+            self.assertIn(
+                "skills/communicating-with-agents/references/codex-worker-observation-diagnostic.md",
+                document["files"],
+            )
             self.assert_valid(repository)
             source = repository / "plugins/surreal-intercom/skills/communicating-with-agents/scripts/peer_message.py"
             source.write_bytes(source.read_bytes() + b"\n# Changed candidate bytes.\n")
