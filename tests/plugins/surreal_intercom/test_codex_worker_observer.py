@@ -338,6 +338,48 @@ class CodexWorkerObserverTests(unittest.TestCase):
         self.assertIsNone(result["selectedViewComparison"]["equal"])
         self.assertEqual(result["closure"]["connection"], "closed")
 
+    def test_malformed_turn_ids_are_unsupported_in_legacy_and_canonical_history(self):
+        invalid_ids = (("missing", None), ("blank", ""), ("object", {}), ("array", []))
+        cases = tuple(
+            (representation, name, value)
+            for representation in ("legacy", "canonical")
+            for name, value in invalid_ids
+        )
+        for index, (representation, name, value) in enumerate(cases):
+            messages = []
+            for revision in (7, 8):
+                message = self.snapshot(revision)
+                state = message["params"]["change"]["conversationState"]
+                turn = {"status": "completed", "items": []}
+                if name != "missing":
+                    turn["turnId"] = value
+                if representation == "legacy":
+                    state["turns"] = [turn]
+                else:
+                    state.pop("turns")
+                    state["turnHistory"] = {
+                        "kind": "canonical",
+                        "history": {
+                            "islands": [{"entries": [{"value": "turn-key"}]}],
+                            "entitiesByKey": {"turn-key": turn},
+                            "isComplete": True,
+                        },
+                    }
+                messages.append(message)
+
+            with self.subTest(representation=representation, turn_id=name):
+                completed = self.serve_standard(
+                    lambda connection, values=messages: self.send(connection, *values))
+                result = self.result()
+                if index + 1 < len(cases):
+                    self.reset_fixture()
+                self.assertEqual(completed.returncode, 0, completed.stdout + completed.stderr)
+                self.assertEqual(result["history"]["first"]["support"], "unsupported")
+                self.assertEqual(result["history"]["last"]["support"], "unsupported")
+                self.assertIsNone(result["selectedViewComparison"]["first"]["turns"])
+                self.assertIsNone(result["selectedViewComparison"]["last"]["turns"])
+                self.assertIsNone(result["selectedViewComparison"]["equal"])
+
     def test_stale_revision_and_connection_reset_are_unknown(self):
         cases = (
             (lambda connection: self.send(connection, self.snapshot(8), self.snapshot(7)), "stale-revision"),
@@ -576,9 +618,151 @@ class CodexWorkerObserverTests(unittest.TestCase):
                 self.assertEqual(result["acquisition"]["completedSnapshots"], 1)
                 self.assertEqual(result["closure"], {
                     "subscription": "unfollow-sent-ack-unknown", "connection": "closed",
+                    "cleanupFailure": reason,
                 })
                 if index + 1 < len(cleanup_messages):
                     self.reset_fixture()
+
+    def test_record_failure_preserves_later_completed_evidence(self):
+        malformed = {
+            "type": "broadcast", "version": 11,
+            "method": "thread-stream-state-changed", "params": [],
+        }
+        cases = (
+            (
+                (self.snapshot(), malformed,
+                 {"type": "broadcast", "method": "ipc-connection-reset"}),
+                "connection-reset-needs-new-binding", 1, 5,
+            ),
+            ((malformed, self.snapshot()), "invalid-state-params", 1, 4),
+        )
+        for index, (records, reason, snapshots, events) in enumerate(cases):
+            with self.subTest(reason=reason):
+                completed = self.serve_standard(
+                    lambda connection, values=records: self.send(connection, *values))
+                result = self.result()
+                if index + 1 < len(cases):
+                    self.reset_fixture()
+                self.assertEqual(completed.returncode, 2)
+                self.assertEqual(result["terminal"], {"state": "unknown", "reason": reason})
+                self.assertEqual(result["acquisition"]["completedSnapshots"], snapshots)
+                self.assertEqual(result["acquisition"]["events"], events)
+                self.assertEqual(result["closure"]["connection"], "closed")
+
+    def test_missing_change_type_preserves_later_snapshot_and_reset(self):
+        malformed = self.snapshot()
+        malformed["params"]["change"].pop("type")
+        reset = {"type": "broadcast", "method": "ipc-connection-reset"}
+
+        completed = self.serve_standard(lambda connection: self.send(
+            connection, malformed, self.snapshot(8), reset,
+        ))
+
+        self.assertEqual(completed.returncode, 2)
+        result = self.result()
+        self.assertEqual(result["terminal"], {
+            "state": "unknown", "reason": "connection-reset-needs-new-binding",
+        })
+        self.assertEqual(result["acquisition"]["completedSnapshots"], 1)
+        self.assertEqual(result["acquisition"]["events"], 5)
+        self.assertEqual(result["closure"]["connection"], "closed")
+
+    def test_non_text_runtime_types_do_not_commit_before_later_snapshot_and_reset(self):
+        malformed = []
+        for revision, runtime in ((8, []), (9, {})):
+            message = self.snapshot(revision, runtime=runtime)
+            malformed.append(message)
+        reset = {"type": "broadcast", "method": "ipc-connection-reset"}
+
+        completed = self.serve_standard(lambda connection: self.send(
+            connection, *malformed, self.snapshot(8), reset,
+        ))
+
+        self.assertEqual(completed.returncode, 2, completed.stdout + completed.stderr)
+        result = self.result()
+        self.assertEqual(result["terminal"], {
+            "state": "unknown", "reason": "connection-reset-needs-new-binding",
+        })
+        self.assertEqual(result["acquisition"]["completedSnapshots"], 1)
+        self.assertEqual(result["acquisition"]["events"], 6)
+        self.assertEqual(result["selectedViewComparison"]["first"]["activity"], "idle")
+        self.assertEqual(result["closure"]["connection"], "closed")
+
+    def test_cleanup_failure_is_separate_and_uses_record_precedence(self):
+        malformed = {
+            "type": "broadcast", "version": 11,
+            "method": "thread-stream-state-changed", "params": [],
+        }
+        reset = {"type": "broadcast", "method": "ipc-connection-reset"}
+        cases = (
+            ((self.snapshot(), reset), malformed,
+             "connection-reset-needs-new-binding", "invalid-state-params"),
+            ((self.snapshot(), malformed), reset,
+             "connection-reset-needs-new-binding", "connection-reset-needs-new-binding"),
+            ((self.snapshot(),), malformed, "invalid-state-params", "invalid-state-params"),
+        )
+        for index, (records, cleanup, reason, cleanup_reason) in enumerate(cases):
+            with self.subTest(reason=reason, cleanup=cleanup_reason):
+                completed = self.serve_standard(
+                    lambda connection, values=records: self.send(connection, *values),
+                    after_unfollow=lambda connection, value=cleanup: self.send(connection, value),
+                )
+                result = self.result()
+                if index + 1 < len(cases):
+                    self.reset_fixture()
+                self.assertEqual(completed.returncode, 2)
+                self.assertEqual(result["terminal"], {"state": "unknown", "reason": reason})
+                self.assertEqual(result["acquisition"]["completedSnapshots"], 1)
+                self.assertEqual(result["closure"]["cleanupFailure"], cleanup_reason)
+                self.assertEqual(result["closure"]["connection"], "closed")
+
+    def test_missing_cleanup_state_preserves_later_snapshot(self):
+        malformed = self.snapshot(8)
+        malformed["params"]["change"].pop("conversationState")
+
+        completed = self.serve_standard(
+            lambda connection: self.send(connection, self.snapshot(7)),
+            after_unfollow=lambda connection: self.send(
+                connection, malformed, self.snapshot(8),
+            ),
+        )
+
+        self.assertEqual(completed.returncode, 2)
+        result = self.result()
+        self.assertEqual(result["terminal"], {
+            "state": "unknown", "reason": "invalid-conversation-state",
+        })
+        self.assertEqual(result["acquisition"]["completedSnapshots"], 2)
+        self.assertEqual(result["acquisition"]["events"], 5)
+        self.assertEqual(result["closure"], {
+            "subscription": "unfollow-sent-ack-unknown", "connection": "closed",
+            "cleanupFailure": "invalid-conversation-state",
+        })
+
+    def test_non_text_cleanup_runtime_preserves_later_snapshot_and_closure(self):
+        malformed = []
+        for revision, runtime in ((8, []), (9, {})):
+            malformed.append(self.snapshot(revision, runtime=runtime))
+
+        completed = self.serve_standard(
+            lambda connection: self.send(connection, self.snapshot(7)),
+            after_unfollow=lambda connection: self.send(
+                connection, *malformed, self.snapshot(8),
+            ),
+        )
+
+        self.assertEqual(completed.returncode, 2, completed.stdout + completed.stderr)
+        result = self.result()
+        self.assertEqual(result["terminal"], {
+            "state": "unknown", "reason": "invalid-thread-runtime-status-type",
+        })
+        self.assertEqual(result["acquisition"]["completedSnapshots"], 2)
+        self.assertEqual(result["acquisition"]["events"], 6)
+        self.assertEqual(result["selectedViewComparison"]["last"]["activity"], "idle")
+        self.assertEqual(result["closure"], {
+            "subscription": "unfollow-sent-ack-unknown", "connection": "closed",
+            "cleanupFailure": "invalid-thread-runtime-status-type",
+        })
 
     def test_cleanup_conflict_at_same_revision_invalidates_observation(self):
         completed = self.serve_standard(
@@ -994,6 +1178,7 @@ class CodexWorkerObserverTests(unittest.TestCase):
         self.assertIn("frame-decode-error", result["acquisition"]["receiveStatus"])
         self.assertEqual(result["closure"], {
             "subscription": "unfollow-sent-ack-unknown", "connection": "closed",
+            "cleanupFailure": "connection-reset-needs-new-binding",
         })
 
     def test_output_collision_refuses_without_connection_and_preserves_bytes(self):
@@ -1048,6 +1233,79 @@ class CodexWorkerObserverTests(unittest.TestCase):
         self.assertIn("output-finalization-failed", completed.stdout)
         self.assertFalse(output.exists())
         self.assertFalse(any(path.name.endswith(".tmp") for path in moved.iterdir()))
+
+    def test_late_output_probe_oserror_is_a_bounded_finalization_failure(self):
+        if sys.version_info >= (3, 14):
+            self.skipTest("Python 3.14 Path.exists suppresses all OSError results")
+        result_directory = self.root / "late-probe-result-directory"
+        result_directory.mkdir()
+        output = result_directory / "result.json"
+        moved = self.root / "moved-late-probe-result-directory"
+        ready = threading.Event()
+        release = threading.Event()
+
+        def serve(listener):
+            try:
+                connection, _ = listener.accept()
+                with connection:
+                    connection.settimeout(2)
+                    self.receive(connection)
+                    self.send(connection, {
+                        "type": "response", "requestId": "initialize",
+                        "method": "initialize", "resultType": "success",
+                        "result": {"clientId": "observer-client"},
+                    })
+                    self.receive(connection)
+                    self.send(connection, {
+                        "type": "response", "requestId": "owner",
+                        "method": "thread-owner-discovery", "resultType": "success",
+                        "handledByClientId": "worker-owner",
+                    })
+                    self.receive(connection)
+                    ready.set()
+                    if not release.wait(2):
+                        raise AssertionError("late-probe release timed out")
+                    self.send(connection, self.snapshot())
+                    self.receive(connection)
+            except BaseException as error:
+                self.errors.append(error)
+
+        with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as listener:
+            listener.bind(str(self.endpoint))
+            listener.listen(1)
+            server = threading.Thread(target=serve, args=(listener,))
+            server.start()
+            self.write_input()
+            process = subprocess.Popen(
+                [sys.executable, "-B", str(OBSERVER),
+                 "--input", str(self.input_path), "--output", str(output)],
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True,
+                env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1",
+                     "PYTHONNOUSERSITE": "1"},
+            )
+            self.assertTrue(ready.wait(2), "observer did not reach follow")
+            result_directory.rename(moved)
+            name_max = os.pathconf(self.root, "PC_NAME_MAX")
+            result_directory.symlink_to(
+                self.root / ("x" * (name_max + 1)), target_is_directory=True,
+            )
+            with self.assertRaises(OSError):
+                output.exists()
+            release.set()
+            stdout, stderr = process.communicate(timeout=5)
+            server.join(timeout=3)
+
+        self.assertFalse(server.is_alive())
+        self.assertEqual(self.errors, [])
+        self.assertEqual(process.returncode, 3, stdout + stderr)
+        self.assertEqual(
+            stdout,
+            '{"reason":"output-finalization-failed","status":"refused"}\n',
+        )
+        self.assertEqual(stderr, "")
+        with self.assertRaises(OSError):
+            output.exists()
+        self.assertEqual(list(moved.iterdir()), [])
 
     def test_output_finalization_preserves_unowned_staging_objects(self):
         for kind in ("regular", "symlink", "directory"):

@@ -77,6 +77,11 @@ terminal summary; stderr is empty for handled outcomes. The result file, not a
 zero exit alone, is the consumer observation. Finalization removes only the
 staging file this invocation created; a preexisting file, symlink, or directory
 at the staging path is preserved and produces the bounded exit-three refusal.
+Failure to remove an invocation-owned staging file also produces that bounded
+refusal, without replacing an earlier finalization failure. Output-path probes
+repeated after observation belong to the same finalization boundary: an
+inaccessible path produces the bounded finalization refusal, while a successful
+positive probe remains an output collision.
 
 ## Interpret The Result
 
@@ -91,9 +96,11 @@ first and last supported snapshots acquired on this connection. Work can
 change outside that view. Equality establishes neither unchanged work nor a
 legitimate wait. A positive comparison does not authenticate the server or
 prove upstream freshness, and snapshot revisions are not proved
-cross-connection cursors. Unsupported runtime types remain visible as their raw
-type values and cannot compare equal merely because both project to unknown
-activity. Byte-identical snapshots at one revision are harmless duplicates;
+cross-connection cursors. Unsupported text runtime states remain visible as
+their raw values and cannot compare equal merely because both project to
+unknown activity. Present non-text runtime-state types are malformed records,
+not selected-view values. Byte-identical snapshots at one revision are harmless
+duplicates;
 different state at one revision makes the observation unknown.
 
 Follower snapshots can carry whole history before the command projects the
@@ -105,14 +112,24 @@ than being converted into inactivity. The embedded conversation ID must match
 the nominated target as well as the outer stream binding. Every completed
 record returned by initialization, owner discovery, following, and unfollow is
 processed once in wire order, including records completed before a terminal
-frame failure. Owner-discovery status is reconciled against the owner named by
-the correlated response before follow; an unrelated client's disconnect does
-not invalidate that binding. A reset or owner disconnect during discovery or
-cleanup, and a terminal framing, event, or aggregate-wire failure after a valid
-snapshot, therefore remains visible and invalidates success without erasing the
-acquired snapshot or counters. Clean EOF before another frame remains closure
-uncertainty. State broadcasts require an array of nonempty target-client IDs,
-and snapshot revisions require a non-Boolean integer.
+frame failure. A malformed record does not suppress later completed evidence.
+Owner-discovery status is reconciled against the owner named by the correlated
+response before follow; an unrelated client's disconnect does not invalidate
+that binding. A reset or owner disconnect during discovery or cleanup, and a
+terminal framing, event, or aggregate-wire failure after a valid snapshot,
+therefore remains visible and invalidates success without erasing the acquired
+snapshot or counters. A cleanup record failure remains separately visible as
+`closure.cleanupFailure`; reset and owner-disconnect invalidations take
+precedence as the terminal reason. Clean EOF before another frame remains
+closure uncertainty. State broadcasts require an array of nonempty
+target-client IDs. State changes require a nonempty text type, snapshot changes
+require an object conversation state, snapshot revisions require a non-Boolean
+integer, present runtime-state types require text, and each projected turn ID
+must be a nonempty string. A snapshot is projected and validated before its
+revision, conflict, or selected-view bookkeeping is committed. Malformed state
+changes remain bounded refusals so later completed records are still processed.
+Unsupported turn IDs make history and selected-view equality unknown rather
+than producing a false comparison.
 
 The ten-second network budget includes connection work, follow acquisition,
 unfollow, and its reply wait. Each connect/read/write receives no more than the

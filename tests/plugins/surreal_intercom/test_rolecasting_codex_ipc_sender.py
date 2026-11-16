@@ -10,7 +10,6 @@ import subprocess
 import sys
 import tempfile
 import threading
-import time
 import unittest
 
 
@@ -20,44 +19,71 @@ SCRIPTS = (
     / "scripts"
 )
 sys.path.insert(0, str(SCRIPTS))
-from codex_ipc_transport import CliTransport, connect_unix  # noqa: E402
+from codex_ipc_transport import CliTransport, ReceiveFailure, connect_unix  # noqa: E402
 
 
 class CliTransportTimingTests(unittest.TestCase):
-    def delayed_exchange(self, *, network_seconds=None):
+    def delayed_exchange(self, *, network_seconds=None, connection_elapsed=0.08,
+                         post_write_elapsed=None):
         with tempfile.TemporaryDirectory(prefix="codex-ipc-transport-") as temporary:
             endpoint = Path(temporary) / "peer.sock"
             errors = []
-
-            def receive(connection):
-                header = connection.recv(4)
-                self.assertEqual(len(header), 4)
-                length = struct.unpack("<I", header)[0]
-                body = b""
-                while len(body) < length:
-                    body += connection.recv(length - len(body))
-                return json.loads(body)
+            accepted = threading.Event()
+            request_received = threading.Event()
+            now = [0.0]
 
             def serve(listener):
                 try:
                     connection, _ = listener.accept()
                     with connection:
-                        receive(connection)
-                        time.sleep(0.05)
-                        response = {
-                            "type": "response", "requestId": "initialize",
-                            "method": "initialize", "resultType": "success",
-                            "result": {"clientId": "native-client"},
-                        }
-                        body = json.dumps(response).encode()
-                        connection.sendall(struct.pack("<I", len(body)) + body)
+                        accepted.set()
+                        header = connection.recv(4)
+                        if not header:
+                            return
+                        self.assertEqual(len(header), 4)
+                        length = struct.unpack("<I", header)[0]
+                        body = b""
+                        while len(body) < length:
+                            body += connection.recv(length - len(body))
+                        json.loads(body)
+                        request_received.set()
+                        if network_seconds is None:
+                            response = {
+                                "type": "response", "requestId": "initialize",
+                                "method": "initialize", "resultType": "success",
+                                "result": {"clientId": "native-client"},
+                            }
+                            body = json.dumps(response).encode()
+                            connection.sendall(struct.pack("<I", len(body)) + body)
+                        else:
+                            self.assertEqual(connection.recv(1), b"")
                 except BaseException as error:
                     errors.append(error)
 
+            class SynchronizedRealStream:
+                def __init__(self, stream):
+                    self.stream = stream
+
+                def read(self, maximum, timeout):
+                    return self.stream.read(maximum, timeout)
+
+                def write(self, data, timeout):
+                    self.stream.write(data, timeout)
+                    if not request_received.wait(timeout=1):
+                        raise AssertionError("test peer did not receive the request")
+                    if post_write_elapsed is not None:
+                        now[0] = post_write_elapsed
+
+                def close(self):
+                    self.stream.close()
+
             def delayed_real_connection(path, timeout):
                 stream = connect_unix(path, timeout)
-                time.sleep(0.08)
-                return stream
+                if not accepted.wait(timeout=1):
+                    stream.close()
+                    raise AssertionError("test peer did not accept the connection")
+                now[0] = connection_elapsed
+                return SynchronizedRealStream(stream)
 
             with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as listener:
                 listener.bind(str(endpoint))
@@ -68,34 +94,58 @@ class CliTransportTimingTests(unittest.TestCase):
                     str(endpoint), {"incomingBytes": 262144, "frameBytes": 65536, "events": 64},
                     0.1, connector=delayed_real_connection, network_seconds=network_seconds,
                     io_seconds=1 if network_seconds is not None else None,
+                    clock=lambda: now[0],
                 )
+                failure = None
                 try:
-                    records = transport.send({
-                        "type": "request", "requestId": "initialize", "version": 0,
-                        "method": "initialize", "params": {"clientType": "cli"},
-                    })
+                    try:
+                        records = transport.send({
+                            "type": "request", "requestId": "initialize", "version": 0,
+                            "method": "initialize", "params": {"clientType": "cli"},
+                        })
+                    except ReceiveFailure as error:
+                        records = []
+                        failure = str(error)
                 finally:
                     transport.close()
                 server.join(timeout=2)
 
-            return records, transport.receive_status, errors, server.is_alive()
+            return (records, transport.receive_status, errors, server.is_alive(),
+                    request_received.is_set(), failure)
 
     def test_legacy_response_window_starts_after_connection_returns(self):
-        records, statuses, errors, server_alive = self.delayed_exchange()
+        result = self.delayed_exchange(post_write_elapsed=0.12)
+        records, statuses, errors, server_alive, request_seen, failure = result
 
         self.assertFalse(server_alive)
         self.assertEqual(errors, [])
+        self.assertTrue(request_seen)
+        self.assertIsNone(failure)
         self.assertEqual(statuses, [])
         self.assertEqual(len(records), 1)
         self.assertEqual(records[0][1]["result"]["clientId"], "native-client")
 
     def test_diagnostic_network_budget_includes_connection_delay(self):
-        records, statuses, errors, server_alive = self.delayed_exchange(network_seconds=0.1)
+        result = self.delayed_exchange(network_seconds=0.1, post_write_elapsed=0.12)
+        records, statuses, errors, server_alive, request_seen, failure = result
 
         self.assertFalse(server_alive)
-        self.assertTrue(all(isinstance(error, BrokenPipeError) for error in errors), errors)
+        self.assertEqual(errors, [])
+        self.assertTrue(request_seen)
+        self.assertIsNone(failure)
         self.assertEqual(records, [])
         self.assertEqual(statuses, ["observation-deadline-unknown"])
+
+    def test_diagnostic_network_budget_can_expire_before_write(self):
+        result = self.delayed_exchange(network_seconds=0.1, connection_elapsed=0.1)
+        records, statuses, errors, server_alive, request_seen, failure = result
+
+        self.assertFalse(server_alive)
+        self.assertEqual(errors, [])
+        self.assertFalse(request_seen)
+        self.assertEqual(records, [])
+        self.assertEqual(statuses, [])
+        self.assertEqual(failure, "network-deadline-unknown")
 
 
 class CodexIpcSenderTests(unittest.TestCase):

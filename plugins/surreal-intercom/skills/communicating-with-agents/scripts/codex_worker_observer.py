@@ -115,9 +115,14 @@ def project_snapshot(update):
     if not isinstance(runtime_status, dict):
         raise Refusal("invalid-thread-runtime-status")
     runtime = runtime_status.get("type")
+    if "type" in runtime_status and not isinstance(runtime, str):
+        raise Refusal("invalid-thread-runtime-status-type")
     activity = runtime if runtime in {"active", "idle"} else "unknown"
     try:
         turns, complete = native_turns(state)
+        if any(not isinstance(turn.get("turnId"), str) or not turn["turnId"].strip()
+               for turn in turns):
+            raise Refusal("unsupported-turn-id")
         history = {"support": "supported", "complete": complete}
         view = {
             "activity": activity,
@@ -168,6 +173,23 @@ def observe(document, profile):
     acquisition_failure = None
     follow_reason = None
     closure = {"subscription": "not-followed", "connection": "not-opened"}
+    binding_invalidations = {
+        "connection-reset-needs-new-binding", "owner-disconnected-needs-new-binding",
+    }
+    def preferred_error(current, candidate):
+        if current is None or (candidate in binding_invalidations
+                               and current not in binding_invalidations):
+            return candidate
+        return current
+    def record_operation_error(reason, state="unknown"):
+        nonlocal operation_error
+        current = operation_error["reason"] if operation_error is not None else None
+        selected = preferred_error(current, reason)
+        if operation_error is None or selected != current:
+            operation_error = {
+                "state": "unknown" if selected in binding_invalidations else state,
+                "reason": selected,
+            }
     def mark_acquisition_failure(reason):
         nonlocal acquisition_failure
         if acquisition_failure is None:
@@ -192,23 +214,34 @@ def observe(document, profile):
         return records
     def process_records(records):
         nonlocal revision, dirty, evidence_reason
+        batch_error = None
         for record, message in records:
-            update = consume_thread_state_record(
-                record, message, binding=binding,
-                client=binding.get("client", client), revision=revision,
-            )
-            if update is None:
-                continue
-            revision = update["revision"]
-            dirty = update["dirty"]
-            if update["state"] is not None:
-                state_bytes = encoded(update["state"])
-                previous = snapshot_states.get(update["revision"])
-                if previous is not None and previous != state_bytes:
-                    evidence_reason = "conflicting-same-revision"
-                else:
-                    snapshot_states[update["revision"]] = state_bytes
-                snapshots.append(project_snapshot(update))
+            try:
+                update = consume_thread_state_record(
+                    record, message, binding=binding,
+                    client=binding.get("client", client), revision=revision,
+                )
+                if update is None:
+                    continue
+                snapshot = None
+                state_bytes = None
+                previous = None
+                if update["state"] is not None:
+                    state_bytes = encoded(update["state"])
+                    snapshot = project_snapshot(update)
+                    previous = snapshot_states.get(update["revision"])
+                revision = update["revision"]
+                dirty = update["dirty"]
+                if snapshot is not None:
+                    if previous is not None and previous != state_bytes:
+                        evidence_reason = "conflicting-same-revision"
+                    else:
+                        snapshot_states[update["revision"]] = state_bytes
+                    snapshots.append(snapshot)
+            except Refusal as error:
+                batch_error = preferred_error(batch_error, str(error))
+        if batch_error is not None:
+            raise Refusal(batch_error)
     try:
         client = discover_owner(
             transport, binding, text=require_text, refusal=Refusal,
@@ -229,10 +262,8 @@ def observe(document, profile):
         if not (acquisition_failure is not None and str(error) in {
                 "initialize-unavailable", "owner-unavailable", "connection-incomplete-before-write",
         }):
-            operation_error = {
-                "state": "unknown" if followed or unknown_before_follow else "refused",
-                "reason": str(error),
-            }
+            record_operation_error(
+                str(error), "unknown" if followed or unknown_before_follow else "refused")
     finally:
         if followed:
             try:
@@ -240,7 +271,8 @@ def observe(document, profile):
                 closure["subscription"] = "unfollow-sent-ack-unknown"
                 process_records(cleanup_records)
             except (Refusal, AttributeError, KeyError, RecursionError, TypeError, ValueError) as error:
-                operation_error = {"state": "unknown", "reason": str(error)}
+                closure["cleanupFailure"] = str(error)
+                record_operation_error(str(error))
             except (ReceiveFailure, OSError) as error:
                 closure["subscription"] = "unfollow-unknown:" + str(error)
         try:
@@ -336,11 +368,16 @@ def write_create_only(path, result, maximum):
         body = encoded(result) + b"\n"
     if len(body) > maximum:
         raise OutputFailure("result-limit-cannot-represent-refusal")
-    if path.exists() or path.is_symlink():
+    try:
+        output_exists = path.exists() or path.is_symlink()
+    except OSError as error:
+        raise OutputFailure("output-finalization-failed") from error
+    if output_exists:
         raise OutputFailure("output-collision")
     temporary = path.with_name(f".{path.name}.{os.getpid()}.tmp")
     descriptor = None
     temporary_created = False
+    finalization_error = None
     try:
         descriptor = os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
         temporary_created = True
@@ -350,16 +387,25 @@ def write_create_only(path, result, maximum):
             stream.flush()
             os.fsync(stream.fileno())
         os.link(temporary, path)
-    except (FileExistsError, OSError) as error:
-        raise OutputFailure("output-finalization-failed") from error
+    except OSError as error:
+        finalization_error = error
     finally:
         if descriptor is not None:
-            os.close(descriptor)
+            try:
+                os.close(descriptor)
+            except OSError as error:
+                if finalization_error is None:
+                    finalization_error = error
         if temporary_created:
             try:
                 temporary.unlink()
             except FileNotFoundError:
                 pass
+            except OSError as error:
+                if finalization_error is None:
+                    finalization_error = error
+    if finalization_error is not None:
+        raise OutputFailure("output-finalization-failed") from finalization_error
     return result
 
 

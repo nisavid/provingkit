@@ -182,7 +182,10 @@ class CliTransport:
                 deadline = self._phase_deadline(reserve_cleanup=reserve_cleanup)
                 timeout = self._io_timeout(deadline)
             self.stream = self.connector(self.endpoint, timeout)
-        deadline = self._phase_deadline(reserve_cleanup=reserve_cleanup)
+        # Diagnostic mode keeps one constructor-owned network budget. Legacy
+        # mode starts its response window after required pre-write work.
+        if not legacy_timing:
+            deadline = self._phase_deadline(reserve_cleanup=reserve_cleanup)
         if envelope['method'] in {'thread-follower-steer-turn', 'thread-follower-start-turn'}:
             if self.pending_path is None or not self.pending_path.is_file():
                 raise ReceiveFailure('missing-pre-write-capture')
@@ -191,6 +194,8 @@ class CliTransport:
         data = json.dumps(envelope, separators=(',', ':')).encode()
         self._check_outgoing_frame(data)
         self.outbound.append(envelope)
+        if legacy_timing:
+            deadline = self._phase_deadline(reserve_cleanup=reserve_cleanup)
         self._write(struct.pack('<I', len(data)) + data, deadline, full_legacy_wait=True)
         if self.receiver.incomplete:
             self.receive_status.append('receive-disabled:' + self.receiver.incomplete)

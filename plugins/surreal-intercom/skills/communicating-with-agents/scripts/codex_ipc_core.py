@@ -86,7 +86,10 @@ def consume_thread_state_record(record, message, *, binding, client, revision):
     change = params.get("change")
     if not isinstance(change, dict):
         raise Refusal("invalid-state-change")
-    if change["type"] != "snapshot":
+    change_type = change.get("type")
+    if not isinstance(change_type, str) or not change_type:
+        raise Refusal("invalid-state-change-type")
+    if change_type != "snapshot":
         patch_revision = change.get("revision")
         if type(patch_revision) is not int or patch_revision < 0:
             raise Refusal("invalid-patch-revision")
@@ -100,7 +103,7 @@ def consume_thread_state_record(record, message, *, binding, client, revision):
         raise Refusal("invalid-revision")
     if revision is not None and change["revision"] < revision:
         raise Refusal("stale-revision")
-    state = change["conversationState"]
+    state = change.get("conversationState")
     if not isinstance(state, dict):
         raise Refusal("invalid-conversation-state")
     if state.get("id") != binding["target"]:
