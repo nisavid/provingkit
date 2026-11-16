@@ -489,6 +489,120 @@ class CodexWorkerObserverTests(unittest.TestCase):
             if index + 1 < len(invalid_clients):
                 self.reset_fixture()
 
+    def test_pre_owner_missing_or_null_disconnect_status_is_ignored(self):
+        for index, include_client_id in enumerate((False, True)):
+            def serve(listener):
+                try:
+                    connection, _ = listener.accept()
+                    with connection:
+                        connection.settimeout(2)
+                        self.assertEqual(self.receive(connection)["method"], "initialize")
+                        params = {"status": "disconnected"}
+                        if include_client_id:
+                            params["clientId"] = None
+                        self.send(
+                            connection,
+                            {"type": "broadcast", "method": "client-status-changed",
+                             "params": params},
+                            {"type": "response", "requestId": "initialize",
+                             "method": "initialize", "resultType": "success",
+                             "result": {"clientId": "observer-client"}},
+                        )
+                        self.assertEqual(
+                            self.receive(connection)["method"], "thread-owner-discovery")
+                        self.send(connection, {
+                            "type": "response", "requestId": "owner",
+                            "method": "thread-owner-discovery", "resultType": "success",
+                            "handledByClientId": "worker-owner",
+                        })
+                        follow = self.receive(connection)
+                        self.assertEqual(follow["method"], "thread-stream-following-changed")
+                        self.assertTrue(follow["params"]["following"])
+                        self.send(connection, self.snapshot())
+                        unfollow = self.receive(connection)
+                        self.assertEqual(unfollow["method"], "thread-stream-following-changed")
+                        self.assertFalse(unfollow["params"]["following"])
+                except BaseException as error:
+                    self.errors.append(error)
+
+            with self.subTest(client_id="null" if include_client_id else "missing"), \
+                    socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as listener:
+                listener.bind(str(self.endpoint))
+                listener.listen(1)
+                server = threading.Thread(target=serve, args=(listener,))
+                server.start()
+                completed = self.invoke()
+                server.join(timeout=3)
+
+            self.assertFalse(server.is_alive())
+            self.assertEqual(self.errors, [])
+            result = self.assert_observed(completed)
+            self.assertEqual(result["binding"]["owner"], "worker-owner")
+            self.assertEqual([message["method"] for message in self.wire], [
+                "initialize", "thread-owner-discovery",
+                "thread-stream-following-changed", "thread-stream-following-changed",
+            ])
+            if index + 1 < 2:
+                self.reset_fixture()
+
+    def test_pre_owner_missing_or_null_snapshot_source_is_refused(self):
+        for index, include_source_client_id in enumerate((False, True)):
+            def serve(listener):
+                try:
+                    connection, _ = listener.accept()
+                    with connection:
+                        connection.settimeout(2)
+                        self.assertEqual(self.receive(connection)["method"], "initialize")
+                        snapshot = self.snapshot()
+                        if include_source_client_id:
+                            snapshot["sourceClientId"] = None
+                        else:
+                            snapshot.pop("sourceClientId")
+                        self.send(
+                            connection,
+                            snapshot,
+                            {"type": "response", "requestId": "initialize",
+                             "method": "initialize", "resultType": "success",
+                             "result": {"clientId": "observer-client"}},
+                        )
+                        self.assertEqual(connection.recv(1), b"")
+                except BaseException as error:
+                    self.errors.append(error)
+
+            with self.subTest(source_client_id=(
+                    "null" if include_source_client_id else "missing")), \
+                    socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as listener:
+                listener.bind(str(self.endpoint))
+                listener.listen(1)
+                server = threading.Thread(target=serve, args=(listener,))
+                server.start()
+                completed = self.invoke()
+                server.join(timeout=3)
+
+            self.assertFalse(server.is_alive())
+            self.assertEqual(self.errors, [])
+            self.assertEqual(completed.returncode, 2, completed.stdout + completed.stderr)
+            result = self.result()
+            self.assertEqual(result["status"], "refused")
+            self.assertEqual(result["terminal"], {
+                "state": "refused", "reason": "unmatched-state-binding",
+            })
+            self.assertEqual(result["activity"], "unknown")
+            self.assertEqual(result["acquisition"]["completedSnapshots"], 0)
+            self.assertEqual(result["localReceipt"]["first"], None)
+            self.assertEqual(result["localReceipt"]["last"], None)
+            self.assertEqual(result["history"], {"first": None, "last": None})
+            self.assertEqual(result["selectedViewComparison"]["first"], None)
+            self.assertEqual(result["selectedViewComparison"]["last"], None)
+            self.assertEqual(result["selectedViewComparison"]["equal"], None)
+            self.assertEqual(result["binding"]["owner"], None)
+            self.assertEqual([message["method"] for message in self.wire], ["initialize"])
+            self.assertEqual(result["closure"], {
+                "subscription": "not-followed", "connection": "closed",
+            })
+            if index + 1 < 2:
+                self.reset_fixture()
+
     def test_invalid_initialize_client_refuses_before_owner_discovery(self):
         def serve(listener):
             try:

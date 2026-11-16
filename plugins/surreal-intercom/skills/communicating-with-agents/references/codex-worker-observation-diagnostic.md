@@ -115,7 +115,10 @@ processed once in wire order, including records completed before a terminal
 frame failure. A malformed record does not suppress later completed evidence.
 Owner-discovery status is reconciled against the owner named by the correlated
 response before follow; an unrelated client's disconnect does not invalidate
-that binding. A reset or owner disconnect during discovery or cleanup, and a
+that binding. Before a nonblank owner is known, unrelated or unidentified
+dictionary status records remain non-evidence, while state records are refused.
+Every accepted state record must name that known owner as its source. A reset
+or owner disconnect during discovery or cleanup, and a
 terminal framing, event, or aggregate-wire failure after a valid snapshot,
 therefore remains visible and invalidates success without erasing the acquired
 snapshot or counters. A cleanup record failure remains separately visible as

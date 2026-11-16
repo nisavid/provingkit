@@ -60,11 +60,14 @@ def consume_thread_state_record(record, message, *, binding, client, revision):
     """
     if message.get("method") == "ipc-connection-reset":
         raise Refusal("connection-reset-needs-new-binding")
+    owner = binding["owner"]
+    known_owner = isinstance(owner, str) and bool(owner.strip())
     if message.get("method") == "client-status-changed":
         status_params = message.get("params", {})
         if not isinstance(status_params, dict):
             raise Refusal("invalid-client-status-params")
-        if (status_params.get("clientId") == binding["owner"]
+        if (known_owner
+                and status_params.get("clientId") == owner
                 and status_params.get("status") == "disconnected"):
             raise Refusal("owner-disconnected-needs-new-binding")
     if message.get("method") != "thread-stream-state-changed":
@@ -76,8 +79,9 @@ def consume_thread_state_record(record, message, *, binding, client, revision):
     if (not isinstance(target_clients, list)
             or any(not isinstance(value, str) or not value.strip() for value in target_clients)):
         raise Refusal("invalid-target-client-ids")
-    if (message.get("type") != "broadcast" or message.get("version") != 11
-            or message.get("sourceClientId") != binding["owner"]
+    if (not known_owner
+            or message.get("type") != "broadcast" or message.get("version") != 11
+            or message.get("sourceClientId") != owner
             or client not in target_clients
             or params.get("hostId") != binding["host"]
             or params.get("conversationId") != binding["target"]
