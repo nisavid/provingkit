@@ -31,12 +31,40 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
                 / "trigger-evals.json"
             ).read_text()
         )
-        self.assertEqual(len(probes), 2)
-        self.assertEqual([probe["should_trigger"] for probe in probes], [True, False])
+        self.assertEqual(len(probes), 5)
+        self.assertEqual(
+            [probe["should_trigger"] for probe in probes],
+            [True, False, False, False, True],
+        )
         self.assertIn("user-owned task", probes[0]["query"])
         self.assertIn("authority", probes[0]["query"])
         self.assertIn("Delegation is settled", probes[1]["query"])
         self.assertIn("model and effort", probes[1]["query"])
+
+    def test_peer_message_preservation_cases_are_registered(self) -> None:
+        # Corpus coverage only; this does not execute or grade an agent.
+        for skill, name in (
+            ("choosing-agent-models", "select-peer-message-preservation"),
+            ("delegating-cross-agent-work", "delegate-peer-message-preservation"),
+        ):
+            with self.subTest(skill=skill):
+                scenarios = {
+                    item["name"]: item for item in self.documents[skill]["evals"]
+                }
+                self.assertIn(name, scenarios)
+                scenario = scenarios[name]
+                self.assertEqual(
+                    scenario["fixture_paths"],
+                    ["evals/fixtures/peer-message-preservation.md"],
+                )
+                self.assertEqual(
+                    {item["id"] for item in scenario["expectations"]},
+                    {
+                        "peer-optional-selectors-omitted",
+                        "peer-mandatory-binding-or-unresolved",
+                        "execution-selection-gates-retained",
+                    },
+                )
 
     def test_rolecasting_has_complete_detailed_scenario_inventory(self) -> None:
         observed = {
@@ -52,6 +80,8 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
                 "select-explicit-native-selection",
                 "select-partial-selection-controls",
                 "select-explicit-continuation-selection",
+                "select-peer-message-preservation",
+                "delegate-peer-message-preservation",
                 "delegate-explicit-thread-selection",
                 "delegate-partial-selection-controls",
                 "delegate-explicit-continuation-selection",

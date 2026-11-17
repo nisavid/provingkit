@@ -1,5 +1,30 @@
 # Capability Probes And Fallbacks
 
+## Distinguish Messages From Execution Assignments
+
+Determine what the operation asks the recipient to do before selecting settings.
+An ordinary peer message communicates within an already accepted assignment,
+without assigning new execution or selecting a settings change. Use
+`surreal-intercom:communicating-with-agents` and preserve the recipient's
+applicable selection. Omit optional model and effort overrides, even when the
+message tool exposes them. The sender's model, role, or coordination defaults
+supply no recipient selection.
+
+If the actuator requires a model or effort value, use the recipient's applicable
+bound selection for each required field. When a required binding is unknown,
+retain that uncertainty and return `NEEDS_CONTEXT` for the missing binding;
+leave the send unresolved rather than filling it from caller or global defaults.
+An omitted override establishes request shape, not effective or persistent
+settings preservation.
+
+Creating a worker, assigning new execution, or continuing selected execution
+uses Rolecasting's selection and continuation gates below. An intentional
+settings change also requires its applicable authority and capability. Determine
+the branch from the work and accepted assignment, not labels such as "follow-up"
+or "handoff" or the presence of a message field. Preservation never waives an
+applicable task requirement, security classification, account binding, or
+invocation authority; unresolved requirements keep their existing disposition.
+
 ## Prove An Exact Pair
 
 1. Identify the exact target family, surface, version, executor, and transport
@@ -43,7 +68,8 @@ to the toggle.
 | Effort only | Pass the selected effort. Record the inherited model binding and the absence of a model control. |
 | Neither | Record the inherited model and effort binding and why neither can be set. |
 
-Omit a model or effort field only when the exact surface does not expose it. Model inheritance is
+For creation and execution selection, omit a model or effort field only when
+the exact surface does not expose it. Model inheritance is
 permitted only without a model field, with its binding and reason recorded.
 For every unavailable control, establish the fixed binding sufficiently to
 pass suitability, effort eligibility, and consumer requirements before sending
@@ -115,6 +141,9 @@ Model selection does not grant authority to invoke a model, peer, CLI, API, or e
 During an already authorized no-task-data refresh, you may inspect route metadata exposed for unrelated tasks, including advertised model availability; this does not authorize reading task data. An existing task is eligible only when delegation created it for the current source task and bounded purpose, or the operator identified it as a same-purpose companion. Do not use an unrelated task as an execution or authorization route for current-task work, including to execute with its model or under its account, entitlement, permissions, or context.
 
 ## Re-prove Continuation Capability
+
+Apply this section to execution continuations under the
+[operation boundary](#distinguish-messages-from-execution-assignments).
 
 ### Ordinary current-tree Cloud
 

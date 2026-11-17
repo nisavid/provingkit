@@ -6,5 +6,17 @@
   {
     "query": "Delegation is settled and worker ownership is fixed. Select a supported model and effort for the assigned worker.",
     "should_trigger": false
+  },
+  {
+    "query": "Send a status acknowledgment to the existing peer within its accepted assignment. No new execution or settings change is requested; the message schema has optional model and effort overrides.",
+    "should_trigger": false
+  },
+  {
+    "query": "Return this source-window readback to the existing peer in its accepted coordination assignment, calling it a continuation. Preserve its settings; no new execution is assigned.",
+    "should_trigger": false
+  },
+  {
+    "query": "A message called a quick update assigns new execution to an existing worker. Bind the new assignment scope, authority and handoff before selecting its model.",
+    "should_trigger": true
   }
 ]
