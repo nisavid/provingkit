@@ -243,7 +243,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 {
                     "id": member_id,
                     "distribution_kind": distribution_kind,
-                    "version": "1.0.0",
+                    "version": "0.1.0-trunk",
                     "identity_manifests": {
                         "canonical": {
                             "path": f"plugins/{member_id}/plugin.json",

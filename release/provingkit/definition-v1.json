@@ -82,7 +82,7 @@
         "content_identity": {
           "kind": "plugin-content-lock",
           "path": "release/plugin-content-locks/artifact-customs.json",
-          "sha256": "sha256:8d870346b8db73c0391005f77f166d12bb5a686c1800c66b7448e9b0d15eedd5"
+          "sha256": "sha256:589255c6800221bf5071439826b38edde067873d707ab917176651ec3f9fc4d1"
         },
         "display_name": "Artifact Customs",
         "distribution_kind": "agent-plugin",

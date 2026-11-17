@@ -224,7 +224,6 @@
           "type": "object"
         },
         "version": {
-          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
           "type": "string"
         }
       },
