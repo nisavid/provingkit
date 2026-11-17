@@ -23,11 +23,85 @@ def text(value, name):
     return value
 
 
+def _identity(value, name):
+    if not isinstance(value, dict) or value.keys() != {"thread_id", "host_id"}:
+        raise MailboxError(f"{name} requires exactly thread_id and host_id")
+    for key in ("thread_id", "host_id"):
+        text(value[key], f"{name}.{key}")
+    return value
+
+
+def _reply_nomination(value, kind, recipient):
+    common = {"path", "sha256", "size"}
+    required = common | ({"invocation"} if kind == "codex-owner-admission" else set())
+    if not isinstance(value, dict) or value.keys() != required:
+        raise MailboxError("invalid reply-route nomination")
+    raw_path = value["path"]
+    digest = value["sha256"]
+    size = value["size"]
+    if (not isinstance(raw_path, str) or not raw_path
+            or not isinstance(digest, str) or len(digest) != 64
+            or any(character not in "0123456789abcdef" for character in digest)
+            or type(size) is not int or not 0 < size <= 4096):
+        raise MailboxError("invalid reply-route nomination")
+    path = Path(raw_path)
+    if not path.is_absolute() or ".." in path.parts or str(path) != raw_path:
+        raise MailboxError("invalid reply-route nomination")
+    if kind == "claude-mcp":
+        return value
+    invocation = value["invocation"]
+    invocation_keys = {
+        "control", "taskRef", "attemptId", "chat", "command", "workingDirectory",
+        "helper", "evidenceRef", "nativeItemId", "status", "exitCode",
+    }
+    if (not isinstance(invocation, dict) or invocation.keys() != invocation_keys
+            or invocation["control"] != "native-read-thread-command-execution"
+            or invocation["chat"] != recipient
+            or invocation["status"] != "completed"
+            or type(invocation["exitCode"]) is not int or invocation["exitCode"] != 0
+            or any(not isinstance(invocation[key], str) or not invocation[key]
+                   for key in ("taskRef", "attemptId", "workingDirectory",
+                               "evidenceRef", "nativeItemId"))
+            or not Path(invocation["workingDirectory"]).is_absolute()
+            or not isinstance(invocation["command"], list) or not invocation["command"]
+            or any(not isinstance(item, str) or not item for item in invocation["command"])
+            or not isinstance(invocation["helper"], dict)
+            or invocation["helper"].keys() != {"path", "sha256"}
+            or not isinstance(invocation["helper"]["path"], str)
+            or not invocation["helper"]["path"]
+            or invocation["helper"]["path"] not in invocation["command"]
+            or not isinstance(invocation["helper"]["sha256"], str)
+            or len(invocation["helper"]["sha256"]) != 64
+            or any(character not in "0123456789abcdef"
+                   for character in invocation["helper"]["sha256"])):
+        raise MailboxError("invalid Codex reply-route invocation")
+    return value
+
+
+def _reply_route(value, message):
+    required = {"schema", "kind", "recipient", "submitter", "correlation_id", "nomination"}
+    if (not isinstance(value, dict) or value.keys() != required
+            or value["schema"] != "provingkit-peer-reply-route-v1"
+            or not isinstance(value["kind"], str)
+            or value["kind"] not in {"codex-owner-admission", "claude-mcp"}):
+        raise MailboxError("invalid reply route")
+    _identity(value["recipient"], "reply_route.recipient")
+    _identity(value["submitter"], "reply_route.submitter")
+    correlation = message.get("correlation_id", message["message_id"])
+    if (value["recipient"] != message["sender"]
+            or value["submitter"] != message["recipient"]
+            or value["correlation_id"] != correlation):
+        raise MailboxError("reply route does not match message bindings")
+    text(value["correlation_id"], "reply_route.correlation_id")
+    _reply_nomination(value["nomination"], value["kind"], value["recipient"])
+    return value
+
+
 def validate_message(message):
     required = {"message_id", "sender", "recipient", "owner", "payload", "authority_ref"}
     if not isinstance(message, dict) or not required <= message.keys():
         raise MailboxError("message requires message_id, sender, recipient, owner, payload, authority_ref")
-    if message.keys() - required - {"holds", "correlation_id"}:
+    if message.keys() - required - {"holds", "correlation_id", "reply_route"}:
         raise MailboxError("unknown message fields")
     for name in ("message_id", "authority_ref"):
         text(message[name], name)
@@ -36,14 +110,12 @@ def validate_message(message):
     if not isinstance(message["payload"], str):
         raise MailboxError("payload must be a string")
     for name in ("sender", "recipient", "owner"):
-        identity = message[name]
-        if not isinstance(identity, dict) or identity.keys() != {"thread_id", "host_id"}:
-            raise MailboxError(f"{name} requires exactly thread_id and host_id")
-        for key in ("thread_id", "host_id"):
-            text(identity[key], f"{name}.{key}")
+        _identity(message[name], name)
     holds = message.get("holds", [])
     if not isinstance(holds, list) or any(not isinstance(item, str) for item in holds):
         raise MailboxError("holds must be a list of strings")
+    if "reply_route" in message:
+        _reply_route(message["reply_route"], message)
     return {**message, "holds": holds}
 
 

@@ -23,6 +23,23 @@ from codex_ipc_transport import CliTransport, ReceiveFailure, connect_unix  # no
 
 
 class CliTransportTimingTests(unittest.TestCase):
+    class InjectedStream:
+        def __init__(self, peer=None):
+            self.peer = peer
+            self.writes = []
+
+        def peer_identity(self):
+            return self.peer
+
+        def write(self, data, timeout):
+            self.writes.append(data)
+
+        def read(self, maximum, timeout):
+            raise TimeoutError
+
+        def close(self):
+            pass
+
     def delayed_exchange(self, *, network_seconds=None, connection_elapsed=0.08,
                          post_write_elapsed=None):
         with tempfile.TemporaryDirectory(prefix="codex-ipc-transport-") as temporary:
@@ -146,6 +163,40 @@ class CliTransportTimingTests(unittest.TestCase):
         self.assertEqual(records, [])
         self.assertEqual(statuses, [])
         self.assertEqual(failure, "network-deadline-unknown")
+
+    def test_connected_peer_identity_uses_the_opened_stream(self):
+        peer = {"pid": 4100, "uid": 1000, "gid": 1000}
+        stream = self.InjectedStream(peer)
+        transport = CliTransport(
+            "/synthetic/peer.sock",
+            {"incomingBytes": 262144, "frameBytes": 65536, "events": 64},
+            0.1, connector=lambda endpoint, timeout: stream,
+        )
+
+        self.assertEqual(transport.connected_peer_identity(), peer)
+        self.assertIs(transport.stream, stream)
+
+    def test_before_write_refusal_precedes_message_write_boundary(self):
+        with tempfile.TemporaryDirectory(prefix="codex-ipc-prewrite-") as temporary:
+            pending = Path(temporary) / "attempt.json"
+            pending.write_text("{}", encoding="utf-8")
+            stream = self.InjectedStream()
+            transport = CliTransport(
+                "/synthetic/peer.sock",
+                {"incomingBytes": 262144, "frameBytes": 65536, "events": 64},
+                0.1, connector=lambda endpoint, timeout: stream,
+            )
+            transport.pending_path = pending
+
+            with self.assertRaisesRegex(ReceiveFailure, "standing-hold"):
+                transport.send(
+                    {"method": "thread-follower-start-turn"},
+                    before_write=lambda: (_ for _ in ()).throw(ReceiveFailure("standing-hold")),
+                )
+
+            self.assertEqual(stream.writes, [])
+            self.assertEqual(transport.write_boundary, {})
+            self.assertEqual(transport.outbound, [])
 
 
 class CodexIpcSenderTests(unittest.TestCase):
