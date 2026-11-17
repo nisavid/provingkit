@@ -45,6 +45,13 @@ class ClaudeRouteNominationTests(unittest.TestCase):
     def write(path, value):
         path.write_text(json.dumps(value), encoding="utf-8")
 
+    def initialize_mailbox(self, mailbox_module, path):
+        output = io.StringIO()
+        with contextlib.redirect_stdout(output):
+            exit_code = mailbox_module.main(["--store", str(path), "init"])
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(json.loads(output.getvalue()), {"initialized": True})
+
     def produce(self, route, root, recipient=None, environment=None, lookup=None):
         if recipient is None:
             recipient = {"thread_id": "claude-receiver", "host_id": "local"}
@@ -183,6 +190,7 @@ class ClaudeRouteNominationTests(unittest.TestCase):
             }
             prepare_path = root / "prepare-input.json"
             self.write(prepare_path, prepare_request)
+            self.initialize_mailbox(mailbox_module, prepare_request["mailbox"])
             prepare_stdout = io.StringIO()
             with contextlib.redirect_stdout(prepare_stdout):
                 prepare_exit = route.main(
@@ -223,6 +231,80 @@ class ClaudeRouteNominationTests(unittest.TestCase):
             self.assertEqual(retained["state"], "planned")
             self.assertEqual(Path(prepared["path"]).stat().st_mode & 0o777, 0o600)
             self.assertEqual(Path(prepare_request["mailbox"]).stat().st_mode & 0o777, 0o600)
+
+    def test_prepare_refuses_missing_recovery_mailbox_without_replacing_it(self):
+        route, _, mailbox_module = self.load_modules()
+        with tempfile.TemporaryDirectory(prefix="claude-route-") as temporary:
+            root = Path(temporary).resolve()
+            root.chmod(0o700)
+            _, publication, recipient = self.produce(route, root)
+            request = self.prepare_input(root, {
+                "path": publication["path"],
+                "bytes": publication["bytes"],
+                "sha256": publication["sha256"],
+            }, recipient)
+            mailbox_path = Path(request["mailbox"])
+            self.initialize_mailbox(mailbox_module, mailbox_path)
+            retained = root / "retained-mailbox.sqlite3"
+            mailbox_path.rename(retained)
+            retained_bytes = retained.read_bytes()
+            request_path = root / "prepare-input.json"
+            self.write(request_path, request)
+
+            output = io.StringIO()
+            errors = io.StringIO()
+            with contextlib.redirect_stdout(output), contextlib.redirect_stderr(errors):
+                exit_code = route.main(
+                    ["prepare", "--request", str(request_path)],
+                    effective_uid=os.geteuid(),
+                )
+
+            self.assertEqual(exit_code, 0)
+            result = json.loads(output.getvalue())
+            self.assertFalse(result["prepared"])
+            self.assertEqual(result["reason"], "mailbox-unavailable")
+            self.assertEqual(result["closure"], "no-provider-started")
+            self.assertEqual(errors.getvalue(), "")
+            self.assertFalse(mailbox_path.exists())
+            self.assertFalse(Path(request["publication"]["path"]).exists())
+            self.assertEqual(retained.read_bytes(), retained_bytes)
+
+    def test_prepare_returns_safe_refusal_for_existing_corrupt_mailbox(self):
+        route, _, _ = self.load_modules()
+        with tempfile.TemporaryDirectory(prefix="claude-route-") as temporary:
+            root = Path(temporary).resolve()
+            root.chmod(0o700)
+            _, publication, recipient = self.produce(route, root)
+            request = self.prepare_input(root, {
+                "path": publication["path"],
+                "bytes": publication["bytes"],
+                "sha256": publication["sha256"],
+            }, recipient)
+            mailbox_path = Path(request["mailbox"])
+            corrupt_bytes = b"not a SQLite mailbox\nprivate detail"
+            mailbox_path.write_bytes(corrupt_bytes)
+            mailbox_path.chmod(0o600)
+            request_path = root / "prepare-input.json"
+            self.write(request_path, request)
+
+            output = io.StringIO()
+            errors = io.StringIO()
+            with contextlib.redirect_stdout(output), contextlib.redirect_stderr(errors):
+                exit_code = route.main(
+                    ["prepare", "--request", str(request_path)],
+                    effective_uid=os.geteuid(),
+                )
+
+            self.assertEqual(exit_code, 0)
+            result = json.loads(output.getvalue())
+            self.assertFalse(result["prepared"])
+            self.assertEqual(result["reason"], "mailbox-unavailable")
+            self.assertEqual(result["closure"], "no-provider-started")
+            self.assertEqual(errors.getvalue(), "")
+            self.assertNotIn("database", output.getvalue().lower())
+            self.assertNotIn("traceback", output.getvalue().lower())
+            self.assertEqual(mailbox_path.read_bytes(), corrupt_bytes)
+            self.assertFalse(Path(request["publication"]["path"]).exists())
 
     def test_prepare_refuses_a_re_pinned_malformed_private_target(self):
         route, _, _ = self.load_modules()

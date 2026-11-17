@@ -495,6 +495,8 @@ def claude_flow(root, modules, scripts, plugin):
     origin = {"thread_id": "codex-origin", "host_id": "local"}
     actor = {"thread_id": "claude-submitter", "host_id": "local"}
     store = root / "mailbox.sqlite3"
+    initialized = invoke(mailbox.main, ["--store", str(store), "init"])
+    assert initialized == {"initialized": True}, initialized
     bootstrap = (
         "import pathlib,sys; scripts=pathlib.Path(sys.argv[1]); "
         "sys.path.insert(0,str(scripts)); import claude_mcp_sender; "

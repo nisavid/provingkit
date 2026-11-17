@@ -9,6 +9,7 @@ from pathlib import Path
 import posixpath
 import re
 import shutil
+import sqlite3
 import stat
 import sys
 
@@ -272,16 +273,17 @@ def _mailbox_path(value, effective_uid):
     if not path.is_absolute():
         raise RouteRefusal("invalid-mailbox-custody")
     _private_directory(path.parent, effective_uid)
-    if path.exists() or path.is_symlink():
-        observed = path.lstat()
-        if (
-            stat.S_ISLNK(observed.st_mode)
-            or not stat.S_ISREG(observed.st_mode)
-            or observed.st_uid != effective_uid
-            or stat.S_IMODE(observed.st_mode) != 0o600
-            or observed.st_nlink != 1
-        ):
-            raise RouteRefusal("invalid-mailbox-custody")
+    if not (path.exists() or path.is_symlink()):
+        raise RouteRefusal("mailbox-unavailable")
+    observed = path.lstat()
+    if (
+        stat.S_ISLNK(observed.st_mode)
+        or not stat.S_ISREG(observed.st_mode)
+        or observed.st_uid != effective_uid
+        or stat.S_IMODE(observed.st_mode) != 0o600
+        or observed.st_nlink != 1
+    ):
+        raise RouteRefusal("invalid-mailbox-custody")
     return path
 
 
@@ -372,7 +374,7 @@ def main(argv=None, *, effective_uid=None, environment=None, launcher_lookup=Non
             output, capture, mailbox_path, message, sender_request, expected = _prepared_request(
                 request, uid,
             )
-            mailbox = Mailbox(mailbox_path, initialize=not mailbox_path.exists())
+            mailbox = Mailbox(mailbox_path)
             try:
                 mailbox.plan(message)
             finally:
@@ -400,6 +402,8 @@ def main(argv=None, *, effective_uid=None, environment=None, launcher_lookup=Non
             }
     except FileExistsError:
         result["reason"] = "private-output-already-exists"
+    except sqlite3.Error:
+        result["reason"] = "mailbox-unavailable"
     except (
         RouteRefusal, OSError, UnicodeError, ValueError, KeyError, TypeError,
         RecursionError,

@@ -113,6 +113,18 @@ The agent creates a `claude-sender-request-preparation-v1` JSON file with:
 - `publication`: one unused private path and `CaptureWriter` settings for the
   sender request.
 
+For genuine first setup only, select the private mailbox through the existing
+caller-owned bookkeeping procedure and create it once through the create-only
+boundary:
+
+```sh
+python -B "$SKILL_DIR/scripts/native_codex_mailbox.py" --store "$mailbox" init
+```
+
+Every later preparation reuses that exact mailbox. An absent selected mailbox
+is unavailable recovery state; preserve that distinction and recover the
+original store rather than initializing a replacement.
+
 Run preparation from the authorized caller's control:
 
 ```sh
@@ -126,9 +138,11 @@ the complete record, reapplies the normalized socket rule, and requires the
 message recipient to match the nominated recipient. It preserves the launcher's
 invoked name and command bytes.
 
-The operation initializes the private mailbox only when its path is absent,
-then plans the immutable message through `Mailbox.plan`. An existing mailbox is
-reused and must retain the same message content. It builds the sender request
+The operation opens the existing private mailbox and plans the immutable
+message through `Mailbox.plan`. The mailbox must retain the same message
+content. An absent or unavailable mailbox returns the fixed
+`mailbox-unavailable` safe refusal without exposing database diagnostics,
+creating a store, or publishing a sender request. It builds the sender request
 from the ordinary inputs and validates that request with the actual
 `claude_mcp_sender.validate` parser before create-only publication. The request's
 `evidence_ref` is `sha256:<nomination digest>`; that reference identifies the
