@@ -152,6 +152,12 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 destination / "plugins" / member,
                 dirs_exist_ok=True,
             )
+        # Historical carriers retain the current member identities for provenance checks.
+        for member in ("artifact-customs", "mergecraft", "tricritical", "versionkeeping"):
+            for relative in ("plugin.json", ".claude-plugin/plugin.json"):
+                target = destination / "plugins" / member / relative
+                target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(REPOSITORY / "plugins" / member / relative, target)
         for relative in (
             "scripts/run_task_witness_qualification.py",
             "scripts/validate_task_witness.py",
