@@ -2,10 +2,10 @@
   "schema_version": 1,
   "algorithm": "sha256",
   "files": {
-    ".claude-plugin/plugin.json": "78b7e3b2d2bfbed403ca0db1c6edea8139ac3fcaff1dadc784da7d8975cfea3d",
+    ".claude-plugin/plugin.json": "cd6f729a5b6ad3f03eccb1e2a3a8ca953dbf8c608bc913089decb868551edae5",
     "README.md": "c2faf73450622f2583a6adcdf0aeb28c0b4e526c7f7ca6f567f41263f5fdc7c0",
     "evals/delivery.json": "3926df63cef6bd46edda5ddcfe0992b04a0b7be6156e6bae48cc7cad4e01a9c7",
-    "plugin.json": "d1833e0a8d23bac7c7c32bcf67880faf28af99e459d7fe57b9eaf33b7a95de29",
+    "plugin.json": "f29077742b48b58a1953989392d811726b15bcae0203e1accc9208bba03a8fd4",
     "skills/choosing-agent-models/SKILL.md": "6bdfbe712e84a1b2186e92465067760d9ab7132799fc7147724d74cd518245c4",
     "skills/choosing-agent-models/agents/openai.yaml": "e1a582079fe7cb2026f9fcbe1963f65c8c04622e8d9d2354b2e2242ba9f2d7c8",
     "skills/choosing-agent-models/evals/evals.json": "cb95ac057d2ff903f068aae93f8abf153b5119ccad46c9434707ceb23c8def8b",

@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.0.0 - 2026-07-22
+## Historical source changes (mistakenly labeled 1.0.0) - 2026-07-22
 
 - Adopt Agent Plugins v1 as the canonical package, retain the Claude adapter,
   and project shared contracts into each consuming portable skill.

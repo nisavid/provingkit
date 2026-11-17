@@ -1,6 +1,9 @@
 # Changelog
 
-## Unreleased
+## 0.1.0-trunk
+
+- Align the source and Claude adapter versions with the Kit's synchronized
+  `0.1.0-trunk` development identity.
 
 - Choose prose register and organization for the medium, purpose, and audience,
   with subject-led publication openings and useful first-person evidence.
@@ -9,7 +12,7 @@
 - Expand the writing corpus from seven to twelve cases covering publications,
   documentation, personal accounts, and source and runtime evidence.
 
-## 1.0.0
+## Historical source changes (mistakenly labeled 1.0.0)
 
 - Add the Claude-native `proseweaver` agent alias as a thin forwarder to the
   portable `writing-for-people` skill.
