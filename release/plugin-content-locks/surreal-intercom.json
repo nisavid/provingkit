@@ -30,7 +30,7 @@
     "skills/communicating-with-agents/scripts/codex_ipc_transport.py": "057117f9439133d82f7b02fa8010a1745bcefb0d9682928655a7664fb8022440",
     "skills/communicating-with-agents/scripts/codex_route_nomination.py": "7eb0eec88993d015fc84a42acce8410f550404319395733e08aafce226df2786",
     "skills/communicating-with-agents/scripts/codex_worker_observer.py": "5e9cda52d6aee1ac54cd366c673d76f695410e094a667cfd0a4b8676afe0d824",
-    "skills/communicating-with-agents/scripts/native_codex_mailbox.py": "80785e846ed0f2549b2b8b93fa2c185fe215dddd951ddb48396ca4daf187620c",
+    "skills/communicating-with-agents/scripts/native_codex_mailbox.py": "7f59f99187ed1fa8101012850f2f6a66f0c4fe89b853e419f8488bc428d8e4fc",
     "skills/communicating-with-agents/scripts/owner_admission_sender.py": "6cd6942e87f17cddf0833dd1c2b7860a44c06ac415647da0dc788a4ee98db8e7",
     "skills/communicating-with-agents/scripts/peer_message.py": "778fbabb5d42f0d5a3d876c86452b47046b22a1552b57c98c46ffe5653656a9a",
     "topology.json": "d97d459e058c34f6867046f7d985346b2b3ce55a7c783b14f97b0743df006066"

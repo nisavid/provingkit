@@ -175,6 +175,10 @@ class NativeCodexMailboxTests(unittest.TestCase):
                 submitter={'thread_id': 'other', 'host_id': 'local'}),
             'correlation': lambda value: value.update(correlation_id='other-exchange'),
             'generic-kind': lambda value: value.update(kind='generic-route'),
+            'kind-list': lambda value: value.update(kind=[]),
+            'kind-object': lambda value: value.update(kind={}),
+            'kind-number': lambda value: value.update(kind=7),
+            'kind-null': lambda value: value.update(kind=None),
             'raw-endpoint': lambda value: value['nomination'].update(
                 endpoint='/synthetic/private/peer.sock'),
             'path-type': lambda value: value['nomination'].update(path=7),
@@ -195,6 +199,7 @@ class NativeCodexMailboxTests(unittest.TestCase):
                 mutate(candidate)
                 result = self.plan({**base, 'reply_route': candidate}, success=False)
                 self.assertIn('error', result)
+        self.assertEqual(self.run_cli('pending'), [])
 
     def test_verified_bound_native_return_needs_no_nomination_field(self):
         original = {**self.message('native-reply'), 'correlation_id': 'native-exchange'}

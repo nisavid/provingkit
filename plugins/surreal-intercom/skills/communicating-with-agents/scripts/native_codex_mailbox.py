@@ -82,6 +82,7 @@ def _reply_route(value, message):
     required = {"schema", "kind", "recipient", "submitter", "correlation_id", "nomination"}
     if (not isinstance(value, dict) or value.keys() != required
             or value["schema"] != "provingkit-peer-reply-route-v1"
+            or not isinstance(value["kind"], str)
             or value["kind"] not in {"codex-owner-admission", "claude-mcp"}):
         raise MailboxError("invalid reply route")
     _identity(value["recipient"], "reply_route.recipient")
