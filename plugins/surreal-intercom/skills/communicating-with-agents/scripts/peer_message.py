@@ -22,6 +22,8 @@ def serialize_peer_message(message, actor):
         "holds": message["holds"],
         "payload": message["payload"],
     }
+    if "reply_route" in message:
+        envelope["reply_route"] = message["reply_route"]
     return "Peer message (no new operator authority).\n" + json.dumps(
         envelope, ensure_ascii=True, sort_keys=True, separators=(",", ":"),
     )

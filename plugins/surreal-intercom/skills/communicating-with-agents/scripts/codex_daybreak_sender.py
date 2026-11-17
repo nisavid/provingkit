@@ -5,7 +5,10 @@ import argparse
 import hashlib
 import json
 import os
+import re
 import sqlite3
+import stat
+import subprocess
 import uuid
 from pathlib import Path
 import sys
@@ -29,12 +32,16 @@ CREATE = {
 ALLOWED_SUBMISSION_KEYS = {
     "operation_id", "message_id", "attempt_id", "correlation_id", "sender",
     "actor", "owner", "authority_ref", "holds", "payload", "endpoint",
-    "mailbox", "capture", "observation_seconds",
+    "mailbox", "capture", "observation_seconds", "resource_admission",
 }
 
 def parser():
     result = argparse.ArgumentParser(description=__doc__)
     result.add_argument("--root", required=True, help="private operation capture root")
+    result.add_argument("--standing-binding", help="trusted host-local standing admission binding")
+    result.add_argument("--standing-eligible", action="store_true")
+    result.add_argument("--standing-paused", action="store_true")
+    result.add_argument("--standing-independent-hold", action="store_true")
     phases = result.add_subparsers(dest="phase", required=True)
     for name in ("prepare", "continue"):
         phase = phases.add_parser(name)
@@ -168,8 +175,10 @@ def task_observations(directory, result):
     after_ref = None
     evidence_refs = set()
     accepted = result["status"] == "turn_accepted" and text(result.get("turn_id"))
-    recovering = (result["status"] == "submission_unknown"
-                  and bool(result.get("evidence_read_failures")))
+    recovering = (
+        result["status"] == "submission_unknown"
+        and (directory / "claim.json").is_file()
+    )
     bound_turn = result.get("turn_id")
     while True:
         wait_path = task_wait_path(directory, after_ref)
@@ -203,6 +212,136 @@ def task_observations(directory, result):
         if observation is None or observation["task"]["state"] in {"completed", "failed"}:
             return records
         after_ref = str(observation_path)
+
+
+def bound_standing_attempt(directory, result):
+    raw, attempt = read_private_capture(directory / "attempt.json", include_bytes=True)
+    envelope = attempt["envelope"]
+    params = envelope["params"]
+    request = params["turnStart"]["request"]
+    require(envelope["method"] == "thread-follower-start-turn"
+            and params["conversationId"] == request["threadId"] == result["child"]["thread_id"]
+            and request["clientUserMessageId"] == result["refs"]["attempt_id"]
+            and text(envelope["requestId"])
+            and attempt["correlation"] == envelope["requestId"]
+            and all(attempt["refs"][key] == result["refs"][key]
+                    for key in ("operation_id", "message_id", "attempt_id", "operation_ref")),
+            "task-attempt-conflict")
+    return envelope, hashlib.sha256(raw).hexdigest()
+
+
+def retained_accepted_turn(directory, result, standing, bound_attempt):
+    capture = read_private_capture(directory / "start-response.json")
+    if standing:
+        require(bound_attempt is not None, "task-attempt-conflict")
+        envelope, _ = bound_attempt
+    else:
+        envelope = read_private_capture(directory / "attempt.json")["envelope"]
+    method = "thread-follower-start-turn"
+    require(capture["envelope"] == envelope and envelope["method"] == method
+            and envelope["params"]["conversationId"] == result["child"]["thread_id"]
+            and envelope["params"]["turnStart"]["request"]["clientUserMessageId"]
+            == result["refs"]["attempt_id"], "invalid-start-response")
+    matches = [
+        item for _, item in capture["records"]
+        if item.get("type") == "response"
+        and item.get("requestId") == envelope["requestId"]
+        and item.get("method") == method
+        and item.get("handledByClientId") == envelope["targetClientId"]
+    ]
+    require(len(matches) == 1 and matches[0]["resultType"] == "success",
+            "invalid-start-response")
+    turn_id = matches[0]["result"]["result"]["turn"]["id"]
+    require(text(turn_id), "invalid-start-response")
+    return turn_id
+
+
+def retained_task_write_attempt(directory, bound_attempt):
+    """Test for evidence written after the standing callback returned."""
+    if bound_attempt is None:
+        return False
+    envelope, attempt_digest = bound_attempt
+    try:
+        response = read_private_capture(directory / "start-response.json")
+    except (OSError, ValueError, RecursionError):
+        response = None
+    if (isinstance(response, dict) and response.get("envelope") == envelope
+            and isinstance(response.get("records"), list)):
+        return True
+    try:
+        transport = read_private_capture(directory / "transport.json")
+    except (OSError, ValueError, RecursionError):
+        return False
+    return (isinstance(transport, dict) and isinstance(transport.get("outbound"), list)
+            and envelope in transport["outbound"]
+            and transport.get("writeBoundary") == {
+                "pendingExistedBeforeWrite": True,
+                "pendingSha256": attempt_digest,
+            })
+
+
+def retained_submission_fields(directory, record, result, standing, bound_attempt,
+                               write_attempted, *, claim):
+    fields = (
+        "status", "ipc", "saved_selection", "receipt", "task_completion",
+        "effective_program", "owned_connection",
+    )
+    require(isinstance(record, dict) and isinstance(record.get("refs"), dict)
+            and record.get("child") == result["child"]
+            and record.get("native_call") is None
+            and all(key in record for key in fields)
+            and all(record["refs"].get(key) == result["refs"][key]
+                    for key in ("operation_id", "message_id", "attempt_id", "operation_ref")),
+            "invalid-retained-result")
+    connection = record["owned_connection"]
+    require(isinstance(connection, dict) and connection.keys() == {"started", "closed"}
+            and all(value is None or type(value) is bool for value in connection.values())
+            and (record["saved_selection"] is None or record["saved_selection"] is True)
+            and all(record[key] == "unknown" for key in ("receipt", "task_completion", "effective_program")),
+            "invalid-retained-result")
+    status = record["status"]
+    ipc = record["ipc"]
+    task_write = record.get("task_write")
+    turn_id = record.get("turn_id")
+    require(ipc in ("unknown", "attempted", "not_attempted")
+            and (task_write in ("unknown", "attempted", "not_attempted") if standing
+                 else "task_write" not in record), "invalid-retained-result")
+    if status == "turn_accepted":
+        require(not claim and text(turn_id) and ipc == "attempted"
+                and record["saved_selection"] is True
+                and (not standing or task_write == "attempted")
+                and turn_id == retained_accepted_turn(directory, result, standing, bound_attempt),
+                "invalid-retained-result")
+    else:
+        require(status == "submission_unknown" and turn_id is None
+                and (not claim or ipc == "unknown")
+                and (not standing or task_write != "attempted" or ipc == "attempted"),
+                "invalid-retained-result")
+        if not claim:
+            try:
+                accepted_turn = retained_accepted_turn(directory, result, standing, bound_attempt)
+            except (OSError, ValueError, KeyError, TypeError, AttributeError, RecursionError):
+                accepted_turn = None
+            require(accepted_turn is None, "invalid-retained-result")
+    projection = {key: record[key] for key in fields}
+    if standing:
+        require(task_write != "not_attempted" or not write_attempted,
+                "invalid-retained-result")
+        # Positive write state is projected from the bound frame evidence below.
+        projection["task_write"] = "not_attempted" if task_write == "not_attempted" else "unknown"
+    if turn_id is not None:
+        projection["turn_id"] = turn_id
+    if "reason" in record:
+        require(text(record["reason"]), "invalid-retained-result")
+        projection["reason"] = record["reason"]
+    if "failures" in record:
+        failures = record["failures"]
+        require(isinstance(failures, list)
+                and all(isinstance(item, dict) and item.keys() == {"stage", "reason"}
+                        and all(text(value) for value in item.values()) for item in failures),
+                "invalid-retained-result")
+        projection["failures"] = failures
+    return projection
 
 
 def retained(directory):
@@ -264,6 +403,15 @@ def retained(directory):
         result["status"] = "bootstrap_" + completion["bootstrap"]["state"]
         result["refs"]["bootstrap_completion_ref"] = str(directory / "bootstrap-completed.json")
     claim_present = (directory / "claim.json").exists()
+    standing = intent.get("resource_admission") == "standing-v1"
+    bound_attempt = None
+    if claim_present and standing:
+        try:
+            bound_attempt = bound_standing_attempt(directory, result)
+        except (OSError, ValueError, KeyError, TypeError, RecursionError):
+            pass
+    write_attempted = retained_task_write_attempt(directory, bound_attempt)
+    decision_capture_failed = False
     if claim_present:
         result.pop("reason", None)
     evidence_read_failures = []
@@ -272,7 +420,7 @@ def retained(directory):
         if path.exists():
             try:
                 record = read_json(path)
-            except (ValueError, OSError) as exc:
+            except (ValueError, OSError, RecursionError) as exc:
                 if name == "claim.json" or not claim_present:
                     raise
                 evidence_read_failures.append({
@@ -280,12 +428,34 @@ def retained(directory):
                     "reason": "read-error" if isinstance(exc, OSError) else "invalid-json",
                 })
             else:
-                result.update(record)
+                try:
+                    projection = retained_submission_fields(
+                        directory, record, result, standing, bound_attempt, write_attempted,
+                        claim=name == "claim.json",
+                    )
+                except (OSError, ValueError, KeyError, TypeError, AttributeError, RecursionError):
+                    if name == "claim.json" or not claim_present:
+                        raise ValueError("invalid-retained-result")
+                    evidence_read_failures.append({"path": str(path), "reason": "invalid-result"})
+                else:
+                    if (projection.get("task_write") == "not_attempted"
+                            and {"stage": "task-submit", "reason": "standing-decision-capture-failed"}
+                            in projection.get("failures", ())):
+                        decision_capture_failed = True
+                    result.update(projection)
     if evidence_read_failures:
         result["evidence_read_failures"] = evidence_read_failures
     for name, key in (("setup.json", "setup_ref"), ("attempt.json", "attempt_ref")):
         if (directory / name).exists():
             result["refs"][key] = str(directory / name)
+    if write_attempted:
+        result.update(ipc="attempted", task_write="attempted")
+    if bound_attempt is not None and not decision_capture_failed:
+        decision_ref = retained_standing_decision(directory, intent, bound_attempt[0])
+        if decision_ref is not None:
+            result["refs"]["standing_decision_ref"] = decision_ref
+            if result.get("task_write") == "not_attempted":
+                result["task_write"] = "unknown"
     observations = task_observations(directory, result)
     if observations:
         wait_path, _, observation_path, observation = observations[-1]
@@ -309,6 +479,8 @@ def retained(directory):
 def validate_submission_intent(intent, continuation=False):
     allowed = ALLOWED_SUBMISSION_KEYS | ({"previous_operation_id"} if continuation else set())
     require(not intent.keys() - allowed, "unsupported-submission-input")
+    if "resource_admission" in intent:
+        require(intent["resource_admission"] == "standing-v1", "unsupported-resource-admission")
     for key in ("operation_id", "message_id", "attempt_id", "authority_ref", "payload", "endpoint"):
         require(text(intent.get(key)), "invalid-" + key)
     if continuation:
@@ -325,12 +497,127 @@ def validate_submission_intent(intent, continuation=False):
     require(intent.get("capture") is not None, "missing-submission-capture-settings")
 
 
-def submit_task(directory, intent, root, writer):
+class StandingRefusal(ValueError):
+    """A task write was withheld by the standing route."""
+
+
+def unique_json_object(pairs):
+    value = dict(pairs)
+    if len(value) != len(pairs):
+        raise ValueError("duplicate-json-key")
+    return value
+
+
+def binding_identity(info):
+    return (info.st_dev, info.st_ino, info.st_uid, info.st_mode, info.st_size,
+            info.st_mtime_ns, info.st_ctime_ns)
+
+
+def valid_standing_allow(decision):
+    return (
+        isinstance(decision, dict)
+        and decision.keys() == {"schema", "status", "reason", "grant_id", "runtime_id"}
+        and decision["schema"] == "routine-standing-decision/v1"
+        and decision["status"] == "ALLOW"
+        and isinstance(decision["reason"], str)
+        and text(decision["grant_id"])
+        and isinstance(decision["runtime_id"], str)
+        and re.fullmatch("[0-9a-f]{32}", decision["runtime_id"]) is not None
+    )
+
+
+def read_private_capture(path, *, include_bytes=False):
+    with os.fdopen(os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK), "rb") as source:
+        metadata = os.fstat(source.fileno())
+        require(stat.S_ISREG(metadata.st_mode) and metadata.st_uid == os.getuid()
+                and stat.S_IMODE(metadata.st_mode) == 0o600
+                and 0 < metadata.st_size <= 2 * 1024 * 1024, "invalid-private-capture")
+        raw = source.read(metadata.st_size + 1)
+        require(len(raw) == metadata.st_size
+                and binding_identity(metadata) == binding_identity(os.fstat(source.fileno()))
+                == binding_identity(path.lstat()), "changed-private-capture")
+    decoded = json.loads(raw, object_pairs_hook=unique_json_object)
+    return (raw, decoded) if include_bytes else decoded
+
+
+def retained_standing_decision(directory, intent, envelope):
+    path = directory / "standing-decision.json"
+    try:
+        record = read_private_capture(path)
+        require(isinstance(record, dict)
+                and record.keys() == {"attempt_id", "correlation_id", "request_id", "decision"}
+                and valid_standing_allow(record["decision"])
+                and record["attempt_id"] == intent["attempt_id"]
+                and record["correlation_id"] == intent["correlation_id"]
+                and record["request_id"] == envelope["requestId"],
+                "standing-decision-attempt-mismatch")
+    except (OSError, ValueError, KeyError, TypeError, RecursionError):
+        return None
+    return str(path)
+
+
+def standing_binding(arguments):
+    if not arguments.standing_eligible or arguments.standing_paused or arguments.standing_independent_hold:
+        raise StandingRefusal("standing-independent-ineligible")
+    if not arguments.standing_binding:
+        raise StandingRefusal("standing-binding-required")
+    path = Path(arguments.standing_binding)
+    try:
+        require(path.is_absolute(), "relative-binding")
+        fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+        with os.fdopen(fd, "rb") as source:
+            metadata = os.fstat(source.fileno())
+            require(stat.S_ISREG(metadata.st_mode) and metadata.st_uid == os.getuid()
+                    and stat.S_IMODE(metadata.st_mode) == 0o600
+                    and 0 < metadata.st_size <= 4096, "unqualified-binding")
+            raw = source.read(4097)
+            require(len(raw) == metadata.st_size
+                    and binding_identity(metadata) == binding_identity(os.fstat(source.fileno()))
+                    == binding_identity(path.lstat()), "changed-binding")
+        binding = json.loads(raw, object_pairs_hook=unique_json_object)
+        require(isinstance(binding, dict)
+                and binding.keys() == {"reader", "authority_dir", "state_dir", "grant_id"}
+                and all(text(value) for value in binding.values()), "invalid-binding")
+        for key in ("reader", "authority_dir", "state_dir"):
+            require(Path(binding[key]).is_absolute(), "relative-standing-path")
+        reader = Path(binding["reader"]).lstat()
+        require(stat.S_ISREG(reader.st_mode) and reader.st_uid == os.getuid()
+                and not reader.st_mode & 0o022, "unqualified-reader")
+    except (OSError, ValueError, TypeError) as error:
+        raise StandingRefusal("standing-binding-invalid") from error
+    return binding, binding_identity(reader)
+
+
+def check_standing(binding, reader_identity):
+    reader = Path(binding["reader"])
+    argv = [sys.executable, "-E", "-S", "-B", binding["reader"], "standing-check",
+            "--authority-dir", binding["authority_dir"], "--state-dir", binding["state_dir"],
+            "--eligible"]
+    try:
+        require(binding_identity(reader.lstat()) == reader_identity, "changed-standing-reader")
+        result = subprocess.run(argv, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE,
+                                stderr=subprocess.DEVNULL, env={}, timeout=5, check=False)
+        require(binding_identity(reader.lstat()) == reader_identity, "changed-standing-reader")
+        require(result.returncode == 0 and 0 < len(result.stdout) <= 4096,
+                "standing-reader-result")
+        decision = json.loads(result.stdout, object_pairs_hook=unique_json_object)
+        require(valid_standing_allow(decision) and decision["grant_id"] == binding["grant_id"],
+                "standing-decision")
+    except (OSError, ValueError, TypeError, RecursionError, subprocess.SubprocessError) as error:
+        raise StandingRefusal("standing-decision-withheld") from error
+    return decision
+
+
+def submit_task(directory, intent, root, writer, arguments):
     """Claim once before effects; later public reads only project retained evidence."""
     result = retained(directory)
     if (directory / "claim.json").exists():
         return result
     validate_submission_intent(intent, continuation=(directory / "continuation.json").exists())
+    standing = intent.get("resource_admission") == "standing-v1"
+    require(standing or not (arguments.standing_binding or arguments.standing_eligible
+                            or arguments.standing_paused or arguments.standing_independent_hold),
+            "standing-intent-required")
     require(result["child"]["host_id"] == "local", "unsupported-remote-child")
     seconds = intent["observation_seconds"]
     message = {key: intent[key] for key in
@@ -342,6 +629,8 @@ def submit_task(directory, intent, root, writer):
                   saved_selection=None, receipt="unknown", task_completion="unknown",
                   effective_program="unknown", owned_connection={"started": None, "closed": None})
     result.pop("reason", None)
+    if standing:
+        result["task_write"] = "unknown"
     # Exclusive logical operation claim is also the crash/interrupt replay barrier.
     try:
         writer.write(directory / "claim.json", encode(result))
@@ -362,6 +651,14 @@ def submit_task(directory, intent, root, writer):
         result.setdefault("reason", failures[0]["reason"])
         result["failures"] = list(failures)
 
+    def observe_transport_start():
+        result["owned_connection"]["started"] = transport.stream is not None
+        if transport.outbound:
+            result["ipc"] = "attempted"
+        if standing and any(item.get("method") == "thread-follower-start-turn"
+                            for item in transport.outbound):
+            result["task_write"] = "attempted"
+
     def usable():
         require(receive_failure is None and not transport.closed
                 and transport.stream is not None and transport.receiver.incomplete is None,
@@ -372,12 +669,12 @@ def submit_task(directory, intent, root, writer):
                 "sourceClientId": client, "targetClientId": binding["owner"],
                 "version": version, "method": method, "params": params}
 
-    def exchange(request, name):
+    def exchange(request, name, *, before_write=None):
         nonlocal receive_failure
         # CliTransport can write before noticing receive incompleteness.
         usable()
         try:
-            records = transport.send(request)
+            records = transport.send(request, before_write=before_write)
         except ReceivePrefixFailure as exc:
             receive_failure = exc
             failure(stage, exc)
@@ -401,6 +698,11 @@ def submit_task(directory, intent, root, writer):
         result["refs"][reference] = str(directory / name)
 
     try:
+        if standing:
+            stage = "standing-preflight"
+            result.update(ipc="not_attempted", task_write="not_attempted")
+            gate_binding, reader_identity = standing_binding(arguments)
+        stage = "mailbox-claim"
         mailbox = Mailbox(intent["mailbox"])
         mailbox.plan(message)
         claimed = mailbox.claim(intent["message_id"], intent["attempt_id"], intent["actor"])
@@ -442,7 +744,25 @@ def submit_task(directory, intent, root, writer):
         prewrite(start, "attempt.json", "attempt_ref")
         transport.pending_path = directory / "attempt.json"
         stage = "task-submit"
-        response = exchange(start, "start")
+
+        def before_task_write():
+            decision = check_standing(gate_binding, reader_identity)
+            decision_path = directory / "standing-decision.json"
+            try:
+                writer.write_json(decision_path, {
+                    "attempt_id": intent["attempt_id"],
+                    "correlation_id": intent["correlation_id"],
+                    "request_id": start["requestId"],
+                    "decision": decision,
+                })
+            except (OSError, StorageRefusal) as error:
+                raise StandingRefusal("standing-decision-capture-failed") from error
+            result["refs"]["standing_decision_ref"] = str(decision_path)
+            result["task_write"] = "unknown"
+
+        response = exchange(start, "start", before_write=before_task_write if standing else None)
+        if standing:
+            result["task_write"] = "attempted"
         turn_id = response.get("result", {}).get("result", {}).get("turn", {}).get("id")
         require(text(turn_id), "accepted-turn-id-unavailable")
         result.update(status="turn_accepted", turn_id=turn_id, ipc="attempted")
@@ -451,6 +771,10 @@ def submit_task(directory, intent, root, writer):
                         str(directory / "start-response.json"),
                         "Correlated accepted turn; receipt and task completion unknown.")
     except BaseException as exc:
+        if standing and transport is not None:
+            observe_transport_start()
+            if result["owned_connection"]["started"]:
+                result["owned_connection"]["closed"] = None
         failure(stage, exc)
         try:
             save("failure.json", result)
@@ -458,9 +782,7 @@ def submit_task(directory, intent, root, writer):
             failure("failure-capture", saving_error)
     finally:
         if transport is not None:
-            result["owned_connection"]["started"] = transport.stream is not None
-            if transport.outbound:
-                result["ipc"] = "attempted"
+            observe_transport_start()
             try:
                 transport.close()
             except BaseException as exc:
@@ -538,6 +860,9 @@ def run(arguments):
         previous = guarded_directory(value["previous_operation_id"])
         parent = read_json(previous / "intent.json")
         require(parent["operation_id"] == value["previous_operation_id"], "operation-conflict")
+        require(parent.get("resource_admission") != "standing-v1"
+                or value.get("resource_admission") == "standing-v1",
+                "standing-continuation-downgrade")
         for key in ("operation_id", "message_id", "attempt_id"):
             require(value[key] != parent[key], "continuation-" + key + "-not-fresh")
         # Follow only retained operation links to the original child/bootstrap.
@@ -579,7 +904,7 @@ def run(arguments):
             return retained(directory)
         save([(directory / "intent.json", raw),
               (directory / "continuation.json", encode(continuation))])
-        return submit_task(directory, value, root, writer)
+        return submit_task(directory, value, root, writer, arguments)
 
     if arguments.phase == "prepare":
         validate_submission_intent(value)
@@ -761,10 +1086,10 @@ def run(arguments):
             # A retained completion is also an interruption barrier: only its first
             # explicit intake may proceed to the original one-attempt claim.
             save([(completion, encode(value))])
-            return submit_task(directory, intent, root, writer)
+            return submit_task(directory, intent, root, writer, arguments)
         save([(directory / "bootstrap.json", encode(value))])
         if bootstrap["state"] == "completed":
-            return submit_task(directory, intent, root, writer)
+            return submit_task(directory, intent, root, writer, arguments)
         return retained(directory)
     require(value is None, "unsupported-phase-input")
     return result
