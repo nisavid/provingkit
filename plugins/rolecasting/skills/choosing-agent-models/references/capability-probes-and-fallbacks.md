@@ -111,7 +111,7 @@ readback. [Claude Code model configuration](https://code.claude.com/docs/en/mode
 
 ## Resolve Named Successors
 
-The written GPT and Claude versions are baselines for their named roles. Always select a newer available version of the same named model instead of any lower version, even when the written policy has not caught up. GPT-6.1 Sol supersedes every earlier Sol. Preserve the named model's role, provider preference, effort policy, authority, and all capability or proof gates; an Astra successor stays Astra, and a Sol successor stays Sol.
+The written GPT and Claude versions are baselines for their named roles. Always select a newer available version of the same named model instead of any lower version, even when the written policy has not caught up. GPT-6.2 Sol supersedes every earlier Sol. Preserve the named model's role, provider preference, effort policy, authority, and all capability or proof gates; an Astra successor stays Astra, and a Sol successor stays Sol.
 
 Use current provider or target-catalog evidence that establishes the exact advertised slug, same named lineage, and version ordering. A similar slug, guessed version arithmetic, or another named family is not successor proof. Record that evidence and the chosen pair's catalog/schema intersection. Fable successors also need their own current successful target proof; an older version's proof does not transfer.
 
