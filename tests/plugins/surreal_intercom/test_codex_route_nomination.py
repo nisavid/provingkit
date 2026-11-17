@@ -31,8 +31,9 @@ SCRIPTS = (
 class FixtureObservation:
     """Primitive procfs, filesystem, process, and clock observations."""
 
-    def __init__(self, endpoint):
+    def __init__(self, endpoint, invoking_uid=None):
         self.endpoint = endpoint
+        self.invoking_uid = os.geteuid() if invoking_uid is None else invoking_uid
         self.links = {
             "/proc/100/exe": "/usr/bin/python3",
             "/proc/100/ns/net": "net:[701]",
@@ -63,10 +64,12 @@ class FixtureObservation:
         }
         self.nodes = {
             str(endpoint.parent): SimpleNamespace(
-                st_mode=stat.S_IFDIR | 0o700, st_uid=1000, st_dev=9, st_ino=601,
+                st_mode=stat.S_IFDIR | 0o700, st_uid=self.invoking_uid,
+                st_dev=9, st_ino=601,
             ),
             str(endpoint): SimpleNamespace(
-                st_mode=stat.S_IFSOCK | 0o600, st_uid=1000, st_dev=9, st_ino=602,
+                st_mode=stat.S_IFSOCK | 0o600, st_uid=self.invoking_uid,
+                st_dev=9, st_ino=602,
             ),
         }
         self.clock = 1000
@@ -83,15 +86,19 @@ class FixtureObservation:
         fields = ["S", str(ppid), *("0" for _ in range(17)), str(start_ticks)]
         return f"{pid} (fixture process) {' '.join(fields)}\n".encode()
 
-    @staticmethod
-    def _status():
-        return b"Name:\tfixture\nUid:\t1000\t1000\t1000\t1000\nGid:\t1000\t1000\t1000\t1000\n"
+    def _status(self):
+        value = str(self.invoking_uid)
+        return (
+            "Name:\tfixture\n"
+            f"Uid:\t{value}\t{value}\t{value}\t{value}\n"
+            f"Gid:\t{value}\t{value}\t{value}\t{value}\n"
+        ).encode()
 
     def getpid(self):
         return 100
 
     def geteuid(self):
-        return 1000
+        return self.invoking_uid
 
     def monotonic_milliseconds(self):
         value = self.clock
@@ -136,7 +143,36 @@ class FixtureObservation:
 
 
 class CodexRouteNominationTests(unittest.TestCase):
-    def supplied_sample_request(self, root):
+    def test_fixture_binds_every_identity_field_to_the_invoking_uid(self):
+        with tempfile.TemporaryDirectory(prefix="codex-fixture-uid-") as temporary:
+            root = Path(temporary).resolve()
+            endpoint = root / "codex-home" / "ipc" / "ipc.sock"
+            for invoking_uid in (1234, 5678):
+                with self.subTest(invoking_uid=invoking_uid):
+                    observer = FixtureObservation(endpoint, invoking_uid)
+                    status = observer.files["/proc/100/status"].decode()
+                    expected_ids = "\t".join([str(invoking_uid)] * 4)
+                    self.assertIn(f"Uid:\t{expected_ids}\n", status)
+                    self.assertIn(f"Gid:\t{expected_ids}\n", status)
+                    self.assertEqual(observer.geteuid(), invoking_uid)
+                    self.assertEqual(
+                        {node.st_uid for node in observer.nodes.values()},
+                        {invoking_uid},
+                    )
+
+                    request = self.supplied_sample_request(root, invoking_uid)
+                    sample = request["sample"]
+                    for view in (sample["before"], sample["after"]):
+                        self.assertEqual(
+                            {(item["uid"], item["gid"])
+                             for item in view["ancestors"]},
+                            {(invoking_uid, invoking_uid)},
+                        )
+                        self.assertEqual(view["ipcDirectory"]["uid"], invoking_uid)
+                        self.assertEqual(view["socket"]["uid"], invoking_uid)
+
+    def supplied_sample_request(self, root, invoking_uid=None):
+        invoking_uid = root.stat().st_uid if invoking_uid is None else invoking_uid
         endpoint = root / "codex-home" / "ipc" / "ipc.sock"
         actor = {"thread_id": "forwarder", "host_id": "forwarder-host"}
         recipient = {"thread_id": "owner-peer", "host_id": "local"}
@@ -144,13 +180,13 @@ class CodexRouteNominationTests(unittest.TestCase):
         server_identity = {"path": "/opt/codex/app-server", "device": 8, "inode": 102}
         desktop_identity = {"path": "/opt/codex/Codex", "device": 8, "inode": 103}
         ancestors = [
-            {"pid": 100, "ppid": 200, "uid": 1000, "gid": 1000,
+            {"pid": 100, "ppid": 200, "uid": invoking_uid, "gid": invoking_uid,
              "startTicks": 1001, "role": "helper",
              "roleEvidence": "synthetic://source/helper", "executable": python_identity},
-            {"pid": 200, "ppid": 300, "uid": 1000, "gid": 1000,
+            {"pid": 200, "ppid": 300, "uid": invoking_uid, "gid": invoking_uid,
              "startTicks": 1002, "role": "app-server",
              "roleEvidence": "synthetic://source/app-server", "executable": server_identity},
-            {"pid": 300, "ppid": 1, "uid": 1000, "gid": 1000,
+            {"pid": 300, "ppid": 1, "uid": invoking_uid, "gid": invoking_uid,
              "startTicks": 1003, "role": "desktop-main",
              "roleEvidence": "synthetic://source/desktop-main", "executable": desktop_identity},
         ]
@@ -163,11 +199,11 @@ class CodexRouteNominationTests(unittest.TestCase):
                 "path": str(endpoint),
             }],
             "ipcDirectory": {
-                "path": str(endpoint.parent), "kind": "directory", "uid": 1000,
+                "path": str(endpoint.parent), "kind": "directory", "uid": invoking_uid,
                 "mode": 0o700, "symlink": False, "device": 9, "inode": 601,
             },
             "socket": {
-                "path": str(endpoint), "kind": "socket", "uid": 1000,
+                "path": str(endpoint), "kind": "socket", "uid": invoking_uid,
                 "mode": 0o600, "symlink": False, "device": 9, "inode": 602,
             },
         }
@@ -229,7 +265,10 @@ class CodexRouteNominationTests(unittest.TestCase):
             with contextlib.redirect_stdout(output):
                 kwargs = {"effective_uid": request["publication"]["ownerUid"]}
                 if observer is None and request.get("schema") == "codex-route-nomination-request-v2":
-                    observer = FixtureObservation(root / "codex-home" / "ipc" / "ipc.sock")
+                    observer = FixtureObservation(
+                        root / "codex-home" / "ipc" / "ipc.sock",
+                        request["publication"]["ownerUid"],
+                    )
                 if observer is not None:
                     kwargs["observer"] = observer
                 exit_code = module.main(["--request", str(request_path)], **kwargs)
@@ -779,6 +818,14 @@ class CodexRouteNominationTests(unittest.TestCase):
             "shared-watchdog-exceeded": (
                 lambda request, observer: setattr(observer, "clock_step", 600),
                 "sample-watchdog-exceeded",
+            ),
+            "route-owner-mismatch": (
+                lambda request, observer: setattr(
+                    observer.nodes[str(observer.endpoint)],
+                    "st_uid",
+                    observer.geteuid() + 1,
+                ),
+                "unsafe-direct-primary-route",
             ),
             "wrong-route-operation": (
                 lambda request, observer: request["permissions"]["routeUse"].update(
