@@ -1,5 +1,6 @@
 """Public Daybreak operation contract with caller-owned native controls."""
 
+import hashlib
 import json
 from pathlib import Path
 import socket
@@ -276,12 +277,13 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                 self.assertEqual({p.relative_to(root): p.read_bytes() for p in root.rglob("*") if p.is_file()}, before)
                 self.assertFalse((scratch / "mailbox.sqlite3").exists())
 
-    def command(self,scratch,root):
+    def command(self,scratch,root,standing_args=(),*,launcher=SENDER):
         counter=0
 
-        def launch(phase,operation_id=None,value=None):
+        def launch(phase,operation_id=None,value=None,*,extra_standing_args=()):
             nonlocal counter
-            argv=[sys.executable,"-B",str(SENDER),"--root",str(root),phase]
+            argv=[sys.executable,"-B",str(launcher),"--root",str(root),
+                  *standing_args,*extra_standing_args,phase]
             if operation_id is not None:
                 argv.append(operation_id)
             if value is not None:
@@ -614,14 +616,181 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                     self.completed_bootstrap_submission(
                         damaged_results=damaged,task_observation=task_observation)
 
-    def completed_bootstrap_submission(self,pending_first=False,failure=None,continuation=False,task_observation=False,accepted_tail=None,damaged_results=None):
+    def test_standing_gate_retains_independent_hold_without_replay(self):
+        self.completed_bootstrap_submission(failure="independent-hold", standing=True)
+
+    def test_standing_gate_preserves_oversized_frame_refusal(self):
+        self.completed_bootstrap_submission(failure="outgoing-frame", standing=True)
+
+    def test_standing_gate_applies_to_same_child_continuation(self):
+        self.completed_bootstrap_submission(continuation=True, standing=True)
+
+    def test_standing_gate_observes_hold_after_daybreak_setup(self):
+        self.completed_bootstrap_submission(failure="standing-hold", standing=True)
+
+    def test_standing_task_write_error_retains_original_attempt(self):
+        self.completed_bootstrap_submission(failure="task-write-error", standing=True)
+
+    def test_standing_gate_preserves_the_original_daybreak_task(self):
+        self.completed_bootstrap_submission(standing=True, pending_first=True)
+
+    def test_standing_decision_survives_missing_task_response(self):
+        self.completed_bootstrap_submission(failure="lost-task-response", standing=True)
+
+    def test_write_evidence_overrules_a_false_capture_refusal(self):
+        for failure in ("lost-task-response", "task-write-error"):
+            with self.subTest(failure=failure):
+                self.completed_bootstrap_submission(
+                    failure=failure, standing=True, false_capture_refusal=True,
+                )
+
+    def test_standing_decision_capture_failure_withholds_task(self):
+        self.completed_bootstrap_submission(failure="decision-capture", standing=True)
+
+    def test_interrupted_standing_attempt_keeps_original_decision_discoverable(self):
+        self.completed_bootstrap_submission(standing=True, damaged_results=("submission.json",))
+
+    def test_wrong_shaped_standing_result_keeps_the_claim_and_decision(self):
+        for terminal in (b"null", b'{"refs":null}'):
+            with self.subTest(terminal=terminal):
+                self.completed_bootstrap_submission(
+                    standing=True, damaged_results=("submission.json",),
+                    damaged_bytes=terminal, damage_reason="invalid-result",
+                )
+
+    def test_missing_standing_result_keeps_known_waits_without_promoting_outcome(self):
+        self.completed_bootstrap_submission(
+            standing=True, damaged_results=("submission.json",),
+            damaged_bytes=None, task_observation=True,
+        )
+
+    def test_inconsistent_standing_result_cannot_override_original_evidence(self):
+        for changes in (
+            {"native_call": {"tool": "untrusted-capture", "arguments": {}}},
+            {"turn_id": "another-turn"},
+            {"status": "submission_unknown"},
+            {"status": "submission_unknown", "turn_id": None},
+            {"status": "submission_unknown", "turn_id": None, "task_write": "not_attempted"},
+        ):
+            with self.subTest(changes=changes):
+                self.completed_bootstrap_submission(
+                    standing=True, task_observation=not {"native_call", "task_write"} & changes.keys(),
+                    damaged_results=("submission.json",), damaged_bytes=changes,
+                    damage_reason="invalid-result",
+                )
+
+    def test_deeply_nested_terminal_capture_keeps_original_evidence(self):
+        self.completed_bootstrap_submission(
+            standing=True, task_observation=True,
+            damaged_results=("submission.json",), damaged_bytes=b"[" * 50000 + b"]" * 50000,
+        )
+
+    def test_standing_gate_rejects_ineligible_reader_results(self):
+        for result in ("failed", "unavailable", "replaced", "malformed", "nested",
+                       "incomplete", "wrong-grant", "invalid-runtime", "legacy", "ineligible"):
+            with self.subTest(result=result):
+                self.completed_bootstrap_submission(failure="standing-" + result, standing=True)
+
+    def test_mismatched_standing_attempt_supplies_no_retained_evidence(self):
+        self.completed_bootstrap_submission(standing=True, mismatched_attempt=True)
+
+    def test_unknown_terminal_summary_requires_bound_write_evidence(self):
+        self.completed_bootstrap_submission(
+            standing=True, failure="lost-task-response", mismatched_attempt=True,
+        )
+
+    def completed_bootstrap_submission(
+        self, pending_first=False, failure=None, continuation=False,
+        task_observation=False, accepted_tail=None, damaged_results=None, standing=False,
+        damaged_bytes=b'{"partial":', damage_reason="invalid-json", false_capture_refusal=False,
+        mismatched_attempt=False,
+    ):
         with tempfile.TemporaryDirectory(prefix="db-task-") as directory:
             scratch=Path(directory).resolve()
             root=scratch/"operations"
             root.mkdir(mode=0o700)
             endpoint=scratch/"peer.sock"
             store=scratch/"mailbox.sqlite3"
-            command=self.command(scratch,root)
+            standing_args=()
+            refused_by_standing = failure is not None and failure.startswith("standing-")
+            if standing:
+                decision=scratch/"standing-result"
+                allow = {
+                    "schema":"routine-standing-decision/v1", "status":"ALLOW",
+                    "reason":"fixture", "grant_id":"fixture-grant", "runtime_id":"a"*32,
+                }
+                decision.write_text(json.dumps(allow))
+                reader=scratch/"reader.py"
+                reader.write_text(
+                    "from pathlib import Path\n"
+                    "result=Path(__file__).with_name('standing-result').read_text()\n"
+                    "if result == 'exit nonzero': raise SystemExit(2)\n"
+                    "print(result)\n"
+                )
+
+                def withhold_at_task():
+                    if failure in {"standing-unavailable", "standing-replaced"}:
+                        if failure == "standing-replaced":
+                            other = scratch / "unqualified-reader.py"
+                            other.write_bytes(reader.read_bytes())
+                        reader.unlink()
+                        if failure == "standing-replaced":
+                            reader.symlink_to(other)
+                        return
+                    outputs = {
+                        "standing-hold": json.dumps(dict(allow, status="HOLD")),
+                        "standing-failed": "exit nonzero",
+                        "standing-malformed": "{",
+                        "standing-nested": "["*1500 + "]"*1500,
+                        "standing-ineligible": json.dumps(dict(allow, status="INELIGIBLE")),
+                        "standing-incomplete": json.dumps({"status":"ALLOW"}),
+                        "standing-wrong-grant": json.dumps(dict(allow, grant_id="other-grant")),
+                        "standing-invalid-runtime": json.dumps(dict(allow, runtime_id="unknown")),
+                        "standing-legacy": json.dumps(dict(allow, schema="routine-standing-decision/v0")),
+                    }
+                    decision.write_text(outputs[failure])
+                authority=scratch/"authority"
+                state=scratch/"state"
+                authority.mkdir(mode=0o700)
+                state.mkdir(mode=0o700)
+                binding=scratch/"standing-binding.json"
+                binding.write_text(json.dumps({
+                    "reader":str(reader),"authority_dir":str(authority),
+                    "state_dir":str(state),"grant_id":"fixture-grant",
+                }))
+                binding.chmod(0o600)
+                standing_args=("--standing-binding",str(binding),"--standing-eligible")
+            launcher=SENDER
+            if failure == "decision-capture":
+                launcher = scratch / "occupied-decision-fixture.py"
+                launcher.write_text(
+                    "import sys\n"
+                    f"sys.path.insert(0, {str(SENDER.parent)!r})\n"
+                    "from codex_capture import CaptureWriter\n"
+                    "from codex_daybreak_sender import main\n"
+                    "original_write = CaptureWriter.write_json\n"
+                    "def occupy_decision(self, path, value):\n"
+                    "    original_write(self, path, value)\n"
+                    "    return original_write(self, path, value)\n"
+                    "CaptureWriter.write_json = occupy_decision\n"
+                    "raise SystemExit(main())\n"
+                )
+            if failure=="task-write-error":
+                launcher=scratch/"write-error-fixture.py"
+                launcher.write_text(
+                    "import json, sys\n"
+                    f"sys.path.insert(0, {str(SENDER.parent)!r})\n"
+                    "from codex_ipc_transport import UnixStream\n"
+                    "from codex_daybreak_sender import main\n"
+                    "original_write = UnixStream.write\n"
+                    "def fail_task_write(self, data, timeout):\n"
+                    "    if json.loads(data[4:]).get('method') == 'thread-follower-start-turn':\n"
+                    "        raise OSError('synthetic-task-write-error')\n"
+                    "    return original_write(self, data, timeout)\n"
+                    "UnixStream.write = fail_task_write\n"
+                    "raise SystemExit(main())\n"
+                )
+            command=self.command(scratch,root,standing_args,launcher=launcher)
 
             def mailbox(*arguments):
                 result=subprocess.run(
@@ -650,6 +819,8 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                            "terminal_provision_bytes":524288,"later_forecast_bytes":0},
                 "observation_seconds":0.5,
             }
+            if standing:
+                request["resource_admission"]="standing-v1"
             if failure=="outgoing-frame":
                 request["payload"]="X"*65536
             op=request["operation_id"]
@@ -708,6 +879,7 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                 "bootstrap":{"state":"completed","evidence_ref":"synthetic://bootstrap-completed"},
             }
             wire,errors,prewrite=[],[],[]
+            discovery_reply=[]
             prefix_tail={None:b"", "malformed-json":struct.pack("<I",1)+b"{",
                          "oversized-header":struct.pack("<I",65537)}[accepted_tail]
             capture_obstacles=[]
@@ -724,7 +896,7 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                     with connection:
                         connection.settimeout(3)
 
-                        def receive():
+                        def receive(*,request=True):
                             def exact(count):
                                 data=b""
                                 while len(data)<count:
@@ -737,7 +909,8 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                             self.assertGreater(length,0)
                             self.assertLessEqual(length,65536)
                             value=json.loads(exact(length))
-                            wire.append(value)
+                            if request:
+                                wire.append(value)
                             return value
 
                         def reply(frame,result,owner=None,tail=b""):
@@ -823,6 +996,21 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                         targeted(settings,"thread-follower-read-model-settings",1,{
                             "conversationId":child["thread_id"],
                         })
+                        if standing:
+                            discovery_event = json.dumps({
+                                "type":"client-discovery-request",
+                                "requestId":"invented-follower-discovery",
+                            }).encode()
+                            connection.sendall(struct.pack("<I",len(discovery_event)) + discovery_event)
+                            answer = receive(request=False)
+                            self.assertEqual(answer,{
+                                "type":"client-discovery-response",
+                                "requestId":"invented-follower-discovery",
+                                "response":{"canHandle":False},
+                            })
+                            discovery_reply[:] = [answer]
+                        if refused_by_standing:
+                            withhold_at_task()
                         reply(settings,{"settings":{"daybreakEnabled":failure!="false-readback"}},
                               "invented-owner-client",
                               tail=prefix_tail if failure=="readback-prefix" else b"")
@@ -831,7 +1019,10 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                             self.assertEqual(connection.recv(1),b"")
                             closed.set()
                             return
-                        if failure in {"false-readback","outgoing-frame","readback-prefix"}:
+                        if refused_by_standing or failure in {
+                            "false-readback","outgoing-frame","readback-prefix","task-write-error",
+                            "decision-capture",
+                        }:
                             self.assertEqual(connection.recv(1),b"")
                             closed.set()
                             return
@@ -852,6 +1043,15 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                         })
                         shown=captured(start,"attempt_ref")
                         self.assertEqual(shown["refs"]["setup_ref"],prewrite[0][1])
+                        if standing:
+                            evidence = Path(shown["refs"]["operation_ref"]).parent / "standing-decision.json"
+                            self.assertEqual(evidence.stat().st_mode & 0o777, 0o600)
+                            self.assertEqual(json.loads(evidence.read_bytes()), {
+                                "attempt_id": request["attempt_id"],
+                                "correlation_id": request["correlation_id"],
+                                "request_id": start["requestId"],
+                                "decision": allow,
+                            })
                         pending=mailbox("show",request["message_id"])
                         self.assertEqual(len(pending["attempts"]),1)
                         self.assertEqual(pending["attempts"][0]["attempt_id"],request["attempt_id"])
@@ -908,6 +1108,22 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                         connection,_=listener.accept()
                         connection.close()
                     listener.settimeout(0.5)
+                if failure=="independent-hold":
+                    listener.setblocking(False)
+                    refused=command("submit",op,observation,
+                                    extra_standing_args=("--standing-independent-hold",))
+                    self.assertEqual(refused["task_write"],"not_attempted",refused)
+                    self.assertEqual(refused["ipc"],"not_attempted")
+                    self.assertEqual(refused["reason"],"standing-independent-ineligible")
+                    self.assertEqual(refused["owned_connection"],{"started":False,"closed":False})
+                    self.assertEqual(mailbox("pending"),[])
+                    for repeated in (command("submit",op,observation),command("show",op)):
+                        for key in ("task_write","ipc","reason","refs","owned_connection"):
+                            self.assertEqual(repeated[key],refused[key],repeated)
+                    with self.assertRaises(BlockingIOError):
+                        connection,_=listener.accept()
+                        connection.close()
+                    return
                 server=threading.Thread(target=serve,args=(listener,),daemon=True)
                 server.start()
                 try:
@@ -929,7 +1145,10 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                     if failure=="lost-task-response":
                         methods.append("thread-follower-start-turn")
                         references.append("attempt_ref")
-                    if failure in {"outgoing-frame","readback-prefix","readback-eof"}:
+                    if refused_by_standing or failure in {
+                        "outgoing-frame","readback-prefix","readback-eof","task-write-error",
+                        "decision-capture",
+                    }:
                         references.append("attempt_ref")
                         path=Path(accepted["refs"]["attempt_ref"])
                         retained=path.read_bytes()
@@ -945,8 +1164,10 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                     self.assertEqual(accepted["status"],"submission_unknown",accepted)
                     self.assertIsNone(accepted.get("turn_id"),accepted)
                     self.assertIs(accepted["saved_selection"],
-                                  True if failure in {"lost-task-response","outgoing-frame",
-                                                      "readback-prefix","readback-eof"} else None)
+                                  True if refused_by_standing or failure in {
+                                      "lost-task-response","outgoing-frame","readback-prefix",
+                                      "readback-eof","task-write-error","decision-capture",
+                                  } else None)
                     self.assertEqual(accepted["receipt"],"unknown")
                     self.assertEqual(accepted["task_completion"],"unknown")
                     self.assertEqual(accepted["effective_program"],"unknown")
@@ -957,7 +1178,13 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                         self.assertEqual(accepted["refs"][key],value)
                     self.assertEqual(accepted["child"],child)
                     self.assertEqual([item[0] for item in prewrite],references)
-                    self.assertEqual(set(accepted["refs"]),set(refs)|set(references))
+                    expected_refs = set(refs) | set(references)
+                    if standing and failure in {"lost-task-response", "task-write-error"}:
+                        expected_refs.add("standing_decision_ref")
+                        evidence = Path(accepted["refs"]["standing_decision_ref"])
+                        self.assertEqual(evidence.name, "standing-decision.json")
+                        self.assertEqual(json.loads(evidence.read_bytes())["decision"], allow)
+                    self.assertEqual(set(accepted["refs"]), expected_refs)
                     for reference,path,retained in prewrite:
                         self.assertEqual(accepted["refs"][reference],path)
                         self.assertEqual(Path(path).read_bytes(),retained)
@@ -1024,10 +1251,57 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                         self.assertEqual(len(accepted["failures"]),1)
                         expected_failure={
                             "lost-task-response":("task-submit","start-response-unavailable"),
+                            "task-write-error":("task-submit","synthetic-task-write-error"),
                             "outgoing-frame":("task-submit","outgoing-frame-limit"),
                             "false-readback":("daybreak-readback","saved-selection-unconfirmed"),
-                        }[failure]
-                        self.assertEqual(first,dict(zip(("stage","reason"),expected_failure)))
+                            "decision-capture":("task-submit","standing-decision-capture-failed"),
+                        }
+                        if refused_by_standing:
+                            failure_point = ("task-submit","standing-decision-withheld")
+                        else:
+                            failure_point = expected_failure[failure]
+                        self.assertEqual(first,dict(zip(("stage","reason"),failure_point)))
+                    if standing:
+                        write_raised=failure=="task-write-error"
+                        expected_task_write = (
+                            "attempted" if write_raised or failure == "lost-task-response"
+                            else "not_attempted"
+                        )
+                        self.assertEqual(accepted["task_write"],expected_task_write)
+                        operation_dir=Path(accepted["refs"]["operation_ref"]).parent
+                        if failure == "decision-capture":
+                            self.assertEqual(
+                                json.loads((operation_dir / "standing-decision.json").read_bytes()),
+                                {"attempt_id": request["attempt_id"],
+                                 "correlation_id": request["correlation_id"],
+                                 "request_id": pending_task["requestId"], "decision": allow},
+                            )
+                        self.assertEqual(
+                            (operation_dir / "start-response.json").exists(),
+                            failure == "lost-task-response",
+                        )
+                        transport=json.loads((operation_dir/"transport.json").read_bytes())
+                        expected_outbound=[*wire[:4],*discovery_reply,*wire[4:]]
+                        expected_boundary={}
+                        if expected_task_write == "attempted":
+                            if write_raised:
+                                expected_outbound.append(pending_task)
+                            expected_boundary={
+                                "pendingExistedBeforeWrite":True,
+                                "pendingSha256":hashlib.sha256(Path(accepted["refs"]["attempt_ref"]).read_bytes()).hexdigest(),
+                            }
+                        self.assertEqual(transport["outbound"],expected_outbound)
+                        self.assertEqual(transport["writeBoundary"],expected_boundary)
+                        decision.write_text(json.dumps(allow))
+                        if reader.is_symlink():
+                            restored_reader = reader.resolve(strict=True).read_bytes()
+                            reader.unlink()
+                            reader.write_bytes(restored_reader)
+                        repeated=command("submit",op,observation)
+                        self.assertEqual(repeated["task_write"],expected_task_write)
+                        self.assertEqual(repeated["reason"],accepted["reason"])
+                        if failure == "decision-capture":
+                            self.assertNotIn("standing_decision_ref", repeated["refs"])
                     recorded=mailbox("show",request["message_id"])
                     self.assertEqual({key:value for key,value in recorded.items()
                                       if key not in {"state","attempts"}},message)
@@ -1070,6 +1344,82 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                     self.assertEqual(mailbox("pending"),[recorded])
                     self.assertEqual({path:path.read_bytes() for path in root.rglob("*")
                                       if path.is_file()},retained)
+                    if mismatched_attempt:
+                        attempt_file = operation_dir / "attempt.json"
+                        response_file = operation_dir / "start-response.json"
+                        transport_file = operation_dir / "transport.json"
+                        original_attempt = attempt_file.read_bytes()
+                        original_response = response_file.read_bytes()
+                        original_transport = transport_file.read_bytes()
+                        wrong_attempt = json.loads(original_attempt)
+                        wrong_envelope = wrong_attempt["envelope"]
+                        wrong_envelope["params"]["turnStart"]["request"]["threadId"] = "wrong-child"
+                        response = json.loads(original_response)
+                        response["envelope"] = wrong_envelope
+                        attempt_file.write_text(json.dumps(wrong_attempt))
+                        response_file.write_text(json.dumps(response))
+                        for phase in ("show", "submit"):
+                            shown = command(phase, op)
+                            self.assertEqual(shown["status"], "submission_unknown")
+                            self.assertEqual(shown["task_write"], "unknown")
+                            self.assertEqual(shown["ipc"], "attempted")
+                            self.assertEqual(shown["owned_connection"], accepted["owned_connection"])
+                            self.assertNotIn("standing_decision_ref", shown["refs"])
+                            self.assertIsNone(shown["native_call"])
+                        attempt_file.write_bytes(original_attempt)
+                        response_file.unlink()
+                        transport_file.unlink()
+                        shown = command("show", op)
+                        self.assertEqual(shown["task_write"], "unknown")
+                        self.assertEqual(shown["refs"], accepted["refs"])
+                        response_file.write_bytes(original_response)
+                        transport_file.write_bytes(original_transport)
+                        response_file.chmod(0o600)
+                        transport_file.chmod(0o600)
+                        shown = command("show", op)
+                        self.assertEqual(shown["task_write"], "attempted")
+                        self.assertEqual(shown["status"], "submission_unknown")
+                        self.assertIsNone(shown["native_call"])
+                    if false_capture_refusal:
+                        submission = operation_dir / "submission.json"
+                        terminal = json.loads(submission.read_bytes())
+                        terminal.update(
+                            task_write="not_attempted",
+                            reason="standing-decision-capture-failed",
+                            failures=[{"stage": "task-submit", "reason": "standing-decision-capture-failed"}],
+                        )
+                        submission.write_text(json.dumps(terminal))
+                        (operation_dir / "failure.json").unlink()
+                        if failure == "lost-task-response":
+                            (operation_dir / "transport.json").unlink()
+                        evidence = Path(accepted["refs"]["standing_decision_ref"])
+                        original_evidence = evidence.read_bytes()
+                        for phase in ("show", "submit"):
+                            recovered = command(phase, op)
+                            self.assertEqual(recovered["status"], "submission_unknown")
+                            self.assertEqual(recovered["task_write"], "attempted")
+                            self.assertEqual(recovered["ipc"], "attempted")
+                            self.assertEqual(recovered["refs"]["standing_decision_ref"], str(evidence))
+                            self.assertEqual(recovered["evidence_read_failures"], [
+                                {"path": str(submission), "reason": "invalid-result"},
+                            ])
+                            self.assertIsNone(recovered["native_call"])
+                            self.assertEqual(evidence.read_bytes(), original_evidence)
+                            self.assertEqual(mailbox("show", request["message_id"]), recorded)
+                    if failure in {"standing-hold", "decision-capture"}:
+                        if failure == "decision-capture":
+                            unrelated = dict(pending_task, requestId="another-request")
+                            (operation_dir / "start-response.json").write_text(json.dumps({
+                                "envelope": unrelated, "records": [],
+                            }))
+                            (operation_dir / "start-response.json").chmod(0o600)
+                        (operation_dir / "submission.json").write_text("{")
+                        for fallback in (command("show",op),command("submit",op,observation)):
+                            self.assertEqual(fallback["ipc"],"attempted",fallback)
+                            self.assertEqual(fallback["task_write"],"not_attempted")
+                            self.assertIs(fallback["saved_selection"],True)
+                            self.assertEqual(fallback["owned_connection"],{"started":True,"closed":None})
+                            self.assertNotIn("standing_decision_ref", fallback["refs"])
                     listener.setblocking(False)
                     with self.assertRaises(BlockingIOError):
                         connection,_=listener.accept()
@@ -1089,6 +1439,50 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                     self.assertEqual(accepted["refs"][key],value)
                 self.assertEqual(accepted["child"],child)
                 self.assertEqual(accepted["turn_id"],"invented-accepted-turn")
+                if mismatched_attempt:
+                    operation_dir = Path(accepted["refs"]["operation_ref"]).parent
+                    attempt_path = operation_dir / "attempt.json"
+                    response_path = operation_dir / "start-response.json"
+                    attempt_raw = attempt_path.read_bytes()
+                    response_raw = response_path.read_bytes()
+                    for mismatch in ("outer target", "inner target", "correlation", "operation reference"):
+                        with self.subTest(mismatch=mismatch):
+                            attempt = json.loads(attempt_raw)
+                            envelope = attempt["envelope"]
+                            if mismatch == "outer target":
+                                envelope["params"]["conversationId"] = "another-child"
+                            elif mismatch == "inner target":
+                                envelope["params"]["turnStart"]["request"]["threadId"] = "another-child"
+                            elif mismatch == "correlation":
+                                attempt["correlation"] = "another-request"
+                            else:
+                                attempt["refs"]["operation_ref"] = "/another/intent.json"
+                            response = json.loads(response_raw)
+                            response["envelope"] = envelope
+                            attempt_path.write_text(json.dumps(attempt))
+                            response_path.write_text(json.dumps(response))
+                            for phase in ("show", "submit"):
+                                retained = command(phase, op)
+                                self.assertEqual(retained["status"], "submission_unknown")
+                                self.assertEqual(retained["task_write"], "unknown")
+                                self.assertNotIn("standing_decision_ref", retained["refs"])
+                                self.assertIsNone(retained["native_call"])
+                    attempt_path.write_bytes(attempt_raw)
+                    response_path.write_bytes(response_raw)
+                if standing:
+                    self.assertEqual(accepted["task_write"],"attempted")
+                    operation_dir=Path(accepted["refs"]["operation_ref"]).parent
+                    self.assertEqual(
+                        accepted["refs"]["standing_decision_ref"],
+                        str(operation_dir / "standing-decision.json"),
+                    )
+                    transport=json.loads((operation_dir/"transport.json").read_bytes())
+                    self.assertEqual(transport["outbound"],[*wire[:4],*discovery_reply,*wire[4:]])
+                    pending_capture=Path(accepted["refs"]["attempt_ref"]).read_bytes()
+                    self.assertEqual(transport["writeBoundary"],{
+                        "pendingExistedBeforeWrite":True,
+                        "pendingSha256":hashlib.sha256(pending_capture).hexdigest(),
+                    })
                 if accepted_tail is not None:
                     reason={"malformed-json":"frame-decode-error",
                             "oversized-header":"frame-byte-limit"}[accepted_tail]
@@ -1218,14 +1612,20 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                     operation_dir=Path(accepted["refs"]["operation_ref"]).parent
                     claim=operation_dir/"claim.json"
                     original_claim=claim.read_bytes()
-                    damaged_bytes=b'{"partial":'
+                    if isinstance(damaged_bytes, dict):
+                        terminal = json.loads((operation_dir / "submission.json").read_bytes())
+                        damaged_bytes = json.dumps({**terminal, **damaged_bytes}).encode()
                     for name in damaged_results:
-                        (operation_dir/name).write_bytes(damaged_bytes)
+                        damaged = operation_dir / name
+                        if damaged_bytes is None:
+                            damaged.unlink()
+                        else:
+                            damaged.write_bytes(damaged_bytes)
                     seeded={path:path.read_bytes() for path in root.rglob("*") if path.is_file()}
                     original_wire=list(wire)
                     expected_diagnostics=[
-                        {"path":str(operation_dir/name),"reason":"invalid-json"}
-                        for name in damaged_results
+                        {"path":str(operation_dir/name),"reason":damage_reason}
+                        for name in damaged_results if damaged_bytes is not None
                     ]
                     final_valid="submission.json" not in damaged_results
                     expected_refs=dict(accepted["refs"])
@@ -1250,7 +1650,7 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                         self.assertEqual(result.get("turn_id"),
                                          "invented-accepted-turn" if final_valid else None)
                         self.assertIs(result["saved_selection"],True if final_valid else None)
-                        self.assertEqual(result["ipc"],"attempted" if final_valid else "unknown")
+                        self.assertEqual(result["ipc"],"attempted" if final_valid or standing else "unknown")
                         self.assertEqual(result["owned_connection"],
                                          {"started":True,"closed":True} if final_valid
                                          else {"started":None,"closed":None})
@@ -1262,13 +1662,30 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                         self.assertEqual({path:path.read_bytes() for path in root.rglob("*")
                                           if path.is_file()},seeded)
                         for name in damaged_results:
-                            self.assertEqual((operation_dir/name).read_bytes(),damaged_bytes)
+                            if damaged_bytes is None:
+                                self.assertFalse((operation_dir / name).exists())
+                            else:
+                                self.assertEqual((operation_dir / name).read_bytes(), damaged_bytes)
                         self.assertEqual(mailbox("show",request["message_id"]),recorded)
                         self.assertEqual(mailbox("pending"),[recorded])
                         self.assertEqual(wire,original_wire)
                         with self.assertRaises(BlockingIOError):
                             connection,_=listener.accept()
                             connection.close()
+                    if standing and not final_valid:
+                        evidence = Path(accepted["refs"]["standing_decision_ref"])
+                        original_evidence = evidence.read_bytes()
+                        mismatched = json.loads(original_evidence)
+                        mismatched["request_id"] = "another-request"
+                        for invalid in (b'{"incomplete":', json.dumps(mismatched).encode()):
+                            evidence.write_bytes(invalid)
+                            shown = command("show", op)
+                            self.assertNotIn("standing_decision_ref", shown["refs"])
+                            self.assertEqual(shown["task_write"], "attempted")
+                            self.assertEqual(shown["status"], "submission_unknown")
+                            self.assertEqual(evidence.read_bytes(), invalid)
+                        evidence.write_bytes(original_evidence)
+                        self.assertEqual(command("show", op)["refs"], expected_refs)
                     if task_observation and not final_valid:
                         fresh_observation={
                             **pending_observation,"task_wait_ref":latest_wait_ref,
@@ -1502,6 +1919,16 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                     "schema":"provingkit-peer-message-v1",**message,"actor":request["actor"],
                 },ensure_ascii=True,sort_keys=True,separators=(",",":"))
                 refs={key:request[key] for key in ("operation_id","message_id","attempt_id")}
+                if standing:
+                    legacy=dict(request)
+                    del legacy["resource_admission"]
+                    downgraded=command("continue",value=legacy)
+                    self.assertEqual(downgraded["status"],"refused")
+                    self.assertEqual(downgraded["reason"],"standing-continuation-downgrade")
+                    listener.setblocking(False)
+                    with self.assertRaises(BlockingIOError):
+                        connection,_=listener.accept()
+                        connection.close()
                 wire,errors,prewrite=[],[],[]
                 closed=threading.Event()
                 connected=threading.Event()
@@ -1528,6 +1955,8 @@ class PendingBootstrapCommandTests(unittest.TestCase):
                 self.assertEqual(continued["child"],child)
                 self.assertIsNone(continued["native_call"])
                 self.assertEqual(continued["ipc"],"attempted")
+                if standing:
+                    self.assertEqual(continued["task_write"],"attempted")
                 self.assertIs(continued["saved_selection"],True)
                 self.assertEqual(continued["turn_id"],"invented-accepted-turn")
                 self.assertEqual(continued["owned_connection"],{"started":True,"closed":True})

@@ -1,12 +1,16 @@
 """Connection-capable CLI framing. Activation requires separate live authority.
 
-The connector returns read(maximum, timeout), write(bytes, timeout), close().
-Both production and invented IO use FrameReceiver; no background reader exists.
+The connector returns read(maximum, timeout), write(bytes, timeout), close(),
+and peer_identity(). Both production and invented IO use FrameReceiver; no
+background reader exists.
 """
 # Extracted from retained native_cli_transport.py, SHA-256
 # 259cea2f440065c77a07436c40a23387eda3d4679237736ae92ada62e1dbe0c1.
 import hashlib
 import json
+import os
+from pathlib import Path
+import socket
 import struct
 import time
 import uuid
@@ -95,6 +99,42 @@ class UnixStream:
         self.connection.sendall(data)
     def close(self):
         self.connection.close()
+    def peer_identity(self):
+        """Return Linux peer credentials and stable procfs identity fields."""
+        try:
+            raw = self.connection.getsockopt(socket.SOL_SOCKET, socket.SO_PEERCRED, 12)
+            pid, uid, gid = struct.unpack("3i", raw)
+            if pid <= 0 or uid < 0 or gid < 0:
+                raise ValueError
+            proc = Path("/proc") / str(pid)
+            stat_bytes = _bounded_read(proc / "stat")
+            close = stat_bytes.rfind(b")")
+            fields = stat_bytes[close + 1:].split()
+            if close < 0 or len(fields) <= 19:
+                raise ValueError
+            start_ticks = int(fields[19])
+            executable_link = proc / "exe"
+            executable_path = os.readlink(executable_link)
+            executable_stat = executable_link.stat()
+            return {
+                "pid": pid, "uid": uid, "gid": gid, "startTicks": start_ticks,
+                "bootId": _bounded_read(Path("/proc/sys/kernel/random/boot_id")).decode().strip(),
+                "networkNamespace": os.readlink(proc / "ns/net"),
+                "executable": {
+                    "path": executable_path, "device": executable_stat.st_dev,
+                    "inode": executable_stat.st_ino,
+                },
+            }
+        except (AttributeError, OSError, UnicodeError, ValueError, struct.error) as exc:
+            raise ReceiveFailure("peer-identity-unavailable") from exc
+
+
+def _bounded_read(path, limit=8192):
+    with path.open("rb") as source:
+        data = source.read(limit + 1)
+    if not data or len(data) > limit:
+        raise ValueError("bounded-peer-identity-read")
+    return data
 
 def connect_unix(endpoint, timeout):
     # Importing this module opens no socket. The command uses this connector
@@ -170,10 +210,7 @@ class CliTransport:
         timeout = (self.wait if full_legacy_wait and self.network_deadline is None
                    and self.io_seconds is None else self._io_timeout(deadline))
         self.stream.write(data, timeout)
-    def send(self, envelope, *, reserve_cleanup=False):
-        method = envelope.get("method")
-        if self.allowed_methods is not None and method not in self.allowed_methods:
-            raise ReceiveFailure("outgoing-method-forbidden")
+    def connect(self, *, reserve_cleanup=False):
         legacy_timing = self.network_deadline is None and self.io_seconds is None
         if self.stream is None:
             if legacy_timing:
@@ -182,21 +219,48 @@ class CliTransport:
                 deadline = self._phase_deadline(reserve_cleanup=reserve_cleanup)
                 timeout = self._io_timeout(deadline)
             self.stream = self.connector(self.endpoint, timeout)
+        return self.stream
+    def connected_peer_identity(self):
+        stream = self.connect()
+        identity = stream.peer_identity()
+        if not isinstance(identity, dict):
+            raise ReceiveFailure("peer-identity-unavailable")
+        return identity
+    def send(self, envelope, *, reserve_cleanup=False, before_write=None):
+        method = envelope.get("method")
+        if self.allowed_methods is not None and method not in self.allowed_methods:
+            raise ReceiveFailure("outgoing-method-forbidden")
+        legacy_timing = self.network_deadline is None and self.io_seconds is None
+        self.connect(reserve_cleanup=reserve_cleanup)
         # Diagnostic mode keeps one constructor-owned network budget. Legacy
         # mode starts its response window after required pre-write work.
         if not legacy_timing:
             deadline = self._phase_deadline(reserve_cleanup=reserve_cleanup)
+        pending_boundary = None
         if envelope['method'] in {'thread-follower-steer-turn', 'thread-follower-start-turn'}:
             if self.pending_path is None or not self.pending_path.is_file():
                 raise ReceiveFailure('missing-pre-write-capture')
-            self.write_boundary = {'pendingExistedBeforeWrite': True,
-                                   'pendingSha256': hashlib.sha256(self.pending_path.read_bytes()).hexdigest()}
+            pending_boundary = {'pendingExistedBeforeWrite': True,
+                                'pendingSha256': hashlib.sha256(self.pending_path.read_bytes()).hexdigest()}
         data = json.dumps(envelope, separators=(',', ':')).encode()
         self._check_outgoing_frame(data)
-        self.outbound.append(envelope)
         if legacy_timing:
+            if before_write is not None:
+                before_write()
             deadline = self._phase_deadline(reserve_cleanup=reserve_cleanup)
-        self._write(struct.pack('<I', len(data)) + data, deadline, full_legacy_wait=True)
+        elif before_write is not None:
+            before_write()
+        if pending_boundary is not None:
+            self.write_boundary = pending_boundary
+        frame = struct.pack('<I', len(data)) + data
+        if before_write is None:
+            self.outbound.append(envelope)
+            self._write(frame, deadline, full_legacy_wait=True)
+        else:
+            try:
+                self._write(frame, deadline, full_legacy_wait=True)
+            finally:
+                self.outbound.append(envelope)
         if self.receiver.incomplete:
             self.receive_status.append('receive-disabled:' + self.receiver.incomplete)
             return []
