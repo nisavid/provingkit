@@ -10,6 +10,7 @@ import os
 import stat
 from pathlib import Path
 import tempfile
+from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
 
@@ -177,17 +178,33 @@ class CapturePublicationTests(unittest.TestCase):
         self.assertEqual(digest, hashlib.sha256(expected).hexdigest())
 
     def test_failed_terminal_write_preserves_accounting_and_remaining_provision(self):
+        terminal = b"x" * 131072
         with patch.object(capture.os, "fsync", side_effect=OSError("synthetic sync failure")):
             with self.assertRaises(OSError):
-                self.writer.write(self.root / "stdout", b"prefix", terminal=True)
-        self.assertEqual(self.writer.new_bytes, 6)
-        self.assertEqual(self.writer.terminal_bytes, 6)
-        self.assertFalse((self.root / "stdout").exists())
+                self.writer.write(self.root / "process.json", terminal, terminal=True)
+        self.assertEqual(self.writer.new_bytes, len(terminal))
+        self.assertEqual(self.writer.terminal_bytes, 0)
+        self.assertFalse((self.root / "process.json").exists())
+
+        capacity = SimpleNamespace(f_frsize=1, f_bavail=capture.TERMINAL)
+        with patch.object(capture.os, "statvfs", return_value=capacity):
+            with self.assertRaisesRegex(
+                    capture.StorageRefusal, "filesystem-capacity-insufficient"):
+                self.writer.write(self.root / "record", b"x")
+        self.assertFalse((self.root / "record").exists())
+
+        existing = self.root / "stdout"
+        existing.write_bytes(b"retained")
+        with self.assertRaises(FileExistsError):
+            self.writer.write(existing, b"collision", terminal=True)
+        self.assertEqual(self.writer.terminal_bytes, 0)
+        self.assertEqual(existing.read_bytes(), b"retained")
+
         self.writer.write(self.root / "stderr", b"diagnostic", terminal=True)
-        self.assertEqual(self.writer.new_bytes, 16)
-        self.assertEqual(self.writer.terminal_bytes, 16)
+        self.assertEqual(self.writer.new_bytes, len(terminal) + 9 + 10)
+        self.assertEqual(self.writer.terminal_bytes, 10)
         self.assertEqual((self.root / "stderr").read_bytes(), b"diagnostic")
-        self.assertEqual(self.writer.observations[-1]["terminalAfterBytes"], capture.TERMINAL - 16)
+        self.assertEqual(self.writer.observations[-1]["terminalAfterBytes"], capture.TERMINAL - 10)
 
     def test_nonterminal_allowance_still_reserves_terminal_bytes(self):
         settings = dict(self.settings, allowance_bytes=capture.TERMINAL + 8)

@@ -109,13 +109,13 @@ class CaptureWriter:
                     # Failed staging still consumes this invocation's allowance.
                     count = os.fstat(fd).st_size
                     self.new_bytes += count
-                    if terminal:
-                        self.terminal_bytes += count
                 finally:
                     os.close(fd)
             # Unlike rename/replace, link refuses a final name that already exists,
             # including one created after admission. Never remove that final name.
             os.link(staging, path)
+            if terminal:
+                self.terminal_bytes += count
         finally:
             # Only this call's staging name is eligible for cleanup. Abrupt process
             # termination may leave staging; a fresh call uses a new unique name.
