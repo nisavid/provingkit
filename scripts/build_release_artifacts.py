@@ -278,6 +278,8 @@ def build(
             raise ValueError("snapshot preparation identifies another source commit")
         delivery = {"version": preparation["version"], "request_id": preparation["request_id"],
                     "preparation_sha256": sha256_bytes(raw)}
+        if "cloud_members" in preparation:
+            delivery["cloud_members"] = preparation["cloud_members"]
         builder_revision = git("rev-parse", "HEAD", cwd=Path(__file__).resolve().parents[1])
     with source_snapshot(source, source_commit) as snapshot:
         return _build_snapshot(
@@ -318,6 +320,11 @@ def _build_snapshot(
         raise ValueError("plugin slate contains duplicates")
     if delivery is not None and set(slate) != known:
         raise ValueError("a synchronized snapshot requires the complete plugin slate")
+    cloud_members = delivery.get("cloud_members", {}) if delivery is not None else {}
+    if set(cloud_members) - known:
+        raise ValueError("cloud preparation names a member outside the source slate")
+    versions = {member: cloud_members.get(member, {}).get("version", delivery["version"])
+                for member in slate} if delivery is not None else {}
 
     # Validate every source read before preparing (and possibly replacing) the
     # output. Manifests are read even if the inclusion policy excludes them.
@@ -332,7 +339,7 @@ def _build_snapshot(
         manifest_path = contained_path(source, source_root / plugin_id / "plugin.json")
         manifest = json.loads(manifest_path.read_text())
         if delivery is not None:
-            manifest["version"] = delivery["version"]
+            manifest["version"] = versions[plugin_id]
         plugins.append((plugin_id, src, selected, manifest))
 
     policy_digest = sha256_bytes(canonical_json(policy))
@@ -345,7 +352,7 @@ def _build_snapshot(
             copy_file(path, contained_path(output, destination / rel))
             if delivery is not None and rel.as_posix() in ("plugin.json", ".claude-plugin/plugin.json"):
                 delivered_manifest = json.loads(path.read_text())
-                delivered_manifest["version"] = delivery["version"]
+                delivered_manifest["version"] = versions[plugin_id]
                 write_json(contained_path(output, destination / rel), delivered_manifest)
         if target == "cursor":
             has_agents = any(path.relative_to(src).parts[:1] == ("agents",) for path in selected)

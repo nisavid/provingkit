@@ -70,6 +70,10 @@ including after withdrawal. An added target preserves the original source
 and every existing variant. Already issued older versions remain available for
 explicit redelivery; that operation leaves the issuance high-water mark alone.
 
+The explicit cloud-member route below keeps that Kit identity while recording
+separate delivered versions for selected members. Ordinary preparations and
+unaffected member stamping retain the synchronized behavior.
+
 ## Prepare and project
 
 Run the reviewed issuer from its own clean checkout. Its product source may be
@@ -137,6 +141,77 @@ Codex marketplace consumer remains subject to its own qualification.
 Complete the owning projection checks, mode checks, and packing procedure before
 constructing a publication commit. Use the versioned generation
 `ad-hoc/<source-commit>/<delivered-version>/<target>/`; retain older paths.
+
+## Preserve an installed cloud member floor
+
+Use this branch when a selected cloud entry needs a prerelease delivery above
+its independently installed version. It uses the same issuer, state, publication
+barrier, complete-slate projector, and variant retention. Do not initialize another
+authority or change an issued record. The supported comparison is the issuer's
+SemVer precedence subset: normal numeric releases and dot-separated prerelease
+identifiers, with no build metadata. A prerelease of `1.0.0` sorts below stable
+`1.0.0`; appending build metadata does not supply an increasing version.
+
+Before actual allocation, the operational owner binds the selected member,
+installed floor, product source, Kit identity, provider comparison, and receiving
+entry. Only affected entries need that evidence. The source examples use invented
+versions and establish no provider acceptance or account enrollment. If actual
+provider ordering conflicts with the supported rule, stop that delivery and
+return the concrete incompatibility to the versioning owner.
+
+Record the member's floor and named-release interval in the existing state:
+
+```json
+{
+  "operation": "configure-cloud-member",
+  "member": "versionkeeping",
+  "floor": "1.0.0",
+  "target_release": "1.0.1",
+  "preceding_cut": "1.0.1-0",
+  "next_named_release": "1.0.1-alpha.1"
+}
+```
+
+Then submit `{"operation":"prepare-cloud","request_id":"cloud-delivery-1",
+"source_commit":"<full source commit>","members":["versionkeeping"]}`.
+The response uses `provingkit-cloud-snapshot-preparation-v1`. Its ordinary
+`version`, interval, and sequence still identify the Kit snapshot. Its
+`cloud_members` map records each selected member's floor, interval, consumed
+sequence, and delivered version. Pass the exact response bytes to the existing
+`--snapshot-record` projector interface. For the invented interval above:
+
+```text
+1.0.0 < 1.0.1-0.snapshot.1 < 1.0.1-0.snapshot.2 < 1.0.1-alpha.1
+```
+
+Each selected member has a persistent reservation sequence and last-issued
+version. Gaps survive cancellation, reentry, and a Kit retarget; resetting the
+Kit's sequence does not reset member sequences. Identical preparation requests
+recover the original record. Changing their source or member selection is
+refused. A new configuration cannot lower a floor or rewind an interval. Consume
+the recorded successor to advance a member cut; close its normal target by
+naming that normal release in both cut fields before moving to a higher normal
+target and its `0` anchor. Member transitions share the pending-exposure barrier
+and named-cut coordination with Kit transitions.
+
+Projection stamps selected members' copied manifests, adapters, and applicable
+catalog entries with their member versions; other members use the Kit version.
+The complete slate remains required. The receipt's `delivery.version` and
+generation path remain Kit identities; `delivery.cloud_members` retains the exact
+member records, and the preparation digest binds both to the same source.
+The owner selects the affected cloud entries from this projection and verifies
+that all entries being updated use their applicable floor records. An ordinary
+preparation or an omitted member is not a floor-aware cloud update.
+
+Use the existing `issue` operation and reviewed publication plan. Immediately
+before exposure, its transaction compares the prepared Kit interval and member
+configurations with current state and checks both issuance high-water marks.
+A stale floor or member interval rejects issuance. A pending or uncertain
+attempt blocks new issuance and member transitions. Reconciliation, cancelled
+attempt retention, withdrawal, and target additions use the original operations;
+adding a variant keeps the original Kit/member preparation and existing bytes.
+Redelivery exports retained bytes without allocating an increasing cloud update.
+The receiving owner must check their suitability before using them.
 
 ## Commit issuance before the first exposure
 
@@ -240,6 +315,10 @@ tests.test_build_release_artifacts` and `git diff --check` on the final
 candidate. Issuer examples use local Git commits and constructed publisher
 results; they do not establish a live Versionkeeping execution. Projection
 examples execute the actual CLI and inspect emitted manifests and receipts.
+Cloud examples also inspect projected member/catalog identities, reject wrong
+expected versions despite successful execution, and pass a real projector
+receipt through synthetic issuance and retained-byte recovery. These checks
+do not establish provider comparison, preserved cloud enablement, or useful loading.
 The clock example replaces Python's `time.time`; it does not change the host
 clock. Synthetic source identifiers test identity independence, not Git age.
 
@@ -253,3 +332,9 @@ mode inventories and digests, ordering/retry/variant outcomes, pinned transport
 identities, and publication/readback results. Record the owner's procedure
 revision and naturally useful invocation; installed use is complete only when
 the selected client actually loads the changed copy under its new identity.
+
+Before live cloud use, require clean Daybreak review of the final implementation
+and relevant dependencies. The receiving owner verifies the actual member's
+increasing identity, corrected content, preserved enablement, and useful loading,
+recording the procedure revision used. Source checks and source merge do not
+complete those receiving criteria.

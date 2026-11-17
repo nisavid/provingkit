@@ -44,6 +44,52 @@ def is_relative(link: str) -> bool:
 
 
 class ReleaseArtifactBuilderTests(unittest.TestCase):
+    def assert_projected_versions(self, output, target, expected):
+        """Consumer assertion; expected identities are supplied independently of the driver."""
+        adapters = {"agent-plugins": ["plugin.json"],
+                    "claude": ["plugin.json", ".claude-plugin/plugin.json"],
+                    "cursor": ["plugin.json", ".cursor-plugin/plugin.json"]}
+        for member, version in expected.items():
+            for adapter in adapters[target]:
+                manifest = json.loads((output / "plugins" / member / adapter).read_text())
+                self.assertEqual(manifest["version"], version, (member, target, adapter))
+        if target == "claude":
+            catalog = json.loads((output / ".claude-plugin/marketplace.json").read_text())
+            self.assertEqual({item["name"]: item["version"] for item in catalog["plugins"]}, expected)
+
+    def test_cloud_projection_preserves_member_floor_and_common_kit_receipt(self):
+        commit = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
+        member = {"floor": "1.0.0", "target_release": "1.0.1", "preceding_cut": "1.0.1-0",
+                  "next_named_release": "1.0.1-alpha.1", "sequence": 4,
+                  "version": "1.0.1-0.snapshot.4"}
+        preparation = {"schema": "provingkit-cloud-snapshot-preparation-v1", "request_id": "cloud-projection",
+                       "release_unit": "provingkit", "target_release": "0.1.0",
+                       "preceding_cut": "0.1.0-alpha.7", "next_named_release": "0.1.0-alpha.8",
+                       "sequence": 41, "version": "0.1.0-alpha.7.snapshot.41",
+                       "source_commit": commit, "cloud_members": {"versionkeeping": member}}
+        expected = {name: "0.1.0-alpha.7.snapshot.41" for name in (
+            "rolecasting", "tricritical", "mergecraft", "artifact-customs", "proseweaving", "surreal-intercom")}
+        expected["versionkeeping"] = "1.0.1-0.snapshot.4"
+        original = (ROOT / "plugins/versionkeeping/plugin.json").read_bytes()
+        with tempfile.TemporaryDirectory() as temporary:
+            record = Path(temporary) / "preparation.json"
+            record.write_text(json.dumps(preparation))
+            for target in TARGETS:
+                output = Path(temporary) / target
+                result = subprocess.run([sys.executable, str(ROOT / "scripts/build_release_artifacts.py"),
+                                         "--source", str(ROOT), "--output", str(output), "--target", target,
+                                         "--snapshot-record", str(record)], capture_output=True, text=True)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assert_projected_versions(output, target, expected)
+                receipt = json.loads((output / "RECEIPT.json").read_text())
+                self.assertEqual(receipt["delivery"]["cloud_members"], {"versionkeeping": member})
+                self.assertEqual(receipt["delivery"]["version"], "0.1.0-alpha.7.snapshot.41")
+                self.assertEqual(receipt["source"]["commit"], commit)
+                # A successful producer exit cannot satisfy an independently wrong expectation.
+                with self.assertRaises(AssertionError):
+                    self.assert_projected_versions(output, target, {**expected, "versionkeeping": "1.0.0"})
+            self.assertEqual((ROOT / "plugins/versionkeeping/plugin.json").read_bytes(), original)
+
     def test_snapshot_copy_loads_delivered_identity_and_retains_source(self):
         commit = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
         preparation = {

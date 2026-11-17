@@ -18,6 +18,9 @@ else:
     from evidence_transport import run_candidate_git
 
 PREPARATION_SCHEMA = "provingkit-snapshot-preparation-v1"
+CLOUD_PREPARATION_SCHEMA = "provingkit-cloud-snapshot-preparation-v1"
+MEMBERS = {"rolecasting", "tricritical", "versionkeeping", "mergecraft",
+           "artifact-customs", "proseweaving", "surreal-intercom"}
 NORMAL = r"(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)"
 CUT = rf"{NORMAL}-(?:alpha|beta|rc)\.[1-9][0-9]*"
 ARTIFACT_REF = "refs/heads/ivan/provingkit-ad-hoc-artifacts"
@@ -57,9 +60,10 @@ def version_key(version: str) -> tuple:
 def validate_preparation(record: object) -> dict:
     fields = {"schema", "request_id", "release_unit", "target_release", "preceding_cut",
               "next_named_release", "sequence", "version", "source_commit"}
-    if not isinstance(record, dict) or set(record) != fields:
+    cloud = isinstance(record, dict) and record.get("schema") == CLOUD_PREPARATION_SCHEMA
+    if not isinstance(record, dict) or set(record) != fields | ({"cloud_members"} if cloud else set()):
         raise ValueError("snapshot preparation fields differ from the supported contract")
-    if record["schema"] != PREPARATION_SCHEMA or record["release_unit"] != "provingkit":
+    if record["schema"] not in {PREPARATION_SCHEMA, CLOUD_PREPARATION_SCHEMA} or record["release_unit"] != "provingkit":
         raise ValueError("unsupported snapshot preparation schema or release unit")
     for field in fields - {"sequence"}:
         if not isinstance(record[field], str) or not record[field]:
@@ -84,13 +88,26 @@ def validate_preparation(record: object) -> dict:
     if re.fullmatch(r"[0-9a-f]{40}", record["source_commit"]) is None:
         raise ValueError("snapshot preparation requires a full source commit")
     identifier(record["request_id"])
+    if cloud:
+        members = record["cloud_members"]
+        if not isinstance(members, dict) or not members or not set(members) <= MEMBERS:
+            raise ValueError("cloud preparation must name supported members")
+        for member in members.values():
+            expected = {"floor", "target_release", "preceding_cut", "next_named_release", "sequence", "version"}
+            if not isinstance(member, dict) or set(member) != expected or not isinstance(member["floor"], str):
+                raise ValueError("cloud member preparation fields differ")
+            validate_preparation({**{key: record[key] for key in fields},
+                                  **{key: value for key, value in member.items() if key != "floor"},
+                                  "schema": PREPARATION_SCHEMA})
+            if version_key(member["floor"]) >= version_key(member["version"]):
+                raise ValueError("cloud delivery must exceed its installed floor")
     return record
 
 
 def fields(request: object, expected: set[str]) -> dict:
     if not isinstance(request, dict) or set(request) != expected | {"operation"}:
         raise ValueError("request fields differ from the supported operation")
-    for name in expected - {"variants"}:
+    for name in expected - {"variants", "members"}:
         if not isinstance(request[name], str) or not request[name]:
             raise ValueError(f"request requires a nonempty string {name}")
     return request
@@ -153,6 +170,8 @@ def read_variants(connection: sqlite3.Connection, supplied: object, prepared: di
         receipt = decode_json(data["RECEIPT.json"])
         delivery = {"version": prepared["version"], "request_id": prepared["request_id"],
                     "preparation_sha256": hashlib.sha256(canonical_json(prepared)).hexdigest()}
+        if "cloud_members" in prepared:
+            delivery["cloud_members"] = prepared["cloud_members"]
         if (not isinstance(receipt, dict) or not isinstance(receipt.get("source"), dict)
                 or receipt["source"].get("commit") != prepared["source_commit"]
                 or receipt.get("target") != target or receipt.get("delivery") != delivery):
@@ -224,19 +243,74 @@ def transition(connection: sqlite3.Connection, state: dict | None, request: obje
     if operation == "inspect":
         fields(request, set())
         return state, state
-    if operation == "prepare":
-        fields(request, {"request_id", "source_commit"})
+    if operation == "configure-cloud-member":
+        fields(request, {"member", "floor", "target_release", "preceding_cut", "next_named_release"})
+        if state["pending"] is not None:
+            raise ValueError("pending exposure prevents a cloud member transition")
+        if request["member"] not in MEMBERS:
+            raise ValueError("unsupported cloud member")
+        members = state.setdefault("cloud_members", {})
+        previous = members.get(request["member"], {})
+        configured = {key: request[key] for key in
+                      ("floor", "target_release", "preceding_cut", "next_named_release")}
+        configured.update(next_sequence=previous.get("next_sequence", 1), last_issued=previous.get("last_issued"))
+        floor = version_key(configured["floor"])
+        target = configured["target_release"]
+        if re.fullmatch(NORMAL, target) is None:
+            raise ValueError("cloud target must be a normal release")
+        if configured["preceding_cut"] == target:
+            if configured["next_named_release"] != target:
+                raise ValueError("cloud normal-release closure must name that normal release")
+        else:
+            example = preparation(configured, "cloud-interval-check", "0" * 40, configured["next_sequence"])
+            if floor >= version_key(example["version"]):
+                raise ValueError("cloud interval must exceed the installed floor")
+        if previous:
+            if floor < version_key(previous["floor"]):
+                raise ValueError("cloud installed floor cannot decrease")
+            if target == previous["target_release"]:
+                if configured["preceding_cut"] == previous["preceding_cut"]:
+                    if configured["next_named_release"] != previous["next_named_release"]:
+                        raise ValueError("cloud successor changes without consuming the recorded cut")
+                elif (configured["preceding_cut"] != previous["next_named_release"]
+                      or previous["preceding_cut"] == target):
+                    raise ValueError("cloud cut transition must consume the recorded successor")
+            elif (version_key(target) <= version_key(previous["target_release"])
+                  or previous["preceding_cut"] != previous["target_release"]
+                  or configured["preceding_cut"] != target + "-0"):
+                raise ValueError("cloud retargeting requires a closed target and an advancing normal release")
+        members[request["member"]] = configured
+        return state, {"outcome": "cloud-member-configured", "member": request["member"], **configured}
+    if operation in {"prepare", "prepare-cloud"}:
+        fields(request, {"request_id", "source_commit"} | ({"members"} if operation == "prepare-cloud" else set()))
+        selected = request.get("members", [])
+        if operation == "prepare-cloud" and (not isinstance(selected, list) or not selected
+                or any(not isinstance(member, str) or member not in state.get("cloud_members", {}) for member in selected)
+                or len(set(selected)) != len(selected)):
+            raise ValueError("cloud preparation requires distinct configured members")
         request_id = identifier(request["request_id"])
         existing = state["preparations"].get(request_id)
         if existing is not None:
-            if existing["source_commit"] != request["source_commit"]:
-                raise ValueError("request identifier is bound to another source")
+            if existing["source_commit"] != request["source_commit"] or set(existing.get("cloud_members", {})) != set(selected):
+                raise ValueError("request identifier is bound to another source or member selection")
             return state, existing
         if request_id in state["deliveries"]:
             raise ValueError("request identifier is already bound to a variant addition")
         if state["preceding_cut"] == state["target_release"]:
             raise ValueError("the normal target is closed; record the next normal target")
         record = preparation(state, request_id, request["source_commit"], state["next_sequence"])
+        if selected:
+            record["schema"] = CLOUD_PREPARATION_SCHEMA
+            record["cloud_members"] = {}
+            for member in selected:
+                configured = state["cloud_members"][member]
+                member_record = preparation(configured, request_id, request["source_commit"], configured["next_sequence"])
+                record["cloud_members"][member] = {key: member_record[key] for key in
+                    ("target_release", "preceding_cut", "next_named_release", "sequence", "version")}
+                record["cloud_members"][member]["floor"] = configured["floor"]
+            validate_preparation(record)
+            for member in selected:
+                state["cloud_members"][member]["next_sequence"] += 1
         state["next_sequence"] += 1
         state["preparations"][request_id] = record
         return state, record
@@ -305,6 +379,14 @@ def transition(connection: sqlite3.Connection, state: dict | None, request: obje
                 raise ValueError("snapshot does not exceed the last issued version")
             if version in state["versions"]:
                 raise ValueError("issued versions cannot be reassigned")
+            for member, selected in prepared.get("cloud_members", {}).items():
+                current = state.get("cloud_members", {}).get(member)
+                if current is None or any(selected[key] != current[key] for key in
+                        ("floor", "target_release", "preceding_cut", "next_named_release")):
+                    raise ValueError("cloud preparation uses a stale member interval or floor")
+                if current["last_issued"] is not None and version_key(selected["version"]) <= version_key(current["last_issued"]):
+                    raise ValueError("cloud snapshot does not exceed the last issued member version")
+                current["last_issued"] = selected["version"]
             state["versions"][version] = {"source_commit": prepared["source_commit"],
                                           "preparation": prepared, "variants": variants, "withdrawn": False}
             state["last_issued"] = version

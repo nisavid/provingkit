@@ -42,6 +42,15 @@ versions, and records delivery identity separately from source identity. It
 preserves directly loaded working source, including an `X-trunk` version.
 Preparation and projection alone do not authorize exposure or installation.
 
+For selected cloud members above independent installed floors, use the
+[explicit floor-aware preparation](agents/snapshot-issuance.md#preserve-an-installed-cloud-member-floor).
+The same complete-slate projection stamps those members with their recorded
+prerelease versions and other members with the common Kit version. The receipt
+keeps `delivery.version` as the Kit identity and adds the exact
+`delivery.cloud_members` records. Generation paths and immutable variants remain
+bound to the Kit preparation and product source. Provider ordering and actual
+receiving-entry acceptance require their own operational evidence.
+
 The candidate's policy is configuration, not filesystem authority. Its source,
 plugin-output, and catalog paths must be normalized relative POSIX paths;
 plugin IDs must be single path components. Absolute paths, empty or dot

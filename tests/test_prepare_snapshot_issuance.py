@@ -6,6 +6,7 @@ import subprocess
 import shutil
 import sys
 import tempfile
+import tarfile
 import unittest
 from pathlib import Path
 
@@ -107,13 +108,40 @@ runpy.run_path(script, run_name='__main__')
     def prepare(self, request_id="first", source=SOURCE):
         return self.call({"operation": "prepare", "request_id": request_id, "source_commit": source})
 
+    def configure_cloud(self, *, accepted=True, **changes):
+        return self.call({"operation": "configure-cloud-member", "member": "versionkeeping",
+                          "floor": "1.0.0", "target_release": "1.0.1",
+                          "preceding_cut": "1.0.1-0", "next_named_release": "1.0.1-alpha.1",
+                          **changes}, accepted=accepted)
+
+    def prepare_cloud(self, request_id="cloud-first", members=None, source=SOURCE, **options):
+        return self.call({"operation": "prepare-cloud", "request_id": request_id,
+                          "source_commit": source, "members": ["versionkeeping"] if members is None else members},
+                         **options)
+
+    def test_cloud_member_exceeds_stable_floor_without_changing_kit_identity(self):
+        self.initialize()
+        self.configure_cloud()
+        first = self.prepare_cloud()
+        self.assertEqual(first["version"], "0.1.0-alpha.7.snapshot.1")
+        self.assertEqual(first["cloud_members"], {"versionkeeping": {
+            "floor": "1.0.0", "target_release": "1.0.1", "preceding_cut": "1.0.1-0",
+            "next_named_release": "1.0.1-alpha.1", "sequence": 1,
+            "version": "1.0.1-0.snapshot.1"}})
+        self.assertEqual(first["source_commit"], SOURCE)
+        self.assertEqual(first["schema"], "provingkit-cloud-snapshot-preparation-v1")
+        self.assertEqual(self.prepare_cloud(), first)
+        self.assertEqual(self.prepare_cloud("cloud-second")["cloud_members"]["versionkeeping"]["version"],
+                         "1.0.1-0.snapshot.2")
+        self.assertNotIn("cloud_members", self.prepare("ordinary"))
+
     def git(self, *arguments):
         return subprocess.check_output(
             ["git", "-c", "user.name=Test", "-c", "user.email=test@example.invalid",
              "-c", "commit.gpgsign=false", *arguments], cwd=self.transport, text=True,
         ).strip()
 
-    def publication(self, record, target="claude", content=b"retained archive"):
+    def publication(self, record, target="claude", content=b"retained archive", files=None):
         self.transport = self.root / "transport"
         if not self.transport.exists():
             self.transport.mkdir()
@@ -126,9 +154,14 @@ runpy.run_path(script, run_name='__main__')
         receipt = {"source": {"commit": record["source_commit"]}, "target": target,
                    "delivery": {"version": record["version"], "request_id": record["request_id"],
                                 "preparation_sha256": hashlib.sha256(preparation_bytes).hexdigest()}}
+        if "cloud_members" in record:
+            receipt["delivery"]["cloud_members"] = record["cloud_members"]
         (directory / "artifact.tar.gz").write_bytes(content)
         (directory / "RECEIPT.json").write_text(json.dumps(receipt))
         (directory / "modes.tsv").write_bytes(b"path\tmode\torigin\n")
+        if files is not None:
+            for name, path in files.items():
+                shutil.copy2(path, directory / name)
         self.git("add", ".")
         self.git("commit", "-qm", "test: prepared transport")
         boundary = getattr(self, "published_commit", self.initial_transport_base)
@@ -188,6 +221,214 @@ runpy.run_path(script, run_name='__main__')
         later = self.publication(self.prepare("later"))
         refused = self.call(later, accepted=False)
         self.assertIn("pending", refused["reason"])
+
+    def test_cloud_issuance_retains_member_and_kit_identity_in_one_record(self):
+        self.initialize()
+        self.configure_cloud()
+        prepared = self.prepare_cloud()
+        issued = self.call(self.publication(prepared))
+        self.assertEqual(issued["version"], "0.1.0-alpha.7.snapshot.1")
+        state = self.call({"operation": "inspect"})
+        self.assertEqual(state["cloud_members"]["versionkeeping"]["last_issued"], "1.0.1-0.snapshot.1")
+        self.assertEqual(state["versions"]["0.1.0-alpha.7.snapshot.1"]["preparation"], prepared)
+        self.assertEqual(state["pending"], "cloud-first")
+
+    def test_uncertain_cloud_exposure_keeps_configuration_and_issue_barriers(self):
+        self.initialize()
+        self.configure_cloud()
+        original = self.publication(self.prepare_cloud())
+        self.call(original)
+        self.assertEqual(self.reconcile(original, verified=False)["exposure"], "pending")
+        before = self.call({"operation": "inspect"})
+        refused = self.configure_cloud(accepted=False, floor="1.0.1", target_release="1.0.2",
+                                       preceding_cut="1.0.2-0", next_named_release="1.0.2-alpha.1")
+        self.assertIn("pending", refused["reason"])
+        self.assertEqual(self.call({"operation": "inspect"}), before)
+        later = self.publication(self.prepare_cloud("cloud-later"))
+        self.assertIn("pending", self.call(later, accepted=False)["reason"])
+        self.assertEqual(self.call(original)["exposure"], "pending")
+        self.assertEqual(self.reconcile(original)["exposure"], "verified")
+        self.call(later)
+        self.assertEqual(self.call({"operation": "inspect"})["cloud_members"]["versionkeeping"]["last_issued"],
+                         "1.0.1-0.snapshot.2")
+
+    def test_cloud_configuration_preserves_floors_and_declared_cut_order(self):
+        self.initialize()
+        self.configure_cloud()
+        reserved = self.prepare_cloud()
+        before = self.call({"operation": "inspect"})
+        self.configure_cloud(accepted=False, floor="0.9.9")
+        self.assertEqual(self.call({"operation": "inspect"}), before)
+        self.configure_cloud(accepted=False, next_named_release="1.0.1-beta.1")
+        self.configure_cloud(preceding_cut="1.0.1-alpha.1", next_named_release="1.0.1")
+        self.assertIn("stale", self.call(self.publication(reserved), accepted=False)["reason"])
+        self.configure_cloud(accepted=False)
+        self.assertEqual(self.prepare_cloud("after-member-cut")["cloud_members"]["versionkeeping"]["version"],
+                         "1.0.1-alpha.1.snapshot.2")
+        self.configure_cloud(preceding_cut="1.0.1", next_named_release="1.0.1")
+        self.prepare_cloud("closed", accepted=False)
+        self.configure_cloud(floor="1.0.1", target_release="1.0.2", preceding_cut="1.0.2-0",
+                             next_named_release="1.0.2-alpha.1")
+        self.assertEqual(self.prepare_cloud("new-member-target")["cloud_members"]["versionkeeping"]["version"],
+                         "1.0.2-0.snapshot.3")
+
+    def test_cloud_reservations_survive_kit_retarget_without_reusing_member_versions(self):
+        self.initialize(preceding_cut="0.1.0-rc.2", next_named_release="0.1.0")
+        self.configure_cloud()
+        first = self.prepare_cloud()
+        publication = self.publication(first)
+        self.call(publication)
+        self.reconcile(publication)
+        self.prepare_cloud("consumed-unused")
+        self.call({"operation": "advance-cut", "preceding_cut": "0.1.0", "next_named_release": "0.1.0"})
+        self.call({"operation": "retarget", "target_release": "0.2.0", "next_named_release": "0.2.0-alpha.1"})
+        later = self.prepare_cloud("next-kit")
+        self.assertEqual(later["version"], "0.2.0-0.snapshot.1")
+        self.assertEqual(later["cloud_members"]["versionkeeping"]["version"], "1.0.1-0.snapshot.3")
+        self.assertEqual(self.prepare_cloud(), first)
+        self.call(self.publication(later))
+        self.assertEqual(self.call({"operation": "inspect"})["cloud_members"]["versionkeeping"]["last_issued"],
+                         "1.0.1-0.snapshot.3")
+
+    def test_cloud_variant_addition_and_withdrawal_preserve_original_identity(self):
+        self.initialize()
+        self.configure_cloud()
+        first = self.prepare_cloud()
+        initial = self.publication(first)
+        self.call(initial)
+        self.reconcile(initial)
+        original = self.call({"operation": "inspect"})["versions"][first["version"]]
+        self.call({"operation": "withdraw", "version": first["version"]})
+        later = self.publication(self.prepare_cloud("cloud-second"), content=b"later archive")
+        self.call(later)
+        self.reconcile(later)
+        addition = self.publication(first, "cursor", b"new target archive")
+        addition.update(operation="add-variants", request_id="cloud-cursor", version=first["version"],
+                        source_commit=SOURCE)
+        self.call(addition)
+        self.reconcile(addition)
+        state = self.call({"operation": "inspect"})
+        self.assertEqual(state["versions"][first["version"]]["preparation"], first)
+        self.assertEqual(state["versions"][first["version"]]["variants"]["claude"], original["variants"]["claude"])
+        self.assertEqual(state["cloud_members"]["versionkeeping"]["last_issued"], "1.0.1-0.snapshot.2")
+        changed = self.publication(first, "cursor", b"conflicting bytes")
+        changed.update(operation="add-variants", request_id="cloud-reuse", version=first["version"],
+                       source_commit=SOURCE)
+        self.assertIn("existing variant", self.call(changed, accepted=False)["reason"])
+        output = self.root / "retained-cloud"
+        self.call({"operation": "redeliver", "version": first["version"], "target": "claude", "output": str(output)})
+        self.assertEqual((output / "artifact.tar.gz").read_bytes(), b"retained archive")
+        self.assertEqual(json.loads((output / "RECEIPT.json").read_text())["delivery"]["cloud_members"], first["cloud_members"])
+
+    def test_competing_cloud_reservations_consume_distinct_member_sequences(self):
+        self.initialize()
+        self.configure_cloud()
+        processes = []
+        for number in range(4):
+            request = {"operation": "prepare-cloud", "request_id": f"parallel-{number}",
+                       "source_commit": SOURCE, "members": ["versionkeeping"]}
+            path = self.root / (request["request_id"] + ".json")
+            path.write_text(json.dumps(request))
+            processes.append(subprocess.Popen([sys.executable, str(SCRIPT), "--state", str(self.state),
+                                               "--request", str(path)], stdout=subprocess.PIPE,
+                                              stderr=subprocess.PIPE, text=True))
+        records = []
+        for process in processes:
+            stdout, stderr = process.communicate(timeout=15)
+            self.assertEqual(process.returncode, 0, stdout + stderr)
+            records.append(json.loads(stdout))
+        self.assertEqual({record["cloud_members"]["versionkeeping"]["version"] for record in records},
+                         {"1.0.1-0.snapshot.1", "1.0.1-0.snapshot.2", "1.0.1-0.snapshot.3", "1.0.1-0.snapshot.4"})
+        self.assertEqual(self.prepare_cloud("next")["cloud_members"]["versionkeeping"]["version"], "1.0.1-0.snapshot.5")
+
+    def test_cloud_inputs_and_conflicting_preparation_reuse_do_not_consume_reservations(self):
+        self.initialize()
+        self.configure_cloud()
+        before = self.call({"operation": "inspect"})
+        for changes in ({"member": "unknown"}, {"floor": "1.0.0+metadata"},
+                        {"target_release": "1.0.0", "preceding_cut": "1.0.0-0",
+                         "next_named_release": "1.0.0-alpha.1"}):
+            self.configure_cloud(accepted=False, **changes)
+        for members in ([], ["unknown"], ["versionkeeping", "versionkeeping"], [7], "versionkeeping"):
+            self.prepare_cloud("invalid", members, accepted=False)
+        self.assertEqual(self.call({"operation": "inspect"}), before)
+        original = self.prepare_cloud()
+        self.call({"operation": "prepare", "request_id": "cloud-first", "source_commit": SOURCE}, accepted=False)
+        self.prepare("ordinary")
+        self.prepare_cloud("ordinary", accepted=False)
+        self.call({"operation": "prepare-cloud", "request_id": "cloud-first", "source_commit": "2" * 40,
+                   "members": ["versionkeeping"]}, accepted=False)
+        self.assertEqual(self.prepare_cloud(), original)
+        self.assertEqual(self.prepare_cloud("next")["cloud_members"]["versionkeeping"]["version"], "1.0.1-0.snapshot.2")
+
+    def test_successful_preparation_cannot_issue_a_receipt_with_the_wrong_member_version(self):
+        self.initialize()
+        self.configure_cloud()
+        prepared = self.prepare_cloud()
+        request = self.publication(prepared)
+        receipt_path = Path(request["variants"]["claude"]["RECEIPT.json"])
+        receipt = json.loads(receipt_path.read_text())
+        receipt["delivery"]["cloud_members"]["versionkeeping"]["version"] = "1.0.0"
+        receipt_path.write_text(json.dumps(receipt))
+        before = self.call({"operation": "inspect"})
+        self.assertIn("receipt", self.call(request, accepted=False)["reason"])
+        self.assertEqual(self.call({"operation": "inspect"}), before)
+
+    def test_issuance_rechecks_a_member_floor_changed_after_preparation(self):
+        self.initialize()
+        self.configure_cloud()
+        stale = self.prepare_cloud()
+        self.configure_cloud(floor="1.0.1-0.snapshot.1")
+        before = self.call({"operation": "inspect"})
+        self.assertIn("stale", self.call(self.publication(stale), accepted=False)["reason"])
+        self.assertEqual(self.call({"operation": "inspect"}), before)
+        self.assertEqual(self.prepare_cloud("above-new-floor")["cloud_members"]["versionkeeping"]["version"],
+                         "1.0.1-0.snapshot.2")
+
+    def test_cancelled_cloud_attempt_keeps_member_high_water_and_consumed_sequence(self):
+        self.initialize()
+        self.configure_cloud()
+        original = self.publication(self.prepare_cloud())
+        self.call(original)
+        self.assertEqual(self.reconcile(original, verified=False, attempted=False)["exposure"], "cancelled")
+        self.assertEqual(self.call(original)["exposure"], "cancelled")
+        self.assertEqual(self.prepare_cloud("later")["cloud_members"]["versionkeeping"]["version"], "1.0.1-0.snapshot.2")
+        self.assertEqual(self.call({"operation": "inspect"})["cloud_members"]["versionkeeping"]["last_issued"],
+                         "1.0.1-0.snapshot.1")
+
+    def test_actual_projector_receipt_is_issued_and_retained_without_rebinding_member_identity(self):
+        self.initialize()
+        self.configure_cloud()
+        source = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
+        prepared = self.prepare_cloud(source=source)
+        record = self.root / "producer-preparation.json"
+        record.write_text(json.dumps(prepared, sort_keys=True, separators=(",", ":")) + "\n")
+        output = self.root / "projected"
+        result = subprocess.run([sys.executable, str(ROOT / "scripts/build_release_artifacts.py"),
+                                 "--source", str(ROOT), "--output", str(output), "--target", "claude",
+                                 "--snapshot-record", str(record)], capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        manifest = json.loads((output / "plugins/versionkeeping/plugin.json").read_text())
+        self.assertEqual(manifest["version"], "1.0.1-0.snapshot.1")
+        receipt = json.loads((output / "RECEIPT.json").read_text())
+        self.assertEqual(receipt["delivery"]["version"], "0.1.0-alpha.7.snapshot.1")
+        self.assertEqual(receipt["source"]["commit"], source)
+        archive = self.root / "artifact.tar.gz"
+        with tarfile.open(archive, "w:gz") as packed:
+            packed.add(output, arcname="projected")
+        modes = self.root / "modes.tsv"
+        modes.write_text("path\tmode\torigin\n" + "".join(
+            f"{path.relative_to(output).as_posix()}\t{path.stat().st_mode & 0o777:04o}\tfixture\n"
+            for path in sorted(output.rglob("*")) if path.is_file()))
+        files = {"artifact.tar.gz": archive, "RECEIPT.json": output / "RECEIPT.json", "modes.tsv": modes}
+        publication = self.publication(prepared, files=files)
+        self.call(publication)
+        self.reconcile(publication)
+        retained = self.root / "consumer-recovery"
+        self.call({"operation": "redeliver", "version": "0.1.0-alpha.7.snapshot.1",
+                   "target": "claude", "output": str(retained)})
+        for name, path in files.items():
+            self.assertEqual((retained / name).read_bytes(), path.read_bytes())
 
     def test_reverse_completion_cannot_expose_an_earlier_reservation(self):
         self.initialize()

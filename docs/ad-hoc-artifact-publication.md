@@ -20,6 +20,15 @@ Keep exposure held until that selected route is reviewed and qualified. The
 source-keyed form below supports retained existing generations; it does not
 permit another changed package under an exposed version.
 
+When selected cloud entries have independent installed floors, use the
+[cloud-member branch](agents/snapshot-issuance.md#preserve-an-installed-cloud-member-floor)
+before projection. Member delivery versions may differ from the Kit version;
+keep `PROVINGKIT_DELIVERY_VERSION`, generation paths, and archive names bound
+to the preparation's Kit `version`. Retain the complete original receipt,
+including `delivery.cloud_members`, with every variant. Only the operational
+owner binds actual entry floors, provider comparison, and receiving scope;
+projection or packing does not establish those facts.
+
 Snapshot receipts are unsupported by the existing dotfiles installer: they add
 `delivery`, and their builder revision can differ from the product source.
 That installer requires the ordinary receipt's exact field set and equal
