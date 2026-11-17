@@ -7,6 +7,6 @@ B. A fresh catalog establishes GPT-6.2 Sol as the same Sol lineage, newer than G
 C. The Claude catalog establishes Opus 5.6 as the same named Opus lineage, newer than 5.5, at exact slug `opus-successor-public` and high. Both it and Opus 5.5 high are supported; the written policy lists 5.5. This is a visual design role on the settled Claude target.
 D. The catalog establishes Sol 6.2 and its exact slug, but the frozen executor accepts only Sol 6.1 high. The required newer high pair is absent from its schema; no other eligible family is available.
 E. A string `gpt-7-sol-ish` appears in a catalog alongside Sol 6.1. There is no same-name lineage or version-ordering evidence for that string. No further probe is available here.
-F. Sol 6.1 high and Astra high are proven. An unverified note calls Astra the next Sol. The role is recoverable implementation without exceptional cognitive needs.
+F. Sol 6.2 high and Astra high are proven. An unverified note calls Astra the next Sol. The role is recoverable implementation without exceptional cognitive needs.
 G. The target exposes no selection fields and is immutably fixed to Sol 6 high. Its current catalog proves Sol 6.1 as the same-name successor. The operator has not authorized altering this binding or another target.
 H. A Fable 5.2 same-name successor is advertised and schema-supported at high, but only Fable 5.1 has a successful current invocation proof. The role otherwise qualifies for Fable; there is no authority to make a proof-only invocation.

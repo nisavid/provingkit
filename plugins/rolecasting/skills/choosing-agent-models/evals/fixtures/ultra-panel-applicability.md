@@ -2,7 +2,7 @@
 
 All cases have settled nonsecurity targets, authority, and assurance. Cases A–F assign bounded cognitive workers or panel leads. Case G assigns an operational orchestrator. Requests are known engineering work with prior solutions; none meets max's frontier qualification. Current catalog/schema observations prove every pair explicitly offered. For A–G, select from the supplied model and effort pairs and describe the workflow and participant efforts where relevant. For H–T, resolve the toggle, evidence, and disposition without inventing any unspecified model or effort; preserve supported selection fields when they must be passed. Do not use tools or dispatch.
 
-A. GPT-6.1 Sol ultra is offered for highly parallelizable cognitive comparison of independent implementation experiments. Reconciled collaborative or competitive panels materially help; participants have individually sufficient medium, high, or xhigh pairs, without max eligibility.
+A. GPT-6.2 Sol ultra is offered for highly parallelizable cognitive comparison of independent implementation experiments. Reconciled collaborative or competitive panels materially help; participants have individually sufficient medium, high, or xhigh pairs, without max eligibility.
 B. Claude Opus 5.5 xhigh with Ultracode on is supported for highly parallelizable planning with adjudicated researcher/planner panels. Participants need medium or high, and max is not supported by their executors. The settled target and roles otherwise fit.
 C. A small serial label edit with one exact output offers Sol ultra and medium. There is no useful parallel work or panel judgment.
 D. A highly parallel cognitive comparison target supports Sol high, but ultra is advertised only in its catalog, absent from its executor schema.

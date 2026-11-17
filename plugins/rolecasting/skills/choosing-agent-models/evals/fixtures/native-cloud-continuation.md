@@ -3,7 +3,7 @@
 This is a synthetic scenario for a draft behavioral case. These are
 hypothetical capability observations, not live account metadata. The work is
 already authorized, same-purpose, bounded ordinary implementation, suitable
-at medium effort. The operator explicitly selected `gpt-6.1-sol` / `medium`;
+at medium effort. The operator explicitly selected `gpt-6.2-sol` / `medium`;
 current exact-surface catalog and executor observations support that pair,
 and no newer same-name successor is advertised. The initial request recorded
 both supported creation fields. No continuation task data has been sent.
