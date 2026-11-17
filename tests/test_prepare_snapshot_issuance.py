@@ -15,6 +15,43 @@ SCRIPT = ROOT / "scripts/prepare_snapshot_issuance.py"
 SOURCE = "1" * 40
 
 
+def observe_variant_bytes(directory):
+    return {name: (directory / name).read_bytes()
+            for name in ("artifact.tar.gz", "RECEIPT.json", "modes.tsv")}
+
+
+def pack_projection(output, workspace):
+    """Fixture protocol driver; no claim of production packing qualification."""
+    archive = workspace / "artifact.tar.gz"
+    with tarfile.open(archive, "w:gz") as packed:
+        packed.add(output, arcname="projected")
+    modes = workspace / "modes.tsv"
+    modes.write_text("path\tmode\torigin\n" + "".join(
+        f"{path.relative_to(output).as_posix()}\t{path.stat().st_mode & 0o777:04o}\tfixture\n"
+        for path in sorted(output.rglob("*")) if path.is_file()))
+    return {"artifact.tar.gz": archive, "RECEIPT.json": output / "RECEIPT.json", "modes.tsv": modes}
+
+
+def project_issuance_variant(prepared, workspace):
+    """Drive the actual producer and return consumer observations and immutable inputs."""
+    record = workspace / "producer-preparation.json"
+    record.write_text(json.dumps(prepared, sort_keys=True, separators=(",", ":")) + "\n")
+    output = workspace / "projected"
+    result = subprocess.run([sys.executable, str(ROOT / "scripts/build_release_artifacts.py"),
+                             "--source", str(ROOT), "--output", str(output), "--target", "claude",
+                             "--snapshot-record", str(record)], capture_output=True, text=True)
+    observation = {"accepted": result.returncode == 0, "diagnostic": result.stderr}
+    if not observation["accepted"]:
+        return observation
+    receipt = json.loads((output / "RECEIPT.json").read_text())
+    observation.update(member_versions={member.name: json.loads((member / "plugin.json").read_text())["version"]
+                                       for member in (output / "plugins").iterdir()},
+                       delivery=receipt["delivery"], source_commit=receipt["source"]["commit"])
+    observation["files"] = pack_projection(output, workspace)
+    observation["file_bytes"] = {name: path.read_bytes() for name, path in observation["files"].items()}
+    return observation
+
+
 class SnapshotIssuanceTests(unittest.TestCase):
     def setUp(self):
         self.temporary = tempfile.TemporaryDirectory()
@@ -385,6 +422,50 @@ runpy.run_path(script, run_name='__main__')
         self.assertEqual(self.prepare_cloud("above-new-floor")["cloud_members"]["versionkeeping"]["version"],
                          "1.0.1-0.snapshot.2")
 
+    def test_first_cloud_issue_cannot_regress_a_prior_synchronized_member_identity(self):
+        self.initialize()
+        ordinary = self.publication(self.prepare())
+        self.call(ordinary)
+        self.reconcile(ordinary)
+        self.configure_cloud(floor="0.0.9", target_release="0.1.0", preceding_cut="0.1.0-0",
+                             next_named_release="0.1.0-alpha.1")
+        cloud = self.prepare_cloud()
+        self.assertEqual(cloud["cloud_members"]["versionkeeping"]["version"], "0.1.0-0.snapshot.1")
+        before = self.call({"operation": "inspect"})
+        self.assertIn("last issued", self.call(self.publication(cloud), accepted=False)["reason"])
+        self.assertEqual(self.call({"operation": "inspect"}), before)
+
+    def test_cloud_issue_rechecks_later_synchronized_member_identity(self):
+        self.initialize()
+        self.configure_cloud(floor="0.0.9", target_release="0.1.0", preceding_cut="0.1.0-0",
+                             next_named_release="0.1.0-alpha.1")
+        first = self.publication(self.prepare_cloud())
+        self.call(first)
+        self.reconcile(first)
+        ordinary = self.publication(self.prepare("synchronized-later"))
+        self.call(ordinary)
+        self.reconcile(ordinary)
+        later = self.prepare_cloud("cloud-after-synchronized")
+        before = self.call({"operation": "inspect"})
+        self.assertIn("last issued", self.call(self.publication(later), accepted=False)["reason"])
+        self.assertEqual(self.call({"operation": "inspect"}), before)
+
+    def test_cloud_issue_rechecks_later_omitted_member_identity(self):
+        self.initialize()
+        self.configure_cloud(floor="0.0.9", target_release="0.1.0", preceding_cut="0.1.0-0",
+                             next_named_release="0.1.0-alpha.1")
+        first = self.publication(self.prepare_cloud())
+        self.call(first)
+        self.reconcile(first)
+        self.configure_cloud(member="mergecraft")
+        other = self.publication(self.prepare_cloud("another-selected-member", ["mergecraft"]))
+        self.call(other)
+        self.reconcile(other)
+        later = self.prepare_cloud("cloud-after-omission")
+        before = self.call({"operation": "inspect"})
+        self.assertIn("last issued", self.call(self.publication(later), accepted=False)["reason"])
+        self.assertEqual(self.call({"operation": "inspect"}), before)
+
     def test_cancelled_cloud_attempt_keeps_member_high_water_and_consumed_sequence(self):
         self.initialize()
         self.configure_cloud()
@@ -401,34 +482,18 @@ runpy.run_path(script, run_name='__main__')
         self.configure_cloud()
         source = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
         prepared = self.prepare_cloud(source=source)
-        record = self.root / "producer-preparation.json"
-        record.write_text(json.dumps(prepared, sort_keys=True, separators=(",", ":")) + "\n")
-        output = self.root / "projected"
-        result = subprocess.run([sys.executable, str(ROOT / "scripts/build_release_artifacts.py"),
-                                 "--source", str(ROOT), "--output", str(output), "--target", "claude",
-                                 "--snapshot-record", str(record)], capture_output=True, text=True)
-        self.assertEqual(result.returncode, 0, result.stderr)
-        manifest = json.loads((output / "plugins/versionkeeping/plugin.json").read_text())
-        self.assertEqual(manifest["version"], "1.0.1-0.snapshot.1")
-        receipt = json.loads((output / "RECEIPT.json").read_text())
-        self.assertEqual(receipt["delivery"]["version"], "0.1.0-alpha.7.snapshot.1")
-        self.assertEqual(receipt["source"]["commit"], source)
-        archive = self.root / "artifact.tar.gz"
-        with tarfile.open(archive, "w:gz") as packed:
-            packed.add(output, arcname="projected")
-        modes = self.root / "modes.tsv"
-        modes.write_text("path\tmode\torigin\n" + "".join(
-            f"{path.relative_to(output).as_posix()}\t{path.stat().st_mode & 0o777:04o}\tfixture\n"
-            for path in sorted(output.rglob("*")) if path.is_file()))
-        files = {"artifact.tar.gz": archive, "RECEIPT.json": output / "RECEIPT.json", "modes.tsv": modes}
-        publication = self.publication(prepared, files=files)
+        produced = project_issuance_variant(prepared, self.root)
+        self.assertTrue(produced["accepted"], produced["diagnostic"])
+        self.assertEqual(produced["member_versions"]["versionkeeping"], "1.0.1-0.snapshot.1")
+        self.assertEqual(produced["delivery"]["version"], "0.1.0-alpha.7.snapshot.1")
+        self.assertEqual(produced["source_commit"], source)
+        publication = self.publication(prepared, files=produced["files"])
         self.call(publication)
         self.reconcile(publication)
         retained = self.root / "consumer-recovery"
         self.call({"operation": "redeliver", "version": "0.1.0-alpha.7.snapshot.1",
                    "target": "claude", "output": str(retained)})
-        for name, path in files.items():
-            self.assertEqual((retained / name).read_bytes(), path.read_bytes())
+        self.assertEqual(observe_variant_bytes(retained), produced["file_bytes"])
 
     def test_reverse_completion_cannot_expose_an_earlier_reservation(self):
         self.initialize()

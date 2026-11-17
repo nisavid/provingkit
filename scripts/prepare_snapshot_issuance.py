@@ -127,6 +127,12 @@ def preparation(state: dict, request_id: str, source: str, sequence: int) -> dic
         "source_commit": source})
 
 
+def member_high_water(state: dict, member: str) -> str | None:
+    versions = (identity["preparation"].get("cloud_members", {}).get(member, {}).get("version", version)
+                for version, identity in state["versions"].items())
+    return max(versions, key=version_key, default=None)
+
+
 def ready_publication(state: dict, request: dict) -> dict:
     raw = Path(request["publication_plan"]).read_bytes()
     digest = "sha256:" + hashlib.sha256(raw).hexdigest()
@@ -253,7 +259,8 @@ def transition(connection: sqlite3.Connection, state: dict | None, request: obje
         previous = members.get(request["member"], {})
         configured = {key: request[key] for key in
                       ("floor", "target_release", "preceding_cut", "next_named_release")}
-        configured.update(next_sequence=previous.get("next_sequence", 1), last_issued=previous.get("last_issued"))
+        configured.update(next_sequence=previous.get("next_sequence", 1),
+                          last_issued=member_high_water(state, request["member"]))
         floor = version_key(configured["floor"])
         target = configured["target_release"]
         if re.fullmatch(NORMAL, target) is None:
@@ -384,11 +391,13 @@ def transition(connection: sqlite3.Connection, state: dict | None, request: obje
                 if current is None or any(selected[key] != current[key] for key in
                         ("floor", "target_release", "preceding_cut", "next_named_release")):
                     raise ValueError("cloud preparation uses a stale member interval or floor")
-                if current["last_issued"] is not None and version_key(selected["version"]) <= version_key(current["last_issued"]):
+                previous_version = member_high_water(state, member)
+                if previous_version is not None and version_key(selected["version"]) <= version_key(previous_version):
                     raise ValueError("cloud snapshot does not exceed the last issued member version")
-                current["last_issued"] = selected["version"]
             state["versions"][version] = {"source_commit": prepared["source_commit"],
                                           "preparation": prepared, "variants": variants, "withdrawn": False}
+            for member, configured in state.get("cloud_members", {}).items():
+                configured["last_issued"] = member_high_water(state, member)
             state["last_issued"] = version
         else:
             previous = state["versions"][version]["variants"]

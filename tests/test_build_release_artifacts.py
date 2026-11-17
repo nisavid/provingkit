@@ -43,19 +43,40 @@ def is_relative(link: str) -> bool:
     return bool(link) and ":" not in link.split("/", 1)[0]
 
 
+def project_snapshot(preparation, workspace, target):
+    """Drive the real CLI and decode its target-specific consumer observations."""
+    record = workspace / "preparation.json"
+    record.write_text(json.dumps(preparation))
+    output = workspace / target
+    result = subprocess.run([sys.executable, str(ROOT / "scripts/build_release_artifacts.py"),
+                             "--source", str(ROOT), "--output", str(output), "--target", target,
+                             "--snapshot-record", str(record)], capture_output=True, text=True)
+    observation = {"accepted": result.returncode == 0, "diagnostic": result.stderr}
+    if not observation["accepted"]:
+        return observation
+    adapters = {"agent-plugins": ["plugin.json"],
+                "claude": ["plugin.json", ".claude-plugin/plugin.json"],
+                "cursor": ["plugin.json", ".cursor-plugin/plugin.json"]}
+    observation["member_versions"] = {
+        member.name: {adapter: json.loads((member / adapter).read_text())["version"]
+                      for adapter in adapters[target]}
+        for member in (output / "plugins").iterdir()}
+    observation["catalog_versions"] = None
+    if target == "claude":
+        catalog = json.loads((output / ".claude-plugin/marketplace.json").read_text())
+        observation["catalog_versions"] = {item["name"]: item["version"] for item in catalog["plugins"]}
+    observation["receipt"] = json.loads((output / "RECEIPT.json").read_text())
+    return observation
+
+
 class ReleaseArtifactBuilderTests(unittest.TestCase):
-    def assert_projected_versions(self, output, target, expected):
-        """Consumer assertion; expected identities are supplied independently of the driver."""
-        adapters = {"agent-plugins": ["plugin.json"],
-                    "claude": ["plugin.json", ".claude-plugin/plugin.json"],
-                    "cursor": ["plugin.json", ".cursor-plugin/plugin.json"]}
+    def assert_projected_versions(self, observation, expected, *, catalog_required):
+        """Consumer assertions over observations, independent of paths and serialization."""
+        self.assertTrue(observation["accepted"], observation["diagnostic"])
+        self.assertEqual(set(observation["member_versions"]), set(expected))
         for member, version in expected.items():
-            for adapter in adapters[target]:
-                manifest = json.loads((output / "plugins" / member / adapter).read_text())
-                self.assertEqual(manifest["version"], version, (member, target, adapter))
-        if target == "claude":
-            catalog = json.loads((output / ".claude-plugin/marketplace.json").read_text())
-            self.assertEqual({item["name"]: item["version"] for item in catalog["plugins"]}, expected)
+            self.assertEqual(set(observation["member_versions"][member].values()), {version}, member)
+        self.assertEqual(observation["catalog_versions"], expected if catalog_required else None)
 
     def test_cloud_projection_preserves_member_floor_and_common_kit_receipt(self):
         commit = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()
@@ -72,22 +93,22 @@ class ReleaseArtifactBuilderTests(unittest.TestCase):
         expected["versionkeeping"] = "1.0.1-0.snapshot.4"
         original = (ROOT / "plugins/versionkeeping/plugin.json").read_bytes()
         with tempfile.TemporaryDirectory() as temporary:
-            record = Path(temporary) / "preparation.json"
-            record.write_text(json.dumps(preparation))
             for target in TARGETS:
-                output = Path(temporary) / target
-                result = subprocess.run([sys.executable, str(ROOT / "scripts/build_release_artifacts.py"),
-                                         "--source", str(ROOT), "--output", str(output), "--target", target,
-                                         "--snapshot-record", str(record)], capture_output=True, text=True)
-                self.assertEqual(result.returncode, 0, result.stderr)
-                self.assert_projected_versions(output, target, expected)
-                receipt = json.loads((output / "RECEIPT.json").read_text())
+                observation = project_snapshot(preparation, Path(temporary), target)
+                self.assert_projected_versions(observation, expected, catalog_required=target == "claude")
+                receipt = observation["receipt"]
                 self.assertEqual(receipt["delivery"]["cloud_members"], {"versionkeeping": member})
                 self.assertEqual(receipt["delivery"]["version"], "0.1.0-alpha.7.snapshot.41")
                 self.assertEqual(receipt["source"]["commit"], commit)
                 # A successful producer exit cannot satisfy an independently wrong expectation.
                 with self.assertRaises(AssertionError):
-                    self.assert_projected_versions(output, target, {**expected, "versionkeeping": "1.0.0"})
+                    self.assert_projected_versions(observation, {**expected, "versionkeeping": "1.0.0"},
+                                                   catalog_required=target == "claude")
+            refused_workspace = Path(temporary) / "refused"
+            refused_workspace.mkdir()
+            rejected = project_snapshot({**preparation, "source_commit": "0" * 40}, refused_workspace, "claude")
+            self.assertFalse(rejected["accepted"])
+            self.assertIn("another source", rejected["diagnostic"])
             self.assertEqual((ROOT / "plugins/versionkeeping/plugin.json").read_bytes(), original)
 
     def test_snapshot_copy_loads_delivered_identity_and_retains_source(self):

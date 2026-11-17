@@ -185,7 +185,11 @@ sequence, and delivered version. Pass the exact response bytes to the existing
 ```
 
 Each selected member has a persistent reservation sequence and last-issued
-version. Gaps survive cancellation, reentry, and a Kit retarget; resetting the
+version. Its high-water mark includes every retained issuance: a member's
+explicit version when selected, or the common Kit version when synchronized
+or omitted from an exception. Configuration reads that history, and issuance
+rechecks it before exposure without rewriting issued records.
+Gaps survive cancellation, reentry, and a Kit retarget; resetting the
 Kit's sequence does not reset member sequences. Identical preparation requests
 recover the original record. Changing their source or member selection is
 refused. A new configuration cannot lower a floor or rewind an interval. Consume
