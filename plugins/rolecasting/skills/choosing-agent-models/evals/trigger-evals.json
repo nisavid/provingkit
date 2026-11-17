@@ -42,5 +42,13 @@
   {
     "query": "Select model and effort for an authorized new implementation assignment to the existing worker; current capability observations are supplied.",
     "should_trigger": true
+  },
+  {
+    "query": "Resolve the independent model, effort and Ultracode fields for an active task override against its appointment and a later operator choice.",
+    "should_trigger": true
+  },
+  {
+    "query": "Send only a status acknowledgment inside the existing accepted peer assignment. An approved profile exists, but no execution or settings change is requested.",
+    "should_trigger": false
   }
 ]

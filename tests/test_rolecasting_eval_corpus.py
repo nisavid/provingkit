@@ -31,10 +31,10 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
                 / "trigger-evals.json"
             ).read_text()
         )
-        self.assertEqual(len(probes), 5)
+        self.assertEqual(len(probes), 7)
         self.assertEqual(
             [probe["should_trigger"] for probe in probes],
-            [True, False, False, False, True],
+            [True, False, False, False, True, True, False],
         )
         self.assertIn("user-owned task", probes[0]["query"])
         self.assertIn("authority", probes[0]["query"])
@@ -66,6 +66,42 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
                     },
                 )
 
+    def test_scoped_override_cases_reach_executor_without_grader_answers(self) -> None:
+        # This tests corpus delivery, not model behavior or effective settings.
+        for skill, name in (
+            ("choosing-agent-models", "select-appointment-and-scoped-overrides"),
+            ("delegating-cross-agent-work", "delegate-appointment-and-scoped-overrides"),
+        ):
+            with self.subTest(skill=skill):
+                scenarios = {item["name"]: item for item in self.documents[skill]["evals"]}
+                self.assertIn(name, scenarios, "missing scoped-override consumer case")
+                case = scenarios[name]
+                self.assertEqual(case["fixture_paths"], [
+                    "evals/fixtures/appointment-and-scoped-overrides.md",
+                ])
+                fixture = (PLUGIN_ROOT / "skills" / skill / case["fixture_paths"][0]).read_text()
+                for label in "ABCDEFGHI":
+                    self.assertIn(f"Case {label}:", fixture)
+                self.assertEqual({item["id"] for item in case["expectations"]}, {
+                    "appointment-field-ownership-and-approved-reuse",
+                    "actual-task-continuation-and-restoration",
+                    "overlap-uncertainty-custody-and-evidence",
+                })
+                executor = build_executor_payload(
+                    prompt=case["prompt"], fixture=fixture,
+                    candidate_bundle={"SKILL.md": "candidate source"},
+                )
+                grader = build_grader_payload(
+                    executor_payload=executor, response="ungraded response",
+                    expected_output=case["expected_output"],
+                    expectations=case["expectations"],
+                )
+                self.assertNotIn("expected_output", executor)
+                self.assertNotIn("expectations", executor)
+                self.assertNotIn(case["expected_output"], json.dumps(executor))
+                self.assertEqual(grader["expected_output"], case["expected_output"])
+                self.assertEqual(grader["expectations"], case["expectations"])
+
     def test_rolecasting_has_complete_detailed_scenario_inventory(self) -> None:
         observed = {
             item["name"]
@@ -82,6 +118,8 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
                 "select-explicit-continuation-selection",
                 "select-peer-message-preservation",
                 "delegate-peer-message-preservation",
+                "select-appointment-and-scoped-overrides",
+                "delegate-appointment-and-scoped-overrides",
                 "delegate-explicit-thread-selection",
                 "delegate-partial-selection-controls",
                 "delegate-explicit-continuation-selection",

@@ -25,6 +25,17 @@ enlarge authority. When required authority cannot be verified, return
 `NEEDS_CONTEXT`. Honor actual harness refusals and use the existing escalation
 path; recovered authority does not authorize bypassing enforcement.
 
+## Appointment and scoped-task context
+
+Use the [appointment and scoped-override contract](../../choosing-agent-models/references/appointment-and-scoped-overrides.md)
+when preparing actual work, continuation, scope end, or handover. Retain the
+recipient, profile/decision and authority references, applicability and end,
+changed fields, operation observations, and accepted restoration owner in
+existing task/handoff records or referenced artifacts. Do not extend a strict
+adapter schema to carry these notes. Keep requested selection separate from
+effective-setting and persistence evidence; an unresolved application or
+restoration remains owned across restart and handover.
+
 ## Independent dimensions
 
 Every selected execution freezes these independent dimensions:

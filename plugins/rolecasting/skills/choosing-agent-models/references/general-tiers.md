@@ -36,6 +36,15 @@ Sonnet and Haiku are outside the named-family medium floor and ineligible for `m
 
 Consider Claude Haiku 5.5 for simple, well-understood classification, extraction, and routing. For these bounded worker tasks, choose the lowest supported effort that preserves judgment and outcome quality. Eligible Luna and Grok pairs are also candidates when task fit permits. Grok 4.7 `high` may fit moderately complex, well-understood work within its role. Apply [effort eligibility](effort-policy.md) and [native label binding](capability-probes-and-fallbacks.md#prove-an-exact-pair) to every choice.
 
+## Appointments and task scope
+
+Named role defaults supply an appointment; they do not erase an applicable task
+override or a later operator choice. Resolve model, effort, and Ultracode separately
+through [appointments and scoped overrides](appointment-and-scoped-overrides.md).
+Keep reviewed profile conditions, actual-task application, continuation, and
+owned-field restoration with that contract rather than copying role-specific
+policy tables into generic lifecycle guidance.
+
 ## Coordination and intake roles
 
 Use these operating defaults for coordination and intake:
