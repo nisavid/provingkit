@@ -118,7 +118,11 @@ class CodexOwnerAdmissionTests(unittest.TestCase):
     def test_guarded_nomination_refuses_peer_changed_before_message_write(self):
         self._assert_guarded_peer_mismatch(changed_after_owner=True)
 
-    def _assert_guarded_peer_mismatch(self, *, changed_after_owner=False):
+    def test_guarded_nomination_accepts_explicit_continuation_after_nondelivery(self):
+        self._assert_guarded_peer_mismatch(continue_after_mismatch=True)
+
+    def _assert_guarded_peer_mismatch(self, *, changed_after_owner=False,
+                                      continue_after_mismatch=False):
         with tempfile.TemporaryDirectory(prefix="codex-owner-guard-") as temporary:
             root = Path(temporary).resolve()
             store = root / "mailbox.sqlite3"
@@ -307,6 +311,115 @@ class CodexOwnerAdmissionTests(unittest.TestCase):
                 "--actor-host-id", actor["host_id"],
             )
             self.assertFalse(later["claimed"])
+            if not continue_after_mismatch:
+                return
+
+            invalid_request = json.loads(json.dumps(request))
+            invalid_request["attempt_id"] = "owner-attempt-invalid"
+            invalid_request["continuation"] = {"after_attempt": "owner-attempt"}
+            invalid_capture = root / "capture-invalid"
+            invalid_capture.mkdir(mode=0o700)
+            invalid_request["capture"]["run_root"] = str(invalid_capture)
+            invalid_path = root / "request-invalid.json"
+            invalid_path.write_text(json.dumps(invalid_request), encoding="utf-8")
+            invalid_stream = InjectedPeerStream(expected_peer)
+
+            def invalid_transport(endpoint, limits, wait):
+                return transport_module.CliTransport(
+                    endpoint, limits, wait,
+                    connector=lambda _endpoint, _wait: invalid_stream,
+                )
+
+            invalid_output = io.StringIO()
+            sys.path.insert(0, str(SCRIPTS))
+            try:
+                with mock.patch.object(sender, "CliTransport", invalid_transport), \
+                        mock.patch.object(
+                            sys, "argv", [str(PROTOTYPE), "--store", str(store),
+                                          "--request", str(invalid_path)]
+                        ), contextlib.redirect_stdout(invalid_output):
+                    invalid_exit = sender.main(
+                        effective_uid=nomination_path.stat().st_uid,
+                        clock=lambda: 7005,
+                    )
+            finally:
+                sys.path.remove(str(SCRIPTS))
+            self.assertEqual(invalid_exit, 0)
+            invalid_result = json.loads(invalid_output.getvalue())
+            self.assertFalse(invalid_result["claimed"])
+            self.assertEqual(invalid_result["reason"], "invalid_continuation")
+            self.assertEqual(invalid_stream.writes, [])
+            self.assertFalse(invalid_stream.closed)
+            self.assertEqual(len(mailbox("show", "owner-message")["attempts"]), 1)
+
+            continuation_request = json.loads(json.dumps(request))
+            continuation_request["attempt_id"] = "owner-attempt-2"
+            continuation_request["evidence_ref"] = "synthetic://owner-evidence/continuation"
+            continuation_request["continuation"] = {
+                "after_attempt": "owner-attempt",
+                "decision_ref": "synthetic://owning-task/continue",
+            }
+            continuation_capture = root / "capture-continuation"
+            continuation_capture.mkdir(mode=0o700)
+            continuation_request["capture"]["run_root"] = str(continuation_capture)
+            continuation_path = root / "request-continuation.json"
+            continuation_path.write_text(
+                json.dumps(continuation_request), encoding="utf-8",
+            )
+            continuation_stream = InjectedPeerStream(
+                expected_peer, response_request_id="owner-attempt-2",
+            )
+
+            def continuation_transport(endpoint, limits, wait):
+                return transport_module.CliTransport(
+                    endpoint, limits, wait,
+                    connector=lambda _endpoint, _wait: continuation_stream,
+                )
+
+            continuation_output = io.StringIO()
+            repeated_continuation_output = io.StringIO()
+            sys.path.insert(0, str(SCRIPTS))
+            try:
+                with mock.patch.object(sender, "CliTransport", continuation_transport), \
+                        mock.patch.object(
+                            sys, "argv", [str(PROTOTYPE), "--store", str(store),
+                                          "--request", str(continuation_path)]
+                        ):
+                    with contextlib.redirect_stdout(continuation_output):
+                        continuation_exit = sender.main(
+                            effective_uid=nomination_path.stat().st_uid,
+                            clock=lambda: 7005,
+                        )
+                    with contextlib.redirect_stdout(repeated_continuation_output):
+                        repeated_continuation_exit = sender.main(
+                            effective_uid=nomination_path.stat().st_uid,
+                            clock=lambda: 7005,
+                        )
+            finally:
+                sys.path.remove(str(SCRIPTS))
+
+            self.assertEqual(continuation_exit, 0)
+            continuation_result = json.loads(continuation_output.getvalue())
+            self.assertTrue(continuation_result["claimed"])
+            self.assertEqual(continuation_result["peer_input"], "possible_submission")
+            self.assertEqual(
+                [frame["method"] for frame in continuation_stream.writes],
+                ["initialize", "thread-owner-discovery", "thread-follower-start-turn"],
+            )
+            retained = mailbox("show", "owner-message")
+            self.assertEqual([item["attempt_id"] for item in retained["attempts"]], [
+                "owner-attempt", "owner-attempt-2",
+            ])
+            self.assertEqual(retained["attempts"][1]["reconciliation"], {
+                "after_attempt": "owner-attempt",
+                "nondelivery_ref": "synthetic://owner-evidence",
+                "decision_ref": "synthetic://owning-task/continue",
+            })
+            self.assertEqual(repeated_continuation_exit, 0)
+            repeated_continuation = json.loads(repeated_continuation_output.getvalue())
+            self.assertFalse(repeated_continuation["claimed"])
+            self.assertEqual(repeated_continuation["reason"], "claim_not_acquired")
+            self.assertEqual(len(mailbox("show", "owner-message")["attempts"]), 2)
 
     def exchange(self, *, early_response=False, response_kind="success", repeat=False,
                  capture_collision=False, route_change=None, null_initialize=False,

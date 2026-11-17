@@ -7,11 +7,20 @@ original permission, current holds, private capture root, and reviewed revision.
 Owner discovery is cooperative routing evidence, not authentication.
 
 The trusted request has exactly `message_id`, `attempt_id`, `actor`, `recipient`,
-`evidence_ref`, `native`, and `capture`. `actor` is the actual submitting actor;
-it need not be the Codex producer recorded in a guarded nomination. The immutable
-planned message separately preserves its original sender, obligation owner,
-recipient, payload, authority, holds, and exchange. The sender obtains its own
-attempt claim.
+`evidence_ref`, `native`, and `capture`, plus one optional `continuation` object.
+`actor` is the actual submitting actor; it need not be the Codex producer
+recorded in a guarded nomination. The immutable planned message separately
+preserves its original sender, obligation owner, recipient, payload, authority,
+holds, and exchange. The sender obtains its own attempt claim.
+
+Use `continuation` only after the owning task separately authorizes a later
+attempt following conclusive nondelivery. It contains exactly paired nonempty
+`after_attempt` and `decision_ref` strings. The sender passes those supplied
+bindings to the mailbox claim; it does not infer permission or continuation
+from the prior outcome. The mailbox still requires the latest prior attempt,
+conclusive nondelivery for every prior attempt, and no receipt, handling, or
+completion evidence. Omit the object for the first attempt. Reuse neither the
+original attempt ID nor an accepted continuation attempt.
 
 `purpose`, `authorityRefs`, and `holdRefs` retain the actual send bindings. Scope
 is exactly `send: true`, `ownerAdmissionIntent: true`, and

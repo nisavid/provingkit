@@ -189,8 +189,18 @@ def _load_guarded_nomination(specification, request, planned, effective_uid, clo
     }
 def prepare(request, planned, effective_uid=None, clock=None):
     required = {"message_id", "attempt_id", "actor", "recipient", "evidence_ref", "native", "capture"}
-    if not isinstance(request, dict) or request.keys() != required:
+    if (not isinstance(request, dict)
+            or request.keys() not in (required, required | {"continuation"})):
         raise Refusal("invalid_request")
+    continuation = None
+    if "continuation" in request:
+        continuation = request["continuation"]
+        if (not isinstance(continuation, dict)
+                or continuation.keys() != {"after_attempt", "decision_ref"}
+                or any(not isinstance(continuation[key], str)
+                       or not continuation[key].strip()
+                       for key in ("after_attempt", "decision_ref"))):
+            raise Refusal("invalid_continuation")
     for key in ("message_id", "attempt_id", "evidence_ref"):
         text(request[key], key)
     if request["attempt_id"] in {"initialize", "owner"}:
@@ -263,7 +273,7 @@ def prepare(request, planned, effective_uid=None, clock=None):
         normalized["guardedNomination"] = guard["nomination"]
     if len(encode(normalized)) > limits["caseBytes"]:
         raise Refusal("case-byte-limit")
-    return normalized, limits, wait, guard
+    return normalized, limits, wait, guard, continuation
 
 
 def submit(native, limits, wait, writer, result, guard=None):
@@ -429,9 +439,15 @@ def main(argv=None, *, effective_uid=None, clock=None):
             raise Refusal("invalid_request")
         mailbox = Mailbox(arguments.store)
         planned = mailbox.get(request["message_id"])
-        native, limits, wait, guard = prepare(request, planned, effective_uid, clock)
+        native, limits, wait, guard, continuation = prepare(
+            request, planned, effective_uid, clock,
+        )
         writer = CaptureWriter(request["capture"])
-        claim = mailbox.claim(request["message_id"], request["attempt_id"], request["actor"])
+        claim = mailbox.claim(
+            request["message_id"], request["attempt_id"], request["actor"],
+            None if continuation is None else continuation["after_attempt"],
+            None if continuation is None else continuation["decision_ref"],
+        )
         result["claimed"] = claim["claimed"] is True
         if not result["claimed"]:
             result["reason"] = "claim_not_acquired"
