@@ -22,7 +22,7 @@
         "content_identity": {
           "kind": "plugin-content-lock",
           "path": "plugins/rolecasting/content-lock.json",
-          "sha256": "sha256:5dfe9b2c1336f24a723224965e4108931cd58b008ee69a814b6ead3ab4a67be4"
+          "sha256": "sha256:217e288ce89b917e4774b6b087ec294a106e52d6cd5f627954ac23c0063d30c0"
         },
         "display_name": "Rolecasting",
         "distribution_kind": "agent-plugin",

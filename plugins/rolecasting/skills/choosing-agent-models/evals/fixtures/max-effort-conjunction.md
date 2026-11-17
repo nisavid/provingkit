@@ -1,6 +1,6 @@
 # Max requests on supported targets
 
-For each labeled case decide whether max is eligible. Do not use tools. Except where varied, the target's current catalog and executor schema prove GPT-6.1 Sol max and xhigh; the role is ordinary nonsecurity work, unsuitable for Jev, and authority and assurance hold. The reference problem is extremely challenging, extremely complex, and at the frontier with no known prior or closely related solution. The reference workflow is a loop with reconciled collaborative panels of max-effort implementers. All these facts are established fixture inputs, not claims about any real executor.
+For each labeled case decide whether max is eligible. Do not use tools. Except where varied, the target's current catalog and executor schema prove GPT-6.2 Sol max and xhigh; the role is ordinary nonsecurity work, unsuitable for Jev, and authority and assurance hold. The reference problem is extremely challenging, extremely complex, and at the frontier with no known prior or closely related solution. The reference workflow is a loop with reconciled collaborative panels of max-effort implementers. All these facts are established fixture inputs, not claims about any real executor.
 
 A. The reference model, problem, and workflow.
 B. Substitute Luna max, proven by both catalog and schema, for the reference model.
@@ -16,7 +16,7 @@ K. Only high stakes, risky unknowns, and expensive irreversible mistakes are est
 L. The reference workflow is instead a tricritical:loop using max-effort tricritical:review reviewer panels, with adjudication. The reference problem holds.
 M. Substitute Claude Opus 5.5 max, supported by both catalog and schema, in the same ordinary role and reference problem/workflow.
 N. Substitute Claude Opus 5.5 where the schema proves xhigh and a separate Ultracode toggle, but does not support max.
-O. Substitute GPT-6 Astra max in a high-stakes deep-cognition role qualifying for the exceptional tier; reference problem/workflow and exact max capability hold.
+O. Substitute GPT-6.2 Astra max in a high-stakes deep-cognition role qualifying for the exceptional tier; reference problem/workflow and exact max capability hold.
 P. Substitute Claude Fable 5.2 max in its qualifying high-stakes deep-cognition role, with successful current target invocation proof and exact max capability; reference problem/workflow holds.
 Q. Fable has only a catalog advertisement, without successful proof or proof-only invocation authority; all other reference facts hold.
 R. Astra is offered for ordinary recoverable implementation without the exceptional-tier conjunction; all other reference facts hold.
