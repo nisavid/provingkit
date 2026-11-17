@@ -1,13 +1,13 @@
 ---
 name: choosing-agent-models
-description: Use when creating an agent thread, task, session, or subagent after delegation, selecting model and effort for continuations, classifying security scope, or diagnosing routing blocks or refusals.
+description: Use when selecting model and effort for new workers or execution continuations, classifying execution security scope, or diagnosing routing blocks or refusals.
 ---
 
 # Choosing Agent Models
 
 ## Scope
 
-Own model and effort selection after [delegating-cross-agent-work](../delegating-cross-agent-work/SKILL.md) settles target, ownership, transport, authority, and assurance. Model choice is a separate decision; it cannot repair those boundaries. Classify the complete bounded operation before each dispatch, continuation, follow-up, and review; read [scope classification and refusal diagnosis](references/classifying-security-work.md). Previous assignments do not carry classification forward.
+Own model and effort selection after [delegating-cross-agent-work](../delegating-cross-agent-work/SKILL.md) settles target, ownership, transport, authority, and assurance. Model choice is a separate decision; it cannot repair those boundaries. First distinguish [ordinary peer messages from execution assignments](references/capability-probes-and-fallbacks.md#distinguish-messages-from-execution-assignments). Classify the complete bounded execution before each new assignment, execution continuation, and review; read [scope classification and refusal diagnosis](references/classifying-security-work.md). Previous assignments do not carry execution classification forward.
 
 ## Selection Order
 
