@@ -1083,7 +1083,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 (
                     "rolecasting",
                     "agent-plugin",
-                    "1.0.0",
+                    "0.1.0-trunk",
                     "plugins/rolecasting/plugin.json",
                     "plugins/rolecasting/.claude-plugin/plugin.json",
                     "plugin-content-lock",
@@ -1092,7 +1092,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 (
                     "tricritical",
                     "agent-plugin",
-                    "1.0.0",
+                    "0.1.0-trunk",
                     "plugins/tricritical/plugin.json",
                     "plugins/tricritical/.claude-plugin/plugin.json",
                     "plugin-content-lock",
@@ -1101,7 +1101,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 (
                     "versionkeeping",
                     "agent-plugin",
-                    "1.0.0",
+                    "0.1.0-trunk",
                     "plugins/versionkeeping/plugin.json",
                     "plugins/versionkeeping/.claude-plugin/plugin.json",
                     "plugin-content-lock",
@@ -1110,7 +1110,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 (
                     "mergecraft",
                     "agent-plugin",
-                    "1.0.0",
+                    "0.1.0-trunk",
                     "plugins/mergecraft/plugin.json",
                     "plugins/mergecraft/.claude-plugin/plugin.json",
                     "plugin-content-lock",
@@ -1119,7 +1119,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 (
                     "artifact-customs",
                     "agent-plugin",
-                    "1.0.0",
+                    "0.1.0-trunk",
                     "plugins/artifact-customs/plugin.json",
                     "plugins/artifact-customs/.claude-plugin/plugin.json",
                     "plugin-content-lock",
@@ -1128,7 +1128,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 (
                     "proseweaving",
                     "agent-plugin",
-                    "1.0.0",
+                    "0.1.0-trunk",
                     "plugins/proseweaving/plugin.json",
                     "plugins/proseweaving/.claude-plugin/plugin.json",
                     "plugin-content-lock",
@@ -1137,7 +1137,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 (
                     "surreal-intercom",
                     "agent-plugin",
-                    "1.0.0",
+                    "0.1.0-trunk",
                     "plugins/surreal-intercom/plugin.json",
                     "plugins/surreal-intercom/.claude-plugin/plugin.json",
                     "plugin-content-lock",
@@ -1223,7 +1223,24 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("unsupported member version", result.stderr)
 
-    def test_assigned_local_alpha_version_accepts_six_consistent_members(self) -> None:
+    def test_trunk_source_accepts_seven_synchronized_members(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory) / "repository"
+            self.clone_with_history(repository)
+            self.set_member_versions(repository, "0.1.0-trunk")
+            definition = json.loads(
+                (repository / "release/provingkit/definition-v1.json").read_text()
+            )
+            self.assertEqual(
+                [member["version"] for member in definition["membership"]["members"]],
+                ["0.1.0-trunk"] * 7,
+            )
+
+            result = self.validate(repository)
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_assigned_local_alpha_version_accepts_seven_consistent_members(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             repository = Path(directory) / "repository"
             self.clone_with_history(repository)
@@ -1233,7 +1250,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
 
         self.assertEqual(result.returncode, 0, result.stderr)
 
-    def test_local_alpha_version_rejects_mixed_member_versions(self) -> None:
+    def test_trunk_source_rejects_mixed_member_versions(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             repository = Path(directory) / "repository"
             shutil.copytree(
@@ -1242,13 +1259,34 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 ignore=shutil.ignore_patterns(".git", "__pycache__", "*.pyc"),
             )
             self.set_member_versions(
-                repository, "0.1.0-alpha.2", overrides={"rolecasting": "1.0.0"}
+                repository, "0.1.0-trunk", overrides={"rolecasting": "0.1.0-alpha.2"}
             )
 
             result = self.validate(repository)
 
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("member version drift", result.stderr)
+
+    def test_trunk_source_rejects_malformed_or_unassigned_versions(self) -> None:
+        for version in (
+            "0.1.0-trunk.1",
+            "0.1.0-trunk+build",
+            "0.1-trunk",
+            "1.0.0",
+        ):
+            with self.subTest(version=version), tempfile.TemporaryDirectory() as directory:
+                repository = Path(directory) / "repository"
+                shutil.copytree(
+                    REPOSITORY,
+                    repository,
+                    ignore=shutil.ignore_patterns(".git", "__pycache__", "*.pyc"),
+                )
+                self.set_member_versions(repository, version)
+
+                result = self.validate(repository)
+
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn("unsupported member version", result.stderr)
 
     def test_local_alpha_version_rejects_zero_ordinal(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

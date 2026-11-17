@@ -1,6 +1,9 @@
 # Changelog
 
-## Unreleased
+## 0.1.0-trunk
+
+- Align the source and Claude adapter versions with the Kit's synchronized
+  `0.1.0-trunk` development identity.
 
 - Use Claude Fable 5.2 as the exceptional-tier baseline, the Claude Sage
   Ultracode target, and the authorized deep-cognition fallback for actual
@@ -83,7 +86,7 @@
   completed-but-blocked or unverified results as unusable, and reject a usable
   non-completed terminal.
 
-## 1.0.0
+## Historical source changes (mistakenly labeled 1.0.0)
 
 Initial Agent Plugins v1 package for delegation topology, bounded authority,
 live-capability model selection, and leader integration. The root manifest owns

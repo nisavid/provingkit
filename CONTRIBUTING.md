@@ -21,7 +21,8 @@ authority exist.
 
 1. Link the issue or decision that owns the change.
 2. Update canonical source before any derived lock or projection.
-3. Preserve each member's manifest identity and independent version boundary.
+3. Preserve each member's manifest identity and keep all product member versions
+   synchronized with the common Kit version.
 4. Use Conventional Commits for commit messages.
 5. Run the focused commands under [Validate a source checkout](#validate-a-source-checkout)
    and report the checks that actually ran.

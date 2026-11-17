@@ -1,6 +1,11 @@
 # Changelog
 
-## 1.0.0
+## 0.1.0-trunk
+
+- Align the source and Claude adapter versions with the Kit's synchronized
+  `0.1.0-trunk` development identity.
+
+## Historical source changes (mistakenly labeled 1.0.0)
 
 Uses Agent Plugins v1 as the canonical skills package, with native Claude agent
 aliases and skill-local Codex metadata retained for unsupported client surfaces.
