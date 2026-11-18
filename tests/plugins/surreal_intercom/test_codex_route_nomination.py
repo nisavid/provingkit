@@ -366,6 +366,7 @@ class CodexRouteNominationTests(unittest.TestCase):
         for scenario, expected in (
                 ("match", True), ("missing", False), ("multiple", False),
                 ("changed", False), ("wrong-mount-namespace", False),
+                ("mount-namespace-changed", False),
                 ("duplicates-stable", True), ("duplicates-reordered", True),
                 ("duplicate-added", False), ("duplicate-removed", False),
                 ("duplicate-replaced", False), ("unrelated-change", True)):
@@ -380,6 +381,10 @@ class CodexRouteNominationTests(unittest.TestCase):
                     observer.links[f"/proc/{pid}/ns/mnt"] = "mnt:[702]"
                 if scenario == "wrong-mount-namespace":
                     observer.links["/proc/300/ns/mnt"] = "mnt:[703]"
+                if scenario == "mount-namespace-changed":
+                    for pid in (100, 200, 300):
+                        observer.links[f"/proc/{pid}/ns/mnt"] = "mnt:[703]"
+                        observer.link_sequences[f"/proc/{pid}/ns/mnt"] = ["mnt:[702]"]
                 for descriptor, inode in (("12", 502), ("13", 503)):
                     observer.descriptors.append(descriptor)
                     observer.links[f"/proc/300/fd/{descriptor}"] = f"socket:[{inode}]"
@@ -437,6 +442,10 @@ class CodexRouteNominationTests(unittest.TestCase):
                     self.assertEqual(calls[0], calls[1])
                 else:
                     self.assertFalse(Path(request["publication"]["path"]).exists())
+                    self.assertNotIn(str(endpoint), json.dumps(result))
+                if scenario == "mount-namespace-changed":
+                    self.assertEqual(len(calls), 2)
+                    self.assertEqual(result["reason"], "sample-identity-changed")
 
     def test_same_path_producer_validates_mount_and_kernel_reply(self):
         for scenario, expected_reason in (

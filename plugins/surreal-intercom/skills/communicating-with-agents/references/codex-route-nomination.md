@@ -173,13 +173,13 @@ existing four counters report the per-classification high-water values. Before
 publication, the adapter rechecks every ancestor's parent edge, start ticks,
 executable, role discriminator, and namespace, plus boot and filesystem identity.
 It then performs the final complete descriptor and Unix-table classification.
-The final set must contain the same sole canonical
-listener with the same descriptor, socket inode, eligible flags, type, state,
-and path. When several rows share that path, preserve the same candidate
-descriptors, socket cookies, mount namespaces and backing identities in both
-classifications. A changed set or selected socket, lost listening eligibility,
+Both classifications must select the same listener with the same descriptor,
+socket inode, eligible flags, type, state, and path. When several rows share
+that path, both classifications must observe the same complete candidate set
+with the same descriptors, socket cookies, mount namespaces, and backing
+identities. A changed set or selected socket, lost listening eligibility,
 incomplete pass, or exhausted per-classification or aggregate bound refuses;
-unrelated native-pipe changes do not hide the unchanged sole primary.
+unrelated native-pipe changes do not hide the unchanged selected listener.
 Five seconds bounds acquisition only. This is one useful bounded final
 observation, not an atomic snapshot or a
 guarantee against later change. It is not a nomination, relay, grant, or attempt

@@ -4,7 +4,7 @@
   "files": {
     ".claude-plugin/plugin.json": "530c7d2b89cdd7a71a61897b614eb3eba81b8d8fe5657464bbcae5b0f6c9741a",
     "CHANGELOG.md": "cab857d1f6e2eacccf84400366b23b6935c014725ba02c23e0208cc81c4e064c",
-    "DEVELOPING.md": "12273225ac6c32c6f595a3d8eb6eb6a6c2f52bd2a289e543bb50e25f7f3ffe7e",
+    "DEVELOPING.md": "31c15b3c43cd3ae83b5bd3299e8420e24fff8cf9773640ab000a373473b0f29b",
     "LICENSE": "68950fb14202e1a28da07612a6cc6978163fee3e678520c2740a0d1bde0680e8",
     "README.md": "7d3b0f65868d004e5cd48f977fdafb097b6ed30fc4f9dcd4a96da8cf9d400f8a",
     "plugin.json": "afa765ba1de71baef49395bd3612e9cd3e777664e2453e04cbd88f16f56e761a",
@@ -15,7 +15,7 @@
     "skills/communicating-with-agents/references/codex-daybreak-recipient.md": "c834d4a33e1bae943d86f5301a69060a2a6553441e2011a4910bddc3dc79a1df",
     "skills/communicating-with-agents/references/codex-ipc-sender.md": "302df5b4b35f6a000bf28e9b8881f1827be736a2324497cb4d5c9a93b106e9bb",
     "skills/communicating-with-agents/references/codex-owner-admission.md": "e347dd9a3d56be94f884a6fb54d61e4e29a7c1aabf58934a89022e1c9a71daf4",
-    "skills/communicating-with-agents/references/codex-route-nomination.md": "4eff2fb1efabd8d8b950694868e7f609b125be94fda5e308a56d6f534a2966c0",
+    "skills/communicating-with-agents/references/codex-route-nomination.md": "a292ba608f38c7e0994634b29a9b8320b424123c8f2d03b41690a8fcf7cdfcfd",
     "skills/communicating-with-agents/references/codex-worker-observation-diagnostic.md": "6567f7270918c6357d0e1981eacb6978a90c80b60866fccac45302fa245d3a3b",
     "skills/communicating-with-agents/references/native-codex-mailbox.md": "3e03276eb0f20df83afc17ca18e7ee3a0ca66fb322d56a7171045fee75cb0787",
     "skills/communicating-with-agents/references/native-peer-relay.md": "5a76af19b205661d24e2ebe9899ed2b18f31761341e063173e59d95b6033cdbf",

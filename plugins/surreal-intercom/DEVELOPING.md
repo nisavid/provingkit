@@ -77,8 +77,10 @@ synthetic checks establish no installed route or live peer qualification.
 Run exactly two complete classifications, each within the original descriptor,
 link-byte, Unix-row, and Unix-byte limits, under one shared watchdog. Their
 aggregate work is capped at twice the per-classification limits; the closed
-record reports per-classification high-water counts. Require the same sole
-canonical row and descriptor/socket identity. Cover original maximum-range
+record reports per-classification high-water counts. Require the same selected
+listener and descriptor/socket identity. For rows that share one pathname,
+require the same complete candidate set and backing evidence in both
+classifications. Cover original maximum-range
 success on both passes, the retained 694-descriptor/2,401-row sample, a final-only
 second canonical listener, lost listening eligibility, an unrelated native-pipe
 change, and every final-pass bound. This is not an atomic or perpetual-stability
