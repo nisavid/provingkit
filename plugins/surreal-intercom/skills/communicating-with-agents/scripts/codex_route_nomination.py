@@ -6,7 +6,9 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import socket
 import stat
+import struct
 import sys
 import time
 
@@ -24,6 +26,15 @@ SAMPLE_LIMITS = {
     "maxMetadataBytes": 8192,
 }
 MAX_CLASSIFICATIONS = 2
+MAX_SAME_PATH_LISTENERS = 8
+MAX_DIAG_REPLY_BYTES = 256
+MAX_MOUNT_TABLE_BYTES = 65536
+MAX_U32 = (1 << 32) - 1
+NETLINK_SOCK_DIAG = 4
+SOCK_DIAG_BY_FAMILY = 20
+TCP_LISTEN = 10
+UDIAG_SHOW_VFS = 2
+UNIX_DIAG_VFS = 1
 AGGREGATE_SAMPLE_LIMITS = {
     key: SAMPLE_LIMITS[key] * MAX_CLASSIFICATIONS
     for key in ("descriptorEntries", "unixRows", "unixBytes", "descriptorLinkBytes")
@@ -75,6 +86,110 @@ class ProcfsObservation:
     @staticmethod
     def lstat(path):
         return os.lstat(path)
+
+
+    def observe_backing_nodes(self, endpoint, node, inodes, deadline):
+        # O_PATH opens a filesystem reference, not a connection to the listener.
+        try:
+            fd = os.open(endpoint, os.O_PATH | os.O_NOFOLLOW | os.O_CLOEXEC)
+            try:
+                held = os.fstat(fd)
+                if (not stat.S_ISSOCK(held.st_mode) or stat.S_IMODE(held.st_mode) != 0o600
+                        or (held.st_uid, held.st_dev, held.st_ino) !=
+                        (node["uid"], node["device"], node["inode"])):
+                    raise Refusal("sample-identity-changed")
+                mount_id = _exact_mount_id(self, fd)
+                _require_ext4_mount(self, mount_id, held.st_dev)
+                with socket.socket(socket.AF_NETLINK, socket.SOCK_RAW, NETLINK_SOCK_DIAG) as diag:
+                    return {
+                        inode: _query_backing_node(diag, inode, sequence, deadline, self)
+                        for sequence, inode in enumerate(inodes, 1)
+                    }
+            finally:
+                os.close(fd)
+        except (AttributeError, OSError, ValueError, struct.error) as error:
+            raise Refusal("listener-backing-observation-unavailable") from error
+
+
+def _exact_mount_id(observer, fd):
+    metadata = _bounded_read(
+        observer, f"/proc/self/fdinfo/{fd}", SAMPLE_LIMITS["maxMetadataBytes"],
+        "listener-mount-unavailable",
+    )
+    ids = [line.split()[1:] for line in metadata.splitlines() if line.startswith(b"mnt_id:")]
+    if len(ids) != 1 or len(ids[0]) != 1 or not ids[0][0].isdigit():
+        raise Refusal("listener-mount-unavailable")
+    return ids[0][0]
+
+
+def _require_ext4_mount(observer, mount_id, device):
+    # UNIX_DIAG_VFS reports a 32-bit inode. Restrict this discriminant to
+    # an actual ext4 mount so older entries cannot alias by truncation.
+    mounts = _bounded_read(
+        observer, "/proc/self/mountinfo", MAX_MOUNT_TABLE_BYTES,
+        "listener-mount-unavailable",
+    )
+    device_number = f"{os.major(device)}:{os.minor(device)}".encode("ascii")
+    matches = []
+    for line in mounts.splitlines():
+        left, marker, right = line.partition(b" - ")
+        fields = left.split()
+        if fields and fields[0] == mount_id:
+            details = right.split()
+            if not marker or len(fields) < 6 or len(details) < 3:
+                raise Refusal("listener-mount-unavailable")
+            matches.append((fields[2], details[0]))
+    if matches != [(device_number, b"ext4")]:
+        raise Refusal("unsupported-listener-backing-filesystem")
+
+
+def _query_backing_node(diag, inode, sequence, deadline, observer):
+    request = struct.pack(
+        "=BBHIIIII", socket.AF_UNIX, 0, 0, 1 << TCP_LISTEN, inode,
+        UDIAG_SHOW_VFS, MAX_U32, MAX_U32,
+    )
+    header = struct.pack("=IHHII", 16 + len(request), SOCK_DIAG_BY_FAMILY, 1, sequence, 0)
+
+    def remaining_seconds():
+        remaining = deadline - observer.monotonic_milliseconds()
+        if remaining <= 0:
+            raise Refusal("sample-watchdog-exceeded")
+        return remaining / 1000
+
+    diag.settimeout(remaining_seconds())
+    if diag.sendto(header + request, (0, 0)) != len(header) + len(request):
+        raise Refusal("listener-backing-observation-unavailable")
+    diag.settimeout(remaining_seconds())
+    message, ancillary, flags, sender = diag.recvmsg(MAX_DIAG_REPLY_BYTES)
+    if ancillary or flags or sender != (0, 0) or len(message) < 32:
+        raise Refusal("invalid-listener-backing-observation")
+    size, kind, response_flags, response_sequence, _ = struct.unpack_from("=IHHII", message)
+    if (size != len(message) or kind != SOCK_DIAG_BY_FAMILY
+            or response_flags or response_sequence != sequence):
+        raise Refusal("invalid-listener-backing-observation")
+    family, kind, state, pad, observed_inode, cookie_low, cookie_high = struct.unpack_from(
+        "=BBBBIII", message, 16,
+    )
+    if (family, kind, state, pad, observed_inode) != (
+            socket.AF_UNIX, socket.SOCK_STREAM, TCP_LISTEN, 0, inode):
+        raise Refusal("invalid-listener-backing-observation")
+    offset = 32
+    backing = None
+    while offset < size:
+        if size - offset < 4:
+            raise Refusal("invalid-listener-backing-observation")
+        length, kind = struct.unpack_from("=HH", message, offset)
+        aligned = (length + 3) & ~3
+        if not 4 <= length <= aligned <= size - offset:
+            raise Refusal("invalid-listener-backing-observation")
+        if kind == UNIX_DIAG_VFS:
+            if backing is not None or length != 12:
+                raise Refusal("invalid-listener-backing-observation")
+            backing = struct.unpack_from("=II", message, offset + 4)
+        offset += aligned
+    if backing is None:
+        raise Refusal("listener-backing-observation-unavailable")
+    return (*backing, cookie_low, cookie_high)
 
 
 def _nonempty(value, reason):
@@ -268,7 +383,51 @@ def _route_node(observer, path, kind, uid, mode):
     }
 
 
-def _classify_listener_set(observer, desktop, started, budget):
+def _select_same_path_listener(observer, candidates, links, ancestry, started):
+    if len(candidates) > MAX_SAME_PATH_LISTENERS or len({path for _, path in candidates}) != 1:
+        raise Refusal("ambiguous-or-unsupported-listener")
+    endpoint = candidates[0][1]
+    namespaces = tuple(
+        _bounded_link(
+            observer, Path("/proc") / str(process["pid"]) / "ns" / "mnt",
+            SAMPLE_LIMITS["maxMetadataBytes"], "listener-mount-namespace-unavailable",
+        )
+        for process in ancestry
+    )
+    if len(set(namespaces)) != 1:
+        raise Refusal("cross-mount-namespace-ancestry")
+    node = _route_node(observer, endpoint, "socket", ancestry[-1]["uid"], 0o600)
+    major, minor = os.major(node["device"]), os.minor(node["device"])
+    inodes = tuple(sorted(row["inode"] for row, _ in candidates))
+    if (not 0 < node["inode"] <= MAX_U32 or not 0 <= major < 1 << 12
+            or not 0 <= minor < 1 << 20 or len(set(inodes)) != len(inodes)
+            or any(not 0 < inode <= MAX_U32 for inode in inodes)):
+        raise Refusal("unsupported-listener-backing-identity")
+    deadline = started + SAMPLE_LIMITS["sharedWatchdogMilliseconds"]
+    proof = observer.observe_backing_nodes(endpoint, node, inodes, deadline)
+    _watchdog(observer, started)
+    if (not isinstance(proof, dict) or proof.keys() != set(inodes)
+            or any(not isinstance(identity, tuple) or len(identity) != 4
+                   or any(type(value) is not int or not 0 <= value <= MAX_U32
+                          for value in identity)
+                   for identity in proof.values())):
+        raise Refusal("invalid-listener-backing-observation")
+    target = node["inode"], (major << 20) | minor
+    matches = [(row, path) for row, path in candidates if proof[row["inode"]][:2] == target]
+    if len(matches) != 1:
+        raise Refusal("ambiguous-or-unsupported-listener")
+    after = _route_node(observer, endpoint, "socket", ancestry[-1]["uid"], 0o600)
+    if after != node:
+        raise Refusal("sample-identity-changed")
+    # Both samples must agree on the candidate identities, not just on the
+    # pathname or the final match.
+    descriptors = tuple((inode, tuple(sorted(links[inode])), proof[inode]) for inode in inodes)
+    evidence = (namespaces, node, descriptors)
+    return matches[0], evidence
+
+
+def _classify_listener_set(observer, ancestry, started, budget):
+    desktop = ancestry[-1]
     fd_root = Path("/proc") / str(desktop["pid"]) / "fd"
     try:
         entries = observer.listdir(fd_root, budget["descriptorEntries"])
@@ -290,7 +449,7 @@ def _classify_listener_set(observer, desktop, started, budget):
         link_bytes += len(value.encode())
         if value.startswith("socket:[") and value.endswith("]"):
             try:
-                links[int(value[8:-1])] = int(entry)
+                links.setdefault(int(value[8:-1]), []).append(int(entry))
             except ValueError as error:
                 raise Refusal("invalid-descriptor-link") from error
     if not links:
@@ -314,11 +473,20 @@ def _classify_listener_set(observer, desktop, started, budget):
                 and str(endpoint) == row["path"]
                 and endpoint.name == "ipc.sock" and endpoint.parent.name == "ipc"):
             direct_primary.append((row, endpoint))
-    if len(direct_primary) != 1:
+    if not direct_primary:
         raise Refusal("ambiguous-or-unsupported-listener")
-    listener, endpoint = direct_primary[0]
+    backing = None
+    if len(direct_primary) == 1:
+        listener, endpoint = direct_primary[0]
+    else:
+        (listener, endpoint), backing = _select_same_path_listener(
+            observer, direct_primary, links, ancestry, started,
+        )
+    listener_descriptors = links[listener["inode"]]
+    descriptor = min(listener_descriptors) if backing is not None else listener_descriptors[-1]
     return {
-        "entries": entries, "links": links, "linkBytes": link_bytes,
+        "backing": backing, "selectedDescriptor": descriptor,
+        "entries": entries, "linkBytes": link_bytes,
         "unixData": unix_data, "rows": rows,
         "listener": listener, "endpoint": endpoint,
     }
@@ -336,11 +504,11 @@ def _collect_sample(observer, selection, effective_uid):
         "boot-identity-unavailable",
     ).decode("utf-8").strip()
     _nonempty(boot, "boot-identity-unavailable")
-    initial = _classify_listener_set(observer, desktop, started, SAMPLE_LIMITS)
+    initial = _classify_listener_set(observer, ancestry, started, SAMPLE_LIMITS)
     listener, endpoint = initial["listener"], initial["endpoint"]
     ipc_directory = _route_node(observer, endpoint.parent, "directory", effective_uid, 0o700)
     socket_node = _route_node(observer, endpoint, "socket", effective_uid, 0o600)
-    selected_descriptor = initial["links"][listener["inode"]]
+    selected_descriptor = initial["selectedDescriptor"]
     _watchdog(observer, started)
     try:
         final_ancestry = _walk_ancestry(observer, selection, effective_uid, started)
@@ -352,13 +520,18 @@ def _collect_sample(observer, selection, effective_uid):
         observer, "/proc/sys/kernel/random/boot_id", SAMPLE_LIMITS["maxMetadataBytes"],
         "boot-identity-unavailable",
     ).decode("utf-8").strip()
-    final = _classify_listener_set(observer, desktop, started, SAMPLE_LIMITS)
+    final = _classify_listener_set(observer, final_ancestry, started, SAMPLE_LIMITS)
     final_directory = _route_node(observer, endpoint.parent, "directory", effective_uid, 0o700)
     final_socket = _route_node(observer, endpoint, "socket", effective_uid, 0o600)
     finished = _watchdog(observer, started)
+    initial_backing = initial["backing"]
+    final_backing = final["backing"]
     if (final_ancestry != ancestry or final_boot != boot
             or final["listener"] != listener or final["endpoint"] != endpoint
-            or final["links"][listener["inode"]] != selected_descriptor
+            or final_backing != initial_backing
+            or (initial_backing is not None and initial_backing[1] != socket_node)
+            or (final_backing is not None and final_backing[1] != final_socket)
+            or final["selectedDescriptor"] != selected_descriptor
             or final_directory != ipc_directory or final_socket != socket_node):
         raise Refusal("sample-identity-changed")
     aggregate = {

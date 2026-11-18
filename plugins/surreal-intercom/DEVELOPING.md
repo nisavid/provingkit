@@ -68,14 +68,19 @@ actual boundary.
 The [Codex route nomination procedure](skills/communicating-with-agents/references/codex-route-nomination.md)
 owns bounded direct-primary listener classification and private nomination
 publication. Its public CLI fixture must keep unrelated held listeners in the
-sample while distinguishing exactly one canonical primary from zero or multiple
-canonical primaries. Shortened and legacy routes remain unsupported. These
+sample while distinguishing a single canonical primary pathname from zero or
+several. Multiple rows with one name require one stable backing socket on a
+supported filesystem. Cover missing or multiple matches and a changed socket
+cookie or mount namespace through the public producer fixture. Shortened and
+legacy routes remain unsupported. These
 synthetic checks establish no installed route or live peer qualification.
 Run exactly two complete classifications, each within the original descriptor,
 link-byte, Unix-row, and Unix-byte limits, under one shared watchdog. Their
 aggregate work is capped at twice the per-classification limits; the closed
-record reports per-classification high-water counts. Require the same sole
-canonical row and descriptor/socket identity. Cover original maximum-range
+record reports per-classification high-water counts. Require the same selected
+listener and descriptor/socket identity. For rows that share one pathname,
+require the same complete candidate set and backing evidence in both
+classifications. Cover original maximum-range
 success on both passes, the retained 694-descriptor/2,401-row sample, a final-only
 second canonical listener, lost listening eligibility, an unrelated native-pipe
 change, and every final-pass bound. This is not an atomic or perpetual-stability

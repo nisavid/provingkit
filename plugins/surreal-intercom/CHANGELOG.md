@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- Distinguish the current filesystem socket from older listeners that retain
+  the same name after a Linux socket is replaced. Require a stable backing
+  identity in both bounded samples.
 - Extract communication procedures, mailbox, envelope, and directional senders
   into an independently usable one-skill plugin with contained resources.
 - Preserve original message/attempt identities and conservative outcomes during
