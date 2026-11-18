@@ -97,7 +97,7 @@
         "content_identity": {
           "kind": "plugin-content-lock",
           "path": "plugins/proseweaving/content-lock.json",
-          "sha256": "sha256:c23fe01c983cd97036e6ca1fed79bcf63678ed2d04a82ed04e3cf1fbb33ac0b3"
+          "sha256": "sha256:673be5df751646a46ac34b3e1dcefcea6b9ffcbb4ee4c12f00196b568225b41b"
         },
         "display_name": "Proseweaving",
         "distribution_kind": "agent-plugin",
