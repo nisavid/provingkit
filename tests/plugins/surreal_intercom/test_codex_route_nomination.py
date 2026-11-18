@@ -1108,6 +1108,40 @@ class CodexRouteNominationTests(unittest.TestCase):
         self.assertEqual(stream.peer_identity_calls, 2)
         self.assertTrue(stream.closed)
 
+    def test_guarded_owner_admission_consumes_the_current_same_path_listener(self):
+        def populate(observer):
+            for pid in (100, 200, 300):
+                observer.links[f"/proc/{pid}/ns/mnt"] = "mnt:[702]"
+            observer.descriptors.append("12")
+            observer.links["/proc/300/fd/12"] = "socket:[502]"
+            observer.files["/proc/300/net/unix"] += (
+                f"00000001: 00000002 00000000 00010000 0001 01 502 {observer.endpoint}\n"
+            ).encode()
+            observer.observe_backing_nodes = lambda *_: {
+                501: (600, 9, 1, 0),
+                502: (602, 9, 2, 0),
+            }
+
+        def verify_nomination(request):
+            nomination = Path(request["native"]["nomination"]["path"])
+            acquisition = json.loads(nomination.read_bytes())["acquisition"]
+            self.assertEqual(acquisition["socketInode"], 502)
+            self.assertEqual(acquisition["selectedDescriptor"], 12)
+
+        exit_code, result, stream = self.consume(
+            prepare_observer=populate, mutate_sender=verify_nomination,
+        )
+
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(result["reason"], "rpc-success-effect-unconfirmed")
+        self.assertEqual(result["peer_input"], "possible_submission")
+        self.assertEqual(
+            [frame["method"] for frame in stream.writes],
+            ["initialize", "thread-owner-discovery", "thread-follower-start-turn"],
+        )
+        self.assertEqual(stream.peer_identity_calls, 2)
+        self.assertTrue(stream.closed)
+
     def test_distinct_submitter_consumes_unchanged_nomination_after_five_seconds(self):
         exit_code, result, stream = self.consume()
 
