@@ -35,6 +35,14 @@ retain unknown account binding when the evidence does not establish it.
 Use an existing authorized task where it supplies the evidence; do not create
 artificial work merely to produce a marker.
 
+When Claude Desktop still loads an older copy after a saved update and plugin
+reload, use the [Desktop refresh procedure](../install-and-update.md#if-claude-desktop-still-loads-the-previous-version).
+Checkpoint affected work before coordinating the restart. Record the saved and
+loaded identities separately. After restart, recheck any peer route tied to the
+old session connection before sending, and reconcile pending sends with their
+original attempts. Verify fresh-session discovery and useful use separately from
+the recovery of a session whose transcript survived the restart.
+
 Report publication, installation, enabled state, discovery and loading,
 qualification, and adoption separately. Compare the observed evidence with
 the selected rollout's acceptance criteria, retain each uncovered account or
