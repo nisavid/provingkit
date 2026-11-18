@@ -192,9 +192,12 @@ and `no-connection-opened` closure. An interrupted staging write remains
 unadvertised. Retire only an exact abandoned staging entry attributed to the
 original invocation; never scan or clean the directory broadly.
 
-The record is a provisional path candidate. It does not establish
-filesystem-to-kernel listener equivalence, provider or account identity, or
-permission. Private means Unix-account-private: the named producer and authorized
+When several rows share one name, the producer verifies filesystem-to-kernel
+listener equivalence at acquisition on the supported ext4 route. The record
+retains a provisional path and selected identity without the raw diagnostic
+proof. Equivalence can change after observation. The single-row branch does not
+verify this equivalence. Provider or account identity and permission require
+separate evidence. Private means Unix-account-private: the named producer and authorized
 sender may read the record for their bound acts, and safe status, locator, size,
 digest, and closure may reach the authorized invoking chat or coordinator. Raw
 endpoints, credentials, and unrelated captures remain protected. The path is a

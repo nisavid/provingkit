@@ -421,7 +421,8 @@ def _select_same_path_listener(observer, candidates, links, ancestry, started):
         raise Refusal("sample-identity-changed")
     # Both samples must agree on the candidate identities, not just on the
     # pathname or the final match.
-    evidence = (namespaces, node, tuple((inode, links[inode], proof[inode]) for inode in inodes))
+    descriptors = tuple((inode, tuple(sorted(links[inode])), proof[inode]) for inode in inodes)
+    evidence = (namespaces, node, descriptors)
     return matches[0], evidence
 
 
@@ -448,7 +449,7 @@ def _classify_listener_set(observer, ancestry, started, budget):
         link_bytes += len(value.encode())
         if value.startswith("socket:[") and value.endswith("]"):
             try:
-                links[int(value[8:-1])] = int(entry)
+                links.setdefault(int(value[8:-1]), []).append(int(entry))
             except ValueError as error:
                 raise Refusal("invalid-descriptor-link") from error
     if not links:
@@ -481,9 +482,11 @@ def _classify_listener_set(observer, ancestry, started, budget):
         (listener, endpoint), backing = _select_same_path_listener(
             observer, direct_primary, links, ancestry, started,
         )
+    listener_descriptors = links[listener["inode"]]
+    descriptor = min(listener_descriptors) if backing is not None else listener_descriptors[-1]
     return {
-        "backing": backing,
-        "entries": entries, "links": links, "linkBytes": link_bytes,
+        "backing": backing, "selectedDescriptor": descriptor,
+        "entries": entries, "linkBytes": link_bytes,
         "unixData": unix_data, "rows": rows,
         "listener": listener, "endpoint": endpoint,
     }
@@ -505,7 +508,7 @@ def _collect_sample(observer, selection, effective_uid):
     listener, endpoint = initial["listener"], initial["endpoint"]
     ipc_directory = _route_node(observer, endpoint.parent, "directory", effective_uid, 0o700)
     socket_node = _route_node(observer, endpoint, "socket", effective_uid, 0o600)
-    selected_descriptor = initial["links"][listener["inode"]]
+    selected_descriptor = initial["selectedDescriptor"]
     _watchdog(observer, started)
     try:
         final_ancestry = _walk_ancestry(observer, selection, effective_uid, started)
@@ -524,7 +527,7 @@ def _collect_sample(observer, selection, effective_uid):
     if (final_ancestry != ancestry or final_boot != boot
             or final["listener"] != listener or final["endpoint"] != endpoint
             or final["backing"] != initial["backing"]
-            or final["links"][listener["inode"]] != selected_descriptor
+            or final["selectedDescriptor"] != selected_descriptor
             or final_directory != ipc_directory or final_socket != socket_node):
         raise Refusal("sample-identity-changed")
     aggregate = {

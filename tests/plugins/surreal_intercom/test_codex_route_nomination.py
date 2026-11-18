@@ -7,8 +7,10 @@ import importlib
 import io
 import json
 import os
+import socket
 from pathlib import Path
 import stat
+import struct
 import subprocess
 import sys
 import tempfile
@@ -363,7 +365,10 @@ class CodexRouteNominationTests(unittest.TestCase):
     def test_multiple_rows_for_one_path_require_unique_stable_backing_socket(self):
         for scenario, expected in (
                 ("match", True), ("missing", False), ("multiple", False),
-                ("changed", False), ("wrong-mount-namespace", False)):
+                ("changed", False), ("wrong-mount-namespace", False),
+                ("duplicates-stable", True), ("duplicates-reordered", True),
+                ("duplicate-added", False), ("duplicate-removed", False),
+                ("duplicate-replaced", False), ("unrelated-change", True)):
             with self.subTest(scenario=scenario), tempfile.TemporaryDirectory(
                     prefix="codex-same-path-") as temporary:
                 root = Path(temporary).resolve()
@@ -382,6 +387,22 @@ class CodexRouteNominationTests(unittest.TestCase):
                         "00000001: 00000002 00000000 00010000 0001 01 "
                         f"{inode} {endpoint}\n"
                     ).encode()
+                observer.links.update({
+                    "/proc/300/fd/10": "socket:[502]",
+                    "/proc/300/fd/14": "socket:[502]",
+                    "/proc/300/fd/19": "pipe:[999]",
+                })
+                base = ["11", "12", "13"]
+                variants = {
+                    "duplicates-stable": [base + ["14"], base + ["14"]],
+                    "duplicates-reordered": [base + ["14"], ["14", *base]],
+                    "duplicate-added": [base, ["14", *base]],
+                    "duplicate-removed": [["14", *base], base],
+                    "duplicate-replaced": [["10", *base], ["14", *base]],
+                    "unrelated-change": [base, base + ["19"]],
+                }
+                if scenario in variants:
+                    observer.descriptor_sequences = variants[scenario]
                 backups = {
                     501: (600, 9, 1, 0),
                     502: (602, 9, 2, 0),
@@ -416,6 +437,121 @@ class CodexRouteNominationTests(unittest.TestCase):
                     self.assertEqual(calls[0], calls[1])
                 else:
                     self.assertFalse(Path(request["publication"]["path"]).exists())
+
+    def test_same_path_producer_validates_mount_and_kernel_reply(self):
+        for scenario, expected_reason in (
+                ("match", None), ("zero-matches", "ambiguous-or-unsupported-listener"),
+                ("wrong-device", "ambiguous-or-unsupported-listener"),
+                ("unsupported-mount", "unsupported-listener-backing-filesystem"),
+                ("bad-mount-id", "listener-mount-unavailable"),
+                ("inode-too-wide", "unsupported-listener-backing-identity"),
+                ("socket-inode-too-wide", "unsupported-listener-backing-identity"),
+                ("over-limit", "ambiguous-or-unsupported-listener"),
+                ("missing-vfs", "listener-backing-observation-unavailable"),
+                ("truncated", "invalid-listener-backing-observation"),
+                ("malformed-attribute", "invalid-listener-backing-observation"),
+                ("wrong-sequence", "invalid-listener-backing-observation"),
+                ("multipart", "invalid-listener-backing-observation"),
+                ("timeout", "listener-backing-observation-unavailable")):
+            with self.subTest(scenario=scenario), tempfile.TemporaryDirectory(
+                    prefix="codex-production-reader-") as temporary:
+                root = Path(temporary).resolve()
+                root.chmod(0o700)
+                request = self.production_request(root)
+                endpoint = root / "codex-home" / "ipc" / "ipc.sock"
+                observer = FixtureObservation(endpoint)
+                for pid in (100, 200, 300):
+                    observer.links[f"/proc/{pid}/ns/mnt"] = "mnt:[702]"
+                socket_node = observer.nodes[str(endpoint)]
+                socket_node.st_dev = os.makedev(259, 42)
+                if scenario == "inode-too-wide":
+                    socket_node.st_ino = 1 << 32
+                extra_inodes = (502, 1 << 32) if scenario == "socket-inode-too-wide" else (502, 503)
+                if scenario == "over-limit":
+                    extra_inodes = range(502, 510)
+                for descriptor, inode in enumerate(extra_inodes, 12):
+                    observer.descriptors.append(str(descriptor))
+                    observer.links[f"/proc/300/fd/{descriptor}"] = f"socket:[{inode}]"
+                    observer.files["/proc/300/net/unix"] += (
+                        f"00000001: 00000002 00000000 00010000 0001 01 {inode} {endpoint}\n"
+                    ).encode()
+                fake_fd = 812345
+                observer.files[f"/proc/self/fdinfo/{fake_fd}"] = (
+                    b"mnt_id:\tbad\n" if scenario == "bad-mount-id" else b"mnt_id:\t123\n"
+                )
+                observer.files["/proc/self/mountinfo"] = (
+                    b"123 100 259:42 / /mount rw - xfs none rw\n"
+                    if scenario == "unsupported-mount" else
+                    b"123 100 259:42 / /mount rw - ext4 none rw\n"
+                )
+                sys.path.insert(0, str(SCRIPTS))
+                try:
+                    module = importlib.import_module("codex_route_nomination")
+                finally:
+                    sys.path.remove(str(SCRIPTS))
+                observer.observe_backing_nodes = module.ProcfsObservation.observe_backing_nodes.__get__(observer)
+                pending = []
+                requests = []
+                diag = mock.MagicMock()
+                diag.__enter__.return_value = diag
+
+                def sendto(packet, destination):
+                    self.assertEqual(destination, (0, 0))
+                    size, kind, flags, sequence, port = struct.unpack_from("=IHHII", packet)
+                    family, proto, pad, state, inode, attrs, low, high = struct.unpack_from("=BBHIIIII", packet, 16)
+                    self.assertEqual((size, kind, flags, port), (len(packet), 20, 1, 0))
+                    self.assertEqual((family, proto, pad, state, attrs, low, high),
+                                     (socket.AF_UNIX, 0, 0, 1024, 2, 0xffffffff, 0xffffffff))
+                    requests.append(inode)
+                    pending.append((sequence, inode))
+                    return len(packet)
+
+                def recvmsg(maximum):
+                    self.assertLessEqual(maximum, 256)
+                    sequence, inode = pending.pop()
+                    if scenario == "timeout":
+                        raise TimeoutError("test metadata timeout")
+                    state = struct.pack("=BBBBIII", socket.AF_UNIX, socket.SOCK_STREAM, 10, 0, inode, inode, 0)
+                    vfs_inode = inode + 100 if scenario != "zero-matches" else inode + 200
+                    device = ((259 if scenario != "wrong-device" else 260) << 20) | 42
+                    vfs = struct.pack("=HHII", 12, 1, vfs_inode, device)
+                    if scenario == "missing-vfs":
+                        vfs = b""
+                    if scenario == "malformed-attribute":
+                        vfs = b"\x03\x00\x01\x00"
+                    reply = struct.pack("=IHHII", 16 + len(state) + len(vfs), 20,
+                                        2 if scenario == "multipart" else 0,
+                                        sequence + (scenario == "wrong-sequence"), 12345) + state + vfs
+                    return reply, [], socket.MSG_TRUNC if scenario == "truncated" else 0, (0, 0)
+
+                diag.sendto.side_effect = sendto
+                diag.recvmsg.side_effect = recvmsg
+                real_open, real_fstat, real_close = os.open, os.fstat, os.close
+
+                def open_endpoint(path, flags, *args, **kwargs):
+                    if path == endpoint and flags & os.O_PATH:
+                        return fake_fd
+                    return real_open(path, flags, *args, **kwargs)
+
+                with (mock.patch.object(os, "open", side_effect=open_endpoint),
+                      mock.patch.object(os, "fstat", side_effect=lambda fd: socket_node if fd == fake_fd else real_fstat(fd)),
+                      mock.patch.object(os, "close", side_effect=lambda fd: None if fd == fake_fd else real_close(fd)),
+                      mock.patch.object(socket, "socket", return_value=diag) as dial):
+                    code, result = self.invoke(request, root, observer)
+                self.assertEqual(code, 0)
+                self.assertEqual(result["closure"], "no-connection-opened")
+                if expected_reason:
+                    self.assertEqual(result["reason"], expected_reason)
+                    self.assertFalse(result["published"])
+                    self.assertNotIn(str(endpoint), json.dumps(result))
+                    self.assertFalse(Path(request["publication"]["path"]).exists())
+                else:
+                    self.assertTrue(result["published"], result)
+                    record = json.loads(Path(result["path"]).read_bytes())
+                    self.assertEqual(record["acquisition"]["socketInode"], 502)
+                    self.assertEqual(requests, [501, 502, 503] * 2)
+                    self.assertEqual(dial.call_args_list, [mock.call(socket.AF_NETLINK, socket.SOCK_RAW, 4)] * 2)
+                diag.connect.assert_not_called()
 
     def test_final_only_second_canonical_listener_refuses_publication(self):
         with tempfile.TemporaryDirectory(prefix="codex-final-listener-set-") as temporary:
