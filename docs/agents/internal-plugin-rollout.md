@@ -23,6 +23,15 @@ release. A missing account, unsupported route, or conflicting installed version
 is an owned gap, not evidence that the other accounts failed. Continue the
 independent eligible account and surface rows while that gap is resolved.
 
+After saving a plugin update used in Claude Desktop Code, checkpoint affected
+work and follow the [Desktop refresh procedure](../install-and-update.md#refresh-claude-desktop-after-an-update)
+before verifying the rollout. Record the saved and loaded identities separately.
+After restart, verify each peer route tied to the old connection reaches its
+intended recipient before sending on it. Do not send on a route whose recipient cannot be confirmed.
+Reconcile an uncertain send with its original attempt before retrying it or
+switching its route. Verify fresh-session discovery and useful use separately
+from the recovery of a session whose transcript survived the restart.
+
 After installation or update, complete any required restart or sync for that
 surface and record its result. Then open a genuine fresh session on each intended
 surface. Verify that the intended plugin and its components load and that an
@@ -34,16 +43,6 @@ Preserve the supplied discovery observation before adding manual pointers, and
 retain unknown account binding when the evidence does not establish it.
 Use an existing authorized task where it supplies the evidence; do not create
 artificial work merely to produce a marker.
-
-When Claude Desktop still loads an older copy after a saved update and plugin
-reload, use the [Desktop refresh procedure](../install-and-update.md#if-claude-desktop-still-loads-the-previous-version).
-Checkpoint affected work before coordinating the restart. Record the saved and
-loaded identities separately. After restart, recheck that each peer route tied
-to the old session connection reaches its intended recipient before sending on
-that route. Do not send on a route whose recipient cannot be confirmed.
-Reconcile an uncertain send with its original attempt before retrying it or
-switching its route. Verify fresh-session discovery and useful use separately
-from the recovery of a session whose transcript survived the restart.
 
 Report publication, installation, enabled state, discovery and loading,
 qualification, and adoption separately. Compare the observed evidence with
