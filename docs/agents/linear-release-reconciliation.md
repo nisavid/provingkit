@@ -47,8 +47,9 @@ Capabilities can differ by surface. A connector may expose stage, version,
 source commit, timestamps, and notes without resource-link or release-delete
 operations. Prefer a supported connector operation for native release resources.
 When it is absent, inspect the supported API or the release's UI controls for
-adding a document or link. Use the permitted alternative with the same scope,
-supplying the destination URL and a useful title where supported. Verify that
+adding a document or link. Select the permitted alternative with the same
+scope and prepare the destination URL and a useful title where supported.
+With either control, apply the link in step 5 below and check in step 6 that
 the resulting resource opens the intended release or guide; a URL string in
 the description does not establish a native link. Report a remaining capability
 gap precisely. Missing connector support is neither permission to invent a
