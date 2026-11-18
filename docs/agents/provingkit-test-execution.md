@@ -102,8 +102,8 @@ Start with `result.json`, unless the runner rejected the output directory: it
 then writes nothing there, so any `result.json` there is from an earlier run.
 When the controller fails the run, `error` gives the cause, which the runner
 also prints to standard error. When `successful` is false and there is no
-`error`, the run completed and some methods did not pass; the method records
-and the worker logs show which. A missing `result.json` means the controller
+`error`, a worker reported an unsuccessful run; use the method records and
+worker logs to locate the test or fixture failure. A missing `result.json` means the controller
 never reported: read standard error. The directory also holds:
 
 - `source-before.json` and `source-after.json`: tracked-source snapshots, with
