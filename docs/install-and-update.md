@@ -129,20 +129,22 @@ In [Claude on the web](https://claude.ai/) or the **Claude desktop app**:
 2. Select the compressed Claude ZIP, then choose **Upload**. When updating, confirm
    **Replace** for the existing plugin and check that its displayed version
    matches the release you downloaded.
-3. Enable the plugin, then start a new chat and type `/` to find its skills,
-   or start a new Cowork task.
+3. Enable the plugin. If you updated a plugin used in a Desktop Code session,
+   [refresh Claude Desktop](#refresh-claude-desktop-after-an-update) before using
+   the update. To find its skills, start a new chat and type `/`, or start a new
+   Cowork task.
 
-### If Claude Desktop still loads the previous version
+### Refresh Claude Desktop after an update
 
-In a Claude Desktop Code session, run `/reload-plugins` after the update syncs.
-If the updated version is saved on the account and the Desktop session still
-loads the previous version, save your work, fully quit and reopen Claude
-Desktop, then run `/reload-plugins` again in the affected session. Invoke a skill
-from the plugin. Confirm that Desktop loads the expected release version, or
-verify that a loaded file that changed in the update matches the reviewed
-release. The version shown in Customize and the CLI's synced copy can be newer
-than the copy loaded by Desktop. If neither check establishes the update, give
-the installation owner the saved version and what the session actually loads.
+After the updated plugin is saved, save your active work, fully quit Claude
+Desktop, and reopen it. Open the affected Code session and run
+`/reload-plugins`.
+
+Invoke a skill from the plugin. Confirm that the session loads the expected
+release version, or compare a changed file from the loaded plugin with the
+reviewed release. Customize and the CLI can show a newer copy than Desktop
+loads. If the session still loads the previous version, report both versions
+and any reload error to the installation owner.
 
 See [Claude's plugin guide](https://claude.com/docs/plugins/overview#find-and-add-a-plugin).
 
