@@ -63,18 +63,18 @@ record and write the change (step 5), then confirm the result (step 6).
    Use observed timestamps for actual events; preserve estimated dates as
    estimates. If the source commit and publication ref differ legitimately,
    explain their relationship instead of silently replacing one with the other.
-2. Set the stage that expresses the verified outcome in the actual pipeline's
-   terms. The release's accepted completion boundary says what it must reach;
-   the pipeline's own stage meanings say which stage states what it has
-   reached. A completed publication may coexist with unfinished installation
-   or adoption work. Keep that work visible with its owner and next action;
-   do not close issues merely to make a percentage reach 100. If the pipeline
-   represents a broader outcome, stop at the stage that outcome has reached
-   and explain the completed publication within it. Return a stage choice for
-   decision only when it is genuinely unresolved.
-3. Link the tracked release to its forge page and maintained current installation
-   guide through native release resources, with further verification links as
-   useful. Use the
+2. Select the stage that expresses the verified outcome in the actual
+   pipeline's terms. The release's accepted completion boundary says what it
+   must reach; the pipeline's own stage meanings say which stage states what
+   it has reached. A completed publication may coexist with unfinished
+   installation or adoption work. Keep that work visible with its owner and
+   next action; do not close issues merely to make a percentage reach 100. If
+   the pipeline represents a broader outcome, stop at the stage that outcome
+   has reached and explain the completed publication within it. Return a
+   stage choice for decision only when it is genuinely unresolved.
+3. Identify the native release resources that will link the tracked release
+   to its forge page and maintained current installation guide, with further
+   verification links as useful. Use the
    [presentation procedure](release-presentation.md) to author notes from the
    accepted changes and evidence. Existing GitHub or Linear prose is an input
    to assess, not a quality standard to copy. Keep both surfaces factually
@@ -89,7 +89,7 @@ record and write the change (step 5), then confirm the result (step 6).
    needed change to notes, descriptions, states, dates, checklists, release
    associations, relationships, or completion progress. Retain genuine open
    work and future-release scope, its accountable owner, and next action.
-   Correct mistaken associations within the authorized scope and preserve
+   Prepare association corrections within the authorized scope and preserve
    ownership when work moves to an existing successor. Use current native
    relations where required; do not assume GitHub issue sync carries Linear
    Release objects, notes, milestones, or blockers. Keep private account
