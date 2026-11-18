@@ -128,7 +128,6 @@ A pull request should tell a reviewer:
 - which compatibility aliases or historical links remain and why; and
 - which source-stage checks passed at the published revision.
 
-The [pull request template](.github/pull_request_template.md) has a place for
-each of these. Keep release and runtime claims no broader than the evidence. A
-green source-stage check proves only the public source contract exercised by
-that check.
+Keep release and runtime claims no broader than the evidence. A green
+source-stage check proves only the public source contract exercised by that
+check.
