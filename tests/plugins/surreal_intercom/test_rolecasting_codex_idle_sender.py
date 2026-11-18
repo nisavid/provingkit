@@ -41,7 +41,12 @@ class CodexIdleSenderTests(unittest.TestCase):
         self.exercise_idle_command({"threadRuntimeStatus": {"type": "active"},
             "turns": [{"turnId": "active-turn", "status": "inProgress", "items": []}]}, "idle-intent-observed-busy")
 
-    def exercise_idle_command(self, snapshot_changes=None, refusal=None):
+    def test_clean_eof_after_idle_snapshot_refuses_before_input(self):
+        self.exercise_idle_command(
+            refusal="connection-incomplete-before-write", clean_eof=True,
+        )
+
+    def exercise_idle_command(self, snapshot_changes=None, refusal=None, *, clean_eof=False):
         evidence = os.environ.get("IDLE_SLICE_EVIDENCE")
         evidence = Path(evidence, self._testMethodName) if evidence else None
         if evidence:
@@ -182,6 +187,8 @@ class CodexIdleSenderTests(unittest.TestCase):
                             else:
                                 state[key] = value
                         send(observed)
+                        if clean_eof:
+                            connection.shutdown(socket.SHUT_WR)
                         if refusal:
                             follow["params"]["following"] = False
                             cleanup = receive()

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Initializing Repositories"
+  short_description: "Set up a new UI project repository end to end"
+  default_prompt: "Use $mergecraft:initializing-repositories to set up a new UI project repository in Codex."

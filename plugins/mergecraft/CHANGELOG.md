@@ -6,7 +6,7 @@
   contextual defaults, authorized focused changes, and project-specific CI
   hardening, with native-tool application and explicit evidence boundaries.
 
-## 1.0.0
+## Historical source changes (mistakenly labeled 1.0.0)
 
 - Maintain evidenced Issue–PR contribution ledgers and Development links through
   the existing lifecycle, with task-wide setting reuse, bounded cross-task

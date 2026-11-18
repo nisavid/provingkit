@@ -56,34 +56,58 @@ field nor evidence that the whole product lacks the operation.
 
 ## Reconcile state, content, and associated work
 
+Each change follows the same order: prepare it (steps 1 to 4), refresh the
+record and write the change (step 5), then confirm the result (step 6).
+
 1. Match the Linear release's version and source to the published release.
    Use observed timestamps for actual events; preserve estimated dates as
    estimates. If the source commit and publication ref differ legitimately,
    explain their relationship instead of silently replacing one with the other.
-2. Set the stage according to the release's accepted completion boundary and
-   the pipeline's meaning. A completed publication may coexist with unfinished
-   installation or adoption work. Keep that work visible with its owner and
-   next action; do not close issues merely to make a percentage reach 100.
-   If the pipeline represents a broader outcome, preserve its unfinished stage
-   and explain the completed publication within it.
-3. Link the tracked release to its forge page and applicable version-pinned
+2. Set the stage that expresses the verified outcome in the actual pipeline's
+   terms. The release's accepted completion boundary says what it must reach;
+   the pipeline's own stage meanings say which stage states what it has
+   reached. A completed publication may coexist with unfinished installation
+   or adoption work. Keep that work visible with its owner and next action;
+   do not close issues merely to make a percentage reach 100. If the pipeline
+   represents a broader outcome, stop at the stage that outcome has reached
+   and explain the completed publication within it. Return a stage choice for
+   decision only when it is genuinely unresolved.
+3. Link the tracked release to its forge page and maintained current installation
    guide through native release resources, with further verification links as
    useful. Use the
    [presentation procedure](release-presentation.md) to author notes from the
    accepted changes and evidence. Existing GitHub or Linear prose is an input
    to assess, not a quality standard to copy. Keep both surfaces factually
    consistent while adapting their layout and audience.
-4. Reconcile the release's selected issues and actual dependencies. Retain
-   genuine open work and future-release scope. Correct mistaken associations
-   within the authorized scope, and preserve ownership when work moves to an
-   existing successor. Use current native relations where required; do not
-   assume GitHub issue sync carries Linear Release objects, notes, or blockers.
-5. Refresh the affected record immediately before mutation. Apply only the
-   prepared change, then read back the description, resource links, note
-   content and coverage, stage, source/version, actual and planned dates, and
-   changed associations. Check rendered headings, tables, and navigation as a
-   reader would, including the displayed release timestamp. A successful write
-   response alone is not completion.
+4. Reconcile the finite graph applicable to this release as outcomes arrive:
+   release and note, selected issues and their checklists, milestones,
+   projects, initiatives, parents, children, dependencies, and dependents.
+   Follow connections whose requirements or evidence affect the release, or
+   whose tracked state changes with its result. Deduplicate visited entities;
+   stop at unrelated branches and record why they do not apply. For each
+   applicable entity, identify its outcome, owner, evidence, and smallest
+   needed change to notes, descriptions, states, dates, checklists, release
+   associations, relationships, or completion progress. Retain genuine open
+   work and future-release scope, its accountable owner, and next action.
+   Correct mistaken associations within the authorized scope and preserve
+   ownership when work moves to an existing successor. Use current native
+   relations where required; do not assume GitHub issue sync carries Linear
+   Release objects, notes, milestones, or blockers. Keep private account
+   identities and operational evidence in their owning records; use aggregate
+   coverage and appropriate public references in public tracking.
+5. Refresh the affected record immediately before writing to it. When a field
+   has changed, preserve the other contribution and prepare the change again
+   from the current value; send an unresolved conflict to its owner. Then
+   apply only the prepared change. An uncertain write stays unresolved, as
+   described below; prepare again only a field proven unapplied and still
+   authorized.
+6. Read back every changed field and entity across the applicable graph,
+   including descriptions, resource links, note content and coverage, stages,
+   source/version, dates, checklists, relationships, and associations when
+   changed. Verify actual propagation across the affected surfaces; a synced
+   issue body does not prove its relations propagated. Check rendered
+   headings, tables, and navigation as a reader would, including the displayed
+   release timestamp. A successful write response alone is not completion.
 
 Retain the submitted note text, but compare its readback by facts, required
 actions, scope, and working link targets. Linear may normalize Markdown or
@@ -117,6 +141,11 @@ standing policy makes it recurring. Do not generalize it into automatic
 deletion of release history.
 
 ## Close the loop
+
+When the selected outcome includes internal installation and use, invoke the
+[internal rollout procedure](internal-plugin-rollout.md) for its named
+accounts and harnesses. Publication and tracker reconciliation alone do not
+establish that rollout; keep its actual results and outstanding owners visible.
 
 Return the forge and Linear release URLs, note URL or identity, observed
 lifecycle and issue-progress disposition, source/version correspondence,

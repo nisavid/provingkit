@@ -3,12 +3,14 @@ from __future__ import annotations
 import hashlib
 import importlib.util
 import json
+import os
 import shlex
 import shutil
 import subprocess
 import sys
 import tempfile
 import unittest
+from unittest import mock
 from pathlib import Path
 
 import yaml
@@ -108,14 +110,6 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
             check=True,
         )
 
-    def assert_unauthorized_tag(self, repository: Path) -> None:
-        result = self.validate(repository)
-
-        self.assertNotEqual(result.returncode, 0)
-        self.assertIn(
-            "source-stage repository contains an unauthorized tag", result.stderr
-        )
-
     @staticmethod
     def overlay_current_final_main_contract(destination: Path) -> None:
         for relative in (
@@ -158,6 +152,12 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 destination / "plugins" / member,
                 dirs_exist_ok=True,
             )
+        # Historical carriers retain the current member identities for provenance checks.
+        for member in ("artifact-customs", "mergecraft", "tricritical", "versionkeeping"):
+            for relative in ("plugin.json", ".claude-plugin/plugin.json"):
+                target = destination / "plugins" / member / relative
+                target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(REPOSITORY / "plugins" / member / relative, target)
         for relative in (
             "scripts/run_task_witness_qualification.py",
             "scripts/validate_task_witness.py",
@@ -249,7 +249,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 {
                     "id": member_id,
                     "distribution_kind": distribution_kind,
-                    "version": "1.0.0",
+                    "version": "0.1.0-trunk",
                     "identity_manifests": {
                         "canonical": {
                             "path": f"plugins/{member_id}/plugin.json",
@@ -338,6 +338,212 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
 
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(result.stdout, "Provingkit source validation passed\n")
+
+    def test_source_stage_validator_rejects_tag_into_retained_extraction_history(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory) / "repository"
+            self.clone_with_history(repository)
+            self.set_tag(
+                repository, "unrelated-local", "8edaf590736621352262457752d087bad835555d"
+            )
+
+            result = self.validate(repository)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("retained extraction input was accepted into a tag", result.stderr)
+
+    def test_source_stage_validator_rejects_changed_pinned_preview_tag(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory) / "repository"
+            self.clone_with_history(repository)
+            self.set_tag(repository, PREVIEW_TAG, "HEAD")
+
+            result = self.validate(repository)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("pinned preview tag drift", result.stderr)
+
+    def test_source_stage_validator_rejects_symbolic_tag_to_valid_branch(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory) / "repository"
+            self.clone_with_history(repository)
+            branch = "refs/heads/symbolic-tag-target"
+            subprocess.run(
+                ["git", "update-ref", branch, "HEAD"], cwd=repository, check=True,
+            )
+            subprocess.run(
+                ["git", "symbolic-ref", "refs/tags/symbolic", branch],
+                cwd=repository, check=True,
+            )
+
+            result = self.validate(repository)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("symbolic tag is not allowed", result.stderr)
+
+    def test_source_stage_validator_accepts_annotated_and_unrelated_tags(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory) / "repository"
+            self.clone_with_history(repository)
+            self.set_tag(repository, "v0.1.0-alpha.7", "HEAD", annotated=True)
+            self.set_tag(repository, "local-experiment", "HEAD")
+
+            result = self.validate(repository)
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_source_stage_validator_accepts_unicode_whitespace_in_tag_names(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory) / "repository"
+            self.clone_with_history(repository)
+            for name in ("local\u00a0experiment", "local\u2028experiment"):
+                self.set_tag(repository, name, "HEAD")
+
+            result = self.validate(repository)
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_source_stage_validator_rejects_malformed_tag_object_inventory(self) -> None:
+        for object_field in (b"HEAD", b"\x00"):
+            with self.subTest(object_field=object_field):
+                record = b"refs/tags/example " + object_field + b" x\n"
+                original = validate_provingkit._require_git_bytes
+                seen_inventory = False
+                later_git_calls = []
+                original_run_git = validate_provingkit._run_git
+
+                def inventory(repository: Path, *args: str) -> bytes:
+                    nonlocal seen_inventory
+                    if args and args[0] == "for-each-ref" and args[-1] == "refs/tags":
+                        seen_inventory = True
+                        return record
+                    return original(repository, *args)
+
+                def observe_run_git(repository: Path, *args: str):
+                    if seen_inventory:
+                        later_git_calls.append(args)
+                    return original_run_git(repository, *args)
+
+                with mock.patch.object(validate_provingkit, "_require_git_bytes", side_effect=inventory), mock.patch.object(
+                    validate_provingkit, "_run_git", side_effect=observe_run_git
+                ):
+                    with self.assertRaisesRegex(validate_provingkit.ValidationError, "tag ref inventory drift"):
+                        validate_provingkit._validate_history(REPOSITORY)
+                self.assertFalse(
+                    any(
+                        args == ("rev-parse", "--verify", object_field.decode() + "^{commit}")
+                        for args in later_git_calls
+                    )
+                )
+
+    def test_source_stage_validator_rejects_tag_targeting_tree(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory) / "repository"
+            self.clone_with_history(repository)
+            self.set_tag(repository, "not-a-commit", "HEAD^{tree}")
+
+            result = self.validate(repository)
+
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("tag does not resolve to a commit: refs/tags/not-a-commit", result.stderr)
+
+    def test_source_stage_validator_rejects_tag_targeting_blob(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory) / "repository"
+            self.clone_with_history(repository)
+            self.set_tag(repository, "not-a-commit", "HEAD:README.md")
+
+            result = self.validate(repository)
+
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("tag does not resolve to a commit: refs/tags/not-a-commit", result.stderr)
+
+    def test_source_stage_validator_rejects_annotated_pinned_preview_tag(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory) / "repository"
+            self.clone_with_history(repository)
+            self.set_tag(repository, PREVIEW_TAG, PREVIEW_SOURCE, annotated=True)
+
+            result = self.validate(repository)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("pinned preview tag drift", result.stderr)
+
+    def test_source_stage_validator_rejects_tag_into_retained_only_parent(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory) / "repository"
+            self.clone_with_history(repository)
+            self.set_tag(
+                repository, "retained-parent",
+                "e9ef388bb3537c12d2226ff1b234baee9d104234",
+            )
+            result = self.validate(repository)
+
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("retained extraction input was accepted into a tag", result.stderr)
+
+    def test_source_stage_validator_rejects_tag_on_retained_history_sibling(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory) / "repository"
+            self.clone_with_history(repository)
+            retained_parent = "e9ef388bb3537c12d2226ff1b234baee9d104234"
+            sibling = subprocess.run(
+                [
+                    "git", "-c", "user.name=Provingkit Test", "-c",
+                    "user.email=provingkit-test@example.invalid", "commit-tree",
+                    f"{retained_parent}^{{tree}}", "-p", retained_parent,
+                    "-m", "retained history sibling",
+                ],
+                cwd=repository,
+                text=True,
+                capture_output=True,
+                check=True,
+            ).stdout.strip()
+            self.set_tag(repository, "retained-sibling", sibling)
+
+            result = self.validate(repository)
+
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("retained extraction input was accepted into a tag", result.stderr)
+
+    def test_source_stage_validator_rejects_excluded_path_only_in_tagged_merge(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory) / "repository"
+            self.clone_with_history(repository)
+            environment = dict(os.environ, GIT_INDEX_FILE=str(Path(directory) / "index"))
+
+            def git(*arguments: str, input: str | None = None) -> str:
+                return subprocess.run(
+                    ["git", "-c", "user.name=Provingkit Test", "-c",
+                     "user.email=provingkit-test@example.invalid", *arguments],
+                    cwd=repository, env=environment, input=input, text=True,
+                    capture_output=True, check=True,
+                ).stdout.strip()
+
+            clean_tree = git("rev-parse", "HEAD^{tree}")
+            side = git("commit-tree", clean_tree, "-p", "HEAD", "-m", "clean side")
+            git("read-tree", "HEAD")
+            blob = git("hash-object", "-w", "--stdin", input="merge-only\n")
+            git("update-index", "--add", "--cacheinfo", f"100644,{blob},tooling/merge-only.txt")
+            tree = git("write-tree")
+            merge = git("commit-tree", tree, "-p", "HEAD", "-p", side, "-m", "merge")
+            self.set_tag(repository, "merge-only-excluded", merge)
+            result = self.validate(repository)
+
+        self.assertEqual(result.returncode, 1)
+        self.assertIn("excluded source is reachable in published history", result.stderr)
+
+    def test_source_stage_validator_accepts_tag_on_shared_ancestor(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory) / "repository"
+            self.clone_with_history(repository)
+            self.set_tag(
+                repository, "shared-ancestor",
+                "7dd8273ecab621be662d27c38706e33f2b48ae34",
+            )
+            result = self.validate(repository)
+
+        self.assertEqual(result.returncode, 0, result.stderr)
 
     def test_source_stage_validator_accepts_a_repository_without_tags(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -444,100 +650,75 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                     result.stdout, "Provingkit source validation passed\n"
                 )
 
-    def test_source_stage_validator_rejects_alpha6_at_another_source(self) -> None:
+    def test_source_stage_validator_accepts_its_release_tag(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             repository = Path(directory) / "repository"
             self.clone_with_history(repository)
-            self.set_tag(repository, "v0.1.0-alpha.6", ALPHA_SOURCE)
-            self.assert_unauthorized_tag(repository)
+            self.set_tag(repository, "v0.1.0-alpha.7", "HEAD")
 
-    def test_source_stage_validator_rejects_annotated_alpha6(self) -> None:
+            result = self.validate(repository)
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout, "Provingkit source validation passed\n")
+
+    def test_source_stage_validator_accepts_a_later_release_tag(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             repository = Path(directory) / "repository"
             self.clone_with_history(repository)
-            self.set_tag(
-                repository,
-                "v0.1.0-alpha.6",
-                "0c47d9d4b936dfb74134a4d7bf0f9354fc67359b",
-                annotated=True,
-            )
-            self.assert_unauthorized_tag(repository)
-
-    def test_source_stage_validator_rejects_symbolic_alpha6(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            repository = Path(directory) / "repository"
-            self.clone_with_history(repository)
-            target = "refs/heads/symbolic-alpha6-target"
-            subprocess.run(
-                ["git", "update-ref", target, "0c47d9d4b936dfb74134a4d7bf0f9354fc67359b"],
-                cwd=repository,
-                check=True,
-            )
-            subprocess.run(
-                ["git", "symbolic-ref", "refs/tags/v0.1.0-alpha.6", target],
-                cwd=repository,
-                check=True,
-            )
-            self.assert_unauthorized_tag(repository)
-
-    def test_source_stage_validator_rejects_the_preview_tag_at_another_source(
-        self,
-    ) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            repository = Path(directory) / "repository"
-            self.clone_with_history(repository)
-            self.set_tag(repository, PREVIEW_TAG, "HEAD")
-
-            self.assert_unauthorized_tag(repository)
-
-    def test_source_stage_validator_rejects_an_additional_preview_tag(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            repository = Path(directory) / "repository"
-            self.clone_with_history(repository)
-            self.set_tag(repository, PREVIEW_TAG, PREVIEW_SOURCE)
-            self.set_tag(repository, "preview-unreviewed", PREVIEW_SOURCE)
-
-            self.assert_unauthorized_tag(repository)
-
-    def test_source_stage_validator_rejects_an_annotated_preview_tag(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            repository = Path(directory) / "repository"
-            self.clone_with_history(repository)
-            self.set_tag(
-                repository,
-                PREVIEW_TAG,
-                PREVIEW_SOURCE,
-                annotated=True,
-            )
-
-            self.assert_unauthorized_tag(repository)
-
-    def test_source_stage_validator_rejects_a_symbolic_preview_tag(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            repository = Path(directory) / "repository"
-            self.clone_with_history(repository)
-            symbolic_target = "refs/heads/symbolic-preview-target"
-            subprocess.run(
-                ["git", "update-ref", symbolic_target, PREVIEW_SOURCE],
-                cwd=repository,
-                text=True,
-                capture_output=True,
-                check=True,
-            )
-            subprocess.run(
+            later = subprocess.run(
                 [
-                    "git",
-                    "symbolic-ref",
-                    f"refs/tags/{PREVIEW_TAG}",
-                    symbolic_target,
+                    "git", "-c", "user.name=Provingkit Test", "-c",
+                    "user.email=provingkit-test@example.invalid", "commit-tree",
+                    "HEAD^{tree}", "-p", "HEAD", "-m", "later release",
                 ],
                 cwd=repository,
                 text=True,
                 capture_output=True,
                 check=True,
+            ).stdout.strip()
+            self.set_tag(repository, "v0.1.0-alpha.8", later)
+
+            result = self.validate(repository)
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout, "Provingkit source validation passed\n")
+
+    def test_source_stage_validator_rejects_excluded_history_reachable_by_tag(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory) / "repository"
+            self.clone_with_history(repository)
+            environment = dict(
+                os.environ, GIT_INDEX_FILE=str(Path(directory) / "index")
             )
 
-            self.assert_unauthorized_tag(repository)
+            def git(*arguments: str, input: str | None = None) -> str:
+                return subprocess.run(
+                    [
+                        "git", "-c", "user.name=Provingkit Test", "-c",
+                        "user.email=provingkit-test@example.invalid", *arguments,
+                    ],
+                    cwd=repository,
+                    env=environment,
+                    input=input,
+                    text=True,
+                    capture_output=True,
+                    check=True,
+                ).stdout.strip()
+
+            git("read-tree", "HEAD")
+            blob = git("hash-object", "-w", "--stdin", input="synthetic\n")
+            git(
+                "update-index", "--add", "--cacheinfo",
+                f"100644,{blob},tooling/synthetic.txt",
+            )
+            tree = git("write-tree")
+            tagged_commit = git("commit-tree", tree, "-p", "HEAD", "-m", "excluded history")
+            self.set_tag(repository, "v0.1.0-alpha.8", tagged_commit)
+
+            result = self.validate(repository)
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("excluded source is reachable in published history", result.stderr)
 
     def test_source_stage_validator_rejects_dangling_symbolic_tags(self) -> None:
         for tag in (ALPHA_TAG, f"{ALPHA_TAG}-unreviewed"):
@@ -564,38 +745,6 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                         result.stderr,
                         "Git ref/history integrity validation failed\n",
                     )
-
-    def test_source_stage_validator_rejects_the_alpha_tag_at_another_source(
-        self,
-    ) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            repository = Path(directory) / "repository"
-            self.clone_with_history(repository)
-            self.set_tag(repository, ALPHA_TAG, "HEAD")
-
-            self.assert_unauthorized_tag(repository)
-
-    def test_source_stage_validator_rejects_an_annotated_alpha_tag(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            repository = Path(directory) / "repository"
-            self.clone_with_history(repository)
-            self.set_tag(
-                repository,
-                ALPHA_TAG,
-                ALPHA_SOURCE,
-                annotated=True,
-            )
-
-            self.assert_unauthorized_tag(repository)
-
-    def test_source_stage_validator_rejects_an_additional_alpha_tag(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
-            repository = Path(directory) / "repository"
-            self.clone_with_history(repository)
-            self.set_tag(repository, ALPHA_TAG, ALPHA_SOURCE)
-            self.set_tag(repository, f"{ALPHA_TAG}-unreviewed", ALPHA_SOURCE)
-
-            self.assert_unauthorized_tag(repository)
 
     def test_ci_and_contributors_install_the_declared_validation_dependencies(
         self,
@@ -940,7 +1089,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 (
                     "rolecasting",
                     "agent-plugin",
-                    "1.0.0",
+                    "0.1.0-trunk",
                     "plugins/rolecasting/plugin.json",
                     "plugins/rolecasting/.claude-plugin/plugin.json",
                     "plugin-content-lock",
@@ -949,7 +1098,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 (
                     "tricritical",
                     "agent-plugin",
-                    "1.0.0",
+                    "0.1.0-trunk",
                     "plugins/tricritical/plugin.json",
                     "plugins/tricritical/.claude-plugin/plugin.json",
                     "plugin-content-lock",
@@ -958,7 +1107,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 (
                     "versionkeeping",
                     "agent-plugin",
-                    "1.0.0",
+                    "0.1.0-trunk",
                     "plugins/versionkeeping/plugin.json",
                     "plugins/versionkeeping/.claude-plugin/plugin.json",
                     "plugin-content-lock",
@@ -967,7 +1116,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 (
                     "mergecraft",
                     "agent-plugin",
-                    "1.0.0",
+                    "0.1.0-trunk",
                     "plugins/mergecraft/plugin.json",
                     "plugins/mergecraft/.claude-plugin/plugin.json",
                     "plugin-content-lock",
@@ -976,7 +1125,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 (
                     "artifact-customs",
                     "agent-plugin",
-                    "1.0.0",
+                    "0.1.0-trunk",
                     "plugins/artifact-customs/plugin.json",
                     "plugins/artifact-customs/.claude-plugin/plugin.json",
                     "plugin-content-lock",
@@ -985,7 +1134,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 (
                     "proseweaving",
                     "agent-plugin",
-                    "1.0.0",
+                    "0.1.0-trunk",
                     "plugins/proseweaving/plugin.json",
                     "plugins/proseweaving/.claude-plugin/plugin.json",
                     "plugin-content-lock",
@@ -994,7 +1143,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 (
                     "surreal-intercom",
                     "agent-plugin",
-                    "1.0.0",
+                    "0.1.0-trunk",
                     "plugins/surreal-intercom/plugin.json",
                     "plugins/surreal-intercom/.claude-plugin/plugin.json",
                     "plugin-content-lock",
@@ -1080,7 +1229,24 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("unsupported member version", result.stderr)
 
-    def test_assigned_local_alpha_version_accepts_six_consistent_members(self) -> None:
+    def test_trunk_source_accepts_seven_synchronized_members(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            repository = Path(directory) / "repository"
+            self.clone_with_history(repository)
+            self.set_member_versions(repository, "0.1.0-trunk")
+            definition = json.loads(
+                (repository / "release/provingkit/definition-v1.json").read_text()
+            )
+            self.assertEqual(
+                [member["version"] for member in definition["membership"]["members"]],
+                ["0.1.0-trunk"] * 7,
+            )
+
+            result = self.validate(repository)
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_assigned_local_alpha_version_accepts_seven_consistent_members(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             repository = Path(directory) / "repository"
             self.clone_with_history(repository)
@@ -1090,7 +1256,7 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
 
         self.assertEqual(result.returncode, 0, result.stderr)
 
-    def test_local_alpha_version_rejects_mixed_member_versions(self) -> None:
+    def test_trunk_source_rejects_mixed_member_versions(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             repository = Path(directory) / "repository"
             shutil.copytree(
@@ -1099,13 +1265,34 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
                 ignore=shutil.ignore_patterns(".git", "__pycache__", "*.pyc"),
             )
             self.set_member_versions(
-                repository, "0.1.0-alpha.2", overrides={"rolecasting": "1.0.0"}
+                repository, "0.1.0-trunk", overrides={"rolecasting": "0.1.0-alpha.2"}
             )
 
             result = self.validate(repository)
 
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("member version drift", result.stderr)
+
+    def test_trunk_source_rejects_malformed_or_unassigned_versions(self) -> None:
+        for version in (
+            "0.1.0-trunk.1",
+            "0.1.0-trunk+build",
+            "0.1-trunk",
+            "1.0.0",
+        ):
+            with self.subTest(version=version), tempfile.TemporaryDirectory() as directory:
+                repository = Path(directory) / "repository"
+                shutil.copytree(
+                    REPOSITORY,
+                    repository,
+                    ignore=shutil.ignore_patterns(".git", "__pycache__", "*.pyc"),
+                )
+                self.set_member_versions(repository, version)
+
+                result = self.validate(repository)
+
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn("unsupported member version", result.stderr)
 
     def test_local_alpha_version_rejects_zero_ordinal(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -3125,84 +3312,6 @@ class ProvingkitRepositoryContractTests(unittest.TestCase):
             check=False,
         )
         self.assertEqual(retained_ancestry.returncode, 1)
-
-        tags = {
-            tag.rstrip()
-            for tag in subprocess.run(
-                [
-                    "git",
-                    "for-each-ref",
-                    "--format=%(refname) %(objecttype) %(objectname) %(symref)",
-                    "refs/tags",
-                ],
-                cwd=REPOSITORY,
-                text=True,
-                capture_output=True,
-                check=True,
-            ).stdout.splitlines()
-        }
-        preview_tag = f"refs/tags/{PREVIEW_TAG} commit {PREVIEW_SOURCE}"
-        alpha_tag = f"refs/tags/{ALPHA_TAG} commit {ALPHA_SOURCE}"
-        alpha4_tag = (
-            "refs/tags/v0.1.0-alpha.4 commit "
-            "e14e818e423abd2f65b336e279284d412e0fcbce"
-        )
-        alpha6_tag = (
-            "refs/tags/v0.1.0-alpha.6 commit "
-            "0c47d9d4b936dfb74134a4d7bf0f9354fc67359b"
-        )
-        self.assertIn(
-            tags,
-            [
-                {alpha6_tag},
-                {preview_tag, alpha6_tag},
-                {alpha_tag, alpha6_tag},
-                {alpha4_tag, alpha6_tag},
-                {preview_tag, alpha_tag, alpha6_tag},
-                {preview_tag, alpha4_tag, alpha6_tag},
-                {alpha_tag, alpha4_tag, alpha6_tag},
-                {preview_tag, alpha_tag, alpha4_tag, alpha6_tag},
-                set(),
-                {preview_tag},
-                {alpha_tag},
-                {preview_tag, alpha_tag},
-                {alpha4_tag},
-                {preview_tag, alpha4_tag},
-                {alpha_tag, alpha4_tag},
-                {preview_tag, alpha_tag, alpha4_tag},
-            ],
-        )
-
-        history_paths = subprocess.run(
-            [
-                "git",
-                "log",
-                "--format=",
-                "--name-only",
-                "-z",
-                "HEAD",
-                retained,
-            ],
-            cwd=REPOSITORY,
-            text=True,
-            capture_output=True,
-            check=True,
-        ).stdout.split("\0")
-        prohibited_roots = (
-            ".scratch",
-            "tooling",
-            "base-loadout",
-            "hindsight",
-            "plugins/base-loadout",
-            "plugins/hindsight",
-        )
-        self.assertFalse(
-            any(
-                path == root or path.startswith(root + "/")
-                for path in history_paths
-                for root in prohibited_roots
-            )
-        )
 
     def test_historical_qualification_is_outside_default_pytest_discovery(
         self,

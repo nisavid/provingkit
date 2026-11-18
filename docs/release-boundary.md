@@ -1,8 +1,8 @@
-# Source, preview, and release
+# Source and release
 
-Provingkit's pinned unsigned preview provides installable artifacts from one
-qualified source commit. Source validation, preview publication, live host
-qualification, and a stable Kit release establish different claims.
+Use the [installation and update guide](install-and-update.md) for the current
+release. Source validation, release publication, live host qualification, and
+a stable Kit release establish different claims.
 
 ## The Kit and its source
 
@@ -16,24 +16,8 @@ each member to its own manifest. The repository contains a schema for a future
 immutable release manifest, but it contains no release-manifest instance.
 
 The root [`marketplace.json`](../.claude-plugin/marketplace.json) is a source
-projection of the six Agent Plugins for Claude Code. Its presence is not
+projection of the Kit's plugins for Claude Code. Its presence is not
 marketplace publication.
-
-## The pinned preview
-
-The [unsigned preview](https://github.com/nisavid/provingkit/releases/tag/preview-8acd0e2af1f4)
-is bound to source commit
-[`8acd0e2af1f4508a0e2358d8e01f6a3db7a78ce3`](https://github.com/nisavid/provingkit/commit/8acd0e2af1f4508a0e2358d8e01f6a3db7a78ce3).
-It has target artifacts for Agent Plugins/Codex, Claude Code, and Cursor.
-Those artifacts remain fixed when repository source or documentation changes.
-
-The CI-only [artifact projection process](release-artifact-projection.md)
-excludes development material and emits a receipt bound to the source commit,
-target, slate, inventory, and deterministic artifact digest. The
-[install, update, and rollback guide](preview/install-and-update.md) identifies
-the published archives and their verification records.
-
-Stable release and live host qualification remain separate gates.
 
 ## Source checks and release evidence
 

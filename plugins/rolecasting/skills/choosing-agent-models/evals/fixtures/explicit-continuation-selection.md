@@ -1,16 +1,17 @@
 # Explicit Continuation Selection
 
 Delegation, same-purpose ownership, authority, isolation, and assurance are
-settled. These are ordinary recoverable implementation tasks, with judgment
+settled. Each case deliberately continues selected execution of a recoverable
+implementation assignment; none is an ordinary peer message. Judgment is
 adequate at medium effort. Current exact-surface catalog and executor-schema
-observations prove gpt-6.1-sol/medium on the Codex targets and opus/medium
+observations prove gpt-6.2-sol/medium on the Codex targets and opus/medium
 (Claude Opus 5.5) on the Claude Code targets. No newer same-name successor is
 advertised. Global and parent defaults are gpt-daybreak-blue-latest/xhigh or
 opus/high. No account switch, probe, or extra worker is authorized. These are
 controlled schema observations, not claims about every installed version.
 
 A. Codex resume accepts model and effort, and fresh evidence still binds the
-original private account. The stored session says gpt-6.1-sol/medium. The
+original private account. The stored session says gpt-6.2-sol/medium. The
 proposed resume omits both fields because it has a session ID.
 B. Claude Code resume accepts model only; its retained effort is observed as
 medium. The proposed resume omits model because the prior turn selected opus.

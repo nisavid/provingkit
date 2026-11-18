@@ -1,6 +1,6 @@
 ---
 name: delegating-cross-agent-work
-description: Use when choosing delegation, topology, authority, or handoffs. Select models through choosing-agent-models.
+description: Use when choosing delegation, worker topology, authority, or execution handoffs.
 ---
 
 # Delegating Cross-Agent Work
@@ -9,7 +9,9 @@ description: Use when choosing delegation, topology, authority, or handoffs. Sel
 
 Keep consequential judgment, ambiguity, architecture, copy, and coordination local. Delegate bounded parallel, specialist, or waiting work.
 
-[choosing-agent-models](../choosing-agent-models/SKILL.md) owns model and effort selection. This skill owns target, topology, authority, handoffs, assurance, and integration.
+Own target, topology, authority, execution handoffs, assurance, and integration.
+Apply the [message/execution boundary](../choosing-agent-models/references/capability-probes-and-fallbacks.md#distinguish-messages-from-execution-assignments) first;
+[choosing-agent-models](../choosing-agent-models/SKILL.md) owns model/effort selection.
 
 ## Choose the Worker Contract
 
@@ -27,7 +29,7 @@ Task identity and bounded purpose are route gates: model availability never make
 
 ## Kickoff
 
-Record leader, repository, branch, immutable base, dirty state, submodules, and owning worktree. Check live state and policy. Freeze topology and assurance minima before selection or edits. Before every dispatch or continuation, use `choosing-agent-models` to reclassify scope and resolve model/effort.
+Record leader, repo, branch, immutable base, dirty state, submodules, and worktree. Check live state and policy; freeze topology and assurance minima before selection or edits. Reclassify scope and resolve model/effort through `choosing-agent-models` for each execution assignment or continuation.
 
 Every thread, task, session, or subagent creation explicitly passes deliberately
 selected model and effort wherever supported, including native Codex and Claude
@@ -38,7 +40,7 @@ global, desktop, and parent defaults never replace supported fields.
 
 ## Bounded Handoff
 
-Every prompt binds goal, success criteria, worktree, immutable base, facts, target behavior, scope, read/write and subdelegation authority, external-action authority, verification, output, and stop conditions. Recover and apply verified operator grants through [handoff authority](references/invocation-topology-receipt.md#handoff-authority). Preserve edits.
+Every execution handoff binds goal, success criteria, worktree, immutable base, facts, target behavior, scope, read/write and subdelegation authority, external-action authority, verification, output, and stop conditions. Recover and apply verified operator grants through [handoff authority](references/invocation-topology-receipt.md#handoff-authority). Preserve edits.
 
 Read [scarce-specialist handoffs](references/scarce-specialist-handoffs.md) before assigning one.
 

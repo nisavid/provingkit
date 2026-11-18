@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import re
 import subprocess
 from pathlib import Path
@@ -17,7 +18,7 @@ class GitObservationError(ValueError):
 
 def _run(repository: Path, *arguments: str) -> bytes:
     completed = subprocess.run(
-        ["git", "-C", str(repository), *arguments],
+        ["git", "--no-replace-objects", "-C", str(repository), *arguments],
         check=False,
         capture_output=True,
     )
@@ -192,3 +193,35 @@ def observe_git_diff(
     if numstat:
         raise GitObservationError("Git numstat contains unpaired paths")
     return sorted(rows, key=lambda row: (row["target_path"], row["source_path"] or ""))
+
+
+def observe_git_history(
+    repository: Path, *, base_oid: str, head_oid: str
+) -> dict[str, Any]:
+    """Prove an ancestry-only publication with new commits and an unchanged tree."""
+    rows = observe_git_diff(repository, base_oid=base_oid, head_oid=head_oid)
+    if base_oid == head_oid:
+        raise GitObservationError("history-only publication requires distinct base/head")
+    if _run(repository, "rev-parse", "--is-shallow-repository").strip() != b"false":
+        raise GitObservationError("history-only publication requires complete Git history")
+    replacement_root = os.environ.get("GIT_REPLACE_REF_BASE", "refs/replace/")
+    if _run(repository, "for-each-ref", "--format=%(refname)", replacement_root):
+        raise GitObservationError("history-only publication rejects replacement objects")
+    graft_path = Path(_run(repository, "rev-parse", "--git-path", "info/grafts").decode().strip())
+    if not graft_path.is_absolute():
+        graft_path = repository / graft_path
+    if graft_path.exists() and graft_path.stat().st_size:
+        raise GitObservationError("history-only publication rejects grafted history")
+    merge_base = _review_diff_base(repository, base_oid, head_oid)
+    if merge_base != base_oid:
+        raise GitObservationError("history-only base must be an ancestor of head")
+    commits = _run(repository, "rev-list", "--reverse", f"{base_oid}..{head_oid}").decode("ascii", "strict").splitlines()
+    if not commits or any(not OID.fullmatch(oid) for oid in commits):
+        raise GitObservationError("history-only publication requires new head commits")
+    trees = {
+        name: _run(repository, "rev-parse", f"{oid}^{{tree}}").decode("ascii", "strict").strip()
+        for name, oid in (("base_tree_oid", base_oid), ("merge_base_tree_oid", merge_base), ("head_tree_oid", head_oid))
+    }
+    if any(not OID.fullmatch(tree) for tree in trees.values()) or len(set(trees.values())) != 1 or rows:
+        raise GitObservationError("history-only publication requires an identical file tree and empty diff")
+    return {"merge_base_oid": merge_base, **trees, "head_only_commits": commits}

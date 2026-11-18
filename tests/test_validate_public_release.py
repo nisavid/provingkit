@@ -3997,7 +3997,6 @@ class ValidatePublicReleaseTests(unittest.TestCase):
             encoding="utf-8"
         )
         human_docs = "\n".join((readme, contributing, release_boundary))
-        normalized_readme = " ".join(readme.split())
         normalized_contributing = " ".join(contributing.split())
         normalized_release_boundary = " ".join(release_boundary.split())
 
@@ -4012,9 +4011,21 @@ class ValidatePublicReleaseTests(unittest.TestCase):
             "proseweaving",
         ):
             self.assertIn(f"validate_{member}.py", contributing)
-        self.assertIn("unsigned prerelease", normalized_readme)
         self.assertIn(
-            "Stable release and live host qualification remain separate gates.",
+            "[installation guide](docs/install-and-update.md)",
+            readme,
+        )
+        self.assertIn(
+            "[release boundary](docs/release-boundary.md)",
+            readme,
+        )
+        self.assertIn(
+            "[installation and update guide](install-and-update.md)",
+            release_boundary,
+        )
+        self.assertIn(
+            "Source validation, release publication, live host qualification, and "
+            "a stable Kit release establish different claims.",
             normalized_release_boundary,
         )
         self.assertIn("validate public source contracts", normalized_contributing)
@@ -4706,7 +4717,6 @@ class ValidatePublicReleaseTests(unittest.TestCase):
     def test_root_readme_withholds_retired_release_arguments(self) -> None:
         readme = (REPOSITORY / "README.md").read_text(encoding="utf-8")
         release_boundary = (REPOSITORY / "docs/release-boundary.md").read_text(encoding="utf-8")
-        normalized_readme = " ".join(readme.split())
         normalized_release_boundary = " ".join(release_boundary.split())
         required = {
             "--routing-evidence",
@@ -4734,9 +4744,10 @@ class ValidatePublicReleaseTests(unittest.TestCase):
         }
         self.assertTrue(required.issubset(parser_options))
         self.assertTrue(required.isdisjoint(documented))
-        self.assertIn("unsigned prerelease", normalized_readme)
+        self.assertIn("[release boundary](docs/release-boundary.md)", readme)
         self.assertIn(
-            "Stable release and live host qualification remain separate gates.",
+            "These checks do not grant release, installation, runtime, or "
+            "host-mutation authority.",
             normalized_release_boundary,
         )
         self.assertFalse(

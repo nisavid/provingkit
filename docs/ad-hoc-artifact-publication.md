@@ -12,6 +12,22 @@ the adoption handoff. Use `checkpointing-and-publishing-git-work` for commits,
 branch creation, and its reviewed planner/executor. Source qualification,
 profile activation, native discovery, and retirement remain with their owners.
 
+For a newly changing copied package, load
+[snapshot issuance](agents/snapshot-issuance.md) before projection or packing.
+It supplies the delivered identity, shared-state custody and participation
+requirements, and the final issuance gate immediately before the branch push.
+Keep exposure held until that selected route is reviewed and qualified. The
+source-keyed form below supports retained existing generations; it does not
+permit another changed package under an exposed version.
+
+Snapshot receipts are unsupported by the existing dotfiles installer: they add
+`delivery`, and their builder revision can differ from the product source.
+That installer requires the ordinary receipt's exact field set and equal
+builder/source revisions. Using snapshots with it requires a separately
+reviewed consumer update. The selected snapshot consumer is a disposable native
+Codex marketplace installing only `proseweaving@provingkit` from the complete
+seven-plugin projection; its qualification remains with the installation owner.
+
 ## Bind the inputs
 
 Keep these identities distinct:
@@ -31,11 +47,17 @@ selected main source, use the supported `--channel main`; the full commit is
 still pinned. Do not add an `ad_hoc` projector channel or edit the emitted
 `preview_label`. The installation profile's adoption stage is `ad_hoc`.
 
+The following command prepares a new snapshot. Retained-generation redelivery
+uses its original files instead of rebuilding them. Resolve
+`PROVINGKIT_ISSUER_SOURCE` to the reviewed implementation checkout and
+`PROVINGKIT_SNAPSHOT_RECORD` to the exact preparation response.
+
 ```sh
 set -eu
 for target in agent-plugins claude cursor; do
-  python "$PROVINGKIT_PRODUCT_SOURCE/scripts/build_release_artifacts.py" \
+  python "$PROVINGKIT_ISSUER_SOURCE/scripts/build_release_artifacts.py" \
     --source "$PROVINGKIT_PRODUCT_SOURCE" --channel main --target "$target" \
+    --snapshot-record "$PROVINGKIT_SNAPSHOT_RECORD" \
     --output "$PROVINGKIT_PROJECTION_ROOT/$target"
 done
 ```
@@ -48,7 +70,7 @@ the root receipt; separately record and preserve the receipt's observed mode.
 Check copied modes against source Git modes and generated modes against the
 projection contract. An observed mode list alone does not qualify source.
 
-Use the complete six-member catalog from one source snapshot when preserving
+Use the complete seven-member catalog from one source snapshot when preserving
 other installations in the shared marketplace. The profile may select only
 Proseweaving, Versionkeeping, and Mergecraft; catalog presence does not select
 the other members for installation or update.
@@ -64,7 +86,11 @@ Receipt and mode files are copied as bytes, without JSON or TSV reserialization.
 Set `PROVINGKIT_SOURCE_COMMIT` to the full product source commit,
 `PROVINGKIT_PROJECTION_ROOT` to the three accepted trees, `PROVINGKIT_MODE_ROOT`
 to their reviewed mode files, and `PROVINGKIT_TRANSPORT_STAGE` to a new directory.
-Export these variables. Keep the accepted inputs unchanged throughout packing
+For a snapshot, also set `PROVINGKIT_DELIVERY_VERSION` to its prepared version
+and `PROVINGKIT_GENERATION` to `<source-commit>/<delivered-version>`. For a
+retained source-keyed generation, leave the delivery version unset and set the
+generation to the source commit. Export these variables. Keep the accepted
+inputs unchanged throughout packing
 and readback. Run this block with a shell that stops on failure (`set -eu`).
 
 ```sh
@@ -80,6 +106,13 @@ from pathlib import Path
 commit = os.environ["PROVINGKIT_SOURCE_COMMIT"]
 if not re.fullmatch(r"[0-9a-f]{40}", commit):
     raise SystemExit("a full product source commit is required")
+version = os.environ.get("PROVINGKIT_DELIVERY_VERSION", "")
+if version and not re.fullmatch(r"[0-9][A-Za-z0-9.-]*", version):
+    raise SystemExit("delivery version must be the safe prepared version")
+generation = commit + ("/" + version if version else "")
+if os.environ["PROVINGKIT_GENERATION"] != generation:
+    raise SystemExit("generation differs from the selected source and version")
+stem = commit + ("-" + version if version else "")
 trees = Path(os.environ["PROVINGKIT_PROJECTION_ROOT"])
 modes = Path(os.environ["PROVINGKIT_MODE_ROOT"])
 stage = Path(os.environ["PROVINGKIT_TRANSPORT_STAGE"])
@@ -102,9 +135,9 @@ for target in ("agent-plugins", "claude", "cursor"):
     mode_file = modes / f"{target}.modes.tsv"
     if not all(stat.S_ISREG(p.lstat().st_mode) for p in (receipt, mode_file)):
         raise SystemExit("receipt and mode inventory must be regular files")
-    destination = stage / "ad-hoc" / commit / target
+    destination = stage / "ad-hoc" / generation / target
     destination.mkdir(parents=True, exist_ok=False)
-    root = f"provingkit-ad-hoc-{commit}-{target}"
+    root = f"provingkit-ad-hoc-{stem}-{target}"
     with (destination / "artifact.tar.gz").open("xb") as raw:
         with gzip.GzipFile(filename="", mode="wb", fileobj=raw, compresslevel=9, mtime=0) as zipped:
             with tarfile.open(fileobj=zipped, mode="w", format=tarfile.GNU_FORMAT) as archive:
@@ -133,14 +166,15 @@ files byte for byte, then run the extraction check below against the first
 stage before freezing it. Record each file's size and lowercase SHA-256, the
 three archive root names, and the accepted tree digests in the adoption handoff.
 Keep that record outside the transport generation. Do not repack reviewed
-archives during publication. If an existing generation for this source has
-different bytes, stop and reconcile the producer or selection before publishing.
+archives during publication. If that same generation identity has different
+bytes, stop and reconcile the producer or selection before publishing. Separate
+delivered snapshot versions from one source commit are separate generations.
 
 ## Publish with ordinary branch ancestry
 
 For the first publication, start a persistent task worktree at a freshly
 observed advertised `main` tip. Keep its existing tree and add only the nine
-files below `ad-hoc/<product-source-commit>/`. Create one task-owned commit.
+files below `ad-hoc/<generation>/`. Create one task-owned commit.
 This normal child commit satisfies Versionkeeping's ancestry contract; an
 orphan branch does not. Do not merge the artifact transport branch into `main`.
 
@@ -187,22 +221,38 @@ creation-base ancestry check blocks, prepare the artifact-only change on the
 newly observed `main` tip and review the replacement commit and plan. Keep the
 product source and all nine artifact bytes unchanged. Stop on conflicting
 paths or unexpected remote commits. For later generations, append to the
-existing transport branch, preserving every earlier generation and publication
+existing transport branch, preserving every published generation and publication
 commit. No history rewrite, automatic adoption of other commits, raw-push
 fallback, branch deletion, tag, or Release object belongs to this route.
 
+For snapshots, run the final `issue` transaction from
+[snapshot issuance](agents/snapshot-issuance.md) after reviewing the ready plan
+and immediately before invoking the executor. The transaction binds that exact
+plan, publication commit, and retained files. Reconcile the original executor
+result through the same state before another issuance or cut transition. An
+uncertain outcome keeps its original record and blocks continuation.
+
+The issuer checks every outgoing commit named by that reviewed plan, including
+snapshot artifacts removed before its tip. Exclude cancelled unpublished
+generations from the later publication's ancestry: reconstruct the next
+artifact-only change from the verified published tip or qualified creation
+base. Removing their files only from the new tree does not exclude their Git
+objects from a push. Keep the cancelled generation's local recovery records.
+
 ## Read back all nine pinned URLs
 
-Let `S` be the product source commit and `P` the verified publication commit.
-The nine immutable URL forms are:
+Let `S` be the product source commit, `P` the verified publication commit, and
+`G` the generation (`S/<delivered-version>` for a snapshot, `S` for a retained
+source-keyed generation). The nine immutable URL forms are:
 
 | Target | Archive | Receipt | Modes |
 | --- | --- | --- | --- |
-| Agent Plugins/Codex | `https://raw.githubusercontent.com/nisavid/provingkit/P/ad-hoc/S/agent-plugins/artifact.tar.gz` | `https://raw.githubusercontent.com/nisavid/provingkit/P/ad-hoc/S/agent-plugins/RECEIPT.json` | `https://raw.githubusercontent.com/nisavid/provingkit/P/ad-hoc/S/agent-plugins/modes.tsv` |
-| Claude | `https://raw.githubusercontent.com/nisavid/provingkit/P/ad-hoc/S/claude/artifact.tar.gz` | `https://raw.githubusercontent.com/nisavid/provingkit/P/ad-hoc/S/claude/RECEIPT.json` | `https://raw.githubusercontent.com/nisavid/provingkit/P/ad-hoc/S/claude/modes.tsv` |
-| Cursor | `https://raw.githubusercontent.com/nisavid/provingkit/P/ad-hoc/S/cursor/artifact.tar.gz` | `https://raw.githubusercontent.com/nisavid/provingkit/P/ad-hoc/S/cursor/RECEIPT.json` | `https://raw.githubusercontent.com/nisavid/provingkit/P/ad-hoc/S/cursor/modes.tsv` |
+| Agent Plugins/Codex | `https://raw.githubusercontent.com/nisavid/provingkit/P/ad-hoc/G/agent-plugins/artifact.tar.gz` | `https://raw.githubusercontent.com/nisavid/provingkit/P/ad-hoc/G/agent-plugins/RECEIPT.json` | `https://raw.githubusercontent.com/nisavid/provingkit/P/ad-hoc/G/agent-plugins/modes.tsv` |
+| Claude | `https://raw.githubusercontent.com/nisavid/provingkit/P/ad-hoc/G/claude/artifact.tar.gz` | `https://raw.githubusercontent.com/nisavid/provingkit/P/ad-hoc/G/claude/RECEIPT.json` | `https://raw.githubusercontent.com/nisavid/provingkit/P/ad-hoc/G/claude/modes.tsv` |
+| Cursor | `https://raw.githubusercontent.com/nisavid/provingkit/P/ad-hoc/G/cursor/artifact.tar.gz` | `https://raw.githubusercontent.com/nisavid/provingkit/P/ad-hoc/G/cursor/RECEIPT.json` | `https://raw.githubusercontent.com/nisavid/provingkit/P/ad-hoc/G/cursor/modes.tsv` |
 
-Replace both letters with their full commits. Store ordinary Git blobs; Git
+Replace `S` and `P` with their full commits and `G` with the bound generation.
+Store ordinary Git blobs; Git
 LFS pointers are not archive bytes at these URLs. Neither branch names nor
 version strings may replace commit and checksum pins.
 
@@ -226,6 +276,11 @@ source = os.environ["PROVINGKIT_SOURCE_COMMIT"]
 publication = os.environ["PROVINGKIT_PUBLICATION_COMMIT"]
 if not all(re.fullmatch(r"[0-9a-f]{40}", value) for value in (source, publication)):
     raise SystemExit("full product source and publication commits are required")
+version = os.environ.get("PROVINGKIT_DELIVERY_VERSION", "")
+if version and not re.fullmatch(r"[0-9][A-Za-z0-9.-]*", version):
+    raise SystemExit("unsafe delivery version")
+if os.environ["PROVINGKIT_GENERATION"] != source + ("/" + version if version else ""):
+    raise SystemExit("generation differs from the selected source and version")
 plan_bytes = Path(os.environ["PROVINGKIT_PUBLICATION_PLAN"]).read_bytes()
 if "sha256:" + hashlib.sha256(plan_bytes).hexdigest() != os.environ["PROVINGKIT_REVIEWED_PLAN_SHA256"]:
     raise SystemExit("retained publication plan differs from the reviewed bytes")
@@ -249,8 +304,8 @@ for target in agent-plugins claude cursor; do
   for name in artifact.tar.gz RECEIPT.json modes.tsv; do
     curl --fail --location --show-error --silent \
       --output "$PROVINGKIT_READBACK/$target/$name" \
-      "https://raw.githubusercontent.com/nisavid/provingkit/$PROVINGKIT_PUBLICATION_COMMIT/ad-hoc/$PROVINGKIT_SOURCE_COMMIT/$target/$name"
-    cmp "$PROVINGKIT_TRANSPORT_STAGE/ad-hoc/$PROVINGKIT_SOURCE_COMMIT/$target/$name" \
+      "https://raw.githubusercontent.com/nisavid/provingkit/$PROVINGKIT_PUBLICATION_COMMIT/ad-hoc/$PROVINGKIT_GENERATION/$target/$name"
+    cmp "$PROVINGKIT_TRANSPORT_STAGE/ad-hoc/$PROVINGKIT_GENERATION/$target/$name" \
       "$PROVINGKIT_READBACK/$target/$name"
   done
 done
@@ -258,7 +313,7 @@ done
 
 Compare the hashes and sizes with the separately retained reviewed record.
 Require all nine byte comparisons before extraction. Use the following check
-with `PROVINGKIT_CHECK_INPUT` set to either the staged `ad-hoc/<S>` directory
+with `PROVINGKIT_CHECK_INPUT` set to either the staged `ad-hoc/<G>` directory
 before publication or the downloaded readback directory afterward. Set
 `PROVINGKIT_EXTRACTED` to a new output directory and export both variables.
 The receipt and mode equality checks retain the original accepted inputs as
@@ -279,6 +334,8 @@ inputs = Path(os.environ["PROVINGKIT_CHECK_INPUT"])
 expected = Path(os.environ["PROVINGKIT_PROJECTION_ROOT"])
 modes = Path(os.environ["PROVINGKIT_MODE_ROOT"])
 commit = os.environ["PROVINGKIT_SOURCE_COMMIT"]
+version = os.environ.get("PROVINGKIT_DELIVERY_VERSION", "")
+stem = commit + ("-" + version if version else "")
 output = Path(os.environ["PROVINGKIT_EXTRACTED"])
 output.mkdir(parents=True, exist_ok=False)
 
@@ -303,7 +360,7 @@ for target in ("agent-plugins", "claude", "cursor"):
         raise SystemExit("companion receipt bytes differ")
     if (downloaded / "modes.tsv").read_bytes() != (modes / f"{target}.modes.tsv").read_bytes():
         raise SystemExit("companion mode bytes differ")
-    root_name = f"provingkit-ad-hoc-{commit}-{target}"
+    root_name = f"provingkit-ad-hoc-{stem}-{target}"
     with tarfile.open(downloaded / "artifact.tar.gz", "r:gz") as archive:
         members = archive.getmembers()
     seen = set()
@@ -325,6 +382,8 @@ for target in ("agent-plugins", "claude", "cursor"):
     receipt = json.loads(receipt_bytes)
     if receipt["source"]["commit"] != commit or receipt["target"] != target:
         raise SystemExit("receipt source or target differs")
+    if version and receipt.get("delivery", {}).get("version") != version:
+        raise SystemExit("receipt delivery version differs")
     framed = bytearray(b"provingkit-tree-v1\0")
     rows = []
     for relative, (data, mode) in sorted(actual.items()):
@@ -344,10 +403,12 @@ for target in ("agent-plugins", "claude", "cursor"):
 PY
 ```
 
-Record the nine final URLs and hashes only after public readback passes. The
-dotfiles profile uses the existing archive/receipt/mode download fields and
-one-component stripping. Its `source.commit` remains `S`, while URLs contain
-`P`; no installer or acquisition mechanism changes. Return the public adoption
+Record the nine final URLs and hashes only after public readback passes. For
+ordinary retained generations, the dotfiles profile uses the existing
+archive/receipt/mode download fields and one-component stripping. Its
+`source.commit` remains `S`, while URLs contain `P`; that existing receipt form
+needs no installer or acquisition change. Snapshot receipts require the consumer
+update described above before dotfiles adoption. Return the public adoption
 record, source/transport identities, exact nine-file record, public readback
 results, and retained recovery references to the installation owner. Failed or
 incomplete publication/readback is not a usable new profile.

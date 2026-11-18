@@ -52,6 +52,75 @@ def print_result(result):
     return 0
 
 
+def consume_thread_state_record(record, message, *, binding, client, revision):
+    """Validate one maintained owner-stream record and project state metadata.
+
+    This is the narrow shared snapshot seam. It does not select a turn, submit
+    input, authenticate the owner, or establish upstream freshness.
+    """
+    if message.get("method") == "ipc-connection-reset":
+        raise Refusal("connection-reset-needs-new-binding")
+    owner = binding["owner"]
+    known_owner = isinstance(owner, str) and bool(owner.strip())
+    if message.get("method") == "client-status-changed":
+        status_params = message.get("params", {})
+        if not isinstance(status_params, dict):
+            raise Refusal("invalid-client-status-params")
+        if (known_owner
+                and status_params.get("clientId") == owner
+                and status_params.get("status") == "disconnected"):
+            raise Refusal("owner-disconnected-needs-new-binding")
+    if message.get("method") != "thread-stream-state-changed":
+        return None
+    params = message.get("params", {})
+    if not isinstance(params, dict):
+        raise Refusal("invalid-state-params")
+    target_clients = message.get("targetClientIds")
+    if (not isinstance(target_clients, list)
+            or any(not isinstance(value, str) or not value.strip() for value in target_clients)):
+        raise Refusal("invalid-target-client-ids")
+    if (not known_owner
+            or message.get("type") != "broadcast" or message.get("version") != 11
+            or message.get("sourceClientId") != owner
+            or client not in target_clients
+            or params.get("hostId") != binding["host"]
+            or params.get("conversationId") != binding["target"]
+            or record["generation"] != binding["generation"]):
+        raise Refusal("unmatched-state-binding")
+    change = params.get("change")
+    if not isinstance(change, dict):
+        raise Refusal("invalid-state-change")
+    change_type = change.get("type")
+    if not isinstance(change_type, str) or not change_type:
+        raise Refusal("invalid-state-change-type")
+    if change_type != "snapshot":
+        patch_revision = change.get("revision")
+        if type(patch_revision) is not int or patch_revision < 0:
+            raise Refusal("invalid-patch-revision")
+        return {
+            "state": None,
+            "observedAt": None,
+            "revision": max(revision, patch_revision) if revision is not None else patch_revision,
+            "dirty": "revision-gap" if change.get("baseRevision") != revision else "patch-needs-refresh",
+        }
+    if type(change.get("revision")) is not int or change["revision"] < 0:
+        raise Refusal("invalid-revision")
+    if revision is not None and change["revision"] < revision:
+        raise Refusal("stale-revision")
+    state = change.get("conversationState")
+    if not isinstance(state, dict):
+        raise Refusal("invalid-conversation-state")
+    if state.get("id") != binding["target"]:
+        raise Refusal("snapshot-target-mismatch")
+    return {
+        "state": state,
+        "observedAt": record["at"],
+        "receivedAtUnixNs": record.get("receivedAtUnixNs"),
+        "revision": change["revision"],
+        "dirty": None,
+    }
+
+
 def _run_operation(case, directory, mode="submit", attempt_path=None, *, transport, clock, writer, request_input=None, idle_intent=False):
     writer.require(directory)
     save = writer.write_json
@@ -119,40 +188,25 @@ def _run_operation(case, directory, mode="submit", attempt_path=None, *, transpo
     def observe(records):
         nonlocal state, observed_at, revision, dirty, evidence_overflow
         for record, message in records:
-            if message.get("method") == "ipc-connection-reset":
-                state = None
-                raise Refusal("connection-reset-needs-new-binding")
-            if (message.get("method") == "client-status-changed"
-                    and message.get("params", {}).get("clientId") == binding["owner"]
-                    and message.get("params", {}).get("status") == "disconnected"):
-                state = None
-                raise Refusal("owner-disconnected-needs-new-binding")
-            if message.get("method") != "thread-stream-state-changed":
+            try:
+                update = consume_thread_state_record(
+                    record, message, binding=binding, client=client, revision=revision,
+                )
+            except Refusal as error:
+                if str(error) in {
+                    "connection-reset-needs-new-binding",
+                    "owner-disconnected-needs-new-binding",
+                }:
+                    state = None
+                raise
+            if update is None:
                 continue
-            params = message.get("params", {})
-            if (message.get("type") != "broadcast" or message.get("version") != 11
-                    or message.get("sourceClientId") != binding["owner"]
-                    or client not in message.get("targetClientIds", [])
-                    or params.get("hostId") != binding["host"] or params.get("conversationId") != binding["target"]
-                    or record["generation"] != binding["generation"]):
-                raise Refusal("unmatched-state-binding")
-            change = params["change"]
-            if change["type"] != "snapshot":
-                dirty = "revision-gap" if change.get("baseRevision") != revision else "patch-needs-refresh"
-                state = None
-                patch_revision = change.get("revision")
-                if type(patch_revision) is not int or patch_revision < 0:
-                    raise Refusal("invalid-patch-revision")
-                revision = max(revision, patch_revision) if revision is not None else patch_revision
+            state = update["state"]
+            observed_at = update["observedAt"]
+            revision = update["revision"]
+            dirty = update["dirty"]
+            if state is None:
                 continue
-            if not isinstance(change.get("revision"), int) or change["revision"] < 0:
-                raise Refusal("invalid-revision")
-            if revision is not None and change["revision"] < revision:
-                raise Refusal("stale-revision")
-            state = change["conversationState"]
-            dirty = None
-            observed_at = record["at"]
-            revision = change["revision"]
             # Receipt observations belong to this snapshot, not the latest cache.
             # Keep selection invalidation and the finite receive lifecycle intact.
             if (possible or original is not None) and not idle_intent:

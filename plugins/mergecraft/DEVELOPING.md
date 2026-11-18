@@ -8,6 +8,17 @@ copy. The [README](README.md) is the page for people using the plugin.
 operation-ownership authority. Its `schema_version` versions Mergecraft's local
 topology shape, not a repository-wide interchange schema.
 
+An `external-component` operation names a separately supplied public Skill by
+its qualified identity in both owner and implementation. Its import is null
+because it supplies no tracked Kit dependency. Source validation checks the
+declared relationship; the consuming session discovers availability and
+observes the component's own invocation and authority requirements.
+
+A terminal handoff ends the current Skill and returns continuation to the
+ongoing task, which invokes the named owner under its applicable authority.
+The initializer's Artifact Customs handoffs use this caller-owned route;
+they add no imported operation to the initializer invocation.
+
 ## Host-runtime helper projection
 
 Graphite carries an exact-byte skill-local projection of the repository's
@@ -74,7 +85,10 @@ skill is not evidence that the capability is available.
 <!-- BEGIN GENERATED OPERATION REGISTRY -->
 | Semantic ID | GitHub aliases | Surface | Access | Authority | Disposition | Owner | Implementation/import | Callers |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| repository-configuration | - | workflow | coordinate | requested repository outcome, applicable policy, and separately authorized configuration effects | public-skill | configuring-repositories | skills/configuring-repositories/SKILL.md | configuring-repositories |
+| repository-configuration | - | workflow | coordinate | requested repository outcome, applicable policy, and separately authorized configuration effects | public-skill | configuring-repositories | skills/configuring-repositories/SKILL.md | configuring-repositories, initializing-repositories |
+| repository-initialization | - | workflow | coordinate | requested greenfield setup and each component's separately applicable authority | public-skill | initializing-repositories | skills/initializing-repositories/SKILL.md | initializing-repositories |
+| impeccable:impeccable | - | workflow | coordinate | the component's applicable authority and availability | external-component | impeccable:impeccable | impeccable:impeccable | initializing-repositories |
+| mattpocock-skills:grilling | - | workflow | coordinate | the component's applicable authority and availability | external-component | mattpocock-skills:grilling | mattpocock-skills:grilling | initializing-repositories |
 | github-markdown-content | - | workflow | coordinate | valid GFM and exact candidate body bytes only | public-skill | writing-github-issue-and-pr-markdown | skills/writing-github-issue-and-pr-markdown/SKILL.md | interacting-with-pr-review-feedback, writing-github-issue-and-pr-markdown |
 | issue-pr-relations | - | workflow | coordinate | finite evidenced contributions and separately authorized body or native relation effects | public-skill | maintaining-issue-pr-relations | skills/maintaining-issue-pr-relations/SKILL.md | getting-prs-merged, getting-prs-ready-for-review, graphite, maintaining-issue-pr-relations, publishing-reviewable-prs, stacking-pr-fixups, writing-github-issue-and-pr-markdown, writing-reviewable-pr-descriptions |
 | issue-pr-relation-observe | issue-pr-relation-read | github | read | finite stable entities and missing or invalidated relation observations only | internal-helper | internal:issue-pr-relation-state | skills/maintaining-issue-pr-relations/scripts/relation_state.py | maintaining-issue-pr-relations |
@@ -244,6 +258,12 @@ readiness restoration, and recovery. Its parser consumer tests execute the real
 auditor and publisher parsers with live operation handlers replaced by inert
 observers. They establish offline command compatibility, not live forge,
 receipt-store, installation, or deployment acceptance.
+
+## Repository security and quality guidance
+
+The repository-configuration Skill keeps security, dependency inventory, update maintenance, reporting, secret protection, and billing relationships in [security and quality](skills/configuring-repositories/references/security-and-quality.md). Refresh product facts against the cited primary documentation and current target evidence; the guide delegates CI and application mechanics to their existing references.
+
+The [raw corpus](https://github.com/nisavid/provingkit/blob/main/evals/mergecraft/skills/configuring-repositories/evals.json) includes dependency inventory and update-source assessment, CodeQL native-rule scope, and target-scoped secret-validity cases. Keep fixtures separate from grader expectations. Use the existing source validator and validator suite for registration, discovery, and fixture isolation; structural checks do not establish behavior, hosted coverage, or installed discovery.
 
 ## Evaluation evidence
 

@@ -48,6 +48,15 @@ write checks, including protocol-generated responses, and require refusal before
 the oversized frame reaches the peer. Ordinary existing transport profiles retain
 their current limits.
 
+The [Codex Worker observation diagnostic](skills/communicating-with-agents/references/codex-worker-observation-diagnostic.md)
+owns the source-only, one-shot `codex_worker_observer.py` contract. Its CLI tests
+must use test-owned Unix peers and files, exercise the actual command, prove the
+read-only traffic allowlist and finite aggregate limits, and distinguish useful
+selected views from binding, freshness, history, finalization, and closure
+unknowns. Shared transport and snapshot changes retain the busy sender,
+reconciler, and idle sender suites as regression gates. Native acquisition,
+installation, recurring supervision, and recovery activation remain separate.
+
 Run source checks and synthetic cases through the maintained test schedule;
 retain the candidate revision and actual results. Procedure discovery and
 caller application need their own consumer checks. None of these checks proves
@@ -55,3 +64,34 @@ effective Daybreak execution, current app behavior, installation, signal-safe
 shutdown, or live recovery. The general matching-reply observer and finite Claude consuming-control lookup
 remain separate source work. Advertise it only after implementation and checks at its
 actual boundary.
+
+The [Codex route nomination procedure](skills/communicating-with-agents/references/codex-route-nomination.md)
+owns bounded direct-primary listener classification and private nomination
+publication. Its public CLI fixture must keep unrelated held listeners in the
+sample while distinguishing exactly one canonical primary from zero or multiple
+canonical primaries. Shortened and legacy routes remain unsupported. These
+synthetic checks establish no installed route or live peer qualification.
+Run exactly two complete classifications, each within the original descriptor,
+link-byte, Unix-row, and Unix-byte limits, under one shared watchdog. Their
+aggregate work is capped at twice the per-classification limits; the closed
+record reports per-classification high-water counts. Require the same sole
+canonical row and descriptor/socket identity. Cover original maximum-range
+success on both passes, the retained 694-descriptor/2,401-row sample, a final-only
+second canonical listener, lost listening eligibility, an unrelated native-pipe
+change, and every final-pass bound. This is not an atomic or perpetual-stability
+claim.
+Exercise list, `null`, string, and number request roots through the real public
+CLI and require the stable no-publication/no-connection refusal before any
+production observation.
+
+Requested-reply coverage uses source-owned procedure examples, the ordinary
+mailbox and peer serializer, and both detached projections. Exercise native and
+nomination-backed readiness across all three reply/wait cases. Verified bound
+native reach uses no nomination and no `reply_route`. For nomination-backed
+readiness, a Claude origin constructs `claude-mcp` from its safe Claude result,
+and a Codex origin constructs `codex-owner-admission` from its safe Codex result
+and corroborated invocation. Pass both through actual planning and serialization;
+keep no-reply messages byte-identical without `reply_route`. Reject identity or
+correlation mismatch, malformed nomination specifications, unknown route kinds,
+and raw endpoint fields before planning. These cases establish source
+addressability, not current installation, permission, delivery, or reply handling.

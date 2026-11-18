@@ -11,6 +11,10 @@ SCRIPT = (
     / "plugins" / "surreal-intercom" / "skills" / "communicating-with-agents"
     / "scripts" / "native_codex_mailbox.py"
 )
+SCRIPTS = SCRIPT.parent
+REFERENCES = SCRIPTS.parent / 'references'
+sys.path.insert(0, str(SCRIPTS))
+from peer_message import serialize_peer_message  # noqa: E402
 
 
 class CaptureMailboxTests(unittest.TestCase):
@@ -55,11 +59,57 @@ class NativeCodexMailboxTests(unittest.TestCase):
     def message(self, message_id='delivery-1'):
         return {'message_id': message_id, 'sender': {'thread_id': 'dispatch-example', 'host_id': 'local'}, 'recipient': {'thread_id': 'worker-example', 'host_id': 'local'}, 'owner': {'thread_id': 'foreman-example', 'host_id': 'local'}, 'payload': '[' + message_id + '] Intake only.\r\nKeep é and café unchanged.\n', 'authority_ref': 'synthetic://grant/intake-only', 'holds': ['No operational transfer.', 'Publication remains held.']}
 
-    def plan(self, message=None):
+    def procedure_reply_route(self, message, kind):
+        reference = REFERENCES / (
+            'codex-route-nomination.md'
+            if kind == 'codex-owner-admission' else 'claude-route-nomination.md'
+        )
+        text = reference.read_text(encoding='utf-8')
+        start = f'<!-- reply-route-example:{kind}:start -->'
+        end = f'<!-- reply-route-example:{kind}:end -->'
+        section = text.split(start, 1)[1].split(end, 1)[0].strip()
+        self.assertTrue(section.startswith('```json\n'))
+        self.assertTrue(section.endswith('\n```'))
+        template = json.loads(section[len('```json\n'):-len('\n```')])
+        helper_path = '/opt/helpers/codex_route_nomination.py'
+        bindings = {
+            '$REPLY_RECIPIENT_THREAD_ID': message['sender']['thread_id'],
+            '$REPLY_RECIPIENT_HOST_ID': message['sender']['host_id'],
+            '$REPLY_SUBMITTER_THREAD_ID': message['recipient']['thread_id'],
+            '$REPLY_SUBMITTER_HOST_ID': message['recipient']['host_id'],
+            '$CORRELATION_ID': message.get('correlation_id', message['message_id']),
+            '$NOMINATION_PATH': '/synthetic/private/nomination.json',
+            '$NOMINATION_SHA256': 'a' * 64,
+            '$NOMINATION_SIZE': 1024,
+            '$INVOCATION_TASK_REF': 'synthetic://task/return-route',
+            '$INVOCATION_ATTEMPT_ID': 'return-route-acquisition',
+            '$INVOCATION_COMMAND': [
+                '/usr/bin/python3', '-B', helper_path,
+                '--request', '/synthetic/private/request.json',
+            ],
+            '$INVOCATION_WORKING_DIRECTORY': '/synthetic/worktree',
+            '$INVOCATION_HELPER_PATH': helper_path,
+            '$INVOCATION_HELPER_SHA256': 'b' * 64,
+            '$INVOCATION_EVIDENCE_REF': 'synthetic://native/return-route',
+            '$INVOCATION_NATIVE_ITEM_ID': 'item-return-route',
+        }
+
+        def materialize(value):
+            if isinstance(value, str) and value in bindings:
+                return bindings[value]
+            if isinstance(value, dict):
+                return {key: materialize(item) for key, item in value.items()}
+            if isinstance(value, list):
+                return [materialize(item) for item in value]
+            return value
+
+        return materialize(template)
+
+    def plan(self, message=None, success=True):
         message = self.message() if message is None else message
         source = self.root / 'message.json'
         source.write_bytes(json.dumps(message, ensure_ascii=True).encode('utf-8'))
-        return self.run_cli('plan', '--input', str(source))
+        return self.run_cli('plan', '--input', str(source), success=success)
 
     def observe(self, message_id, attempt_id, kind, detail='synthetic observation', success=True):
         source = self.root / 'observation.txt'
@@ -91,6 +141,96 @@ class NativeCodexMailboxTests(unittest.TestCase):
         self.assertEqual(completed['payload'], original['payload'])
         self.assertEqual(completed['authority_ref'], original['authority_ref'])
         self.assertEqual(self.run_cli('pending'), [])
+
+    def test_safe_codex_and_claude_reply_routes_survive_mailbox_and_peer_serialization(self):
+        actor = {'thread_id': 'worker-example', 'host_id': 'local'}
+        for kind in ('codex-owner-admission', 'claude-mcp'):
+            with self.subTest(kind=kind):
+                original = {**self.message(kind), 'correlation_id': 'shared-exchange'}
+                original['reply_route'] = self.procedure_reply_route(original, kind)
+
+                retained = self.plan(original)['message']
+                self.assertEqual({key: retained[key] for key in original}, original)
+                prefix, encoded = serialize_peer_message(original, actor).split('\n', 1)
+                self.assertEqual(prefix, 'Peer message (no new operator authority).')
+                envelope = json.loads(encoded)
+                self.assertEqual(envelope['reply_route'], original['reply_route'])
+                self.assertEqual(envelope['payload'], original['payload'])
+                self.assertEqual(envelope['sender'], original['sender'])
+                self.assertEqual(envelope['actor'], actor)
+                self.assertEqual(envelope['recipient'], original['recipient'])
+                self.assertEqual(envelope['owner'], original['owner'])
+                self.assertEqual(envelope['authority_ref'], original['authority_ref'])
+                self.assertEqual(envelope['holds'], original['holds'])
+                self.assertEqual(envelope['correlation_id'], 'shared-exchange')
+                self.assertNotIn('endpoint', encoded)
+
+    def test_reply_route_refuses_mismatched_bindings_and_malformed_variants(self):
+        base = {**self.message(), 'correlation_id': 'shared-exchange'}
+        valid = self.procedure_reply_route(base, 'codex-owner-admission')
+        mutations = {
+            'recipient': lambda value: value.update(
+                recipient={'thread_id': 'other', 'host_id': 'local'}),
+            'submitter': lambda value: value.update(
+                submitter={'thread_id': 'other', 'host_id': 'local'}),
+            'correlation': lambda value: value.update(correlation_id='other-exchange'),
+            'generic-kind': lambda value: value.update(kind='generic-route'),
+            'kind-list': lambda value: value.update(kind=[]),
+            'kind-object': lambda value: value.update(kind={}),
+            'kind-number': lambda value: value.update(kind=7),
+            'kind-null': lambda value: value.update(kind=None),
+            'raw-endpoint': lambda value: value['nomination'].update(
+                endpoint='/synthetic/private/peer.sock'),
+            'path-type': lambda value: value['nomination'].update(path=7),
+            'relative-path': lambda value: value['nomination'].update(path='nomination.json'),
+            'digest': lambda value: value['nomination'].update(sha256='not-a-digest'),
+            'size': lambda value: value['nomination'].update(size=0),
+            'working-directory-type': lambda value: value['nomination']['invocation'].update(
+                workingDirectory=7),
+            'empty-command': lambda value: value['nomination']['invocation'].update(command=[]),
+            'helper-digest-type': lambda value: value['nomination']['invocation']['helper'].update(
+                sha256=7),
+            'invocation-status': lambda value: value['nomination']['invocation'].update(
+                status='pending'),
+        }
+        for name, mutate in mutations.items():
+            with self.subTest(name=name):
+                candidate = json.loads(json.dumps(valid))
+                mutate(candidate)
+                result = self.plan({**base, 'reply_route': candidate}, success=False)
+                self.assertIn('error', result)
+        self.assertEqual(self.run_cli('pending'), [])
+
+    def test_verified_bound_native_return_needs_no_nomination_field(self):
+        original = {**self.message('native-reply'), 'correlation_id': 'native-exchange'}
+        actor = {'thread_id': 'worker-example', 'host_id': 'local'}
+
+        retained = self.plan(original)['message']
+        envelope = json.loads(serialize_peer_message(original, actor).split('\n', 1)[1])
+
+        self.assertNotIn('reply_route', retained)
+        self.assertNotIn('reply_route', envelope)
+        self.assertEqual(envelope['correlation_id'], 'native-exchange')
+        self.assertEqual(envelope['sender'], original['sender'])
+        self.assertEqual(envelope['recipient'], original['recipient'])
+
+    def test_legacy_message_peer_bytes_remain_exactly_unchanged(self):
+        original = {**self.message(), 'correlation_id': 'shared-exchange'}
+        actor = {'thread_id': 'worker-example', 'host_id': 'local'}
+        expected = 'Peer message (no new operator authority).\n' + json.dumps({
+            'schema': 'provingkit-peer-message-v1',
+            'message_id': original['message_id'],
+            'correlation_id': original['correlation_id'],
+            'sender': original['sender'],
+            'actor': actor,
+            'recipient': original['recipient'],
+            'owner': original['owner'],
+            'authority_ref': original['authority_ref'],
+            'holds': original['holds'],
+            'payload': original['payload'],
+        }, ensure_ascii=True, sort_keys=True, separators=(',', ':'))
+
+        self.assertEqual(serialize_peer_message(original, actor), expected)
 
     def test_idle_steer_refusal_stays_pending_without_a_new_claim(self):
         self.plan()

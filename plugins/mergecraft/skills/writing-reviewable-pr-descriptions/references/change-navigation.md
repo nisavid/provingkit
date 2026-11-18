@@ -105,6 +105,10 @@ Render this only for a stacked PR, immediately before Diff:
 - Stack `FILES` always shows added, modified, and removed counts, even when zero.
   Append `MOVED N` and `COPIED N` in that order when nonzero; for example,
   `+0 ~1 −0 MOVED 1 COPIED 2`.
+- A history-only member anywhere in the complete Stack inventory has empty
+  category metrics and one canonical `FILES` badge with zero added, modified,
+  removed, moved, and copied counts. Rows with nonzero file operations require
+  at least one category metric.
 - Added, modified, removed, moved, and copied are disjoint file operations. For
   the current Stack item, their sum equals the Diff summary's touched-file
   count. `MOVED` and `COPIED` counts exactly match the Diff file rows carrying
@@ -140,6 +144,47 @@ identity or the unique merge base is unavailable:
 
 </details>
 ```
+
+### History-only Diff
+
+Use review-input v4 when the pushed head adds commits but leaves the base file
+tree unchanged. V3 remains supported for ordinary file inventories. Resolve the
+exact base/head commits in a clean, complete local Git worktree and use
+`change_navigation.git_observer.observe_git_history` to collect `git_history`.
+Its exact fields are `merge_base_oid`, `base_tree_oid`,
+`merge_base_tree_oid`, `head_tree_oid`, and `head_only_commits`.
+The commit list contains full lowercase OIDs in the order returned by
+`git rev-list --reverse BASE_OID..HEAD_OID`. The content digest seals this record
+along with the existing identity, candidate, stack, and baseline fields.
+
+An empty `git_diff` and `diff` require distinct base/head commits, the base as
+head's ancestor and unique merge base, equal base/merge-base/head trees, and at
+least one actual head-only commit. The validator reobserves the complete record
+and empty reviewer-visible diff through Git. Missing objects, shallow history,
+replacement objects, grafts, dirty state, divergent ancestry, an already
+reachable head, or changed evidence hold publication. A declared commit list or
+matching digest alone is insufficient. History-only validation always requires
+a bound Git repository, including calls through the Python interface.
+`git_history` is confined to the zero-file branch; ordinary inventories retain
+the existing file, category, stack, and presentation rules.
+
+Render only the `DIFF` label and `FILES: 0 touched` shields in the summary.
+Expanded content is one exact line, with no taxonomy note, category group,
+file row, operation badge, or fabricated Files changed anchor:
+
+```md
+No file changes in the reviewer-visible comparison. [Review the commits](https://github.com/OWNER/REPO/pull/PR_NUMBER/commits) and [view the immutable history comparison](https://github.com/OWNER/REPO/compare/BASE_OID...HEAD_OID).
+```
+
+Keep the normal disclosure delimiters and empty-line boundaries. The commits
+link uses the destination PR; the comparison binds the immutable base/head OIDs.
+For creation, put `__PUBLISHING_REVIEWABLE_PRS_PR_NUMBER__` in the commits link
+and use the ordinary token-bearing template contract. History-only Stack rows
+retain their zero-file representation when a later PR becomes current.
+Explain the history being synchronized and observed verification in
+the authored suffix. This branch establishes new history and no file changes;
+ordinary review, forge identity, preservation, and publication authority gates
+still apply.
 
 ### Diff Semantics
 
@@ -193,8 +238,11 @@ identity or the unique merge base is unavailable:
 
 ## Edge Checks
 
-- Empty diff: do not fabricate a Diff disclosure. State that the pushed
-  base/head has no diff and resolve whether the PR target or push is wrong.
+- Empty diff: when validated new ancestral history satisfies the
+  [History-only Diff](#history-only-diff) requirements, render that branch's
+  canonical Diff disclosure. Hold publication when no valid new history exists
+  or required identities or Git evidence are unavailable or changed. Do not
+  fabricate file rows or Files changed anchors.
 - Changed base or restack: recompute every PR independently; never reuse totals
   from a previous base.
 - Mixed file: split additions/deletions by category only when the patch supports

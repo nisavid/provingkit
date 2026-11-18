@@ -3,7 +3,7 @@
 Delegation, same-purpose ownership, authority, isolation, and assurance are
 settled. These are ordinary recoverable implementation tasks, with judgment
 adequate at medium effort. Current exact-surface catalog and executor-schema
-observations prove gpt-6.1-sol/medium on the Codex targets and opus/medium
+observations prove gpt-6.2-sol/medium on the Codex targets and opus/medium
 (Claude Opus 5.5) on the Claude Code targets. No newer same-name successor is
 advertised. Global and parent defaults are gpt-daybreak-blue-latest/xhigh or
 opus/high. No account switch, probe, or extra worker is authorized. These are

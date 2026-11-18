@@ -39,6 +39,32 @@ adapter to the system and name the principle it serves, so agents use the
 adapter only where that system applies and reason from the principle everywhere
 else.
 
+## Define acceptance in the consumer's terms
+
+Apply consumer-domain acceptance at all layers of every component within
+Provingkit and every component built by Provingkit. Identify the consumer at
+each relevant boundary: a person, another component, or an agent performing
+its task. Express the intended outcome and required assurances in that
+consumer's behavioral language, then materialize the criteria as executable
+acceptance specifications in the smallest adequate language. An existing
+language with a clear consumer vocabulary is sufficient; a new framework is
+not required.
+
+Keep semantic assertions separate from the protocol driver that exercises the
+consuming interface. A change of driver without a change of intended behavior
+preserves those assertions. Check that wrong outcomes, wrong identities, and
+convincing mechanism success without the required consumer result are rejected.
+A delivered message, successful command, or merged pull request establishes
+only what was observed, not every outcome its consumer needs.
+
+Use the maintained [consumer-specification method](../agents/consumer-specifications.md)
+when specifying, developing, or reviewing behavior. The rule applies across
+component layers; evidence qualifies only the particular driver, seam, inputs,
+and observations exercised. The existing offline Python CLI qualification does
+not establish agent-behavior, user-interface, installed-use, or other runtime
+qualification. Record those limits and the remaining consumer observations
+rather than broadening a passing result into universal evidence.
+
 ## Design for the agents we have
 
 Agent instructions are model-relative. Guidance that once rescued weaker

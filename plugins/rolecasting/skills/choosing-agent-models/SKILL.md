@@ -1,13 +1,13 @@
 ---
 name: choosing-agent-models
-description: Use when creating an agent thread, task, session, or subagent after delegation, selecting model and effort for continuations, classifying security scope, or diagnosing routing blocks or refusals.
+description: Use when selecting model and effort for new workers or execution continuations, classifying execution security scope, or diagnosing routing blocks or refusals.
 ---
 
 # Choosing Agent Models
 
 ## Scope
 
-Own model and effort selection after [delegating-cross-agent-work](../delegating-cross-agent-work/SKILL.md) settles target, ownership, transport, authority, and assurance. Model choice is a separate decision; it cannot repair those boundaries. Classify the complete bounded operation before each dispatch, continuation, follow-up, and review; read [scope classification and refusal diagnosis](references/classifying-security-work.md). Previous assignments do not carry classification forward.
+Own model and effort selection after [delegating-cross-agent-work](../delegating-cross-agent-work/SKILL.md) settles target, ownership, transport, authority, and assurance. Model choice is a separate decision; it cannot repair those boundaries. First distinguish [ordinary peer messages from execution assignments](references/capability-probes-and-fallbacks.md#distinguish-messages-from-execution-assignments). Classify the complete bounded execution before each new assignment, execution continuation, and review; read [scope classification and refusal diagnosis](references/classifying-security-work.md). Previous assignments do not carry execution classification forward.
 
 ## Selection Order
 
@@ -28,4 +28,4 @@ only without a model field; record the proven binding and reason. Apply the
 [field and continuation rules](references/capability-probes-and-fallbacks.md#pass-every-supported-selection-field)
 including native Codex subagents and Claude Code's Agent tool.
 
-Use the newest proven version of the same named GPT or Claude model, preserving its role and gates. Earlier Sol versions are superseded by GPT-6.1 Sol. Read [capability and fallbacks](references/capability-probes-and-fallbacks.md) for successor identity, exact catalog/schema intersection, fixed selection, Fable proof, and unavailable routes. Never invent a slug, infer support from another surface, or treat selection as invocation authority. Return `adapter:model-selection-record` for ordinary same-leader selection. It proves the selected request and observed capability, not actual execution or authority.
+Use the newest proven version of the same named GPT or Claude model, preserving its role and gates. Earlier Sol versions are superseded by GPT-6.2 Sol. Read [capability and fallbacks](references/capability-probes-and-fallbacks.md) for successor identity, exact catalog/schema intersection, fixed selection, Fable proof, and unavailable routes. Never invent a slug, infer support from another surface, or treat selection as invocation authority. Return `adapter:model-selection-record` for ordinary same-leader selection. It proves the selected request and observed capability, not actual execution or authority.

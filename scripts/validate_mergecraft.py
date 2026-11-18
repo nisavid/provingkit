@@ -76,6 +76,7 @@ EXTERNAL_TOPOLOGY_RELATIVES = (
 CONTENT_LOCK_EXCLUSIONS = {"CHANGELOG.md", "LICENSE"}
 PUBLIC_SKILLS = (
     "configuring-repositories",
+    "initializing-repositories",
     "writing-github-issue-and-pr-markdown",
     "maintaining-issue-pr-relations",
     "writing-reviewable-pr-descriptions",
@@ -137,23 +138,29 @@ ADDRESS_FIXTURES = (
     "paginated_requests_checks_page_2.json",
     "requested_reviewer.json",
 )
-MERGE_EVAL_FIXTURES = (
-    "coderabbit-skipped-review.md",
-    "draft-pr-resume.md",
-    "explicit-review-loop-before-merge.md",
-    "stalled-external-review.md",
-    "gh-fix-ci-adapter-boundary.md",
-    "latest-publication-receipt-drift.md",
-    "local-policy-limits-autonomy.md",
-    "new-branch-publish-and-closeout.md",
-    "pr-description-only-near-miss.md",
-    "pure-merge-current-state.md",
-    "review-comments-to-merge.md",
-    "review-only-near-miss.md",
-    "owned-feedback-continuation.md",
-    "feedback-continuation-gates.md",
-    "persistent-request-changes-after-addressed.md",
-)
+MERGE_EVAL_FIXTURES = {
+    'new-branch-publish-and-closeout': 'attended-asynchronous-review-cycle.md',
+    'draft-pr-resume': 'draft-pr-resume.md',
+    'review-comments-to-merge': 'review-comments-to-merge.md',
+    'local-policy-limits-autonomy': 'local-policy-limits-autonomy.md',
+    'stalled-external-review': 'stalled-external-review.md',
+    'pure-merge-current-state': 'pure-merge-current-state.md',
+    'coderabbit-skipped-review': 'coderabbit-skipped-review.md',
+    'pr-description-only-near-miss': 'pr-description-only-near-miss.md',
+    'review-only-near-miss': 'review-only-near-miss.md',
+    'explicit-review-loop-before-merge': 'explicit-review-loop-before-merge.md',
+    'gh-fix-ci-adapter-boundary': 'gh-fix-ci-adapter-boundary.md',
+    'latest-publication-receipt-drift': 'latest-publication-receipt-drift.md',
+    'owned-feedback-continuation': 'owned-feedback-continuation.md',
+    'feedback-continuation-gates': 'feedback-continuation-gates.md',
+    'persistent-request-changes-after-addressed': 'persistent-request-changes-after-addressed.md',
+    'attended-reviewers-still-running': 'attended-asynchronous-review-cycle.md',
+    'attended-no-review-integration': 'attended-asynchronous-review-cycle.md',
+    'attended-no-check-reviewer': 'attended-asynchronous-review-cycle.md',
+    'attended-required-review-quota': 'attended-asynchronous-review-cycle.md',
+    'attended-head-change': 'attended-asynchronous-review-cycle.md',
+    'attended-reviewer-owned-gate': 'attended-asynchronous-review-cycle.md',
+}
 RAW_SKILL_EVAL_FIXTURES = {
     "configuring-repositories": (
         "create-solo.md",
@@ -168,6 +175,9 @@ RAW_SKILL_EVAL_FIXTURES = {
         "partial-effect-and-reconciliation.md",
         "conflicting-provider-evidence.md",
         "ordinary-edit-near-miss.md",
+        "dependency-inventory-and-update-source.md",
+        "codeql-native-rule-scope.md",
+        "secret-validity-without-ai.md",
     ),
     "maintaining-issue-pr-relations": (
         "absent-pr-creation.md",
@@ -330,12 +340,14 @@ MARKDOWN_AUTHORING_FEATURES = {
     "material-conflict",
 }
 EXPECTED_SKILL_FILES = {
+    "initializing-repositories": COMMON_SKILL_FILES,
     "configuring-repositories": COMMON_SKILL_FILES
     | {
         "references/decisions.md",
         "references/github-controls.md",
         "references/ci-hardening.md",
         "references/apply-and-verify.md",
+        "references/security-and-quality.md",
     },
     "maintaining-issue-pr-relations": COMMON_SKILL_FILES
     | {
@@ -418,9 +430,16 @@ EXPECTED_SKILL_FILES = {
     "stacking-pr-fixups": COMMON_SKILL_FILES,
 }
 CODEX_PROMPTS = {
+    "initializing-repositories": (
+        "Use $mergecraft:initializing-repositories to set up a new UI project "
+        "repository in Codex."
+    ),
     "configuring-repositories": (
-        "Use $mergecraft:configuring-repositories to create, assess, or configure "
-        "a GitHub repository and its CI."
+        "Use $mergecraft:configuring-repositories to create a GitHub repository; "
+        "select, assess, or change its controls; configure security reporting or "
+        "support commitments; plan dependency maintenance; or harden its CI and "
+        "merge gates. Do not use it for ordinary code changes, application-"
+        "security review, code-quality review, or a bug fix alone."
     ),
     "maintaining-issue-pr-relations": (
         "Use $mergecraft:maintaining-issue-pr-relations to reconcile these "
@@ -461,10 +480,7 @@ CODEX_PROMPTS = {
     ),
 }
 MANIFEST_PROMPTS = [
-    (
-        "Use $mergecraft:configuring-repositories to create, assess, or configure "
-        "a GitHub repository and its CI."
-    ),
+    CODEX_PROMPTS["configuring-repositories"],
     (
         "Use $mergecraft:maintaining-issue-pr-relations to reconcile these "
         "Issue–PR contributions."
@@ -702,7 +718,7 @@ EXPECTED_ATLAS_PROSE_SHA256 = {
     "design": "23b642b37ced3407c84ad2b1ca6da430d95dd68a674f7daceede3a1b297af441",
     "writer": "7b951fdff8ac45197b856bd3d22f82673281f06523c6729bfef754d150f7a97e",
     "body": "8e159e2138abaedabcd51d958be595f1a63b4a71ee230cc8d0713fb5289310a1",
-    "navigation": "a619b2292831ef56f8f991dd761b60b211389b2a2cf649b67b9624d228ef8cec",
+    "navigation": "dc2ea82e016202cf02b47c2b6974a4c8186c536f128d1d83538ea35c5526fd6b",
 }
 MARKDOWN_LINK_RE = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
 PORTABILITY_MARKERS = (
@@ -2098,6 +2114,7 @@ def validate_topology(root: Path) -> None:
                 "public-skill",
                 "internal-helper",
                 "imported-operation",
+                "external-component",
                 "ordinary-tool",
                 "owned-helper",
                 "owned-adapter",
@@ -2120,7 +2137,17 @@ def validate_topology(root: Path) -> None:
         owner = record["owner"]
         imported = record["import"]
         implementation = record["implementation"]
-        if imported is not None:
+        if record["disposition"] == "external-component":
+            require(
+                imported is None
+                and semantic_id == owner
+                and implementation == owner
+                and re.fullmatch(r"[a-z][a-z0-9-]*:[a-z][a-z0-9-]*", owner)
+                and record["surface"] == "workflow"
+                and record["access"] == "coordinate",
+                "external component import drift",
+            )
+        elif imported is not None:
             require(
                 record["disposition"] == "imported-operation"
                 and imported == owner
@@ -2162,6 +2189,10 @@ def validate_topology(root: Path) -> None:
     require(
         set(aliases) == set(GITHUB_ALIAS_ACCESS),
         "GitHub operation alias coverage drift",
+    )
+    require(
+        "repository-configuration" in operation_by_id,
+        "repository configuration workflow authority drift",
     )
     exported_operations: set[str] = set()
     for component in skills:
@@ -2333,6 +2364,13 @@ def validate_topology(root: Path) -> None:
                         for record in operation_records
                     )
                     or terminal_operation
+                    or (
+                        skill == "initializing-repositories"
+                        and handoff["owner"] in {
+                            "artifact-customs:adopting-third-party-components",
+                            "artifact-customs:maintaining-third-party-components",
+                        }
+                    )
                 )
                 and handoff["owner"] not in component["calls"],
                 f"terminal handoff drift: {skill}",
@@ -2346,6 +2384,68 @@ def validate_topology(root: Path) -> None:
                 "nested loop ownership",
             )
     skills_by_name = {component["name"]: component for component in skills}
+    initialization = skills_by_name["initializing-repositories"]
+    require(
+        set(initialization["calls"])
+        == {
+            "operation:repository-configuration",
+            "operation:impeccable:impeccable",
+            "operation:mattpocock-skills:grilling",
+        },
+        "repository initialization component call drift",
+    )
+    require(
+        all(
+            operation_by_id[owner]["disposition"] == "external-component"
+            for owner in ("impeccable:impeccable", "mattpocock-skills:grilling")
+        ),
+        "repository initialization external component declaration drift",
+    )
+    initialization_handoffs = initialization["contract"].get("terminal_handoffs", [])
+    checkpoint_handoff = {
+        "trigger": "initial-setup-needs-an-authorized-git-checkpoint",
+        "owner": "versionkeeping:checkpointing-and-publishing-git-work",
+        "resume": (
+            "fresh-initializer-at-product-setup-after-reviewed-local-commit-"
+            "and-preservation-verification"
+        ),
+    }
+    require(
+        [
+            handoff for handoff in initialization_handoffs
+            if handoff["trigger"] == checkpoint_handoff["trigger"]
+        ] == [checkpoint_handoff],
+        "repository initialization checkpoint handoff drift",
+    )
+    require(
+        initialization_handoffs == [
+            checkpoint_handoff,
+            {
+                "trigger": (
+                    "selected-new-or-materially-revised-third-party-trust-boundary-"
+                    "needs-authorized-adoption"
+                ),
+                "owner": "artifact-customs:adopting-third-party-components",
+                "resume": (
+                    "fresh-initializer-at-authorized-stack-continuation-after-"
+                    "verified-identity-and-effects-matched-adopted-result"
+                ),
+            },
+            {
+                "trigger": (
+                    "selected-third-party-component-needs-an-authorized-lifecycle-"
+                    "action-under-a-named-existing-policy"
+                ),
+                "owner": "artifact-customs:maintaining-third-party-components",
+                "resume": (
+                    "fresh-initializer-at-authorized-stack-continuation-after-"
+                    "verified-exact-candidate-policy-lifecycle-action-authority-and-"
+                    "effects-matched-maintained-result"
+                ),
+            },
+        ],
+        "repository initialization lifecycle handoff drift",
+    )
     configuration = skills_by_name["configuring-repositories"]
     configuration_references = {
         f"skills/configuring-repositories/{relative}"
@@ -2370,7 +2470,7 @@ def validate_topology(root: Path) -> None:
         },
         "repository configuration operation call drift",
     )
-    configuration_operation = operation_by_id.get("repository-configuration", {})
+    configuration_operation = operation_by_id["repository-configuration"]
     configuration_authority = (
         "requested repository outcome, applicable policy, and separately authorized "
         "configuration effects"
@@ -3700,7 +3800,7 @@ def validate_merge_eval_isolation(repo_root: Path) -> None:
         isinstance(evals, list) and len(evals) == len(MERGE_EVAL_FIXTURES),
         "merge eval coverage drift",
     )
-    expected_names = {Path(name).stem for name in MERGE_EVAL_FIXTURES}
+    expected_names = set(MERGE_EVAL_FIXTURES)
     observed_names = set()
     observed_fixtures = set()
     for position, item in enumerate(evals):
@@ -3733,7 +3833,7 @@ def validate_merge_eval_isolation(repo_root: Path) -> None:
             and item["expected_output"],
             f"merge eval prose drift: {name}",
         )
-        fixture = f"getting-prs-merged/fixtures/{name}.md"
+        fixture = f"getting-prs-merged/fixtures/{MERGE_EVAL_FIXTURES[name]}"
         require(item["files"] == [fixture], f"merge eval fixture binding drift: {name}")
         require(
             isinstance(item["expectations"], list)
@@ -3748,6 +3848,7 @@ def validate_merge_eval_isolation(repo_root: Path) -> None:
             repo_root, EVAL_RELATIVE / f"skills/{fixture}"
         ).lower()
         for marker in (
+            "required lifecycle trace",
             "expected behavior",
             "expected_output",
             "expectations",
@@ -3763,7 +3864,7 @@ def validate_merge_eval_isolation(repo_root: Path) -> None:
         observed_fixtures.add(Path(fixture).name)
     require(observed_names == expected_names, "merge eval name coverage drift")
     require(
-        observed_fixtures == set(MERGE_EVAL_FIXTURES),
+        observed_fixtures == set(MERGE_EVAL_FIXTURES.values()),
         "merge eval fixture coverage drift",
     )
 
@@ -4681,6 +4782,8 @@ with tempfile.TemporaryDirectory() as raw_directory:
         "import sys\n"
         "from pathlib import Path\n"
         "arguments = sys.argv[1:]\n"
+        "if arguments[:1] == ['--no-replace-objects']:\n"
+        "    arguments = arguments[1:]\n"
         "if arguments[:1] == ['-C'] and len(arguments) >= 3:\n"
         "    repository = Path(arguments[1]).resolve()\n"
         "    command = arguments[2:]\n"

@@ -10,12 +10,13 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from .git_observer import GitObservationError, observe_git_diff
+from .git_observer import GitObservationError, observe_git_diff, observe_git_history
 from .bot_body import BotBodyError, authored_body
 from .parsing import extract_leading_details, source_lines
 
 
-VERSION = 3
+VERSION = 4
+PREVIOUS_VERSION = 3
 PR_NUMBER_TOKEN = "__PUBLISHING_REVIEWABLE_PRS_PR_NUMBER__"
 OID_RE = re.compile(r"[0-9a-f]{40}")
 SHA256_RE = re.compile(r"[0-9a-f]{64}")
@@ -117,12 +118,15 @@ def parse_review_input(value: Any) -> ReviewInput:  # noqa: C901
     if set(raw) not in {
         frozenset(manifest_keys),
         frozenset(manifest_keys | {"presentation"}),
+        frozenset(manifest_keys | {"git_history"}),
     }:
         raise ReviewInputError(
             "review input manifest has unsupported or missing fields"
         )
-    if type(raw["version"]) is not int or raw["version"] != VERSION:
-        raise ReviewInputError(f"review input version must be {VERSION}")
+    if type(raw["version"]) is not int or raw["version"] not in {
+        PREVIOUS_VERSION, VERSION
+    }:
+        raise ReviewInputError(f"review input version must be {VERSION} or {PREVIOUS_VERSION}")
     supplied = _sha(raw["content_sha256"], "content_sha256")
     unsigned = copy.deepcopy(raw)
     del unsigned["content_sha256"]
@@ -164,8 +168,36 @@ def parse_review_input(value: Any) -> ReviewInput:  # noqa: C901
     _string(candidate["title"], "candidate.title")
     _sha(candidate["body_sha256"], "candidate.body_sha256")
     git_diff = raw["git_diff"]
-    if not isinstance(git_diff, list) or not git_diff:
+    if not isinstance(git_diff, list):
         raise ReviewInputError("review input git_diff must contain observed records")
+    history = raw.get("git_history")
+    if not git_diff:
+        if raw["version"] != VERSION:
+            raise ReviewInputError("empty Git inventory requires review input v4")
+        history = _object(history, "git_history")
+        _exact_keys(
+            history,
+            {"merge_base_oid", "base_tree_oid", "merge_base_tree_oid",
+             "head_tree_oid", "head_only_commits"},
+            "git_history",
+        )
+        for key in ("merge_base_oid", "base_tree_oid", "merge_base_tree_oid", "head_tree_oid"):
+            if not OID_RE.fullmatch(_string(history[key], f"git_history.{key}")):
+                raise ReviewInputError("review input Git history OID is invalid")
+        commits = history["head_only_commits"]
+        if (
+            not isinstance(commits, list) or not commits
+            or any(not isinstance(oid, str) or not OID_RE.fullmatch(oid) for oid in commits)
+            or len(set(commits)) != len(commits) or head["oid"] not in commits
+            or base["oid"] in commits or base["oid"] == head["oid"]
+            or history["merge_base_oid"] != base["oid"]
+            or len({history[key] for key in (
+                "base_tree_oid", "merge_base_tree_oid", "head_tree_oid"
+            )}) != 1
+        ):
+            raise ReviewInputError("review input requires distinct ancestral base/head, new commits, and identical trees")
+    elif "git_history" in raw:
+        raise ReviewInputError("Git history evidence is only valid for an empty inventory")
     git_targets: set[str] = set()
     for index, row in enumerate(git_diff):
         row = _object(row, f"git_diff[{index}]")
@@ -226,7 +258,7 @@ def parse_review_input(value: Any) -> ReviewInput:  # noqa: C901
         raise ReviewInputError(
             "review input git_diff must use deterministic path order"
         )
-    if not isinstance(raw["diff"], list) or not raw["diff"]:
+    if not isinstance(raw["diff"], list):
         raise ReviewInputError("review input diff must contain parsed records")
     category_targets: set[tuple[str, str]] = set()
     target_semantics: dict[str, tuple[str, str | None]] = {}
@@ -597,6 +629,8 @@ def bind_review_input(  # noqa: C901
         raise ReviewInputError("review input PR number drifted")
     if raw["candidate"]["title"] != title:
         raise ReviewInputError("review input candidate title drifted")
+    if not raw["git_diff"] and git_repository is None:
+        raise ReviewInputError("history-only publication requires a bound Git repository")
     if git_repository is not None:
         try:
             observed = observe_git_diff(
@@ -608,6 +642,15 @@ def bind_review_input(  # noqa: C901
             raise ReviewInputError(
                 f"exact pushed Git diff is unavailable: {error}"
             ) from error
+        if not raw["git_diff"]:
+            try:
+                history = observe_git_history(
+                    git_repository, base_oid=base_oid, head_oid=head_oid
+                )
+            except GitObservationError as error:
+                raise ReviewInputError(f"exact pushed Git history is unavailable: {error}") from error
+            if history != raw["git_history"]:
+                raise ReviewInputError("review input Git history differs from exact pushed commits")
         if observed != raw["git_diff"]:
             raise ReviewInputError(
                 "review input Git inventory differs from exact pushed diff"
