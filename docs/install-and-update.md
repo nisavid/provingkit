@@ -132,6 +132,18 @@ In [Claude on the web](https://claude.ai/) or the **Claude desktop app**:
 3. Enable the plugin, then start a new chat and type `/` to find its skills,
    or start a new Cowork task.
 
+### If Claude Desktop still loads the previous version
+
+In a Claude Desktop Code session, run `/reload-plugins` after the update syncs.
+If the updated version is saved on the account and the Desktop session still
+loads the previous version, save your work, fully quit and reopen Claude
+Desktop, then run `/reload-plugins` again in the affected session. Invoke a skill
+from the plugin. Confirm that Desktop loads the expected release version, or
+verify that a loaded file that changed in the update matches the reviewed
+release. The version shown in Customize and the CLI's synced copy can be newer
+than the copy loaded by Desktop. If neither check establishes the update, give
+the installation owner the saved version and what the session actually loads.
+
 See [Claude's plugin guide](https://claude.com/docs/plugins/overview#find-and-add-a-plugin).
 
 ## If a skill is missing
