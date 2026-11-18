@@ -360,6 +360,63 @@ class CodexRouteNominationTests(unittest.TestCase):
             )
             self.assertEqual(record["acquisition"]["socketInode"], 501)
 
+    def test_multiple_rows_for_one_path_require_unique_stable_backing_socket(self):
+        for scenario, expected in (
+                ("match", True), ("missing", False), ("multiple", False),
+                ("changed", False), ("wrong-mount-namespace", False)):
+            with self.subTest(scenario=scenario), tempfile.TemporaryDirectory(
+                    prefix="codex-same-path-") as temporary:
+                root = Path(temporary).resolve()
+                root.chmod(0o700)
+                request = self.production_request(root)
+                endpoint = root / "codex-home" / "ipc" / "ipc.sock"
+                observer = FixtureObservation(endpoint)
+                for pid in (100, 200, 300):
+                    observer.links[f"/proc/{pid}/ns/mnt"] = "mnt:[702]"
+                if scenario == "wrong-mount-namespace":
+                    observer.links["/proc/300/ns/mnt"] = "mnt:[703]"
+                for descriptor, inode in (("12", 502), ("13", 503)):
+                    observer.descriptors.append(descriptor)
+                    observer.links[f"/proc/300/fd/{descriptor}"] = f"socket:[{inode}]"
+                    observer.files["/proc/300/net/unix"] += (
+                        "00000001: 00000002 00000000 00010000 0001 01 "
+                        f"{inode} {endpoint}\n"
+                    ).encode()
+                backups = {
+                    501: (600, 9, 1, 0),
+                    502: (602, 9, 2, 0),
+                    503: (603, 9, 3, 0),
+                }
+                if scenario == "missing":
+                    del backups[502]
+                if scenario == "multiple":
+                    backups[501] = (602, 9, 1, 0)
+                calls = []
+
+                def diagnostic(path, node, inodes, deadline):
+                    self.assertEqual(path, endpoint)
+                    self.assertEqual((node["inode"], node["device"]), (602, 9))
+                    self.assertEqual(inodes, (501, 502, 503))
+                    calls.append(deadline)
+                    result = dict(backups)
+                    if scenario == "changed" and len(calls) == 2:
+                        result[502] = (602, 9, 4, 0)
+                    return result
+
+                observer.observe_backing_nodes = diagnostic
+                exit_code, result = self.invoke(request, root, observer)
+                self.assertEqual(exit_code, 0)
+                self.assertEqual(result["published"], expected, result)
+                self.assertEqual(result["closure"], "no-connection-opened")
+                if expected:
+                    record = json.loads(Path(result["path"]).read_bytes())
+                    self.assertEqual(record["acquisition"]["selectedDescriptor"], 12)
+                    self.assertEqual(record["acquisition"]["socketInode"], 502)
+                    self.assertEqual(len(calls), 2)
+                    self.assertEqual(calls[0], calls[1])
+                else:
+                    self.assertFalse(Path(request["publication"]["path"]).exists())
+
     def test_final_only_second_canonical_listener_refuses_publication(self):
         with tempfile.TemporaryDirectory(prefix="codex-final-listener-set-") as temporary:
             root = Path(temporary).resolve()

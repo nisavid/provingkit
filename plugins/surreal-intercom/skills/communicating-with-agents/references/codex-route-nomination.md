@@ -148,13 +148,24 @@ socket table, and route filesystem metadata. It classifies every listening Unix
 stream held by the Desktop process, then accepts exactly one whose canonical
 absolute path ends in `ipc/ipc.sock`, with an owned nonsymlink mode-0700 IPC
 directory and mode-0600 socket. Unrelated listeners remain part of the bounded
-sample but do not create direct-primary ambiguity. Alternate launchers,
-shortened or legacy routes, multiple direct-primary listeners, incomplete
-enumeration, unsupported roles, changed identities, or exceeded bounds refuse.
+sample. Multiple eligible rows may share one name after a socket is unlinked
+and rebound. In that case, require the helper and ancestors to share a mount
+namespace and prove one current filesystem socket among at most eight rows.
+Read the verified socket's exact mount and require ext4, whose inode numbers fit
+Linux's 32-bit socket diagnostic record. Query only the observed candidate
+socket inodes through the kernel metadata interface. Compare their bound
+filesystem device and inode to the named socket and require one match. This is
+a metadata lookup with no connection to the application. Distinct primary
+pathnames, alternate launchers, shortened or legacy routes, unsupported
+filesystems, missing or ambiguous identity, changed identities, and exceeded
+bounds refuse.
 
 One five-second watchdog covers the whole sample: at most 16 admitted ancestors,
 1,024 descriptor entries, 4,096 Unix-table rows, 512 KiB of Unix-table data, 256
-KiB of descriptor-link data, and 8 KiB per metadata read. Each of exactly two
+KiB of descriptor-link data, and 8 KiB per ordinary metadata read. The
+same-path case adds at most one 64 KiB mount-table read and eight targeted
+kernel replies of at most 256 bytes per classification. These reads share the
+existing watchdog. Each of exactly two
 complete listener classifications retains those limits under the same watchdog;
 their finite aggregate work cannot exceed 2,048 descriptor entries, 8,192 Unix
 rows, 1 MiB of Unix-table data, or 512 KiB of descriptor-link data. The record's
@@ -164,7 +175,9 @@ executable, role discriminator, and namespace, plus boot and filesystem identity
 It then performs the final complete descriptor and Unix-table classification.
 The final set must contain the same sole canonical
 listener with the same descriptor, socket inode, eligible flags, type, state,
-and path. A final-only second canonical listener, lost listening eligibility,
+and path. When several rows share that path, preserve the same candidate
+descriptors, socket cookies, mount namespaces and backing identities in both
+classifications. A changed set or selected socket, lost listening eligibility,
 incomplete pass, or exhausted per-classification or aggregate bound refuses;
 unrelated native-pipe changes do not hide the unchanged sole primary.
 Five seconds bounds acquisition only. This is one useful bounded final
