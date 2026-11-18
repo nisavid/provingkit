@@ -28,7 +28,7 @@
     "skills/communicating-with-agents/scripts/codex_ipc_idle_sender.py": "b1cc049aaa73af5e6dc04ac032b807161dab8d380dbf80ddde8b166c3ee91e3d",
     "skills/communicating-with-agents/scripts/codex_ipc_sender.py": "b5646409a67d361d0ea1981dea431caff08cc28ab74ab6bd717eb4db17f83c36",
     "skills/communicating-with-agents/scripts/codex_ipc_transport.py": "057117f9439133d82f7b02fa8010a1745bcefb0d9682928655a7664fb8022440",
-    "skills/communicating-with-agents/scripts/codex_route_nomination.py": "ef48b3542196aaf518cdbb1a923d0cfa1af77587a921165eacb58db77f07d97c",
+    "skills/communicating-with-agents/scripts/codex_route_nomination.py": "5c77bedbb76e78516d755e4b47134c5c64a575b01e7abe54851b316552746a83",
     "skills/communicating-with-agents/scripts/codex_worker_observer.py": "5e9cda52d6aee1ac54cd366c673d76f695410e094a667cfd0a4b8676afe0d824",
     "skills/communicating-with-agents/scripts/native_codex_mailbox.py": "7f59f99187ed1fa8101012850f2f6a66f0c4fe89b853e419f8488bc428d8e4fc",
     "skills/communicating-with-agents/scripts/owner_admission_sender.py": "8f86eea2d4dee9f272359c0d8903df38dd9955d5adbadcc83b56077dac393d2c",

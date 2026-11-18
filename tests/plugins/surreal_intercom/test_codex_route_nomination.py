@@ -366,7 +366,7 @@ class CodexRouteNominationTests(unittest.TestCase):
         for scenario, expected in (
                 ("match", True), ("missing", False), ("multiple", False),
                 ("changed", False), ("wrong-mount-namespace", False),
-                ("mount-namespace-changed", False),
+                ("mount-namespace-changed", False), ("backing-node-conflict", False),
                 ("duplicates-stable", True), ("duplicates-reordered", True),
                 ("duplicate-added", False), ("duplicate-removed", False),
                 ("duplicate-replaced", False), ("unrelated-change", True)):
@@ -430,6 +430,17 @@ class CodexRouteNominationTests(unittest.TestCase):
                     return result
 
                 observer.observe_backing_nodes = diagnostic
+                if scenario == "backing-node-conflict":
+                    original_lstat = observer.lstat
+                    named_socket = original_lstat(endpoint)
+                    other_socket = copy.copy(named_socket)
+                    other_socket.st_ino = 604
+                    samples = iter((named_socket, named_socket, other_socket) * 2)
+
+                    def conflicting_lstat(path):
+                        return next(samples) if path == endpoint else original_lstat(path)
+
+                    observer.lstat = conflicting_lstat
                 exit_code, result = self.invoke(request, root, observer)
                 self.assertEqual(exit_code, 0)
                 self.assertEqual(result["published"], expected, result)
@@ -443,7 +454,7 @@ class CodexRouteNominationTests(unittest.TestCase):
                 else:
                     self.assertFalse(Path(request["publication"]["path"]).exists())
                     self.assertNotIn(str(endpoint), json.dumps(result))
-                if scenario == "mount-namespace-changed":
+                if scenario in ("mount-namespace-changed", "backing-node-conflict"):
                     self.assertEqual(len(calls), 2)
                     self.assertEqual(result["reason"], "sample-identity-changed")
 

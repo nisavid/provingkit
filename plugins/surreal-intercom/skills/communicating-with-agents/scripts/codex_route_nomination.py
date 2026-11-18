@@ -524,9 +524,13 @@ def _collect_sample(observer, selection, effective_uid):
     final_directory = _route_node(observer, endpoint.parent, "directory", effective_uid, 0o700)
     final_socket = _route_node(observer, endpoint, "socket", effective_uid, 0o600)
     finished = _watchdog(observer, started)
+    initial_backing = initial["backing"]
+    final_backing = final["backing"]
     if (final_ancestry != ancestry or final_boot != boot
             or final["listener"] != listener or final["endpoint"] != endpoint
-            or final["backing"] != initial["backing"]
+            or final_backing != initial_backing
+            or (initial_backing is not None and initial_backing[1] != socket_node)
+            or (final_backing is not None and final_backing[1] != final_socket)
             or final["selectedDescriptor"] != selected_descriptor
             or final_directory != ipc_directory or final_socket != socket_node):
         raise Refusal("sample-identity-changed")
