@@ -223,10 +223,15 @@ snapshot's first exposure waits until a later check establishes it.
 a protected place. A named remote ref is kept when it sits under the name that
 a repository rule protects from deletion, where delivered sources that are not
 on the release line are pushed. A branch that can be deleted does not meet the
-rule, and a written commitment on the landing ticket does not either. Until the
-repository has that place and a ref there holds the commit, a commit that is
-not on the release line does not meet the rule, and its first exposure waits.
-Each push to that place needs its own authority.
+rule, and a written commitment on the landing ticket does not either. A commit
+that is not on the release line meets the rule only when such a ref holds it,
+and until then its first exposure waits. Each push to that place needs its own
+authority.
+
+In this repository that place is `refs/heads/retained/delivered/<version>`,
+where `<version>` is the delivered version: one ref per delivered version,
+pushed once, under a name the repository's rules protect from update and
+deletion.
 
 The push that puts a delivered source into the protected place goes through the
 Versionkeeping planner, as a create-only push. When the source is not at or
@@ -343,16 +348,16 @@ examples execute the actual CLI and inspect emitted manifests and receipts.
 The clock example replaces Python's `time.time`; it does not change the host
 clock. Synthetic source identifiers test identity independence, not Git age.
 
-Before actual delivery, require current independent review, authoritative state
-custody, selected-route and named-cut participation, recovery evidence at the
-first-exposure boundary, and the source-standing record above. No independent
-review of the source commit is required; the record states its review or that
-there is none. The installation owner then qualifies the selected
-client with useful earlier and later source selections, without runtime markers
-or unrelated edits. Provide the reviewed revision, both delivered versions,
-source commits, the source-standing record, original complete receipts, exact
-projected and packed bytes,
-mode inventories and digests, ordering/retry/variant outcomes, pinned transport
-identities, and publication/readback results. Record the owner's procedure
-revision and naturally useful invocation; installed use is complete only when
-the selected client actually loads the changed copy under its new identity.
+Before actual delivery, require authoritative state custody, selected-route and
+named-cut participation, recovery evidence at the first-exposure boundary, and
+the source-standing record above. No independent review of the source commit is
+required; the record states its review or that there is none. The installation
+owner then qualifies the selected client with useful earlier and later source
+selections, without runtime markers or unrelated edits. Provide the reviewed
+implementation and procedure revision, both delivered versions, source commits,
+the source-standing record, original complete receipts, exact projected and
+packed bytes, mode inventories and digests, ordering/retry/variant outcomes,
+pinned transport identities, and publication/readback results. Record the
+owner's procedure revision and naturally useful invocation; installed use is
+complete only when the selected client actually loads the changed copy under
+its new identity.
