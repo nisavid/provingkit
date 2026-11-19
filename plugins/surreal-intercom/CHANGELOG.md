@@ -23,3 +23,5 @@
 - Distinguish verified bound native return reach from nomination-backed reply
   readiness, and document the exact mailbox-valid Codex and Claude `reply_route`
   fields agents derive from safe producer results.
+- Carry a held reply's existing `reply_route` unchanged when forwarding it; the
+  forwarding actor neither builds nor removes one.

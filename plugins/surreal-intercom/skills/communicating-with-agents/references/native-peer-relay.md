@@ -15,13 +15,13 @@ original sender and actual submitting actor remain distinct.
    maintained procedure only when it already covers the requested operation
    and its permission. Otherwise report the exact missing control or binding.
    Endpoint preparation belongs to the selected transport. When this verified
-   native send is already bound and available to the replying peer, keep its
-   recipient, submitter, correlation, consumer, authority, and hold bindings;
-   perform no nomination and attach no `reply_route`. When a nomination-backed
-   return path is required instead, construct the exact `codex-owner-admission`
-   or `claude-mcp` field through the applicable nomination procedure. It contains
-   no raw endpoint, grants no authority, and never substitutes for the consumer's
-   private-record, permission, identity, or hold checks.
+   native send is already bound and available, keep its recipient, submitter,
+   correlation, consumer, authority, and hold bindings; perform no nomination.
+   A held reply's existing `reply_route` is part of its unchanged content and
+   travels with it. The forwarding actor neither builds a reply route nor
+   removes one: only the reply's original sender can produce the nomination
+   behind it. A held reply that asks for a reply is forwarded like any other
+   held reply, and a held reply without a `reply_route` stays without one.
 3. Check the actual native send's requirements and current permission for this
    actor, recipient and payload. A peer's report of permission and a case
    reference carry information only. If the actual send cannot verify
