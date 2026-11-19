@@ -343,6 +343,102 @@ After every uncertain result, recover the same state before choosing another
 operation. Retain it while a version or recovery selection remains supported.
 The issuer has no remote cleanup operation.
 
+## Derive a member ZIP from an issued snapshot
+
+Use `scripts/member_zip.py` when a delivery needs one member's single-plugin
+ZIP and checksum file for Agent Plugins or Claude. It requires an issued
+snapshot: the packed complete-slate archive, its original receipt with the
+`delivery` record, its mode inventory, and the original result of the `issue`
+or `add-variants` operation that recorded them. A snapshot that was prepared
+and projected but not issued lacks that result, and until it is packed it also
+lacks the archive and mode inventory, so the helper cannot make its ZIP. The
+helper only reads these files; it never opens the issuance state.
+
+Run it from a clean checkout of the reviewed revision. Each operation reads one
+JSON request and writes one JSON result to stdout:
+
+```sh
+python scripts/member_zip.py derive --request member-zip-request.json \
+  --output private-parent/fresh-output
+python scripts/member_zip.py verify --request member-zip-request.json \
+  --output private-parent/fresh-output --record-sha256 "$RETAINED_RECORD_SHA256"
+```
+
+The request names the target and member, binds the selected snapshot, and pins
+each original file by its lowercase SHA-256 digest:
+
+```json
+{
+  "schema": "provingkit-member-zip-request-v1",
+  "target": "agent-plugins",
+  "member": "mergecraft",
+  "identity": {
+    "source_commit": "<full product commit>",
+    "projector_revision": "<full projector commit>",
+    "version": "0.1.0-alpha.7.snapshot.9",
+    "request_id": "<preparation request ID>",
+    "issuer_request_id": "<issue or add-variants request ID>",
+    "preparation_sha256": "<preparation digest>",
+    "policy_sha256": "<projection policy digest>",
+    "plugin_slate": ["rolecasting", "tricritical", "versionkeeping", "mergecraft",
+                     "artifact-customs", "proseweaving", "surreal-intercom"]
+  },
+  "parent": {
+    "archive": {"path": "packed/agent-plugins/artifact.tar.gz", "sha256": "<digest>"},
+    "receipt": {"path": "packed/agent-plugins/RECEIPT.json", "sha256": "<digest>"},
+    "modes": {"path": "packed/agent-plugins/modes.tsv", "sha256": "<digest>"}
+  },
+  "issuer_result": {"path": "retained/original-issue-result.json", "sha256": "<digest>"}
+}
+```
+
+An `issue` result must carry the preparation's request ID; an `add-variants`
+result must carry a different one. Before writing, the helper checks every pin,
+the whole parent archive, the receipt's file inventory and tree digest, the
+mode inventory, the receipt identity, stamped manifests and catalog, and the
+issuer result's recorded variant for the target. It then writes a fresh
+directory containing exactly the member ZIP, its checksum file, and
+`DERIVATIVE.json`. The ZIP holds the member's files and directories without the
+`plugins/<member>/` prefix, with their original bytes and modes and a
+deterministic encoding. Archive and checksum names follow the
+[archive naming rule](release-presentation.md#name-archives-and-preserve-published-downloads):
+`provingkit-<member>-<version>.zip` for Agent Plugins and
+`provingkit-<member>-<version>-claude.zip` for Claude.
+
+`derive` never replaces an existing output and reads back what it wrote. Its
+success reports `"status": "verified"`, `"scope":
+"local-derivative-integrity"`, the derivative record's digest as
+`record_sha256`, and the issuer result's exposure value. Retain that digest
+apart from the output; `verify` requires it and is read-only. A rejection exits
+nonzero with `"status": "rejected"` and a reason; a failed write can leave a
+partial output that is not a usable derivative.
+
+A successful `derive` or `verify` establishes the local integrity of the
+derived files against the pinned snapshot evidence. It does not establish that
+the snapshot was authentically issued or that the pins came from its owner. It
+establishes nothing about exposure, any account, or installation: the reported
+exposure is copied from the original result, not observed. The derivative is
+not an issued variant and never enters issuance history; uploading it remains
+with the delivery's own route and authorization.
+
+The helper has these limits:
+
+- The caller establishes that the output's parent hierarchy is trusted. Create
+  a fresh output below a parent owned by the current user with no group or
+  other permissions. The helper checks that parent and rejects an ancestor that
+  its group or other users can write unless it is sticky; it does not
+  establish ancestor ownership.
+- It supports Agent Plugins and Claude, not Cursor, and snapshot versions only,
+  so it rejects a named release.
+- The seven-member slate and this repository's address are written into it.
+- Its tests are synthetic and were run on Linux. Real issuance, another
+  operating-system identity, very large inputs, which it holds in memory, and
+  other runtimes are not qualified. The record binds the Python and zlib
+  versions because ZIP bytes can vary across runtimes.
+
+Run its tests with `python -m unittest tests.test_member_zip`; the source
+workflow's artifact-projections job runs them.
+
 ## Verify and hand off
 
 Run `python -m unittest tests.test_prepare_snapshot_issuance
