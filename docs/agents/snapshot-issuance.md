@@ -358,11 +358,15 @@ Run it from a clean checkout of the reviewed revision. Each operation reads one
 JSON request and writes one JSON result to stdout:
 
 ```sh
-python scripts/member_zip.py derive --request member-zip-request.json \
-  --output private-parent/fresh-output
-python scripts/member_zip.py verify --request member-zip-request.json \
-  --output private-parent/fresh-output --record-sha256 "$RETAINED_RECORD_SHA256"
+python scripts/member_zip.py derive --request "$MEMBER_ZIP_REQUEST" \
+  --output "$MEMBER_ZIP_PARENT/fresh-output"
+python scripts/member_zip.py verify --request "$MEMBER_ZIP_REQUEST" \
+  --output "$MEMBER_ZIP_PARENT/fresh-output" --record-sha256 "$RETAINED_RECORD_SHA256"
 ```
+
+`MEMBER_ZIP_REQUEST` is the absolute path of the request file, and
+`MEMBER_ZIP_PARENT` is the absolute path of the private directory that will
+hold the output, described under the limits below.
 
 The request names the target and member, binds the selected snapshot, and pins
 each original file by its lowercase SHA-256 digest:
@@ -384,11 +388,11 @@ each original file by its lowercase SHA-256 digest:
                      "artifact-customs", "proseweaving", "surreal-intercom"]
   },
   "parent": {
-    "archive": {"path": "packed/agent-plugins/artifact.tar.gz", "sha256": "<digest>"},
-    "receipt": {"path": "packed/agent-plugins/RECEIPT.json", "sha256": "<digest>"},
-    "modes": {"path": "packed/agent-plugins/modes.tsv", "sha256": "<digest>"}
+    "archive": {"path": "/absolute/packed/agent-plugins/artifact.tar.gz", "sha256": "<digest>"},
+    "receipt": {"path": "/absolute/packed/agent-plugins/RECEIPT.json", "sha256": "<digest>"},
+    "modes": {"path": "/absolute/packed/agent-plugins/modes.tsv", "sha256": "<digest>"}
   },
-  "issuer_result": {"path": "retained/original-issue-result.json", "sha256": "<digest>"}
+  "issuer_result": {"path": "/absolute/retained/original-issue-result.json", "sha256": "<digest>"}
 }
 ```
 
@@ -409,7 +413,14 @@ deterministic encoding. Archive and checksum names follow the
 success reports `"status": "verified"`, `"scope":
 "local-derivative-integrity"`, the derivative record's digest as
 `record_sha256`, and the issuer result's exposure value. Retain that digest
-apart from the output; `verify` requires it and is read-only. A rejection exits
+apart from the output; `verify` requires it and is read-only.
+`DERIVATIVE.json` also records the SHA-256 of the helper file that ran `derive`
+and that run's exact Python and zlib versions, because ZIP bytes can vary
+across runtimes. `verify` therefore passes only with the same
+`scripts/member_zip.py` bytes under the same Python and zlib versions, so
+record the helper revision with the retained digest. `verify` also requires the
+output directory and its parent to stay owned by the current user with no group
+or other permissions; `derive` creates the output that way. A rejection exits
 nonzero with `"status": "rejected"` and a reason; a failed write can leave a
 partial output that is not a usable derivative.
 
@@ -428,13 +439,19 @@ The helper has these limits:
   other permissions. The helper checks that parent and rejects an ancestor that
   its group or other users can write unless it is sticky; it does not
   establish ancestor ownership.
+- It opens every path it reads or writes, including its own file, without
+  following symlinks, and rejects a path with a symlink in any component.
+  Relative paths, including those in the request, resolve against the current
+  working directory, not the request's directory. Invoke it as
+  `scripts/member_zip.py` from the checkout root, as shown, or by another path
+  without symlinks. Give the request, evidence and output as absolute paths
+  without symlinks, outside the checkout, so the checkout stays clean.
 - It supports Agent Plugins and Claude, not Cursor, and snapshot versions only,
   so it rejects a named release.
 - The seven-member slate and this repository's address are written into it.
 - Its tests are synthetic and were run on Linux. Real issuance, another
   operating-system identity, very large inputs, which it holds in memory, and
-  other runtimes are not qualified. The record binds the Python and zlib
-  versions because ZIP bytes can vary across runtimes.
+  other runtimes are not qualified.
 
 Run its tests with `python -m unittest tests.test_member_zip`; the source
 workflow's artifact-projections job runs them.

@@ -181,7 +181,7 @@ class SyntheticParent:
 class MemberZipContract(unittest.TestCase):
     def setUp(self):
         self.scratch = tempfile.TemporaryDirectory(prefix="synthetic-")
-        self.base = Path(self.scratch.name)
+        self.base = Path(self.scratch.name).resolve()
 
     def tearDown(self):
         self.scratch.cleanup()
