@@ -194,14 +194,19 @@ source commit. First confirm that `origin` is the canonical repository itself,
 not a fork or a similarly named repository: `git remote get-url origin` prints
 exactly `https://github.com/nisavid/provingkit` or
 `git@github.com:nisavid/provingkit`, with or without a final `.git`. Also
-confirm that `git rev-parse --is-shallow-repository` prints `false`. Then test
-the source commit against one fetched `main` commit and record that commit:
+confirm that `git rev-parse --is-shallow-repository` prints `false`. Then fetch
+`main` into `refs/remotes/origin/main`, test the source commit against that one
+fetched commit, and record that commit:
 
 ```sh
-git fetch origin main &&
+git fetch origin +refs/heads/main:refs/remotes/origin/main &&
   main=$(git rev-parse --verify 'refs/remotes/origin/main^{commit}') && {
-  git merge-base --is-ancestor <source commit> "$main"
-  echo "status=$? main=$main"
+  if git merge-base --is-ancestor <source commit> "$main"; then
+    rc=0
+  else
+    rc=$?
+  fi
+  echo "status=$rc main=$main"
 }
 ```
 
