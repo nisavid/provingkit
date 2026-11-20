@@ -1,10 +1,41 @@
 # Cloud coordination
 
-This is the manual operating procedure for `chatgpt-codex-native-tree-v1`.
-It uses Rolecasting and one current controller's native child tree. Source
-support does not establish an installed release, published environment,
+This is the manual operating procedure for the `chatgpt-codex-native-tree-v1`
+profile. It uses Rolecasting and one current controller's native child tree.
+Source support does not establish an installed release, published environment,
 automatic startup, or qualified deployment.
 Logical duties and correspondence rules are in [role-policy.md](role-policy.md).
+
+In a distribution, `MANIFEST.json` is beside this file. Source documents
+without this manifest remain development guidance, not a pinned operating
+entrypoint.
+
+- [What the distribution contains](#what-the-distribution-contains) comes first
+  for every reader.
+- To operate, continue at [Start explicitly](#start-explicitly), which also
+  says what to do if the procedure or driver is unavailable.
+- To create a candidate from a source checkout, continue at
+  [Build a candidate](#build-a-candidate) and read to the end.
+- For publication, update, rollback, and qualification, and for what this
+  profile does not claim, see
+  [Update and operating scope](#update-and-operating-scope). What consumers
+  explicitly load is in [Start explicitly](#start-explicitly), and what must
+  never be published in an image is in [Bind and operate](#bind-and-operate).
+
+## What the distribution contains
+
+The distribution contains these three support documents (this file,
+`BOOTSTRAP.md`, and `role-policy.md`) and a complete
+`agent-plugins` runtime in `runtime/`. `MANIFEST.json` binds the full source
+commit, manual startup, manifest-relative locators, the exact runtime receipt
+SHA-256, and every payload file's SHA-256. It retains the runtime receipt's
+canonical source repository and declares the supported operating boundary
+and unqualified capabilities. Building establishes no runtime qualification,
+installation, or deployment. Its inventory and `artifact_sha256`
+use the release projector's `provingkit-tree-v1` framing, excluding only the
+root `MANIFEST.json` itself. The runtime receipt retains its own release
+projection inventory and digest. Neither receipt authenticates custody or
+qualifies native behavior.
 
 ## Start explicitly
 
@@ -14,7 +45,8 @@ that distribution's `MANIFEST.json`. An installed catalog may still contain
 older bytes: invoking its same-named skill alone does not select this runtime.
 No additional public skill is required.
 
-Start with the current thread acting as Concierge. Activate other roles only when bounded work helps the task and authority
+Start with the current thread acting as Concierge.
+Activate other roles only when bounded work helps the task and authority
 permits it. Simple tasks can finish with one agent. If the procedure
 or driver is unavailable, continue useful authorized work that needs neither;
 report the missing capability when material. Do not install or download
@@ -75,19 +107,7 @@ foreign account routes keep their stronger requirements. A new root needs an
 explicit checkpoint handoff and verified new bindings, not restoration from
 an old target string. Reading a store transfers no ownership.
 
-## Update and operating scope
-
-The distribution contains these three support documents and a complete
-`agent-plugins` runtime in `runtime/`. `MANIFEST.json` binds the full source
-commit, manual startup, manifest-relative locators, the exact runtime receipt
-SHA-256, and every payload file's SHA-256. It retains the runtime receipt's
-canonical source repository and declares the supported operating boundary
-and unqualified capabilities. Building establishes no runtime qualification,
-installation, or deployment. Its inventory and `artifact_sha256`
-use the release projector's `provingkit-tree-v1` framing, excluding only the
-root `MANIFEST.json` itself. The runtime receipt retains its own release
-projection inventory and digest. Neither receipt authenticates custody or
-qualifies native behavior.
+## Build a candidate
 
 From a source checkout, create a new candidate with:
 
@@ -98,8 +118,9 @@ python scripts/build_cloud_coordination.py --source . --source-commit FULL_COMMI
 Replace `FULL_COMMIT_ID` with the full immutable Git commit object ID. Source
 documents, policy, and runtime are read from one archived commit; dirty and
 untracked checkout files are excluded. The output must be new and outside the
-checkout. There is no replacement flag. Source documents without this manifest
-remain development guidance, not a pinned operating entrypoint.
+checkout. There is no replacement flag.
+
+## Update and operating scope
 
 A distribution owner must bind reviewed identities and the actual readable
 explicit locator before publication. Preserve the existing helper export.

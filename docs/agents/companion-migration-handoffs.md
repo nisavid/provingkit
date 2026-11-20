@@ -1,24 +1,26 @@
 # Receive a companion migration
 
 Use this procedure when a verified companion installation or deployment changes
-a skill name or path referenced by Provingkit. The deployment owner supplies
-the installed source and version, affected names or paths, its deployment
-record, and the migration issue if one exists. If no issue exists, the notice
-identifies that gap so Provingkit Orchestrator can route its creation. An
-archive or release alone does not establish an installed update.
+a skill name or path referenced by Provingkit. The deployment owner supplies a
+notice with the installed source and version, affected names or paths, its
+deployment record, and the migration issue if one exists. If no issue exists,
+the notice identifies that gap so Provingkit Orchestrator can route the issue's
+creation. An archive or release alone does not establish an installed update.
 
-1. Find the existing migration issue, or follow the repository's issue tracker
-   procedure to create one. Link the deployment record and identify the affected
-   active references, their owning sources, and any intentional historical or
+1. Find the existing migration issue, or follow the repository's
+   [issue tracker procedure](issue-tracker.md) to create one. Link the
+   deployment record in that issue and identify the affected active
+   references, their owning sources, and any intentional historical or
    separately owned references. Keep the deployment handoff pending while the
    issue or an accountable recipient is missing.
 2. Provingkit Orchestrator names the recipient. The recipient posts a comment
    on the migration issue identifying itself and recording acceptance and a
    first action, or a concrete deferral and the condition that restarts it.
-   Give that comment's permalink to the deployment owner, who verifies the
-   response, maintains the deployment record and its pending state, and links
-   the comment. Verify the backlink. An unanswered assignment, a secondhand
-   entry, or inaccessible or ambiguous evidence leaves the handoff pending.
+   Give that comment's permalink to the deployment owner. The deployment owner
+   verifies the response, maintains the deployment record and its pending
+   state, and links the comment. Verify the backlink: the deployment record's
+   link to that comment. An unanswered assignment, a secondhand entry, or
+   inaccessible or ambiguous evidence leaves the handoff pending.
 3. Bind checks to the changed references and their actual active source files.
    Show that the old reference is rejected there and the replacement is
    accepted. Verify separately that intentional historical evidence and
@@ -28,7 +30,7 @@ archive or release alone does not establish an installed update.
 4. Record the checked files, commands, version and source used, results, and
    any unverified surfaces in the migration issue. Apply the owning sources'
    review, validation and publication requirements to changes. The deployment
-   owner's pending record can be resolved when step 2 and its backlink are
+   owner can resolve the pending record when step 2 and its backlink are
    recorded; completing the migration remains separate work.
 
 ## October reference migration

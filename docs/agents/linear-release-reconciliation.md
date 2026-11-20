@@ -47,8 +47,9 @@ Capabilities can differ by surface. A connector may expose stage, version,
 source commit, timestamps, and notes without resource-link or release-delete
 operations. Prefer a supported connector operation for native release resources.
 When it is absent, inspect the supported API or the release's UI controls for
-adding a document or link. Use the permitted alternative with the same scope,
-supplying the destination URL and a useful title where supported. Verify that
+adding a document or link. Select the permitted alternative with the same
+scope and prepare the destination URL and a useful title where supported.
+With either control, apply the link in step 5 below and check in step 6 that
 the resulting resource opens the intended release or guide; a URL string in
 the description does not establish a native link. Report a remaining capability
 gap precisely. Missing connector support is neither permission to invent a
@@ -56,19 +57,25 @@ field nor evidence that the whole product lacks the operation.
 
 ## Reconcile state, content, and associated work
 
+Each change follows the same order: prepare it (steps 1 to 4), refresh the
+record and write the change (step 5), then confirm the result (step 6).
+
 1. Match the Linear release's version and source to the published release.
    Use observed timestamps for actual events; preserve estimated dates as
    estimates. If the source commit and publication ref differ legitimately,
    explain their relationship instead of silently replacing one with the other.
-2. Set the stage according to the release's accepted completion boundary and
-   the pipeline's meaning. A completed publication may coexist with unfinished
+2. Select the stage that expresses the verified outcome in the actual
+   pipeline's terms. The release's accepted completion boundary says what it
+   must reach; the pipeline's own stage meanings say which stage states what
+   it has reached. A completed publication may coexist with unfinished
    installation or adoption work. Keep that work visible with its owner and
-   next action; do not close issues merely to make a percentage reach 100.
-   If the pipeline represents a broader outcome, preserve its unfinished stage
-   and explain the completed publication within it.
-3. Link the tracked release to its forge page and maintained current installation
-   guide through native release resources, with further verification links as
-   useful. Use the
+   next action; do not close issues merely to make a percentage reach 100. If
+   the pipeline represents a broader outcome, stop at the stage that outcome
+   has reached and explain the completed publication within it. Return a
+   stage choice for decision only when it is genuinely unresolved.
+3. Identify the native release resources that will link the tracked release
+   to its forge page and maintained current installation guide, with further
+   verification links as useful. Use the
    [presentation procedure](release-presentation.md) to author notes from the
    accepted changes and evidence. Existing GitHub or Linear prose is an input
    to assess, not a quality standard to copy. Keep both surfaces factually
@@ -83,21 +90,25 @@ field nor evidence that the whole product lacks the operation.
    needed change to notes, descriptions, states, dates, checklists, release
    associations, relationships, or completion progress. Retain genuine open
    work and future-release scope, its accountable owner, and next action.
-   Correct mistaken associations within the authorized scope and preserve
+   Prepare association corrections within the authorized scope and preserve
    ownership when work moves to an existing successor. Use current native
    relations where required; do not assume GitHub issue sync carries Linear
    Release objects, notes, milestones, or blockers. Keep private account
    identities and operational evidence in their owning records; use aggregate
    coverage and appropriate public references in public tracking.
-5. Refresh the affected record immediately before mutation. Apply only the
-   prepared change, then read back every changed field and entity across the
-   applicable graph, including descriptions, resource links, note content and
-   coverage, stages, source/version, dates, checklists, relationships, and
-   associations when changed. Verify actual propagation across the affected
-   surfaces; a synced issue body does not prove its relations propagated.
-   Check rendered headings, tables, and navigation as a
-   reader would, including the displayed release timestamp. A successful write
-   response alone is not completion.
+5. Refresh the affected record immediately before writing to it. When a field
+   has changed, preserve the other contribution and prepare the change again
+   from the current value; send an unresolved conflict to its owner. Then
+   apply only the prepared change. An uncertain write stays unresolved, as
+   described below; prepare again only a field proven unapplied and still
+   authorized.
+6. Read back every changed field and entity across the applicable graph,
+   including descriptions, resource links, note content and coverage, stages,
+   source/version, dates, checklists, relationships, and associations when
+   changed. Verify actual propagation across the affected surfaces; a synced
+   issue body does not prove its relations propagated. Check rendered
+   headings, tables, and navigation as a reader would, including the displayed
+   release timestamp. A successful write response alone is not completion.
 
 Retain the submitted note text, but compare its readback by facts, required
 actions, scope, and working link targets. Linear may normalize Markdown or
