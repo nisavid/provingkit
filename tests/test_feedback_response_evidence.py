@@ -1127,5 +1127,11 @@ class RetainedEvidenceTests(unittest.TestCase):
                 module.history_envelope(module.canonical(predecessor) + "\n")
 
 
+def load_tests(loader, tests, pattern):
+    """Include preparation acceptance tests through the maintained CI entrypoint."""
+    tests.addTests(loader.loadTestsFromName("tests.test_feedback_response_eval"))
+    return tests
+
+
 if __name__ == "__main__":
     unittest.main()
