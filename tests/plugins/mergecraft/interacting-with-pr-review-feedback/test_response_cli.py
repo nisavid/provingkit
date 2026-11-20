@@ -42,6 +42,7 @@ def make_intent(epoch, source, key, body):
             "decision": "authorized",
             "evidence_id": f"authority-{key}",
             "actor_login": "ivan",
+            "actor_node_id": "USER_ivan",
         },
         "adjudication": {
             "disposition": "respond",
@@ -221,6 +222,7 @@ class ResponseCliTests(unittest.TestCase):
                     "decision": "authorized",
                     "evidence_id": "authority-cli",
                     "actor_login": "ivan",
+                    "actor_node_id": "USER_ivan",
                 },
                 "adjudication": {
                     "disposition": "respond",

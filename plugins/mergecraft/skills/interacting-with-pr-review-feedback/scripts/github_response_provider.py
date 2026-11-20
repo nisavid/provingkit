@@ -57,6 +57,90 @@ class GhJsonTransport:
         self.program_argv = list(program_argv or ["gh"])
         if not self.program_argv or any(not item for item in self.program_argv):
             raise ValueError("program_argv must contain nonempty argv values")
+        self._environment = dict(os.environ)
+        self._environment.pop("GH_HOST", None)
+        self._environment.pop("GH_REPO", None)
+        self._environment.update(
+            {"GH_PROMPT_DISABLED": "1", "GIT_TERMINAL_PROMPT": "0"}
+        )
+        self._credential_pinned = False
+
+    def _pin_credential(self) -> None:
+        if self._credential_pinned:
+            return
+        token = self._environment.get("GH_TOKEN") or self._environment.get(
+            "GITHUB_TOKEN"
+        )
+        if not token:
+            try:
+                completed = subprocess.run(
+                    [
+                        *self.program_argv,
+                        "auth",
+                        "token",
+                        "--hostname",
+                        GITHUB_HOST,
+                    ],
+                    capture_output=True,
+                    check=False,
+                    timeout=WRITE_TIMEOUT_SECONDS,
+                    env=self._environment,
+                    stdin=subprocess.DEVNULL,
+                )
+                token = completed.stdout.decode("utf-8").strip()
+            except (OSError, subprocess.TimeoutExpired, UnicodeDecodeError):
+                raise GhTransportError(
+                    "could not pin GitHub credential",
+                    status="confirmed_failure",
+                    side_effect="none",
+                ) from None
+            if completed.returncode:
+                # auth output can contain credentials; never include it in evidence.
+                token = None
+        if not token or any(character.isspace() for character in token):
+            raise GhTransportError(
+                "could not pin GitHub credential",
+                status="confirmed_failure",
+                side_effect="none",
+            )
+        self._environment.pop("GITHUB_TOKEN", None)
+        self._environment["GH_TOKEN"] = token
+        self._credential_pinned = True
+
+    def verify_actor(
+        self, *, expected_actor_login: str, expected_actor_node_id: str
+    ) -> None:
+        if (
+            not isinstance(expected_actor_login, str)
+            or not expected_actor_login
+            or not isinstance(expected_actor_node_id, str)
+            or not expected_actor_node_id
+        ):
+            raise GhTransportError(
+                "expected GitHub actor requires login and immutable node ID",
+                status="confirmed_failure",
+                side_effect="none",
+            )
+        self._pin_credential()
+        try:
+            actor = self.request("GET", "/user")
+        except GhTransportError as error:
+            raise GhTransportError(
+                "active GitHub actor could not be verified",
+                status="confirmed_failure",
+                side_effect="none",
+                evidence={"transport_operation": "actor_preflight"},
+            ) from error
+        if (
+            actor.get("login") != expected_actor_login
+            or actor.get("node_id") != expected_actor_node_id
+        ):
+            raise GhTransportError(
+                "active GitHub actor does not match authorized login and node ID",
+                status="confirmed_failure",
+                side_effect="none",
+                evidence={"transport_operation": "actor_preflight"},
+            )
 
     def request(
         self, method: str, endpoint: str, payload: dict[str, Any] | None = None
@@ -79,10 +163,6 @@ class GhJsonTransport:
             if payload is not None
             else None
         )
-        environment = dict(os.environ)
-        environment.pop("GH_HOST", None)
-        environment.pop("GH_REPO", None)
-        environment.update({"GH_PROMPT_DISABLED": "1", "GIT_TERMINAL_PROMPT": "0"})
         try:
             completed = subprocess.run(
                 command,
@@ -90,7 +170,7 @@ class GhJsonTransport:
                 capture_output=True,
                 check=False,
                 timeout=WRITE_TIMEOUT_SECONDS,
-                env=environment,
+                env=self._environment,
             )
         except (OSError, subprocess.TimeoutExpired) as error:
             raise GhTransportError(f"gh transport did not complete: {error}") from error
@@ -367,6 +447,7 @@ def _receipt(
     requested_identity: dict[str, Any],
     reread: dict[str, Any],
     expected_actor_login: str,
+    expected_actor_node_id: str | None = None,
 ) -> dict[str, Any]:
     created_identity = _identity_evidence(operation, created)
     reread_identity = _identity_evidence(operation, reread)
@@ -378,6 +459,7 @@ def _receipt(
     reread_body = reread.get("body")
     user = reread.get("user")
     actor = user.get("login") if isinstance(user, dict) else None
+    actor_node_id = user.get("node_id") if isinstance(user, dict) else None
     try:
         created_identity = _validated_response_identity(
             operation, created, "create response"
@@ -410,7 +492,14 @@ def _receipt(
             evidence=identity_evidence,
         )
     reread_bytes = reread_body.encode("utf-8")
-    if reread_bytes != exact_body or actor != expected_actor_login:
+    if (
+        reread_bytes != exact_body
+        or actor != expected_actor_login
+        or (
+            expected_actor_node_id is not None
+            and actor_node_id != expected_actor_node_id
+        )
+    ):
         raise GhTransportError(
             "stable reread did not match exact body and writer identity",
             status="unknown",
@@ -434,6 +523,11 @@ def _receipt(
             "object_kind": reread_identity["object_kind"],
             "permalink": reread.get("html_url"),
             "actor_login": actor,
+            **(
+                {"actor_node_id": actor_node_id}
+                if expected_actor_node_id is not None
+                else {}
+            ),
         },
         "reread_body_utf8_base64": base64.b64encode(reread_bytes).decode("ascii"),
         "reread_body_sha256": hashlib.sha256(reread_bytes).hexdigest(),
@@ -447,6 +541,14 @@ class InlineReplyAdapter:
     def __init__(self, transport: GhJsonTransport | None = None) -> None:
         self.transport = transport or GhJsonTransport()
 
+    def verify_actor(
+        self, *, expected_actor_login: str, expected_actor_node_id: str
+    ) -> None:
+        self.transport.verify_actor(
+            expected_actor_login=expected_actor_login,
+            expected_actor_node_id=expected_actor_node_id,
+        )
+
     def create_and_reread(
         self,
         *,
@@ -455,6 +557,7 @@ class InlineReplyAdapter:
         root_comment_database_id: int,
         exact_body: bytes,
         expected_actor_login: str,
+        expected_actor_node_id: str,
     ) -> dict[str, Any]:
         _split_repo(repo)
         if type(pr_number) is not int or pr_number <= 0:
@@ -465,6 +568,10 @@ class InlineReplyAdapter:
         endpoint = (
             f"/repos/{repo}/pulls/{pr_number}/comments/"
             f"{root_comment_database_id}/replies"
+        )
+        self.verify_actor(
+            expected_actor_login=expected_actor_login,
+            expected_actor_node_id=expected_actor_node_id,
         )
         created = self.transport.request("POST", endpoint, {"body": body})
         try:
@@ -495,6 +602,7 @@ class InlineReplyAdapter:
                 requested_identity=requested_identity,
                 reread=reread,
                 expected_actor_login=expected_actor_login,
+                expected_actor_node_id=expected_actor_node_id,
             )
         except GhTransportError as error:
             error.evidence.update(
@@ -509,6 +617,7 @@ class InlineReplyAdapter:
         response_identity: dict[str, Any],
         exact_body: bytes,
         expected_actor_login: str,
+        expected_actor_node_id: str | None = None,
     ) -> dict[str, Any]:
         _split_repo(repo)
         requested_identity = _validated_requested_identity(
@@ -525,6 +634,7 @@ class InlineReplyAdapter:
             requested_identity=requested_identity,
             reread=reread,
             expected_actor_login=expected_actor_login,
+            expected_actor_node_id=expected_actor_node_id,
         )
 
 
@@ -533,6 +643,14 @@ class PullRequestConversationAdapter:
 
     def __init__(self, transport: GhJsonTransport | None = None) -> None:
         self.transport = transport or GhJsonTransport()
+
+    def verify_actor(
+        self, *, expected_actor_login: str, expected_actor_node_id: str
+    ) -> None:
+        self.transport.verify_actor(
+            expected_actor_login=expected_actor_login,
+            expected_actor_node_id=expected_actor_node_id,
+        )
 
     def create_and_reread(
         self,
@@ -544,6 +662,7 @@ class PullRequestConversationAdapter:
         source_permalink: str,
         exact_body: bytes,
         expected_actor_login: str,
+        expected_actor_node_id: str,
     ) -> dict[str, Any]:
         _split_repo(repo)
         if (
@@ -561,6 +680,10 @@ class PullRequestConversationAdapter:
                 "top-level writer body must already contain the natural source permalink"
             )
         endpoint = f"/repos/{repo}/issues/{pr_number}/comments"
+        self.verify_actor(
+            expected_actor_login=expected_actor_login,
+            expected_actor_node_id=expected_actor_node_id,
+        )
         created = self.transport.request("POST", endpoint, {"body": body})
         try:
             requested_identity = _validated_response_identity(
@@ -590,6 +713,7 @@ class PullRequestConversationAdapter:
                 requested_identity=requested_identity,
                 reread=reread,
                 expected_actor_login=expected_actor_login,
+                expected_actor_node_id=expected_actor_node_id,
             )
         except GhTransportError as error:
             error.evidence.update(
@@ -604,6 +728,7 @@ class PullRequestConversationAdapter:
         response_identity: dict[str, Any],
         exact_body: bytes,
         expected_actor_login: str,
+        expected_actor_node_id: str | None = None,
     ) -> dict[str, Any]:
         _split_repo(repo)
         requested_identity = _validated_requested_identity(
@@ -620,4 +745,5 @@ class PullRequestConversationAdapter:
             requested_identity=requested_identity,
             reread=reread,
             expected_actor_login=expected_actor_login,
+            expected_actor_node_id=expected_actor_node_id,
         )
