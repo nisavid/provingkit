@@ -40,8 +40,9 @@ Keep these identities distinct:
 | Archive, receipt, and mode SHA-256 | Exact downloaded bytes for each target. |
 | Artifact tree SHA-256 | `provingkit-tree-v1`, which covers paths and bytes but excludes the root receipt and does not bind modes. |
 
-Start with the owning task's selected, reviewed source commit and its accepted
-three target trees. Follow [artifact projection](release-artifact-projection.md)
+Start with the owning task's selected source commit and its accepted three
+target trees. For a snapshot, [snapshot issuance](agents/snapshot-issuance.md#record-where-the-source-stands-before-first-exposure)
+requires a record of where its source stands before first exposure. Follow [artifact projection](release-artifact-projection.md)
 from that clean, detached source checkout into fresh output directories. For
 selected main source, use the supported `--channel main`; the full commit is
 still pinned. Do not add an `ad_hoc` projector channel or edit the emitted
