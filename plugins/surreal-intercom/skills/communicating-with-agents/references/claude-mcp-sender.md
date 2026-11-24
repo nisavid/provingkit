@@ -30,8 +30,8 @@ The trusted local UTF-8 JSON request has exactly these fields:
 - `message_id`, `attempt_id`, and `evidence_ref`: nonempty strings; the JSON-escaped attempt ID is limited to 256 characters by the source validator.
 - `actor` and `recipient`: the identity objects above. The request recipient must equal the planned recipient.
 - Exactly one address: `name`, the recipient's name as a `ListAgents` row
-  prints it (no brackets, CR, LF, or surrounding spaces; at most 300 UTF-16
-  code units), optionally with `selection: {"ref": ...}` choosing one of
+  prints it (no brackets, CR, LF, or surrounding spaces, and no leading `uds:`,
+  so a name is never sent as a route; at most 300 UTF-16 code units), optionally with `selection: {"ref": ...}` choosing one of
   several rows that share the name; or `target`, a nonempty recipient-prepared
   `uds:` route for `SendMessage.to`.
 - `command`: a nonempty argument list whose executable path is absolute; the sender passes the exact argument vector with `shell=False`. An explicitly nominated launcher still has its own behavior and side effects.

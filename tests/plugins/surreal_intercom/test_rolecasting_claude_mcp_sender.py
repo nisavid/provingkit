@@ -1084,6 +1084,18 @@ class ClaudeNameSendTests(unittest.TestCase):
             self.assertEqual(result["reason"], "submitted")
             self.assertEqual(calls()[-1]["arguments"]["to"], "twin [cc22dd]")
 
+    def test_a_name_that_looks_like_a_route_is_refused_before_any_claim(self):
+        route_name = "uds:/synthetic/outside.sock"
+        listing = "\n".join([
+            "Peer sessions (1):", "  " + route_name + DOT + "interactive" + DOT + "idle"])
+        with self.name_consumer(name=route_name, pages=(listing,)) as (
+                _, request, send, bookkeeping, calls, trace):
+            result = send()
+            self.assertEqual(result["reason"], "invalid_name")
+            self.assertFalse(result["claimed"])
+            self.assertFalse(trace.exists())
+            self.assertEqual(bookkeeping("show", "send-1")["state"], "planned")
+
     def test_a_selection_must_match_exactly_one_row(self):
         local = "  twin [cc22dd]" + DOT + "interactive" + DOT + "idle"
         remote = "  twin [cc22dd]" + DOT + "Remote Control" + DOT + "idle"

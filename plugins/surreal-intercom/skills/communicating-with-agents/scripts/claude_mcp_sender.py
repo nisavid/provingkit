@@ -43,6 +43,7 @@ INPUT_CLOSE_GRACE_SECONDS = 3
 TERMINATE_GRACE_SECONDS = 2
 MAX_LISTING_PAGES = 5
 NAME_FORBIDDEN = "[]\r\n\0"
+ROUTE_PREFIX = "uds:"
 REF_PATTERN = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
 
 
@@ -72,13 +73,15 @@ def validate(request):
             text(identity[field], field)
     if "target" in request:
         target = request["target"]
-        if not isinstance(target, str) or not target.startswith("uds:") or not target[4:]:
+        if not isinstance(target, str) or not target.startswith(ROUTE_PREFIX) or not target[4:]:
             raise InspectionError("invalid_nomination")
     else:
         name = request["name"]
         if (
             not isinstance(name, str) or not name.strip() or name != name.strip()
             or any(character in name for character in NAME_FORBIDDEN)
+            # A name is never sent as a route: the sender does not look for one itself.
+            or name.startswith(ROUTE_PREFIX)
             or utf16_units(name) > 300
         ):
             raise InspectionError("invalid_name")
@@ -618,6 +621,9 @@ def main():
                     raise PathRefusal(
                         "unsupported_listagents",
                         "The catalog offers no ListAgents in the supported profile; no tools/call was sent.")
+                if path == "name" and to.startswith(ROUTE_PREFIX):
+                    raise PathRefusal("invalid_name",
+                                      "A name destination looks like a route; no tools/call was sent.")
                 # `to` is final here on both paths: a selection's `name [ref]` included.
                 if violation := destination_violation(nominated[0], to):
                     raise PathRefusal("destination_constraint_violation",
