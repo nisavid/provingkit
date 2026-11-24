@@ -90,17 +90,20 @@ selected reference that this listing does not show records
 `selection_not_in_listing`, and one it shows on more than one row records
 `ambiguous_selection`; a reference from an earlier attempt is
 never reused, because each attempt starts its own child and lists again. A
-listing that reports missing, hidden, or failed rows, or does not end within
-five pages, records `listing_incomplete`; a row outside the profile records
-`unrecognized_listing`; a `ListAgents` call that fails or runs out of time, errs,
+listing that reports missing, hidden, or failed rows, has a section whose rows
+across all its pages differ in number from the total its header declares, or
+does not end within five pages, records `listing_incomplete`; a row or other
+line outside the profile records `unrecognized_listing`; a `ListAgents` call that fails or runs out of time, errs,
 or returns another result shape records `listing_failed`, `listing_error`, or
 `unsupported_listing_result`. Each refusal is recorded before any `SendMessage` call,
 and the sender asks only for what is missing, such as the selection.
 
 This listing profile, and the row kinds above, are read from the formatter in
-the installed Claude Code 2.1.331 program, not from an observed listing. A
-different release can print differently; anything outside the profile is
-refused, never guessed.
+the installed Claude Code 2.1.331 program, not from an observed listing. Outside
+its sections, the profile has only the caller's own session line, the lines of
+an empty listing, and the frame around a block of titles that people or other
+sessions wrote. A different release can print differently; anything outside
+the profile is refused, never guessed.
 
 ## Capture, submit once, and inspect
 

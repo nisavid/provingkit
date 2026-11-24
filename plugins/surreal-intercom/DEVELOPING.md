@@ -110,8 +110,9 @@ By-name Claude sends use a disposable stdio child that serves a catalog with
 documents. Cover one submission with exactly one `SendMessage` call, paging by
 cursor within the attempt, and each refusal before the call: no local row, an
 ambiguous name without selection, a selection that matches more than one row,
-a row that is not a local session, a reference this listing does not show, and
-an incomplete listing. Show that a
+a row that is not a local session, a reference this listing does not show, an
+incomplete listing, a section with fewer rows than it declares, and a line
+outside the profile. Show that a
 supplied route is sent by that route with no listing, and that a refused name
 request tries no second path. Cover the close: a child that exits on closed
 input takes no signal, one that outlives it is terminated rather than killed,
