@@ -18,9 +18,10 @@ both efforts.
 
 Case C: One proposed task matches an approved selection profile's recipient,
 bounded purpose, authority, conditions, and end. Another task has a similar
-title but fails a stated condition. Both have an eligible ordinary
-appointment-configuration default; no authority to broaden the selection
-profile or create a matching service is supplied.
+title but fails a stated condition. A third task's record cannot establish one
+stated condition. All have an eligible ordinary appointment-configuration
+default; no authority to broaden the selection profile or create a matching
+service is supplied.
 
 Case D: Task North is still executing with its valid scoped selection. A queued
 future task South has an approved different model selection. South has not
@@ -28,7 +29,9 @@ started. The supported operation would affect the recipient's current execution.
 
 Case E: A continuation and then a context restart resume the same uncompleted
 task. Its override and end condition remain applicable, and the prior owner and
-operation records are available. A separate record says the task has ended.
+operation records are available. A separate record says the task was cancelled
+before its declared end; the only supported control for the override's field
+starts a model turn, and no authorized task or continuation remains.
 
 Case F: A task override owned effort high and model M1. During the task, the
 operator selected effort xhigh and the appointment configuration's model changed

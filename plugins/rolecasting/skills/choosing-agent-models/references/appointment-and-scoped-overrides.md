@@ -18,11 +18,12 @@ records a reviewed selection and its conditions; approval does not authorize new
 work, data transfer, or a settings operation. Reuse it without a routine approval
 question when its recipient, task scope, conditions, authority, and declared end
 still match. Use the cheapest reliable match against those recorded facts. When
-they do not match, abstain from that selection profile: use an otherwise eligible
-authorized default, or return the concrete unresolved requirement through the
-existing owner. Do not invent a registry, inference service, or a new review for
-every message. Capability, security, effort, and account/resource gates still
-apply.
+they do not match, or matching is uncertain, stale, unsupported, or failed,
+abstain from that selection profile: keep the current governing selection or an
+otherwise eligible authorized default, or return a concrete unresolved task
+requirement through the existing owner. Do not invent a registry, inference
+service, larger-model deliberation, or review merely to decide a match.
+Capability, security, effort, and account/resource gates still apply.
 
 ## Retain the override record
 
@@ -41,8 +42,9 @@ Prepare a queued task's selection without reconfiguring current work. Apply
 only the authorized fields at the actual task boundary through a supported
 control; where that control starts a turn, use the actual authorized task or
 continuation. Never start a model turn solely to apply, restore, or prove a
-setting. Selection alone grants no actuation or additional work. Preserve unrelated recipient fields and later operator
-choices. An ordinary peer message in an accepted assignment uses the existing
+setting. Selection alone grants no actuation or additional work. Preserve
+unrelated recipient fields and later operator choices. An ordinary peer message
+in an accepted assignment uses the existing
 [message boundary](capability-probes-and-fallbacks.md#distinguish-messages-from-execution-assignments).
 It does not become a settings operation because a selection profile exists.
 
@@ -75,18 +77,21 @@ work independent. Do not blindly replay an unobserved application or restoration
 
 ## End and restore owned fields
 
-At the declared end, restore only fields still owned by the ending override.
-Resolve each such field again without the ending override: from the current
-appointment configuration, operator decisions, and any still-active override
-that governs the field under the accepted precedence. A saved prior selection
-explains the change; it is not a whole-recipient rollback snapshot. Preserve
-later authorized changes, including a later decision that happens to select the
-same value. A matching value alone does not prove continued ownership. Resolve
-overlapping scopes and pending outcomes before restoring their fields.
+An override ends at its declared end or on completion, cancellation, or
+explicit replacement. Then restore only fields still owned by the ending
+override. Resolve each such field again without the ending override: from the
+current appointment configuration, operator decisions, and any still-active
+override that governs the field under the accepted precedence. A saved prior
+selection explains the change; it is not a whole-recipient rollback snapshot.
+Preserve later authorized changes, including a later decision that happens to
+select the same value. A matching value alone does not prove continued
+ownership. Resolve overlapping scopes and pending outcomes before restoring
+their fields.
 
 Use a supported, authorized operation under that task-boundary rule and verify
-the observations required by the consumer before calling restoration complete. If the operation is unavailable
-or its effect is uncertain, retain the pending restoration, its evidence limits,
-and accountable owner. Handover transfers this obligation only to an accepting
-owner; until then the existing owner retains it. After a restart, recover that
-same obligation rather than declaring success or losing it with the old context.
+the observations required by the consumer before calling restoration complete.
+If the operation is unavailable or its effect is uncertain, retain the pending
+restoration, its evidence limits, and accountable owner. Handover transfers this
+obligation only to an accepting owner; until then the existing owner retains
+it. After a restart, recover that same obligation rather than declaring success
+or losing it with the old context.
