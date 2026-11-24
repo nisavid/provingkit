@@ -14,16 +14,17 @@ unchanged, not reset.
 
 Honor current explicit operator choices and applicable task requirements before
 using defaults or a previously approved selection profile. A selection profile
-records a reviewed selection and its conditions; approval does not authorize new
-work, data transfer, or a settings operation. Reuse it without a routine approval
-question when its recipient, task scope, conditions, authority, and declared end
-still match. Use the cheapest reliable match against those recorded facts. When
-they do not match, or matching is uncertain, stale, unsupported, or failed,
-abstain from that selection profile: keep the current governing selection or an
-otherwise eligible authorized default, or return a concrete unresolved task
-requirement through the existing owner. Do not invent a registry, inference
-service, larger-model deliberation, or review merely to decide a match.
-Capability, security, effort, and account/resource gates still apply.
+records a reviewed selection and the conditions its review explicitly covered;
+approval does not authorize new work, data transfer, or a settings operation.
+Reuse it without a routine approval question when its recipient, task scope,
+conditions, authority, and declared end still match. Use the cheapest reliable
+match against those recorded facts. When they do not match, or matching is
+uncertain, stale, unsupported, or failed, abstain from that selection profile:
+keep the current governing selection or an otherwise eligible authorized
+default, or return a concrete unresolved task requirement through the existing
+owner. Do not invent a registry, inference service, larger-model deliberation,
+or review merely to decide a match. Capability, security, effort, and
+account/resource gates still apply.
 
 ## Retain the override record
 
@@ -90,8 +91,8 @@ their fields.
 
 Use a supported, authorized operation under that task-boundary rule and verify
 the observations required by the consumer before calling restoration complete.
-If the operation is unavailable or its effect is uncertain, retain the pending
-restoration, its evidence limits, and accountable owner. Handover transfers this
-obligation only to an accepting owner; until then the existing owner retains
-it. After a restart, recover that same obligation rather than declaring success
-or losing it with the old context.
+If the operation is unavailable or its effect is uncertain, report it, and
+retain the pending restoration, its evidence limits, and accountable owner.
+Handover transfers this obligation only to an accepting owner; until then the
+existing owner retains it. After a restart, recover that same obligation rather
+than declaring success or losing it with the old context.

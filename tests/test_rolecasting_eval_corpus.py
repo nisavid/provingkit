@@ -24,9 +24,11 @@ SCOPED_OVERRIDE_RULES = {
         "Resolve model, effort, and Ultracode independently",
         "Honor current explicit operator choices",
         "without a routine approval question",
+        "the conditions its review explicitly covered",
         "abstain from that selection profile",
         "or matching is uncertain, stale, unsupported, or failed",
         "Do not invent a registry",
+        "larger-model deliberation, or review merely to decide a match",
     ),
     "actual-task-continuation-and-restoration": (
         "Prepare a queued task's selection without reconfiguring current work",
@@ -36,6 +38,7 @@ SCOPED_OVERRIDE_RULES = {
         "a later decision that happens to select the same value",
         "any still-active override that governs the field under the accepted precedence",
         "Never start a model turn solely to apply, restore, or prove a setting",
+        "retain the pending restoration",
     ),
     "overlap-uncertainty-custody-and-evidence": (
         "establish the accepted precedence",
