@@ -1,8 +1,6 @@
 # Effort Eligibility
 
-Apply this policy at every selection, dispatch, continuation, fallback, and review, including Jev and Daybreak routes. Capability and eligibility are separate gates. Resolve the applicable appointment and
-[scoped override](appointment-and-scoped-overrides.md) for each field; profile reuse
-never waives these gates or turns an effort choice into an Ultracode toggle.
+Apply this policy at every selection, dispatch, continuation, fallback, and review, including Jev and Daybreak routes. Capability and eligibility are separate gates.
 
 ## Terra and excluded economical pairs
 

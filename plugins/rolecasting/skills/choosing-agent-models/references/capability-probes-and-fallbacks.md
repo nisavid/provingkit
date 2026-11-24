@@ -24,17 +24,8 @@ the branch from the work and accepted assignment, not labels such as "follow-up"
 or "handoff" or the presence of a message field. Preservation never waives an
 applicable task requirement, security classification, account binding, or
 invocation authority; unresolved requirements keep their existing disposition.
-
-## Recover the applicable task selection
-
-Before an actual execution or continuation, recover the applicable appointment
-and [active scoped override](appointment-and-scoped-overrides.md), including
-field ownership, conditions, end, and pending application/restoration. Preserve
-still-applicable scope on reentry; reconcile changed or uncertain state before
-a conflicting operation. A queued task does not reconfigure current work.
-Apply the resolved selection through supported controls and the gates below;
-requested fields, acknowledgment, effective state, and persistence are separate
-observations.
+Those gates apply to the selection resolved under
+[appointment configuration and scoped overrides](appointment-and-scoped-overrides.md).
 
 ## Prove An Exact Pair
 

@@ -6,18 +6,21 @@ operation or observation is absent, that absence is part of the record. No
 external tools, model calls, settings changes, or new approval are authorized
 for this exercise. Explain the selection and next disposition for each case.
 
-Case A: A recipient's appointment selects Sol, medium effort, and Ultracode off.
-An authorized current task has a reviewed override changing only effort to high
-until that task ends. The target supports those selections. The task is starting.
+Case A: A recipient's appointment configuration selects Sol, medium effort, and
+Ultracode off. An authorized current task has a reviewed override changing only
+effort to high until that task ends. The target supports those selections. The
+task is starting.
 
-Case B: A reviewed profile normally chooses high effort for this task category.
-The operator subsequently selects medium effort for this recipient's task. The
-model and toggle have no new decision. Current capability supports both efforts.
+Case B: A reviewed selection profile normally chooses high effort for this task
+category. The operator subsequently selects medium effort for this recipient's
+task. The model and toggle have no new decision. Current capability supports
+both efforts.
 
-Case C: One proposed task matches an approved profile's recipient, bounded
-purpose, authority, conditions, and end. Another task has a similar title but
-fails a stated condition. Both have an eligible ordinary appointment/default;
-no authority to broaden the profile or create a matching service is supplied.
+Case C: One proposed task matches an approved selection profile's recipient,
+bounded purpose, authority, conditions, and end. Another task has a similar
+title but fails a stated condition. Both have an eligible ordinary
+appointment-configuration default; no authority to broaden the selection
+profile or create a matching service is supplied.
 
 Case D: Task North is still executing with its valid scoped selection. A queued
 future task South has an approved different model selection. South has not
@@ -28,9 +31,10 @@ task. Its override and end condition remain applicable, and the prior owner and
 operation records are available. A separate record says the task has ended.
 
 Case F: A task override owned effort high and model M1. During the task, the
-operator selected effort xhigh and the appointment's model changed to M2. The
-task now ends. The records establish that only model remains override-owned.
-Another record contains a later authorized choice equal to the override value.
+operator selected effort xhigh and the appointment configuration's model changed
+to M2. The task now ends. The records establish that only model remains
+override-owned. Another record contains a later authorized choice equal to the
+override value.
 
 Case G: Two authorized task scopes overlap on effort. Their records do not settle
 precedence or current ownership. A preceding setter timed out without effective

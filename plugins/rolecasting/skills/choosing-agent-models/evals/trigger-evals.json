@@ -48,7 +48,7 @@
     "should_trigger": true
   },
   {
-    "query": "Send only a status acknowledgment inside the existing accepted peer assignment. An approved profile exists, but no execution or settings change is requested.",
+    "query": "Send only a status acknowledgment inside the existing accepted peer assignment. An approved selection profile exists, but no execution or settings change is requested.",
     "should_trigger": false
   }
 ]

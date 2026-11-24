@@ -9,7 +9,7 @@ description: Use when selecting model and effort for new workers or execution co
 
 Own model and effort selection after [delegating-cross-agent-work](../delegating-cross-agent-work/SKILL.md) settles target, ownership, transport, authority, and assurance. Model choice is a separate decision; it cannot repair those boundaries. First distinguish [ordinary peer messages from execution assignments](references/capability-probes-and-fallbacks.md#distinguish-messages-from-execution-assignments). Classify complete bounded execution before each assignment, continuation, and review; read [scope classification and refusal diagnosis](references/classifying-security-work.md). Previous assignments do not carry classification forward.
 
-[Appointments and scoped overrides](references/appointment-and-scoped-overrides.md) govern selection.
+Apply [appointment configuration and scoped overrides](references/appointment-and-scoped-overrides.md).
 
 ## Selection Order
 
