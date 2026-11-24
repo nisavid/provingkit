@@ -271,6 +271,48 @@ class ClaudeRouteNominationTests(unittest.TestCase):
             self.assertFalse(Path(request["publication"]["path"]).exists())
             self.assertEqual(retained.read_bytes(), retained_bytes)
 
+    def test_prepare_refuses_an_oversized_frame_before_planning_or_publishing(self):
+        route, _, mailbox_module = self.load_modules()
+        with tempfile.TemporaryDirectory(prefix="claude-route-") as temporary:
+            root = Path(temporary).resolve()
+            root.chmod(0o700)
+            _, publication, recipient = self.produce(route, root)
+            nomination = {key: publication[key] for key in ("path", "bytes", "sha256")}
+            request = self.prepare_input(root, nomination, recipient)
+            mailbox_path = Path(request["mailbox"])
+            self.initialize_mailbox(mailbox_module, mailbox_path)
+            # Fits the 32,768-byte request file but not the 4,096-byte call frame.
+            request["message"]["payload"] = "x" * 4096
+            request_path = root / "prepare-input.json"
+            self.write(request_path, request)
+
+            output = io.StringIO()
+            with contextlib.redirect_stdout(output):
+                exit_code = route.main(
+                    ["prepare", "--request", str(request_path)],
+                    effective_uid=os.geteuid(),
+                )
+
+            self.assertEqual(exit_code, 0)
+            self.assertEqual(json.loads(output.getvalue()), {
+                "prepared": False, "reason": "sender-frame-byte-limit",
+                "closure": "no-provider-started",
+            })
+            self.assertFalse(Path(request["publication"]["path"]).exists())
+            mailbox = mailbox_module.Mailbox(mailbox_path)
+            try:
+                self.assertEqual(mailbox.pending(), [])
+            finally:
+                mailbox.close()
+
+            request["message"]["payload"] = "Fits."
+            self.write(request_path, request)
+            output = io.StringIO()
+            with contextlib.redirect_stdout(output):
+                route.main(["prepare", "--request", str(request_path)],
+                           effective_uid=os.geteuid())
+            self.assertTrue(json.loads(output.getvalue())["prepared"])
+
     def test_prepare_returns_safe_refusal_for_existing_corrupt_mailbox(self):
         route, _, _ = self.load_modules()
         with tempfile.TemporaryDirectory(prefix="claude-route-") as temporary:

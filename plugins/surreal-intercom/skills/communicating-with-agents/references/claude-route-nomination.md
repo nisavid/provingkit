@@ -138,7 +138,10 @@ requires the supplied size and digest, stable file identity, one hard link, the
 effective UID, a mode-0600 record, and an owned mode-0700 parent. It validates
 the complete record, reapplies the normalized socket rule, and requires the
 message recipient to match the nominated recipient. It preserves the launcher's
-invoked name and command bytes.
+invoked name and command bytes. It builds the sender's `SendMessage` frame from
+the message, actor, and target, and returns `sender-frame-byte-limit` when that
+frame exceeds the sender's 4,096-byte control-frame ceiling, before planning or
+publishing anything. An embedded `reply_route` takes a large share of that room.
 
 The operation opens the existing private mailbox and plans the immutable
 message through `Mailbox.plan`. The mailbox must retain the same message

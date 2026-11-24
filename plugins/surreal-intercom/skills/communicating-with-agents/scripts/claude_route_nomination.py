@@ -13,6 +13,7 @@ import sqlite3
 import stat
 import sys
 
+from claude_mcp_sender import frame_fits, sendmessage_call
 from claude_mcp_sender import validate as validate_sender_request
 from codex_capture import CaptureWriter
 from native_codex_mailbox import Mailbox
@@ -333,6 +334,9 @@ def _prepared_request(request, effective_uid):
     encoded = json.dumps(sender_request, sort_keys=True, separators=(",", ":")).encode()
     if len(encoded) > 32768:
         raise RouteRefusal("sender-request-byte-limit")
+    # The sender would refuse this frame after claiming; refuse before planning.
+    if not frame_fits(sendmessage_call(message, actor, target)):
+        raise RouteRefusal("sender-frame-byte-limit")
     return output, capture, mailbox_path, message, sender_request, encoded
 
 

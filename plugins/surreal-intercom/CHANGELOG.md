@@ -27,3 +27,5 @@
   forwarding actor neither builds nor removes one.
 - Let Claude route preparation accept a received reply route's `nomination`
   field unchanged, and cover a reply sent back through each route kind.
+- Record a definite refusal when the Claude sender's call frame exceeds its
+  ceiling, and refuse that frame in `prepare` before planning or publishing.

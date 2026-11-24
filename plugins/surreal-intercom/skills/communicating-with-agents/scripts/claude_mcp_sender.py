@@ -75,6 +75,28 @@ def encoded_frame(value):
     return data
 
 
+def sendmessage_call(message, actor, target):
+    """Build the one SendMessage call frame for a planned message."""
+    return {
+        "jsonrpc": "2.0", "id": 3, "method": "tools/call",
+        "params": {
+            "name": "SendMessage",
+            "arguments": {
+                "to": target,
+                "message": serialize_peer_message(message, actor),
+            },
+        },
+    }
+
+
+def frame_fits(value):
+    try:
+        encoded_frame(value)
+    except InspectionError:
+        return False
+    return True
+
+
 # Recognized literal profile only: never evaluate arbitrary schema patterns.
 DESTINATION_CONSTRAINTS = [
     {"pattern": r"^[^\n\r]*$"},
@@ -337,23 +359,19 @@ def main():
                     request["evidence_ref"], violation + " No tools/call was sent.",
                 )
                 result["reason"] = "destination_constraint_violation"
-            elif nominated:
-                message = {
-                    key: value for key, value in planned.items()
-                    if key not in {"attempts", "state"}
-                }
-                call = {
-                    "jsonrpc": "2.0", "id": 3, "method": "tools/call",
-                    "params": {
-                        "name": "SendMessage",
-                        "arguments": {
-                            "to": request["target"],
-                            "message": serialize_peer_message(message, request["actor"]),
-                        },
-                    },
-                }
+            elif nominated and not frame_fits(call := sendmessage_call(
+                {key: value for key, value in planned.items()
+                 if key not in {"attempts", "state"}},
+                request["actor"], request["target"],
+            )):
                 # Refuse oversized frames before persisting possible submission.
-                encoded_frame(call)
+                mailbox.observe(
+                    request["message_id"], request["attempt_id"], "refused",
+                    request["evidence_ref"],
+                    "SendMessage frame exceeds the 4,096-byte control-frame ceiling; no tools/call was sent.",
+                )
+                result["reason"] = "control_frame_limit"
+            elif nominated:
                 result["stage"] = "call"
                 mailbox.observe(
                     request["message_id"], request["attempt_id"], "unknown",

@@ -370,7 +370,7 @@ class ClaudeMcpSenderTests(unittest.TestCase):
             )
             self.assert_no_replay(request, send, bookkeeping, trace, retained)
 
-    def test_oversized_control_frame_refuses_before_possible_submission(self):
+    def test_oversized_control_frame_records_refusal_before_possible_submission(self):
         # The minimal supported catalog has no destination-length constraint.
         # This destination alone exceeds the entire outgoing frame ceiling.
         with self.consumer(mode="tool_success", target="uds:" + "x" * 4096) as (
@@ -392,13 +392,40 @@ class ClaudeMcpSenderTests(unittest.TestCase):
             self.assertEqual(records[-1], {"stdin_eof": True})
             retained = bookkeeping("show", "failure-1")
             self.assert_no_receipt(retained, original)
-            self.assertEqual(retained["state"], "unknown")
+            self.assertEqual(retained["state"], "refused")
             self.assertEqual(len(retained["attempts"]), 1)
             attempt = retained["attempts"][0]
             self.assertEqual(attempt["actor"], request["actor"])
-            self.assertEqual([o["kind"] for o in attempt["observations"]], ["unknown"])
+            self.assertEqual(attempt["submission"], "refused")
+            self.assertEqual([o["kind"] for o in attempt["observations"]], [
+                "unknown", "refused",
+            ])
             self.assertEqual(json.loads(attempt["observations"][0]["detail"]), request)
+            self.assertIn("no tools/call was sent", attempt["observations"][1]["detail"])
             self.assert_no_replay(request, send, bookkeeping, trace, retained)
+
+    def test_oversized_payload_frame_records_refusal_without_a_call(self):
+        oversized = {
+            "message_id": "failure-1",
+            "sender": {"thread_id": "original", "host_id": "origin-host"},
+            "recipient": {"thread_id": "recipient", "host_id": "peer-host"},
+            "owner": {"thread_id": "owner", "host_id": "local"},
+            "payload": "x" * 4096, "authority_ref": "synthetic://grant/intake",
+            "holds": [],
+        }
+        with self.consumer(mode="tool_success", original=oversized) as (
+            original, request, send, bookkeeping, trace, source,
+        ):
+            result = send()
+            self.assertEqual(result["reason"], "control_frame_limit")
+            self.assertEqual(result["peer_input"], "not_attempted")
+            records = [json.loads(line) for line in trace.read_bytes().splitlines()]
+            self.assertNotIn("tools/call", [r.get("method") for r in records])
+            retained = bookkeeping("show", "failure-1")
+            self.assertEqual(retained["state"], "refused")
+            self.assertEqual(
+                [o["kind"] for o in retained["attempts"][0]["observations"]],
+                ["unknown", "refused"])
 
     def test_stderr_overflow_at_one_mib_preserves_failure_and_uncertainty(self):
         with self.consumer(mode="stderr_overflow") as (
