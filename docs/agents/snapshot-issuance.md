@@ -331,7 +331,9 @@ A lost response, attempted failure, missing result, or incomplete postcheck
 keeps the request pending. Recover it with `{"operation":"inspect"}` or the
 identical `issue` request. Retry recovers the original identity; it does not
 authorize replaying a push. If the lost output was an `issue` or `add-variants`
-result, replay the identical request and keep that output before reconciling;
+result, replay the identical request and keep that output before any reconcile for that
+request, including one the CLI rejects for an incomplete postcheck, which still
+changes the record; after that the original bytes cannot be recovered, and
 `inspect` returns the whole state, not that result. The existing publication
 owner reconciles the
 original executor and remote outcome before retry or continuation. Do not
@@ -407,7 +409,7 @@ each original file by its lowercase SHA-256 digest:
 
 An `issue` result must carry the preparation's request ID; an `add-variants`
 result must carry a different one. Use the output retained when that operation
-ran. Before writing, the
+ran, or recovered by an identical replay before any reconcile. Before writing, the
 helper checks every pin, the entries its tar reader yields from the parent
 archive, the receipt's file inventory and tree digest, the
 mode inventory, the receipt identity, stamped manifests and catalog, and the
