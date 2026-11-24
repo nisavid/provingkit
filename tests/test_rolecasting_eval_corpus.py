@@ -32,6 +32,7 @@ SCOPED_OVERRIDE_RULES = {
         "An applicable override continues for its declared scope",
         "restore only fields still owned by the ending override",
         "a later decision that happens to select the same value",
+        "any still-active override that governs the field under the accepted precedence",
     ),
     "overlap-uncertainty-custody-and-evidence": (
         "establish the accepted precedence",
@@ -159,6 +160,36 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
                             self.assertTrue(
                                 phrase.lower() in bundle, f"rule text absent: {phrase}"
                             )
+
+    def test_restoration_case_keeps_a_still_active_lower_priority_override(self) -> None:
+        # Corpus coverage only; this does not execute or grade an agent.
+        case = next(
+            item
+            for item in self.documents["choosing-agent-models"]["evals"]
+            if item["name"] == "select-appointment-and-scoped-overrides"
+        )
+        fixture = " ".join(
+            (PLUGIN_ROOT / "skills" / "choosing-agent-models" / case["fixture_paths"][0])
+            .read_text()
+            .split()
+        )
+        for fragment in (
+            "Case J:",
+            "appointment configuration selects medium effort",
+            "outer task override selects high effort",
+            "remains active",
+            "ranks above the outer one, selected xhigh effort",
+            "The inner task now ends.",
+        ):
+            with self.subTest(fragment=fragment):
+                self.assertIn(fragment, fixture)
+        self.assertIn("J restores effort to high", case["expected_output"])
+        restoration = next(
+            expectation
+            for expectation in case["expectations"]
+            if expectation["id"] == "actual-task-continuation-and-restoration"
+        )
+        self.assertIn("J restores effort to the outer override's high", restoration["text"])
 
     def test_rolecasting_has_complete_detailed_scenario_inventory(self) -> None:
         observed = {

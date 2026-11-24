@@ -49,3 +49,10 @@ Case I: An ordinary status acknowledgment stays inside a peer's accepted task.
 Its message tool offers optional model/effort overrides. Another such message
 route instead requires effort, whose applicable recipient binding is unknown.
 The sender happens to have a known effort. No new execution is assigned.
+
+Case J: A recipient's appointment configuration selects medium effort. An outer
+task override selects high effort for a longer task that remains active. An
+inner task override, which the accepted precedence ranks above the outer one,
+selected xhigh effort and still owns that field. The inner task now ends. No
+operator decision about effort exists, and a supported, authorized operation
+can set effort.

@@ -74,13 +74,14 @@ work independent. Do not blindly replay an unobserved application or restoration
 
 ## End and restore owned fields
 
-At the declared end, restore only fields still owned by the ending override,
-using the current appointment configuration and operator decisions. A saved
-prior selection explains the change; it is not a whole-recipient rollback
-snapshot. Preserve later authorized changes, including a later decision that
-happens to select the same value. A matching value alone does not prove
-continued ownership. Resolve overlapping scopes and pending outcomes before
-restoring their fields.
+At the declared end, restore only fields still owned by the ending override.
+Resolve each such field again without the ending override: from the current
+appointment configuration, operator decisions, and any still-active override
+that governs the field under the accepted precedence. A saved prior selection
+explains the change; it is not a whole-recipient rollback snapshot. Preserve
+later authorized changes, including a later decision that happens to select the
+same value. A matching value alone does not prove continued ownership. Resolve
+overlapping scopes and pending outcomes before restoring their fields.
 
 Use a supported, authorized operation and verify the observations required by
 the consumer before calling restoration complete. If the operation is unavailable
