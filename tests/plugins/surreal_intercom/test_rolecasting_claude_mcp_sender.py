@@ -1084,6 +1084,18 @@ class ClaudeNameSendTests(unittest.TestCase):
             self.assertEqual(result["reason"], "submitted")
             self.assertEqual(calls()[-1]["arguments"]["to"], "twin [cc22dd]")
 
+    def test_a_selection_must_match_exactly_one_row(self):
+        local = "  twin [cc22dd]" + DOT + "interactive" + DOT + "idle"
+        remote = "  twin [cc22dd]" + DOT + "Remote Control" + DOT + "idle"
+        for order in ((local, remote), (remote, local)):
+            listing = "\n".join(["Peer sessions (2):", *order])
+            with self.subTest(first=order[0]), self.name_consumer(
+                    name="twin", selection={"ref": "cc22dd"}, pages=(listing,)) as (
+                    _, request, send, bookkeeping, calls, _t):
+                detail = self.assert_refused_without_send(
+                    send(), "ambiguous_selection", calls, bookkeeping)
+                self.assertIn("2 rows", detail)
+
     def test_rows_that_are_not_local_sessions_are_refused_before_the_call(self):
         for name in ("far-away", "up-there"):
             with self.subTest(name=name), self.name_consumer(name=name) as (

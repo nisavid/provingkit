@@ -312,7 +312,11 @@ def is_local_session(row):
 
 
 def select_row(rows, name, selection):
-    """Bind the requested name to one local row of this attempt's listing."""
+    """Bind the requested name to exactly one local row of this attempt's listing.
+
+    The row shows the request's name and selected reference, so the destination
+    built from the request before the listing is the one this row is addressed by.
+    """
     named = [row for row in rows if row["name"] == name]
     if selection is not None:
         chosen = [row for row in named if row["ref"] == selection["ref"]]
@@ -321,6 +325,11 @@ def select_row(rows, name, selection):
                 "selection_not_in_listing",
                 "The selected reference is not shown for this name in this attempt's "
                 "listing; no SendMessage was sent.")
+        if len(chosen) > 1:
+            raise PathRefusal(
+                "ambiguous_selection",
+                f"{len(chosen)} rows in this attempt's listing show this name and the "
+                "selected reference; no SendMessage was sent.")
         row = chosen[0]
     elif not named:
         raise PathRefusal(
@@ -338,9 +347,7 @@ def select_row(rows, name, selection):
             "not_local_session",
             "The named row is not a session on this machine; only local sessions "
             "are addressed. No SendMessage was sent.")
-    if selection is not None or len(named) > 1:
-        return name_destination(row["name"], row["ref"]), row
-    return name_destination(row["name"]), row
+    return row
 
 
 class StdioMcpChild:
@@ -594,72 +601,78 @@ def main():
             nominated = [tool for tool in tools if tool["name"] == "SendMessage"]
             listers = [tool for tool in tools if tool["name"] == "ListAgents"]
             to = request_destination(request)
-            if not nominated:
-                refuse("missing_sendmessage",
-                       "Complete tools/list catalog has no SendMessage; no tools/call was sent.")
-            elif len(nominated) != 1 or not supports_sendmessage(nominated[0]):
-                refuse("unsupported_sendmessage_schema",
-                       "SendMessage schema is outside the supported to/message string profile; no tools/call was sent.")
-            elif path == "name" and (len(listers) != 1 or not supports_listagents(listers[0])):
-                refuse("unsupported_listagents",
-                       "The catalog offers no ListAgents in the supported profile; no tools/call was sent.")
-            elif violation := destination_violation(nominated[0], to):
-                refuse("destination_constraint_violation", violation + " No tools/call was sent.")
-            elif not frame_fits(sendmessage_call(message, request["actor"], to)):
-                # Refuse oversized frames before any call or possible submission.
-                refuse("control_frame_limit",
-                       "SendMessage frame exceeds the 4,096-byte control-frame ceiling; no tools/call was sent.")
+            identity = 3
+            bound = {"phase": "possible_submission", "target": to}
+            try:
+                # Every refusal below is definite and comes before any SendMessage call.
+                if not nominated:
+                    raise PathRefusal(
+                        "missing_sendmessage",
+                        "Complete tools/list catalog has no SendMessage; no tools/call was sent.")
+                if len(nominated) != 1 or not supports_sendmessage(nominated[0]):
+                    raise PathRefusal(
+                        "unsupported_sendmessage_schema",
+                        "SendMessage schema is outside the supported to/message string profile; "
+                        "no tools/call was sent.")
+                if path == "name" and (len(listers) != 1 or not supports_listagents(listers[0])):
+                    raise PathRefusal(
+                        "unsupported_listagents",
+                        "The catalog offers no ListAgents in the supported profile; no tools/call was sent.")
+                # `to` is final here on both paths: a selection's `name [ref]` included.
+                if violation := destination_violation(nominated[0], to):
+                    raise PathRefusal("destination_constraint_violation",
+                                      violation + " No tools/call was sent.")
+                if not frame_fits(sendmessage_call(message, request["actor"], to)):
+                    # Refuse oversized frames before any call or possible submission.
+                    raise PathRefusal(
+                        "control_frame_limit",
+                        "SendMessage frame exceeds the 4,096-byte control-frame ceiling; "
+                        "no tools/call was sent.")
+                if path == "name":
+                    result["stage"] = "listing"
+                    try:
+                        rows, identity = read_listing(child, identity)
+                    except InspectionError as error:
+                        # Only ListAgents was written: nothing could have been submitted.
+                        raise PathRefusal(
+                            "listing_failed",
+                            f"ListAgents did not complete ({error}); no SendMessage was sent.",
+                        ) from error
+                    row = select_row(rows, request["name"], request.get("selection"))
+                    # The listing moved the call's id; check the frame that would be sent.
+                    if not frame_fits(sendmessage_call(message, request["actor"], to, identity)):
+                        raise PathRefusal(
+                            "control_frame_limit",
+                            "SendMessage frame exceeds the 4,096-byte control-frame ceiling; "
+                            "no SendMessage was sent.")
+                    bound = {"phase": "possible_submission", "path": "name", "to": to, "row": row}
+            except PathRefusal as refusal:
+                refuse(refusal.reason, refusal.detail)
             else:
-                identity = 3
-                bound = {"phase": "possible_submission", "target": to}
-                try:
-                    if path == "name":
-                        result["stage"] = "listing"
-                        try:
-                            rows, identity = read_listing(child, identity)
-                        except InspectionError as error:
-                            # Only ListAgents was written: nothing could have been submitted.
-                            raise PathRefusal(
-                                "listing_failed",
-                                f"ListAgents did not complete ({error}); no SendMessage was sent.",
-                            ) from error
-                        to, row = select_row(rows, request["name"], request.get("selection"))
-                        if violation := destination_violation(nominated[0], to):
-                            raise PathRefusal("destination_constraint_violation",
-                                              violation + " No SendMessage was sent.")
-                        if not frame_fits(sendmessage_call(message, request["actor"], to, identity)):
-                            raise PathRefusal(
-                                "control_frame_limit",
-                                "SendMessage frame exceeds the 4,096-byte control-frame ceiling; no SendMessage was sent.")
-                        bound = {"phase": "possible_submission", "path": "name", "to": to,
-                                 "row": row}
-                except PathRefusal as refusal:
-                    refuse(refusal.reason, refusal.detail)
+                call = sendmessage_call(message, request["actor"], to, identity)
+                result["stage"] = "call"
+                mailbox.observe(
+                    request["message_id"], request["attempt_id"], "unknown",
+                    request["evidence_ref"], json.dumps(bound, ensure_ascii=True, sort_keys=True),
+                )
+                # Once writing may begin, every uncertainty remains non-replayable.
+                result["peer_input"] = "possible_submission"
+                child.send(call)
+                tool_result = child.reply(identity)
+                supported = supported_tool_result(tool_result)
+                submitted = supported and not tool_result.get("isError", False)
+                mailbox.observe(
+                    request["message_id"], request["attempt_id"],
+                    "submitted" if submitted else "unknown",
+                    request["evidence_ref"], json.dumps({
+                        "target": to, "tool_result": tool_result,
+                    }, ensure_ascii=True, sort_keys=True),
+                )
+                if submitted:
+                    result["peer_input"] = "submitted"
+                    result["reason"] = "submitted"
                 else:
-                    call = sendmessage_call(message, request["actor"], to, identity)
-                    result["stage"] = "call"
-                    mailbox.observe(
-                        request["message_id"], request["attempt_id"], "unknown",
-                        request["evidence_ref"], json.dumps(bound, ensure_ascii=True, sort_keys=True),
-                    )
-                    # Once writing may begin, every uncertainty remains non-replayable.
-                    result["peer_input"] = "possible_submission"
-                    child.send(call)
-                    tool_result = child.reply(identity)
-                    supported = supported_tool_result(tool_result)
-                    submitted = supported and not tool_result.get("isError", False)
-                    mailbox.observe(
-                        request["message_id"], request["attempt_id"],
-                        "submitted" if submitted else "unknown",
-                        request["evidence_ref"], json.dumps({
-                            "target": to, "tool_result": tool_result,
-                        }, ensure_ascii=True, sort_keys=True),
-                    )
-                    if submitted:
-                        result["peer_input"] = "submitted"
-                        result["reason"] = "submitted"
-                    else:
-                        result["reason"] = "tool_error" if supported else "unsupported_tool_result"
+                    result["reason"] = "tool_error" if supported else "unsupported_tool_result"
     except InspectionError as error:
         result["reason"] = str(error)
     except (ValueError, RecursionError, OSError, sqlite3.Error, MailboxError):

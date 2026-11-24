@@ -85,8 +85,10 @@ with `not_local_session`; widening that is the operator's decision. A name that
 matches no row records `no_matching_local_row`. A name that matches more than
 one row records `ambiguous_name` unless the request's `selection` names one of
 them by the reference this attempt's listing shows; the call then addresses
-`name [ref]` from that listing. A selected reference that this listing does not
-show records `selection_not_in_listing`; a reference from an earlier attempt is
+`name [ref]` from that listing. A selection must match exactly one row: a
+selected reference that this listing does not show records
+`selection_not_in_listing`, and one it shows on more than one row records
+`ambiguous_selection`; a reference from an earlier attempt is
 never reused, because each attempt starts its own child and lists again. A
 listing that reports missing, hidden, or failed rows, or does not end within
 five pages, records `listing_incomplete`; a row outside the profile records
