@@ -116,6 +116,7 @@ outside the profile. Show that a
 supplied route is sent by that route with no listing, and that a refused name
 request tries no second path. Cover the close: a child that exits on closed
 input takes no signal, one that outlives it is terminated rather than killed,
-and a descendant that holds the pipes does not extend the close. The listing
+one that writes while it stops is drained rather than killed, and a descendant
+that holds the pipes does not extend the close. The listing
 profile is read from the installed program's source; when a Claude Code release
 changes its formatter, update the profile and these fixtures together.

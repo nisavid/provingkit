@@ -497,10 +497,18 @@ class StdioMcpChild:
             # The child outlived its closed input: stop it without waiting out the deadline.
             process.terminate()
             closed_by = "terminate"
+            # Keep draining: a child that writes while it stops must not block on a full pipe.
+            until = time.monotonic() + TERMINATE_GRACE_SECONDS
             try:
-                process.wait(timeout=TERMINATE_GRACE_SECONDS)
-            except subprocess.TimeoutExpired:
-                pass
+                self.await_exit(until)
+            except (InspectionError, OSError, ValueError) as error:
+                if closure_error is None:
+                    closure_error = (
+                        str(error) if isinstance(error, InspectionError) else "closure_failed")
+                try:
+                    process.wait(timeout=max(0, until - time.monotonic()))
+                except subprocess.TimeoutExpired:
+                    pass
         if process.poll() is None:
             process.kill()
             closed_by = "kill"

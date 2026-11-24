@@ -892,6 +892,14 @@ NAME_CHILD = textwrap.dedent("""\
             trace.write(json.dumps(value) + "\\n")
 
     record({"started_pid": os.getpid()})
+    if config.get("mode") == "writes_while_stopping":
+        import signal
+
+        def stop(*_):
+            os.write(1, b"x" * 262144)
+            os._exit(0)
+
+        signal.signal(signal.SIGTERM, stop)
     if config.get("mode") == "descendant_holds_pipes":
         holder = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(30)"])
         record({"holder_pid": holder.pid})
@@ -912,7 +920,7 @@ NAME_CHILD = textwrap.dedent("""\
                         "Message sent to the session; in that session's inbox, not yet read."}]}
         print(json.dumps({"jsonrpc": "2.0", "id": request["id"], "result": response}), flush=True)
     record({"stdin_eof": True})
-    if config.get("mode") == "lingers_after_input_closes":
+    if config.get("mode") in ("lingers_after_input_closes", "writes_while_stopping"):
         time.sleep(30)
     raise SystemExit(0)
     """)
@@ -942,7 +950,7 @@ LISTING = "\n".join([
 class ClaudeNameSendTests(unittest.TestCase):
     @contextmanager
     def name_consumer(self, *, name="claude-receiver", selection=None, pages=(LISTING,),
-                      mode="ordinary", target=None, seconds=8):
+                      mode="ordinary", target=None, seconds=8, stdout_bytes=65536):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             store = root / "mailbox.sqlite3"
@@ -977,7 +985,7 @@ class ClaudeNameSendTests(unittest.TestCase):
                 "recipient": original["recipient"],
                 "command": [sys.executable, str(child), str(trace), str(root / "config.json")],
                 "evidence_ref": "synthetic://evidence/name",
-                "limits": {"operation_seconds": seconds, "stdout_bytes": 65536,
+                "limits": {"operation_seconds": seconds, "stdout_bytes": stdout_bytes,
                            "stderr_bytes": 4096},
             }
             if target is None:
@@ -1060,6 +1068,18 @@ class ClaudeNameSendTests(unittest.TestCase):
                 "started": True, "reaped": True, "exit_code": -15,
                 "closed_by": "terminate"})
             # Input-close grace plus SIGTERM, far short of the 20-second deadline.
+            self.assertLess(result["elapsed"], 10)
+
+    def test_a_child_that_writes_while_it_stops_is_drained_not_killed(self):
+        with self.name_consumer(mode="writes_while_stopping", seconds=20,
+                                stdout_bytes=1048576) as (
+                original, request, send, bookkeeping, calls, trace):
+            result = send()
+            self.assertEqual(result["reason"], "submitted")
+            # It exits by itself once its 256 KiB reach the drained pipe.
+            self.assertEqual(result["owned_child"], {
+                "started": True, "reaped": True, "exit_code": 0,
+                "closed_by": "terminate"})
             self.assertLess(result["elapsed"], 10)
 
     def test_a_descendant_holding_the_pipes_does_not_extend_the_close(self):

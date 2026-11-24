@@ -130,7 +130,7 @@ The sender counts stderr but discards its bytes. It buffers stdout for protocol 
 
 ## Closure and reconciliation
 
-The sender shuts its child down as the MCP 2024-11-05 stdio lifecycle describes. It closes the child's input and drains the pipes for up to three seconds within the remaining deadline. If the child has not exited, it sends `SIGTERM` and waits two more seconds, then sends `SIGKILL`; these signal waits and reaping can pass the deadline. It waits for the child's own exit, not for its pipes to close, so a descendant that holds them does not extend the close. It reaps only the child it created. Inspect `owned_child`: `closed_by` is `terminate` or `kill` when a signal ended the child, and `closure_error` names a pipe or closure failure.
+The sender shuts its child down as the MCP 2024-11-05 stdio lifecycle describes. It closes the child's input and drains the pipes for up to three seconds within the remaining deadline. If the child has not exited, it sends `SIGTERM` and drains the pipes for two more seconds, so a child that writes while it stops is not blocked on a full pipe, then sends `SIGKILL`; these signal waits and reaping can pass the deadline. It waits for the child's own exit, not for its pipes to close, so a descendant that holds them does not extend the close. It reaps only the child it created. Inspect `owned_child`: `closed_by` is `terminate` or `kill` when a signal ended the child, and `closure_error` names a pipe or closure failure.
 
 The fixed sender's close against a real session is not yet observed. Child closure does not establish receiver shutdown, descendant closure, or total process-tree control. A closure failure does not erase an earlier submission observation.
 
