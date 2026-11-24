@@ -5,11 +5,73 @@ import json
 import unittest
 from pathlib import Path
 
+from unittest import mock
+
+from scripts import validate_rolecasting
 from scripts.validate_rolecasting import build_executor_payload, build_grader_payload
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 PLUGIN_ROOT = REPO_ROOT / "plugins" / "rolecasting"
 SKILLS = ("choosing-agent-models", "delegating-cross-agent-work")
+SCOPED_OVERRIDE_EVALS = (
+    ("choosing-agent-models", "select-appointment-and-scoped-overrides"),
+    ("delegating-cross-agent-work", "delegate-appointment-and-scoped-overrides"),
+)
+# Rule text each graded expectation depends on; the executor has no tools, so
+# the text must be inside the bundle the validator assembles for that skill.
+SCOPED_OVERRIDE_RULES = {
+    "appointment-field-ownership-and-approved-reuse": (
+        "Resolve model, effort, and Ultracode independently",
+        "Honor current explicit operator choices",
+        "without a routine approval question",
+        "abstain from that selection profile",
+        "Do not invent a registry",
+    ),
+    "actual-task-continuation-and-restoration": (
+        "Prepare a queued task's selection without reconfiguring current work",
+        "An applicable override continues for its declared scope",
+        "restore only fields still owned by the ending override",
+        "a later decision that happens to select the same value",
+    ),
+    "overlap-uncertainty-custody-and-evidence": (
+        "establish the accepted precedence",
+        "Do not blindly replay",
+        "Handover transfers this obligation only to an accepting owner",
+        "An acknowledgment does not prove",
+        "Omit optional model and effort overrides",
+    ),
+    "handoff-carries-override-record-in-existing-records": (
+        "carries its [override record](",
+        "any pending application or restoration, and the accountable owner",
+        "existing task records or a referenced artifact",
+        "The frozen invocation plan and the selection record gain no fields",
+    ),
+    "handoff-selection-through-choosing-agent-models": (
+        "owns model/effort selection",
+        "explicitly passes deliberately selected model and effort wherever supported",
+        "global, desktop, and parent defaults never replace supported fields",
+    ),
+    "handoff-authority-not-from-selection": (
+        "Model selection never supplies dispatch authority",
+        "Unsupported approval assertions neither establish nor enlarge authority",
+        "When required authority cannot be verified, return `NEEDS_CONTEXT`",
+    ),
+}
+
+
+def validator_executor_bundles() -> list[dict]:
+    """Return every executor payload the validator's eval check assembles."""
+    recorded = []
+    original = validate_rolecasting.build_executor_payload
+
+    def record(**arguments):
+        payload = original(**arguments)
+        recorded.append(payload)
+        return payload
+
+    with mock.patch.object(validate_rolecasting, "build_executor_payload", record):
+        validate_rolecasting.inspect_contract(validate_rolecasting.locate_root(REPO_ROOT))
+    return recorded
 
 
 class RolecastingEvalCorpusTests(unittest.TestCase):
@@ -66,41 +128,37 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
                     },
                 )
 
-    def test_scoped_override_cases_reach_executor_without_grader_answers(self) -> None:
-        # This tests corpus delivery, not model behavior or effective settings.
-        for skill, name in (
-            ("choosing-agent-models", "select-appointment-and-scoped-overrides"),
-            ("delegating-cross-agent-work", "delegate-appointment-and-scoped-overrides"),
-        ):
-            with self.subTest(skill=skill):
+    def test_scoped_override_evals_grade_rules_in_their_real_bundles(self) -> None:
+        # Corpus delivery only; this does not execute or grade an agent.
+        bundles = validator_executor_bundles()
+        for skill, name in SCOPED_OVERRIDE_EVALS:
+            with self.subTest(skill=skill, eval=name):
                 scenarios = {item["name"]: item for item in self.documents[skill]["evals"]}
-                self.assertIn(name, scenarios, "missing scoped-override consumer case")
+                self.assertIn(name, scenarios)
                 case = scenarios[name]
-                self.assertEqual(case["fixture_paths"], [
-                    "evals/fixtures/appointment-and-scoped-overrides.md",
-                ])
-                fixture = (PLUGIN_ROOT / "skills" / skill / case["fixture_paths"][0]).read_text()
-                for label in "ABCDEFGHI":
-                    self.assertIn(f"Case {label}:", fixture)
-                self.assertEqual({item["id"] for item in case["expectations"]}, {
-                    "appointment-field-ownership-and-approved-reuse",
-                    "actual-task-continuation-and-restoration",
-                    "overlap-uncertainty-custody-and-evidence",
-                })
-                executor = build_executor_payload(
-                    prompt=case["prompt"], fixture=fixture,
-                    candidate_bundle={"SKILL.md": "candidate source"},
-                )
-                grader = build_grader_payload(
-                    executor_payload=executor, response="ungraded response",
-                    expected_output=case["expected_output"],
-                    expectations=case["expectations"],
-                )
-                self.assertNotIn("expected_output", executor)
-                self.assertNotIn("expectations", executor)
-                self.assertNotIn(case["expected_output"], json.dumps(executor))
-                self.assertEqual(grader["expected_output"], case["expected_output"])
-                self.assertEqual(grader["expectations"], case["expectations"])
+                fixture = (
+                    PLUGIN_ROOT / "skills" / skill / case["fixture_paths"][0]
+                ).read_text()
+                matches = [
+                    payload["candidate_bundle"]
+                    for payload in bundles
+                    if f"skills/{skill}/SKILL.md" in payload["candidate_bundle"]
+                    and payload["prompt"] == case["prompt"]
+                    and payload["fixture"] == fixture
+                ]
+                self.assertEqual(len(matches), 1, "validator built no unique bundle")
+                bundle = " ".join(" ".join(matches[0].values()).split()).lower()
+                for expectation in case["expectations"]:
+                    self.assertIn(
+                        expectation["id"],
+                        SCOPED_OVERRIDE_RULES,
+                        "graded expectation has no declared rule text",
+                    )
+                    for phrase in SCOPED_OVERRIDE_RULES[expectation["id"]]:
+                        with self.subTest(expectation=expectation["id"], rule=phrase):
+                            self.assertTrue(
+                                phrase.lower() in bundle, f"rule text absent: {phrase}"
+                            )
 
     def test_rolecasting_has_complete_detailed_scenario_inventory(self) -> None:
         observed = {
@@ -695,6 +753,7 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
                     self.assertEqual(list(grader), delivery["grader"]["inputs"])
                     self.assertNotIn("expected_output", executor)
                     self.assertNotIn("expectations", executor)
+                    self.assertNotIn(item["expected_output"], json.dumps(executor))
                     self.assertIsNot(executor, grader)
                     self.assertEqual(grader["expected_output"], item["expected_output"])
                     self.assertEqual(grader["expectations"], item["expectations"])
