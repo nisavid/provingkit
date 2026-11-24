@@ -397,8 +397,10 @@ each original file by its lowercase SHA-256 digest:
 ```
 
 An `issue` result must carry the preparation's request ID; an `add-variants`
-result must carry a different one. Before writing, the helper checks every pin,
-the whole parent archive, the receipt's file inventory and tree digest, the
+result must carry a different one. Retain the exact successful standard output
+of the `issue` or `add-variants` operation for this input. Before writing, the
+helper checks every pin, every entry of the parent archive through its
+end-of-archive marker, the receipt's file inventory and tree digest, the
 mode inventory, the receipt identity, stamped manifests and catalog, and the
 issuer result's recorded variant for the target. It then writes a fresh
 directory containing exactly the member ZIP, its checksum file, and
@@ -448,6 +450,12 @@ The helper has these limits:
   without symlinks, outside the checkout, so the checkout stays clean.
 - It supports Agent Plugins and Claude, not Cursor, and snapshot versions only,
   so it rejects a named release.
+- It does not validate the parent archive's gzip trailer or any bytes after the
+  tar end-of-archive marker. The pins bind those bytes to the issued archive
+  without showing that the compressed stream is intact; the derived files are
+  still checked against the receipt's per-file digests.
+- It expects the projector's 12-character preview label, so it rejects a
+  snapshot whose source commit needed a longer abbreviation.
 - The seven-member slate and this repository's address are written into it.
 - Its tests are synthetic and were run on Linux. Real issuance, another
   operating-system identity, very large inputs, which it holds in memory, and
