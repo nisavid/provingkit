@@ -272,10 +272,10 @@ objects, submit an `issue` request:
 }
 ```
 
-Retain the exact successful standard output of this operation, and of each
-`add-variants`, as bytes in a file of its own, not the result file that later
-calls overwrite: `reconcile` changes the stored record, so a replay returns
-different bytes.
+Keep the exact standard output of this operation, and of each `add-variants`,
+in a file of its own, not the result file that later calls overwrite.
+`reconcile` changes the stored record, so a later identical replay returns the
+record with its later fields; the member-ZIP helper accepts either.
 
 The example binds one target. Include every target present in the transport
 commit; the three-target packing recipe requires three entries. Extra
@@ -331,12 +331,11 @@ A lost response, attempted failure, missing result, or incomplete postcheck
 keeps the request pending. Recover it with `{"operation":"inspect"}` or the
 identical `issue` request. Retry recovers the original identity; it does not
 authorize replaying a push. If the lost output was an `issue` or `add-variants`
-result, replay the identical request and keep that output before any reconcile for that
-request, including one the CLI rejects for an incomplete postcheck, which still
-changes the record; after that the original bytes cannot be recovered, and
-`inspect` returns the whole state, not that result. The existing publication
-owner reconciles the
-original executor and remote outcome before retry or continuation. Do not
+result, replay the identical request from the same working directory, or with
+absolute paths in the request, and keep what it prints. It returns the stored
+record, which a reconcile may have changed; `inspect` returns the whole state,
+not that record. The existing publication owner reconciles the original
+executor and remote outcome before retry or continuation. Do not
 clear the hold by constructing a successful result or initializing new state.
 
 ## Extend, redeliver, and advance
@@ -359,9 +358,9 @@ The issuer has no remote cleanup operation.
 Use `scripts/member_zip.py` when a delivery needs one member's single-plugin
 ZIP and checksum file for Agent Plugins or Claude. It requires an issued
 snapshot: the packed complete-slate archive, its original receipt with the
-`delivery` record, its mode inventory, and the original result of the `issue`
-or `add-variants` operation that recorded them. A snapshot that was prepared
-and projected but not issued lacks that result, and until it is packed it also
+`delivery` record, its mode inventory, and the delivery record that the `issue`
+or `add-variants` operation printed. A snapshot that was prepared
+and projected but not issued lacks that record, and until it is packed it also
 lacks the archive and mode inventory, so the helper cannot make its ZIP. The
 helper only reads these files; it never opens the issuance state.
 
@@ -403,13 +402,15 @@ each original file by its lowercase SHA-256 digest:
     "receipt": {"path": "/absolute/packed/agent-plugins/RECEIPT.json", "sha256": "<digest>"},
     "modes": {"path": "/absolute/packed/agent-plugins/modes.tsv", "sha256": "<digest>"}
   },
-  "issuer_result": {"path": "/absolute/retained/original-issue-result.json", "sha256": "<digest>"}
+  "issuer_result": {"path": "/absolute/retained/issue-result.json", "sha256": "<digest>"}
 }
 ```
 
 An `issue` result must carry the preparation's request ID; an `add-variants`
-result must carry a different one. Use the output retained when that operation
-ran, or recovered by an identical replay before any reconcile. Before writing, the
+result must carry a different one. Prefer the output captured when that operation
+ran; an identical replay returns the stored record, which the helper also
+accepts. Keep the exact file you pin, because `verify` needs the same bytes.
+Before writing, the
 helper checks every pin, the entries its tar reader yields from the parent
 archive, the receipt's file inventory and tree digest, the
 mode inventory, the receipt identity, stamped manifests and catalog, and the
@@ -441,7 +442,7 @@ A successful `derive` or `verify` establishes the local integrity of the
 derived files against the pinned snapshot evidence. It does not establish that
 the snapshot was authentically issued or that the pins came from its owner. It
 establishes nothing about exposure, any account, or installation: the reported
-exposure is copied from the original result, not observed. The derivative is
+exposure is copied from that record, not observed. The derivative is
 not an issued variant and never enters issuance history; uploading it remains
 with the delivery's own route and authorization.
 
