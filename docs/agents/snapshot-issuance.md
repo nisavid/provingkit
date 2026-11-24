@@ -38,7 +38,8 @@ unqualified and exposure stays held.
 
 Qualify state retention and recovery under that owner: retain the database,
 pending request, original reviewed plan, original executor result if available,
-and artifacts through process and custody changes. Use SQLite's backup API or
+the exact successful standard output of each `issue` and `add-variants`
+operation, and artifacts through process and custody changes. Use SQLite's backup API or
 quiesce the issuer before copying its database and any active journal. A copied
 or restored older database must not become a second issuer. Initialization is
 only for a release unit with no prior snapshot state; inventory existing
@@ -271,6 +272,10 @@ objects, submit an `issue` request:
 }
 ```
 
+Retain the exact successful standard output of this operation, and of each
+`add-variants`, as bytes: `reconcile` changes the stored record, so a replay
+returns different bytes.
+
 The example binds one target. Include every target present in the transport
 commit; the three-target packing recipe requires three entries. Extra
 unrecorded snapshot files or variants in its outgoing history are rejected.
@@ -397,8 +402,8 @@ each original file by its lowercase SHA-256 digest:
 ```
 
 An `issue` result must carry the preparation's request ID; an `add-variants`
-result must carry a different one. Retain the exact successful standard output
-of the `issue` or `add-variants` operation for this input. Before writing, the
+result must carry a different one. Use the output retained when that operation
+ran. Before writing, the
 helper checks every pin, the entries its tar reader yields from the parent
 archive, the receipt's file inventory and tree digest, the
 mode inventory, the receipt identity, stamped manifests and catalog, and the
@@ -484,7 +489,7 @@ required; the record states its review or that there is none. The installation
 owner then qualifies the selected client with useful earlier and later source
 selections, without runtime markers or unrelated edits. Provide the reviewed
 implementation and procedure revision, both delivered versions, source commits,
-the source-standing record, original complete receipts, the exact standard
+the source-standing record, original complete receipts, the retained
 output of each `issue` and `add-variants` operation, exact projected and
 packed bytes, mode inventories and digests, ordering/retry/variant outcomes,
 pinned transport identities, and publication/readback results. Record the
