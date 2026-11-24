@@ -25,3 +25,5 @@
   fields agents derive from safe producer results.
 - Carry a held reply's existing `reply_route` unchanged when forwarding it; the
   forwarding actor neither builds nor removes one.
+- Let Claude route preparation accept a received reply route's `nomination`
+  field unchanged, and cover a reply sent back through each route kind.

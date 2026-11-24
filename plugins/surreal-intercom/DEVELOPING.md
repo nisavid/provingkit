@@ -98,5 +98,8 @@ and a Codex origin constructs `codex-owner-admission` from its safe Codex result
 and corroborated invocation. Pass both through actual planning and serialization;
 keep no-reply messages byte-identical without `reply_route`. Reject identity or
 correlation mismatch, malformed nomination specifications, unknown route kinds,
-and raw endpoint fields before planning. These cases establish source
-addressability, not current installation, permission, delivery, or reply handling.
+and raw endpoint fields before planning. Send a reply back through each route
+kind with the route taken unchanged from the received envelope, and require the
+original sender as destination and the original exchange correlation. These
+cases establish source addressability, not current installation, permission,
+delivery, or reply handling.

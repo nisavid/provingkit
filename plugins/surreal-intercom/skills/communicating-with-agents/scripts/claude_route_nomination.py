@@ -172,12 +172,22 @@ def _stat_identity(value):
     )
 
 
+def _nomination_pin(reference):
+    """Accept the `nominate` result's keys or a received reply route's, unchanged."""
+    if not isinstance(reference, dict):
+        raise RouteRefusal("invalid-nomination-pin")
+    if reference.keys() == {"path", "bytes", "sha256"}:
+        return reference["bytes"]
+    if reference.keys() == {"path", "sha256", "size"}:
+        return reference["size"]
+    raise RouteRefusal("invalid-nomination-pin")
+
+
 def _read_private_nomination(reference, effective_uid):
+    size = _nomination_pin(reference)
     if (
-        not isinstance(reference, dict)
-        or reference.keys() != {"path", "bytes", "sha256"}
-        or type(reference["bytes"]) is not int
-        or not 1 <= reference["bytes"] <= 4096
+        type(size) is not int
+        or not 1 <= size <= 4096
         or not isinstance(reference["sha256"], str)
         or re.fullmatch(r"[0-9a-f]{64}", reference["sha256"]) is None
     ):
@@ -198,18 +208,18 @@ def _read_private_nomination(reference, effective_uid):
             or before.st_uid != effective_uid
             or stat.S_IMODE(before.st_mode) != 0o600
             or before.st_nlink != 1
-            or before.st_size != reference["bytes"]
+            or before.st_size != size
             or _stat_identity(before) != _stat_identity(named_before)
         ):
             raise RouteRefusal("unqualified-private-nomination")
-        raw = source.read(reference["bytes"] + 1)
+        raw = source.read(size + 1)
         after = os.fstat(source.fileno())
     try:
         named_after = path.lstat()
     except OSError as error:
         raise RouteRefusal("changed-private-nomination") from error
     if (
-        len(raw) != reference["bytes"]
+        len(raw) != size
         or _stat_identity(before) != _stat_identity(after)
         or _stat_identity(before) != _stat_identity(named_after)
         or hashlib.sha256(raw).hexdigest() != reference["sha256"]

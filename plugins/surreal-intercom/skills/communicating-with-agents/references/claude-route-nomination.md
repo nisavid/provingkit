@@ -22,7 +22,8 @@ message's `reply_route` field carries only the safe path, size, and digest plus
 the original recipient, submitter, and correlation bindings. It carries no socket target and
 grants no permission. A replying peer must pass the private record through this
 procedure's existing `prepare` validation before the Claude MCP sender can use
-it; message authority and holds remain separately checked.
+it; message authority and holds remain separately checked. It passes the received
+route's `nomination` field to `prepare` as it arrived, with no renaming.
 
 ## Construct The Reply Route
 
@@ -103,7 +104,8 @@ does not isolate hostile processes with the same UID.
 The agent creates a `claude-sender-request-preparation-v1` JSON file with:
 
 - `nomination`: the exact private path, size, and SHA-256 returned by
-  `nominate`;
+  `nominate` (`path`, `bytes`, `sha256`), or a received reply route's
+  `nomination` field unchanged (`path`, `sha256`, `size`);
 - `message`: the ordinary immutable mailbox message, including original sender,
   recipient, obligation owner, payload, authority reference, holds, and optional
   correlation ID;
