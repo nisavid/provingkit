@@ -26,7 +26,7 @@ apply.
 
 ## Retain the override record
 
-Retain the recipient, governing task and selection profile or decision
+Retain the recipient, governing task, any selection profile and the decision
 reference, conditions, changed fields and their prior applicable selection,
 application observation, declared end, and application/restoration owner through
 existing task, selection, handoff, and verification records. Distinguish a
@@ -38,9 +38,10 @@ unrecognized fields to a strict adapter or infer a new schema.
 ## Apply at the actual task boundary
 
 Prepare a queued task's selection without reconfiguring current work. Apply
-only the authorized fields when a supported operation carries the actual task
-or its authorized execution continuation. Selection alone grants no actuation
-or additional work. Preserve unrelated recipient fields and later operator
+only the authorized fields at the actual task boundary through a supported
+control; where that control starts a turn, use the actual authorized task or
+continuation. Never start a model turn solely to apply, restore, or prove a
+setting. Selection alone grants no actuation or additional work. Preserve unrelated recipient fields and later operator
 choices. An ordinary peer message in an accepted assignment uses the existing
 [message boundary](capability-probes-and-fallbacks.md#distinguish-messages-from-execution-assignments).
 It does not become a settings operation because a selection profile exists.
@@ -83,8 +84,8 @@ later authorized changes, including a later decision that happens to select the
 same value. A matching value alone does not prove continued ownership. Resolve
 overlapping scopes and pending outcomes before restoring their fields.
 
-Use a supported, authorized operation and verify the observations required by
-the consumer before calling restoration complete. If the operation is unavailable
+Use a supported, authorized operation under that task-boundary rule and verify
+the observations required by the consumer before calling restoration complete. If the operation is unavailable
 or its effect is uncertain, retain the pending restoration, its evidence limits,
 and accountable owner. Handover transfers this obligation only to an accepting
 owner; until then the existing owner retains it. After a restart, recover that

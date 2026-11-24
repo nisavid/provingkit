@@ -7,7 +7,7 @@ external tools, model calls, settings changes, or new approval are authorized
 for this exercise. Explain the selection and next disposition for each case.
 
 Case A: A recipient's appointment configuration selects Sol, medium effort, and
-Ultracode off. An authorized current task has a reviewed override changing only
+Ultracode off. An authorized current task has an approved override changing only
 effort to high until that task ends. The target supports those selections. The
 task is starting.
 

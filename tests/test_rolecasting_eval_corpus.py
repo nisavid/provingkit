@@ -33,6 +33,7 @@ SCOPED_OVERRIDE_RULES = {
         "restore only fields still owned by the ending override",
         "a later decision that happens to select the same value",
         "any still-active override that governs the field under the accepted precedence",
+        "Never start a model turn solely to apply, restore, or prove a setting",
     ),
     "overlap-uncertainty-custody-and-evidence": (
         "establish the accepted precedence",
@@ -784,7 +785,7 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
                     self.assertEqual(list(grader), delivery["grader"]["inputs"])
                     self.assertNotIn("expected_output", executor)
                     self.assertNotIn("expectations", executor)
-                    self.assertNotIn(item["expected_output"], json.dumps(executor))
+                    self.assertNotIn(item["expected_output"], json.dumps(executor, ensure_ascii=False))
                     self.assertIsNot(executor, grader)
                     self.assertEqual(grader["expected_output"], item["expected_output"])
                     self.assertEqual(grader["expectations"], item["expectations"])
