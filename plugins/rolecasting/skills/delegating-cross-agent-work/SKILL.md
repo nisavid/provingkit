@@ -29,7 +29,7 @@ Task identity and bounded purpose are route gates: model availability never make
 
 ## Kickoff
 
-Record leader, repo, branch, immutable base, dirty state, submodules, and worktree. Check policy; freeze topology and assurance minima before selection/edits. Reclassify each execution assignment/continuation and resolve model/effort through `choosing-agent-models`.
+Record leader, repo, branch, immutable base, dirty state, submodules, and worktree. Check live state and policy; freeze topology and assurance minima before selection or edits. Reclassify scope and resolve model/effort through `choosing-agent-models` for each execution assignment or continuation.
 
 Every thread, task, session, or subagent creation explicitly passes deliberately
 selected model and effort wherever supported, including native Codex and Claude
@@ -37,8 +37,6 @@ Code Agent tools. Apply the
 [field and continuation rules](../choosing-agent-models/references/capability-probes-and-fallbacks.md#pass-every-supported-selection-field)
 for absent controls and continuations. Retain requests before inference;
 global, desktop, and parent defaults never replace supported fields.
-
-Apply [appointments and scoped overrides](../choosing-agent-models/references/appointment-and-scoped-overrides.md) at task boundaries.
 
 ## Bounded Handoff
 
