@@ -484,7 +484,8 @@ required; the record states its review or that there is none. The installation
 owner then qualifies the selected client with useful earlier and later source
 selections, without runtime markers or unrelated edits. Provide the reviewed
 implementation and procedure revision, both delivered versions, source commits,
-the source-standing record, original complete receipts, exact projected and
+the source-standing record, original complete receipts, the exact standard
+output of each `issue` and `add-variants` operation, exact projected and
 packed bytes, mode inventories and digests, ordering/retry/variant outcomes,
 pinned transport identities, and publication/readback results. Record the
 owner's procedure revision and naturally useful invocation; installed use is
