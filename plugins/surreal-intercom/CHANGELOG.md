@@ -29,3 +29,13 @@
   field unchanged, and cover a reply sent back through each route kind.
 - Record a definite refusal when the Claude sender's call frame exceeds its
   ceiling, and refuse that frame in `prepare` before planning or publishing.
+- Make a local Claude agent's name the ordinary first-send address: the sender
+  finds it in one `ListAgents` listing of its own `claude mcp serve` child and
+  makes one `SendMessage` call, refusing non-local, unmatched, ambiguous, or
+  stale-reference rows before the call. A supplied recipient-prepared route
+  stays the fallback, and the result names the path used.
+- Close the Claude sender's child as the MCP stdio lifecycle describes: close
+  its input, wait briefly, then `SIGTERM`, then `SIGKILL`, waiting on its exit
+  rather than its pipes, so it is no longer run to the deadline.
+- State the 2026-11-19 decision on a Claude reply waking a Codex sender, and
+  that an envelope's sender and actor are claims without authority.

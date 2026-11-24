@@ -103,3 +103,17 @@ kind with the route taken unchanged from the received envelope, and require the
 original sender as destination and the original exchange correlation. These
 cases establish source addressability, not current installation, permission,
 delivery, or reply handling.
+
+By-name Claude sends use a disposable stdio child that serves a catalog with
+`SendMessage` and `ListAgents` and scripted listing pages in the profile the
+[Claude MCP sender](skills/communicating-with-agents/references/claude-mcp-sender.md)
+documents. Cover one submission with exactly one `SendMessage` call, paging by
+cursor within the attempt, and each refusal before the call: no local row, an
+ambiguous name without selection, a row that is not a local session, a
+reference this listing does not show, and an incomplete listing. Show that a
+supplied route is sent by that route with no listing, and that a refused name
+request tries no second path. Cover the close: a child that exits on closed
+input takes no signal, one that outlives it is terminated rather than killed,
+and a descendant that holds the pipes does not extend the close. The listing
+profile is read from the installed program's source; when a Claude Code release
+changes its formatter, update the profile and these fixtures together.

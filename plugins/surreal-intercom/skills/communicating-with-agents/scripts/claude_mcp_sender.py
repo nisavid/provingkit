@@ -1,16 +1,20 @@
 #!/usr/bin/env python3
-"""Submit one peer envelope through an explicitly nominated stdio MCP child.
+"""Submit one peer envelope through an owned stdio `claude mcp serve` child.
 
-This source profile uses synthetic MCP 2024-11-05 negotiation; live peer
-negotiation remains unqualified. Submission never establishes receiver receipt.
-The target is a caller nomination, not authentication or permission.
-operation_seconds bounds protocol I/O and graceful shutdown. Reaping after
-killing the owned child may exceed it; no descendant closure is asserted.
+A request addresses its recipient either by name, resolved in this attempt's
+own `ListAgents` listing, or by a recipient-prepared `uds:` route that the
+caller supplies. This source profile uses MCP 2024-11-05 negotiation; the
+listing profile is read from the installed program's source, not observed.
+Submission never establishes receiver receipt. A name or route is a caller
+nomination, not authentication or permission. operation_seconds bounds
+protocol I/O and the wait after closing the child's input; the signal steps
+that follow, and reaping, may exceed it. No descendant closure is asserted.
 """
 import argparse
 import json
 import math
 import os
+import re
 import selectors
 import sqlite3
 import subprocess
@@ -24,12 +28,37 @@ class InspectionError(ValueError):
     pass
 
 
+class PathRefusal(Exception):
+    """A definite refusal before any SendMessage call, with its reason."""
+
+    def __init__(self, reason, detail):
+        super().__init__(reason)
+        self.reason = reason
+        self.detail = detail
+
+
+# Close the child's input, then wait this long (within the deadline) for exit.
+INPUT_CLOSE_GRACE_SECONDS = 3
+# After SIGTERM, wait this long before SIGKILL; this wait may pass the deadline.
+TERMINATE_GRACE_SECONDS = 2
+MAX_LISTING_PAGES = 5
+NAME_FORBIDDEN = "[]\r\n\0"
+REF_PATTERN = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
+
+
+def utf16_units(value):
+    return sum(2 if ord(character) > 0xFFFF else 1 for character in value)
+
+
 def validate(request):
-    required = {
-        "message_id", "attempt_id", "actor", "recipient", "target",
-        "command", "evidence_ref", "limits",
+    base = {
+        "message_id", "attempt_id", "actor", "recipient", "command",
+        "evidence_ref", "limits",
     }
-    if not isinstance(request, dict) or request.keys() != required:
+    if not isinstance(request, dict):
+        raise InspectionError("invalid_request")
+    keys = set(request)
+    if keys not in (base | {"target"}, base | {"name"}, base | {"name", "selection"}):
         raise InspectionError("invalid_request")
     for key in ("message_id", "attempt_id", "evidence_ref"):
         text(request[key], key)
@@ -41,9 +70,26 @@ def validate(request):
             raise InspectionError("invalid_identity")
         for field in ("thread_id", "host_id"):
             text(identity[field], field)
-    target = request["target"]
-    if not isinstance(target, str) or not target.startswith("uds:") or not target[4:]:
-        raise InspectionError("invalid_nomination")
+    if "target" in request:
+        target = request["target"]
+        if not isinstance(target, str) or not target.startswith("uds:") or not target[4:]:
+            raise InspectionError("invalid_nomination")
+    else:
+        name = request["name"]
+        if (
+            not isinstance(name, str) or not name.strip() or name != name.strip()
+            or any(character in name for character in NAME_FORBIDDEN)
+            or utf16_units(name) > 300
+        ):
+            raise InspectionError("invalid_name")
+        if "selection" in request:
+            selection = request["selection"]
+            if (
+                not isinstance(selection, dict) or selection.keys() != {"ref"}
+                or not isinstance(selection["ref"], str)
+                or REF_PATTERN.fullmatch(selection["ref"]) is None
+            ):
+                raise InspectionError("invalid_selection")
     command = request["command"]
     if (
         not isinstance(command, list) or not command
@@ -75,10 +121,10 @@ def encoded_frame(value):
     return data
 
 
-def sendmessage_call(message, actor, target):
+def sendmessage_call(message, actor, target, identity=3):
     """Build the one SendMessage call frame for a planned message."""
     return {
-        "jsonrpc": "2.0", "id": 3, "method": "tools/call",
+        "jsonrpc": "2.0", "id": identity, "method": "tools/call",
         "params": {
             "name": "SendMessage",
             "arguments": {
@@ -144,13 +190,31 @@ def supports_sendmessage(tool):
     )
 
 
+def supports_listagents(tool):
+    """The listing is called with no arguments or with only `cursor`."""
+    schema = tool["inputSchema"]
+    properties = schema.get("properties")
+    return (
+        schema.keys() <= {"type", "properties", "required", "additionalProperties",
+                          "title", "description", "$schema"}
+        and schema.get("$schema", "https://json-schema.org/draft/2020-12/schema")
+        == "https://json-schema.org/draft/2020-12/schema"
+        and schema.get("type") == "object"
+        and isinstance(properties, dict)
+        and isinstance(properties.get("cursor"), dict)
+        and properties["cursor"].get("type") == "string"
+        and schema.get("required", []) == []
+        and schema.get("additionalProperties") is False
+    )
+
+
 def destination_violation(tool, target):
     if "allOf" not in tool["inputSchema"]["properties"]["to"]:
         return None
     if "\r" in target or "\n" in target:
         return "Destination contains CR/LF."
     # Conservative source limit: astral characters consume two UTF-16 code units.
-    if sum(2 if ord(character) > 0xFFFF else 1 for character in target) > 300:
+    if utf16_units(target) > 300:
         return "Destination exceeds the supported 300 UTF-16 code units."
     return None
 
@@ -168,6 +232,102 @@ def supported_tool_result(result):
             for item in result["content"]
         )
     )
+
+
+# The listing profile below is read from Claude Code 2.1.331's ListAgents
+# formatter. It is not an observed listing; anything outside it is refused.
+LISTING_SECTION = re.compile(r"^(?P<title>[^ ].*) \((?P<total>\d+)\):$")
+LISTING_FIELD_SEPARATOR = "  ·  "
+LISTING_NEXT_PAGE = re.compile(
+    r'^\(… \d+ more not shown — call again with cursor="(?P<cursor>[0-9a-f]{8})"'
+    r" for the next page[^\n]*\)$")
+LISTING_END = re.compile(r"^\(nothing more to list[^\n]*\)$")
+LOCAL_SESSION_SECTION = "Peer sessions"
+LOCAL_SESSION_KINDS = frozenset({"interactive", "bg", "daemon", "daemon-worker"})
+REMOTE_ROW_TYPES = frozenset({"cloud", "cloud session", "Remote Control"})
+
+
+def parse_listing_page(listing):
+    """Return (rows, cursor) for one page, or raise PathRefusal."""
+    rows = []
+    cursor = None
+    section = None
+    for line in listing.split("\n"):
+        if not line.strip():
+            continue
+        header = LISTING_SECTION.match(line)
+        if header:
+            section = header["title"]
+            continue
+        if line.startswith("  ") and not line.startswith("  ("):
+            if section is None:
+                raise PathRefusal("unrecognized_listing", "A listing row has no section.")
+            fields = line[2:].split(LISTING_FIELD_SEPARATOR)
+            label = fields[0]
+            ref = None
+            if label.endswith("]") and " [" in label:
+                label, _, ref = label[:-1].rpartition(" [")
+            if (
+                not label or any(character in label for character in "[]")
+                or (ref is not None and REF_PATTERN.fullmatch(ref) is None)
+            ):
+                raise PathRefusal("unrecognized_listing", "A listing row label is outside the profile.")
+            rows.append({"section": section, "name": label, "ref": ref, "fields": fields[1:]})
+            continue
+        stripped = line.strip()
+        page = LISTING_NEXT_PAGE.match(stripped)
+        if page:
+            cursor = page["cursor"]
+        elif LISTING_END.match(stripped):
+            continue
+        elif stripped.startswith("("):
+            # Failed, truncated or partial listing notes leave rows unknown.
+            raise PathRefusal(
+                "listing_incomplete",
+                "The listing reports missing or hidden rows; no SendMessage was sent.")
+        # Other unindented lines are listing heads or notes about this process.
+    return rows, cursor
+
+
+def is_local_session(row):
+    fields = set(row["fields"])
+    return (
+        row["section"] == LOCAL_SESSION_SECTION
+        and len(fields & LOCAL_SESSION_KINDS) == 1
+        and not fields & REMOTE_ROW_TYPES
+    )
+
+
+def select_row(rows, name, selection):
+    """Bind the requested name to one local row of this attempt's listing."""
+    named = [row for row in rows if row["name"] == name]
+    if selection is not None:
+        chosen = [row for row in named if row["ref"] == selection["ref"]]
+        if not chosen:
+            raise PathRefusal(
+                "selection_not_in_listing",
+                "The selected reference is not shown for this name in this attempt's "
+                "listing; no SendMessage was sent.")
+        row = chosen[0]
+    elif not named:
+        raise PathRefusal(
+            "no_matching_local_row",
+            "No row in this attempt's listing has this name; no SendMessage was sent.")
+    elif len(named) > 1:
+        raise PathRefusal(
+            "ambiguous_name",
+            f"{len(named)} rows in this attempt's listing have this name and no "
+            "selection was supplied; no SendMessage was sent.")
+    else:
+        row = named[0]
+    if not is_local_session(row):
+        raise PathRefusal(
+            "not_local_session",
+            "The named row is not a session on this machine; only local sessions "
+            "are addressed. No SendMessage was sent.")
+    if selection is not None or len(named) > 1:
+        return f"{row['name']} [{row['ref']}]", row
+    return row["name"], row
 
 
 class StdioMcpChild:
@@ -205,13 +365,8 @@ class StdioMcpChild:
         if count != len(data):
             raise InspectionError("control_write_failed")
 
-    def pump(self):
-        remaining = self.deadline - time.monotonic()
-        if remaining <= 0:
-            raise InspectionError("deadline")
-        events = self.selector.select(remaining)
-        if not events:
-            raise InspectionError("deadline")
+    def read_ready(self, timeout):
+        events = self.selector.select(timeout)
         for key, _ in events:
             name = key.data
             available = self.limits[name + "_bytes"] - self.counts[name]
@@ -226,6 +381,14 @@ class StdioMcpChild:
                 self.selector.unregister(key.fileobj)
             elif name == "stdout":
                 self.buffer.extend(data)
+        return bool(events)
+
+    def pump(self):
+        remaining = self.deadline - time.monotonic()
+        if remaining <= 0:
+            raise InspectionError("deadline")
+        if not self.read_ready(remaining):
+            raise InspectionError("deadline")
 
     def reply(self, identity):
         while True:
@@ -247,29 +410,58 @@ class StdioMcpChild:
                 raise InspectionError("stdout_eof")
             self.pump()
 
+    def await_exit(self, until):
+        """Drain the pipes until the child exits or `until` passes."""
+        process = self.process
+        while process.poll() is None:
+            remaining = until - time.monotonic()
+            if remaining <= 0:
+                return
+            if self.selector.get_map():
+                self.read_ready(min(remaining, 0.05))
+            else:
+                try:
+                    process.wait(timeout=remaining)
+                except subprocess.TimeoutExpired:
+                    return
+
     def close(self):
+        """Close input, wait, then SIGTERM, then SIGKILL, as MCP's stdio shutdown."""
         process = self.process
         if process is None:
             self.selector.close()
             return {"started": False, "reaped": False, "exit_code": None}
         closure_error = None
+        closed_by = None
         try:
             process.stdin.close()
-            while self.selector.get_map():
-                self.pump()
-            remaining = max(0, self.deadline - time.monotonic())
-            process.wait(timeout=remaining)
-        except (InspectionError, OSError, ValueError, subprocess.TimeoutExpired) as error:
+        except (OSError, ValueError):
+            closure_error = "closure_failed"
+        try:
+            self.await_exit(time.monotonic() + max(0, min(
+                INPUT_CLOSE_GRACE_SECONDS, self.deadline - time.monotonic())))
+        except (InspectionError, OSError, ValueError) as error:
             closure_error = str(error) if isinstance(error, InspectionError) else "closure_failed"
-            if process.poll() is None:
-                process.kill()
-            # Reap only the process created by this invocation, never a group.
-            process.wait()
-        finally:
-            for stream in (process.stdout, process.stderr):
-                stream.close()
-            self.selector.close()
+        if process.poll() is None:
+            # The child outlived its closed input: stop it without waiting out the deadline.
+            process.terminate()
+            closed_by = "terminate"
+            try:
+                process.wait(timeout=TERMINATE_GRACE_SECONDS)
+            except subprocess.TimeoutExpired:
+                pass
+        if process.poll() is None:
+            process.kill()
+            closed_by = "kill"
+        # Reap only the process created by this invocation, never a group.
+        process.wait()
+        for stream in (process.stdout, process.stderr):
+            stream.close()
+        self.selector.close()
+        # Exit ends this wait: a descendant holding a pipe does not extend it.
         closure = {"started": True, "reaped": True, "exit_code": process.returncode}
+        if closed_by is not None:
+            closure["closed_by"] = closed_by
         if closure_error is not None:
             closure["closure_error"] = closure_error
         return closure
@@ -293,6 +485,32 @@ def initialize_mcp(child):
     child.send({"jsonrpc": "2.0", "method": "notifications/initialized"})
 
 
+def read_listing(child, first_identity):
+    """Read one complete ListAgents listing, page by page, within this attempt."""
+    rows = []
+    cursor = None
+    identity = first_identity
+    for _ in range(MAX_LISTING_PAGES):
+        child.send({
+            "jsonrpc": "2.0", "id": identity, "method": "tools/call",
+            "params": {"name": "ListAgents",
+                       "arguments": {} if cursor is None else {"cursor": cursor}},
+        })
+        result = child.reply(identity)
+        identity += 1
+        if not supported_tool_result(result) or len(result["content"]) != 1:
+            raise PathRefusal("unsupported_listing_result",
+                              "The ListAgents result is outside the text profile.")
+        if result.get("isError", False):
+            raise PathRefusal("listing_error", "ListAgents returned an error result.")
+        page_rows, cursor = parse_listing_page(result["content"][0]["text"])
+        rows.extend(page_rows)
+        if cursor is None:
+            return rows, identity
+    raise PathRefusal("listing_incomplete",
+                      f"The listing did not end within {MAX_LISTING_PAGES} pages.")
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--store", required=True)
@@ -312,6 +530,9 @@ def main():
             raise InspectionError("request_limit")
         request = json.loads(request_bytes.decode("utf-8"))
         validate(request)
+        # A supplied route fixes the path before anything can be refused.
+        path = "route" if "target" in request else "name"
+        result["path"] = path
         deadline = time.monotonic() + request["limits"]["operation_seconds"]
         result["stage"] = "claim"
         mailbox = Mailbox(arguments.store)
@@ -321,6 +542,18 @@ def main():
         claim = mailbox.claim(request["message_id"], request["attempt_id"], request["actor"])
         result["claimed"] = claim["claimed"] is True
         result["attempt_id"] = request["attempt_id"]
+        message = {
+            key: value for key, value in planned.items()
+            if key not in {"attempts", "state"}
+        }
+
+        def refuse(reason, detail):
+            mailbox.observe(
+                request["message_id"], request["attempt_id"], "refused",
+                request["evidence_ref"], detail,
+            )
+            result["reason"] = reason
+
         if not result["claimed"]:
             result["reason"] = "claim_not_acquired"
         else:
@@ -346,64 +579,74 @@ def main():
             if catalog.get("nextCursor") is not None:
                 raise InspectionError("incomplete_catalog")
             nominated = [tool for tool in tools if tool["name"] == "SendMessage"]
-            if nominated and (len(nominated) != 1 or not supports_sendmessage(nominated[0])):
-                mailbox.observe(
-                    request["message_id"], request["attempt_id"], "refused",
-                    request["evidence_ref"],
-                    "SendMessage schema is outside the supported to/message string profile; no tools/call was sent.",
-                )
-                result["reason"] = "unsupported_sendmessage_schema"
-            elif nominated and (violation := destination_violation(nominated[0], request["target"])):
-                mailbox.observe(
-                    request["message_id"], request["attempt_id"], "refused",
-                    request["evidence_ref"], violation + " No tools/call was sent.",
-                )
-                result["reason"] = "destination_constraint_violation"
-            elif nominated and not frame_fits(call := sendmessage_call(
-                {key: value for key, value in planned.items()
-                 if key not in {"attempts", "state"}},
-                request["actor"], request["target"],
-            )):
-                # Refuse oversized frames before persisting possible submission.
-                mailbox.observe(
-                    request["message_id"], request["attempt_id"], "refused",
-                    request["evidence_ref"],
-                    "SendMessage frame exceeds the 4,096-byte control-frame ceiling; no tools/call was sent.",
-                )
-                result["reason"] = "control_frame_limit"
-            elif nominated:
-                result["stage"] = "call"
-                mailbox.observe(
-                    request["message_id"], request["attempt_id"], "unknown",
-                    request["evidence_ref"], json.dumps({
-                        "phase": "possible_submission", "target": request["target"],
-                    }, ensure_ascii=True, sort_keys=True),
-                )
-                # Once writing may begin, every uncertainty remains non-replayable.
-                result["peer_input"] = "possible_submission"
-                child.send(call)
-                tool_result = child.reply(3)
-                supported = supported_tool_result(tool_result)
-                submitted = supported and not tool_result.get("isError", False)
-                mailbox.observe(
-                    request["message_id"], request["attempt_id"],
-                    "submitted" if submitted else "unknown",
-                    request["evidence_ref"], json.dumps({
-                        "target": request["target"], "tool_result": tool_result,
-                    }, ensure_ascii=True, sort_keys=True),
-                )
-                if submitted:
-                    result["peer_input"] = "submitted"
-                    result["reason"] = "submitted"
-                else:
-                    result["reason"] = "tool_error" if supported else "unsupported_tool_result"
+            listers = [tool for tool in tools if tool["name"] == "ListAgents"]
+            to = request.get("target", request.get("name"))
+            if not nominated:
+                refuse("missing_sendmessage",
+                       "Complete tools/list catalog has no SendMessage; no tools/call was sent.")
+            elif len(nominated) != 1 or not supports_sendmessage(nominated[0]):
+                refuse("unsupported_sendmessage_schema",
+                       "SendMessage schema is outside the supported to/message string profile; no tools/call was sent.")
+            elif path == "name" and (len(listers) != 1 or not supports_listagents(listers[0])):
+                refuse("unsupported_listagents",
+                       "The catalog offers no ListAgents in the supported profile; no tools/call was sent.")
+            elif violation := destination_violation(nominated[0], to):
+                refuse("destination_constraint_violation", violation + " No tools/call was sent.")
+            elif not frame_fits(sendmessage_call(message, request["actor"], to)):
+                # Refuse oversized frames before any call or possible submission.
+                refuse("control_frame_limit",
+                       "SendMessage frame exceeds the 4,096-byte control-frame ceiling; no tools/call was sent.")
             else:
-                mailbox.observe(
-                    request["message_id"], request["attempt_id"], "refused",
-                    request["evidence_ref"],
-                    "Complete tools/list catalog has no SendMessage; no tools/call was sent.",
-                )
-                result["reason"] = "missing_sendmessage"
+                identity = 3
+                bound = {"phase": "possible_submission", "target": to}
+                try:
+                    if path == "name":
+                        result["stage"] = "listing"
+                        try:
+                            rows, identity = read_listing(child, identity)
+                        except InspectionError as error:
+                            # Only ListAgents was written: nothing could have been submitted.
+                            raise PathRefusal(
+                                "listing_failed",
+                                f"ListAgents did not complete ({error}); no SendMessage was sent.",
+                            ) from error
+                        to, row = select_row(rows, request["name"], request.get("selection"))
+                        if violation := destination_violation(nominated[0], to):
+                            raise PathRefusal("destination_constraint_violation",
+                                              violation + " No SendMessage was sent.")
+                        if not frame_fits(sendmessage_call(message, request["actor"], to, identity)):
+                            raise PathRefusal(
+                                "control_frame_limit",
+                                "SendMessage frame exceeds the 4,096-byte control-frame ceiling; no SendMessage was sent.")
+                        bound = {"phase": "possible_submission", "path": "name", "to": to,
+                                 "row": row}
+                except PathRefusal as refusal:
+                    refuse(refusal.reason, refusal.detail)
+                else:
+                    call = sendmessage_call(message, request["actor"], to, identity)
+                    result["stage"] = "call"
+                    mailbox.observe(
+                        request["message_id"], request["attempt_id"], "unknown",
+                        request["evidence_ref"], json.dumps(bound, ensure_ascii=True, sort_keys=True),
+                    )
+                    # Once writing may begin, every uncertainty remains non-replayable.
+                    result["peer_input"] = "possible_submission"
+                    child.send(call)
+                    tool_result = child.reply(identity)
+                    supported = supported_tool_result(tool_result)
+                    submitted = supported and not tool_result.get("isError", False)
+                    mailbox.observe(
+                        request["message_id"], request["attempt_id"],
+                        "submitted" if submitted else "unknown",
+                        request["evidence_ref"], json.dumps({
+                            "target": to, "tool_result": tool_result,
+                        }, ensure_ascii=True, sort_keys=True),
+                    )
+                    if submitted:
+                        result["peer_input"] = "submitted"
+                        result["reason"] = "submitted"
+                    else:
+                        result["reason"] = "tool_error" if supported else "unsupported_tool_result"
     except InspectionError as error:
         result["reason"] = str(error)
     except (ValueError, RecursionError, OSError, sqlite3.Error, MailboxError):

@@ -1,10 +1,15 @@
-# Submit a peer message through a nominated Claude MCP child
+# Submit a peer message through an owned Claude MCP child
 
-Use this procedure under the owning task's selected Claude-receiving native MCP
-route and applicable original or standing authority. For ordinary first use,
-acquire and consume that route through
-[Claude route nomination](claude-route-nomination.md); do not ask the operator
-to supply a launcher, socket, request JSON, or authority URI. Load this reference
+Use this procedure for a message to a Claude agent under the applicable
+original or standing authority. The ordinary first send to a local Claude agent
+addresses it by name: the sender starts its own `claude mcp serve` child, finds
+the name in that child's `ListAgents` listing, and makes one `SendMessage` call.
+The recipient does nothing first. Prepare that request with the `prepare`
+operation of [Claude route nomination](claude-route-nomination.md), which
+resolves the caller's own `claude` launcher. A recipient-prepared `uds:` route
+from the same procedure remains the fallback, used only when the request
+supplies it. Do not ask the operator to supply a launcher, socket, request JSON,
+or authority URI. Load this reference
 and record the reviewed source revision before dependent execution. [Peer
 binding and authority](peer-messages.md) governs the communication boundary;
 [mailbox bookkeeping](native-codex-mailbox.md) governs retained obligations and
@@ -24,14 +29,22 @@ The trusted local UTF-8 JSON request has exactly these fields:
 
 - `message_id`, `attempt_id`, and `evidence_ref`: nonempty strings; the JSON-escaped attempt ID is limited to 256 characters by the source validator.
 - `actor` and `recipient`: the identity objects above. The request recipient must equal the planned recipient.
-- `target`: a nonempty `uds:` nomination for `SendMessage.to`.
+- Exactly one address: `name`, the recipient's name as a `ListAgents` row
+  prints it (no brackets, CR, LF, or surrounding spaces; at most 300 UTF-16
+  code units), optionally with `selection: {"ref": ...}` choosing one of
+  several rows that share the name; or `target`, a nonempty recipient-prepared
+  `uds:` route for `SendMessage.to`.
 - `command`: a nonempty argument list whose executable path is absolute; the sender passes the exact argument vector with `shell=False`. An explicitly nominated launcher still has its own behavior and side effects.
 - `limits`: exactly `operation_seconds`, `stdout_bytes`, and `stderr_bytes`, within the limits below.
 
-The caller binds the executable, arguments, nominated endpoint, and intended
-receiver using separately permitted evidence. The ordinary nomination helper
-obtains those transport values from the selected receiver and preserves the
-installed launcher's invoked name. The retained request includes the command
+The caller binds the executable, arguments, name or nominated endpoint, and
+intended receiver using separately permitted evidence. Name preparation resolves
+the caller's own `claude` launcher; route nomination obtains those transport
+values from the selected receiver. Both preserve the launcher's invoked name.
+A request that supplies a route is sent by that route, and the name path is not
+tried for it. A name-only request that the name path refuses stays refused: the
+sender does not look for a route itself, and no attempt follows a refusal with a
+second path. The result's `path` says which was used. The retained request includes the command
 arguments; use the authorized environment-backed credential route rather than
 secret literals in those arguments. Matching the mailbox recipient does not
 prove that the endpoint reaches that recipient. A trusted request is a caller
@@ -43,7 +56,7 @@ side effects.
 
 Request reading is capped at 32,769 bytes to reject files larger than 32,768 bytes. That read occurs before the operation deadline. The source does not restrict the request to a regular file or bound blocking open/read acquisition. Use a trusted prepared local file; do not claim a total invocation time bound. Mailbox acquisition and process creation also lack a complete wall-clock bound.
 
-`operation_seconds` must be finite, greater than zero, and at most 60. One deadline covers protocol I/O and graceful child shutdown. Each stdout/stderr limit is an integer from 1 through 1,048,576 bytes for that invocation's pipe reads. The reader may consume one extra byte to detect overflow. Outgoing newline-delimited JSON control frames have a 4,096-byte ceiling, including the serialized envelope. This is a source-profile pipe-write ceiling, not a native peer message limit. Partial or failed writes remain uncertain.
+`operation_seconds` must be finite, greater than zero, and at most 60. One deadline covers protocol I/O and the wait after the child's input closes. Each stdout/stderr limit is an integer from 1 through 1,048,576 bytes for that invocation's pipe reads. The reader may consume one extra byte to detect overflow. Outgoing newline-delimited JSON control frames have a 4,096-byte ceiling, including the serialized envelope. This is a source-profile pipe-write ceiling, not a native peer message limit. Partial or failed writes remain uncertain.
 
 The profile requests MCP `2024-11-05`, requires that returned protocol version and a tools capability object, then requests one complete `tools/list` catalog. A non-null continuation cursor is unsupported. It requires exactly one `SendMessage` entry when present. The supported schema profile requires an object with string `to` and `message` properties, exactly those required names, and `additionalProperties: false`. Root title/description annotations and property title/description/default annotations are accepted. The root `$schema` may be absent or exactly `https://json-schema.org/draft/2020-12/schema`; this recognizes a dialect annotation without implementing that dialect generally. Other optional properties may have object schemas and are not sent. Annotations never supply the destination or message.
 
@@ -55,9 +68,37 @@ The `to` property may additionally contain exactly this literal `allOf` pair, in
 
 For this recognized profile, the sender checks the actual supplied target before recording possible submission: it must contain no CR or LF and at most 300 UTF-16 code units. Astral characters count as two code units; BMP characters and combining marks each count as one. This conservative source support limit does not claim general JSON Schema Unicode or regular-expression semantics. Without `to.allOf`, the legacy profile has no added destination constraint. Existing request and control-frame bounds still apply.
 
+A name request also requires exactly one `ListAgents` entry whose object schema has a string `cursor` property, no required properties, and `additionalProperties: false`; the sender passes no argument but `cursor`. Without it the request records `unsupported_listagents` and no call is made.
+
 Unknown dialects, altered or partial pattern pairs, extra constraints on supplied arguments, and unknown root constraints remain unsupported before the call. The sender compares literal constraint forms; it does not evaluate arbitrary patterns, resolve schemas, or validate a general schema. A recognized profile with an unmet destination constraint records `destination_constraint_violation`, a constraint diagnosis, and refusal before `tools/call` or possible submission. An unsupported profile retains `unsupported_sendmessage_schema`. Inspect those outcomes separately from submission.
 
 Replies must be newline-delimited JSON-RPC objects with the expected integer ID and an object result, without an error member. Notification interleaving and other protocol variants are outside this parser's scope. Tool results support only text content items with exactly `type` and `text`, an optional Boolean `isError`, and optional object `_meta`. Other content shapes are unsupported. The JSON parsers do not provide strict duplicate-key or general non-finite-value rejection. These are compatibility gaps, not evidence that a receiver is incompatible. Broader support requires a reviewed source change and new evidence before use.
+
+## Find the named recipient
+
+A name request reads one `ListAgents` listing in the same attempt, following its
+cursor to later pages, at most five, before any `SendMessage` call. Only a
+session on this machine is addressed: a row in the listing's `Peer sessions`
+section whose kind is `interactive`, `bg`, `daemon`, or `daemon-worker`. A row
+for another machine, the cloud, or Remote Control is refused before the call
+with `not_local_session`; widening that is the operator's decision. A name that
+matches no row records `no_matching_local_row`. A name that matches more than
+one row records `ambiguous_name` unless the request's `selection` names one of
+them by the reference this attempt's listing shows; the call then addresses
+`name [ref]` from that listing. A selected reference that this listing does not
+show records `selection_not_in_listing`; a reference from an earlier attempt is
+never reused, because each attempt starts its own child and lists again. A
+listing that reports missing, hidden, or failed rows, or does not end within
+five pages, records `listing_incomplete`; a row outside the profile records
+`unrecognized_listing`; a `ListAgents` call that fails or runs out of time, errs,
+or returns another result shape records `listing_failed`, `listing_error`, or
+`unsupported_listing_result`. Each refusal is recorded before any `SendMessage` call,
+and the sender asks only for what is missing, such as the selection.
+
+This listing profile, and the row kinds above, are read from the formatter in
+the installed Claude Code 2.1.331 program, not from an observed listing. A
+different release can print differently; anything outside the profile is
+refused, never guessed.
 
 ## Capture, submit once, and inspect
 
@@ -76,15 +117,17 @@ Use `init` only for authorized initial setup. The request's `message_id` must ma
 
 The sender acquires the claim itself. Do not preclaim through the mailbox CLI: an existing claim prevents the sender from proceeding. Before launching its child, it commits the attempt and an `unknown` observation containing the request. A crash can leave uncertainty before or after any external effect. Repeated invocation of that attempt cannot acquire another claim; a fresh attempt ID alone cannot reopen the message.
 
-After initialization and catalog inspection, the sender makes at most one `tools/call`. A missing tool, an unsupported schema, or a call frame over the 4,096-byte ceiling (`control_frame_limit`) records refusal without that call. Before writing a supported call, it records possible submission. A supported non-error tool result records `submitted`; errors, malformed replies, unsupported results, interrupted writes, and other uncertain outcomes do not establish nondelivery. Inspect the returned JSON and retained observations; the process exit code alone does not establish successful submission.
+After initialization and catalog inspection, the sender makes at most one `SendMessage` call, after the `ListAgents` reads of a name request. A missing tool, an unsupported schema, or a call frame over the 4,096-byte ceiling (`control_frame_limit`) records refusal without that call. Before writing a supported call, it records possible submission with the path, the `to` value, and for a name the bound listing row. A supported non-error tool result records `submitted`; errors, malformed replies, unsupported results, interrupted writes, and other uncertain outcomes do not establish nondelivery. Inspect the returned JSON and retained observations; the process exit code alone does not establish successful submission.
 
-`submitted` reports the tool result, not receiver receipt, ACK, handling, or fulfillment. An ACK needs correlated receiver evidence and its meaning must be stated. Record receipt, handling, and completion only from separately acquired authorized evidence tied to the intended receiver, message, and attempt. Preserve contradictions and uncertainty; do not infer fulfillment from envelope serialization or sender success.
+`submitted` reports the tool result, not receiver receipt, ACK, handling, or fulfillment. The tool's own description says a successful call puts the message in the recipient's inbox, not read yet; report it as submission. The child ends after the call, so a later cross-session delivery notice has no process to reach. An ACK needs correlated receiver evidence and its meaning must be stated. Record receipt, handling, and completion only from separately acquired authorized evidence tied to the intended receiver, message, and attempt. Preserve contradictions and uncertainty; do not infer fulfillment from envelope serialization or sender success.
 
 The sender counts stderr but discards its bytes. It buffers stdout for protocol parsing and stores selected request/result details, not a complete transcript. Retain the returned result and actual evidence behind `evidence_ref`; a pointer alone proves nothing. Bound and protect any separately authorized capture. Even a complete capture within its limits cannot prove absence outside those limits, on other channels, or in the receiver.
 
 ## Closure and reconciliation
 
-The sender closes stdin, drains its owned child's pipes within the remaining deadline, and waits. On closure failure it kills and reaps only the child it created; reaping can exceed the deadline. Inspect `owned_child` and any `closure_error`. Child closure does not establish receiver shutdown, descendant closure, or total process-tree control. A closure failure does not erase an earlier submission observation.
+The sender shuts its child down as the MCP 2024-11-05 stdio lifecycle describes. It closes the child's input and drains the pipes for up to three seconds within the remaining deadline. If the child has not exited, it sends `SIGTERM` and waits two more seconds, then sends `SIGKILL`; these signal waits and reaping can pass the deadline. It waits for the child's own exit, not for its pipes to close, so a descendant that holds them does not extend the close. It reaps only the child it created. Inspect `owned_child`: `closed_by` is `terminate` or `kill` when a signal ended the child, and `closure_error` names a pipe or closure failure.
+
+The installed program, started without the plugin's wrapper launcher, exited within a second of its input closing after `initialize` and `tools/list`, both directly and through this sender. Every send recorded before this change instead ran its child to the deadline and killed it. Which difference caused that, the wrapper launcher, the `uds:` target, the `SendMessage` call, or a send started by a Codex agent, is not established. The fixed sender's close against a real session is not yet observed. Child closure does not establish receiver shutdown, descendant closure, or total process-tree control. A closure failure does not erase an earlier submission observation.
 
 After refusal, uncertainty, or interruption, inspect the same mailbox and reconcile through separately authorized receiver observations. A bounded history with no match is not conclusive nondelivery. Preserve claims, evidence, original sender, actual actor, owner, and holds across replacement intake. Do not automatically resend, start a fallback, change settings, or release a hold.
 

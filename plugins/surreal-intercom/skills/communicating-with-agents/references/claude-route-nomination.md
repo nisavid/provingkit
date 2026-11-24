@@ -1,17 +1,21 @@
 # Prepare An Existing Claude Route
 
 Use [claude_route_nomination.py](../scripts/claude_route_nomination.py) when a
-new ordinary message targets an exact existing Claude recipient, no bound native
-send already reaches it, and the caller needs the launch command and native MCP
-target. An already-held addressed reply stays on the
+new ordinary message targets an existing Claude recipient and no bound native
+send already reaches it. An already-held addressed reply stays on the
 [native reply-forwarding route](native-peer-relay.md).
 
-This procedure has two operations. `nominate` runs through the intended Claude
-receiver's supported native command control. `prepare` consumes that private
-record and creates the request for the existing
-[Claude MCP sender](claude-mcp-sender.md). Neither operation starts Claude,
-opens the endpoint, sends a message, authenticates an account, or grants
-authority.
+The ordinary first send to a local Claude agent goes by name and needs nothing
+from the recipient: `prepare` with a `claude-name-request-preparation-v1`
+request resolves the caller's own `claude` launcher and creates the request for
+the [Claude MCP sender](claude-mcp-sender.md). A recipient-prepared route is the
+fallback, used only when the caller supplies one. `nominate` runs through the
+intended Claude receiver's supported native command control to produce that
+route, and `prepare` with a `claude-sender-request-preparation-v1` request
+consumes its private record. A supplied route goes stale when the recipient's
+app restarts; the caller that supplies it takes that risk. No operation here
+starts Claude, opens the endpoint, sends a message, authenticates an account, or
+grants authority.
 
 The nomination is also the supported return path when that Claude conversation
 originates a message requesting a reply. Produce it before the outbound
@@ -115,6 +119,21 @@ The agent creates a `claude-sender-request-preparation-v1` JSON file with:
 - `publication`: one unused private path and `CaptureWriter` settings for the
   sender request.
 
+For the ordinary send by name, the agent creates a
+`claude-name-request-preparation-v1` JSON file with the same `message`,
+`attempt_id`, `actor`, `limits`, `mailbox`, and `publication` fields, no
+`nomination`, and:
+
+- `name`: the recipient's name as its `ListAgents` row prints it; and
+- optionally `selection: {"ref": ...}`, only when the caller already knows which
+  of several same-named rows it means.
+
+Preparation then resolves `claude` on the caller's own `PATH`, keeps the
+resolved path and invoked name without canonicalizing a wrapper, and uses
+`[launcher, "mcp", "serve"]` as the command. Its `evidence_ref` is
+`claude-name:<name>`. It does not list agents or start Claude; the sender binds
+the name to a listing row within its own attempt.
+
 For genuine first setup only, select the private mailbox through the existing
 caller-owned bookkeeping procedure and create it once through the create-only
 boundary:
@@ -133,7 +152,7 @@ Run preparation from the authorized caller's control:
 python -B "$SKILL_DIR/scripts/claude_route_nomination.py" prepare --request "$preparation_request"
 ```
 
-Preparation opens the exact nomination without following the final symlink. It
+For a route, preparation opens the exact nomination without following the final symlink. It
 requires the supplied size and digest, stable file identity, one hard link, the
 effective UID, a mode-0600 record, and an owned mode-0700 parent. It validates
 the complete record, reapplies the normalized socket rule, and requires the

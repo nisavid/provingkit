@@ -1,11 +1,14 @@
 """Consumer catalog refusal through a real CLI and disposable MCP child."""
 from contextlib import contextmanager
 import json
+import os
 from pathlib import Path
+import signal
 import subprocess
 import sys
 import tempfile
 import textwrap
+import time
 import unittest
 
 SCRIPTS = (
@@ -440,7 +443,7 @@ class ClaudeMcpSenderTests(unittest.TestCase):
             closure = result["owned_child"]
             self.assertTrue(closure["started"])
             self.assertTrue(closure["reaped"])
-            self.assertIn(closure["exit_code"], (23, -9))
+            self.assertIn(closure["exit_code"], (23, -15, -9))
             self.assertEqual(closure["closure_error"], "stderr_limit")
             records = [json.loads(line) for line in trace.read_bytes().splitlines()]
             self.assertGreater(records[0]["started_pid"], 0)
@@ -470,9 +473,11 @@ class ClaudeMcpSenderTests(unittest.TestCase):
             self.assertEqual(result["reason"], "deadline")
             self.assertEqual(result["peer_input"], "possible_submission")
             self.assertTrue(result["claimed"])
+            # The child ignores its closed input while it sleeps, so the sender
+            # stops it with SIGTERM rather than waiting or killing it.
             self.assertEqual(result["owned_child"], {
-                "started": True, "reaped": True, "exit_code": -9,
-                "closure_error": "deadline",
+                "started": True, "reaped": True, "exit_code": -15,
+                "closed_by": "terminate",
             })
             records = [json.loads(line) for line in trace.read_bytes().splitlines()]
             self.assertGreater(records[0]["started_pid"], 0)
@@ -568,7 +573,7 @@ class ClaudeMcpSenderTests(unittest.TestCase):
             closure = result["owned_child"]
             self.assertTrue(closure["started"])
             self.assertTrue(closure["reaped"])
-            self.assertIn(closure["exit_code"], (23, -9))
+            self.assertIn(closure["exit_code"], (23, -15, -9))
             self.assertEqual(closure["closure_error"], "stdout_limit")
             records = [json.loads(line) for line in trace.read_bytes().splitlines()]
             self.assertGreater(records[0]["started_pid"], 0)
@@ -868,3 +873,274 @@ class ClaudeMcpSenderTests(unittest.TestCase):
             })
             self.assertEqual(trace.read_bytes(), trace_bytes)
             self.assertEqual(bookkeeping("show", "send-1"), retained)
+
+
+NAME_CHILD = textwrap.dedent("""\
+    import json
+    import os
+    import subprocess
+    import sys
+    import time
+
+    trace_path, config_path = sys.argv[1], sys.argv[2]
+    with open(config_path, encoding="utf-8") as source:
+        config = json.load(source)
+    pages = list(config["pages"])
+
+    def record(value):
+        with open(trace_path, "a", encoding="utf-8") as trace:
+            trace.write(json.dumps(value) + "\\n")
+
+    record({"started_pid": os.getpid()})
+    if config.get("mode") == "descendant_holds_pipes":
+        holder = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(30)"])
+        record({"holder_pid": holder.pid})
+    for line in sys.stdin:
+        request = json.loads(line)
+        record(request)
+        method = request.get("method")
+        if method == "initialize":
+            response = {"protocolVersion": "2024-11-05", "capabilities": {"tools": {}}}
+        elif method == "notifications/initialized":
+            continue
+        elif method == "tools/list":
+            response = config["catalog"]
+        elif request["params"]["name"] == "ListAgents":
+            response = {"content": [{"type": "text", "text": pages.pop(0)}]}
+        else:
+            response = {"content": [{"type": "text", "text":
+                        "Message sent to the session; in that session's inbox, not yet read."}]}
+        print(json.dumps({"jsonrpc": "2.0", "id": request["id"], "result": response}), flush=True)
+    record({"stdin_eof": True})
+    if config.get("mode") == "lingers_after_input_closes":
+        time.sleep(30)
+    raise SystemExit(0)
+    """)
+
+LISTAGENTS_TOOL = {"name": "ListAgents", "inputSchema": {
+    "$schema": "https://json-schema.org/draft/2020-12/schema", "type": "object",
+    "properties": {
+        "channel": {"type": "string", "maxLength": 256},
+        "q": {"type": "string", "maxLength": 256},
+        "cursor": {"type": "string", "maxLength": 256},
+    },
+    "additionalProperties": False,
+}}
+
+# Rows in the listing profile read from the installed program's formatter.
+DOT = "  ·  "
+LISTING = "\n".join([
+    "Peer sessions (5):",
+    "  claude-receiver [3fa9c1]" + DOT + "interactive" + DOT + "idle" + DOT + "started 5m ago",
+    "  twin [aa11bb]" + DOT + "interactive" + DOT + "busy" + DOT + "started 1m ago",
+    "  twin [cc22dd]" + DOT + "bg" + DOT + "idle" + DOT + "started 2m ago",
+    "  far-away [ee33ff]" + DOT + "Remote Control" + DOT + "idle",
+    "  up-there [ff44aa]" + DOT + "cloud" + DOT + "idle",
+])
+
+
+class ClaudeNameSendTests(unittest.TestCase):
+    @contextmanager
+    def name_consumer(self, *, name="claude-receiver", selection=None, pages=(LISTING,),
+                      mode="ordinary", target=None, seconds=8):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            store = root / "mailbox.sqlite3"
+            trace = root / "child.jsonl"
+            child = root / "name_child.py"
+            child.write_text(NAME_CHILD, encoding="utf-8")
+            mailbox = SCRIPTS / "native_codex_mailbox.py"
+            original = {
+                "message_id": "send-1", "correlation_id": "exchange-9",
+                "sender": {"thread_id": "original", "host_id": "origin-host"},
+                "recipient": {"thread_id": "claude-receiver", "host_id": "local"},
+                "owner": {"thread_id": "owner", "host_id": "local"},
+                "payload": "Compare the two results.\n",
+                "authority_ref": "synthetic://grant/compare", "holds": ["No publication."],
+            }
+            (root / "message.json").write_text(json.dumps(original), encoding="utf-8")
+            config = {"pages": list(pages), "mode": mode, "catalog": {"tools": [
+                retained_destination_catalog()["tools"][0], LISTAGENTS_TOOL]}}
+            (root / "config.json").write_text(json.dumps(config), encoding="utf-8")
+
+            def bookkeeping(*arguments):
+                completed = subprocess.run(
+                    [sys.executable, str(mailbox), "--store", str(store), *arguments],
+                    capture_output=True, text=True, timeout=10, check=True)
+                return json.loads(completed.stdout)
+
+            bookkeeping("init")
+            bookkeeping("plan", "--input", str(root / "message.json"))
+            request = {
+                "message_id": "send-1", "attempt_id": "send-1/attempt/1",
+                "actor": {"thread_id": "forwarder", "host_id": "local"},
+                "recipient": original["recipient"],
+                "command": [sys.executable, str(child), str(trace), str(root / "config.json")],
+                "evidence_ref": "synthetic://evidence/name",
+                "limits": {"operation_seconds": seconds, "stdout_bytes": 65536,
+                           "stderr_bytes": 4096},
+            }
+            if target is None:
+                request["name"] = name
+            else:
+                request["target"] = target
+            if selection is not None:
+                request["selection"] = selection
+
+            def send():
+                (root / "request.json").write_text(json.dumps(request), encoding="utf-8")
+                started = time.monotonic()
+                completed = subprocess.run(
+                    [sys.executable, "-B", str(SCRIPTS / "claude_mcp_sender.py"),
+                     "--store", str(store), "--request", str(root / "request.json")],
+                    capture_output=True, text=True, timeout=40)
+                self.assertEqual(completed.returncode, 0, completed.stderr)
+                result = json.loads(completed.stdout)
+                result["elapsed"] = time.monotonic() - started
+                return result
+
+            def calls():
+                records = [json.loads(line) for line in trace.read_text().splitlines()]
+                return [r["params"] for r in records if r.get("method") == "tools/call"]
+
+            try:
+                yield original, request, send, bookkeeping, calls, trace
+            finally:
+                for line in trace.read_text().splitlines() if trace.exists() else []:
+                    holder = json.loads(line).get("holder_pid")
+                    if holder:
+                        try:
+                            os.kill(holder, signal.SIGKILL)
+                        except OSError:
+                            pass
+
+    def assert_refused_without_send(self, result, reason, calls, bookkeeping):
+        self.assertEqual(result["path"], "name")
+        self.assertEqual(result["reason"], reason)
+        self.assertEqual(result["peer_input"], "not_attempted")
+        self.assertNotIn("SendMessage", [call["name"] for call in calls()])
+        retained = bookkeeping("show", "send-1")
+        self.assertEqual(retained["state"], "refused")
+        observations = retained["attempts"][0]["observations"]
+        self.assertEqual([o["kind"] for o in observations], ["unknown", "refused"])
+        self.assertIn("no sendmessage was sent", observations[-1]["detail"].lower())
+        return observations[-1]["detail"]
+
+    def test_name_submits_with_one_call_and_closes_without_a_signal(self):
+        with self.name_consumer() as (original, request, send, bookkeeping, calls, trace):
+            result = send()
+            self.assertEqual(result["path"], "name")
+            self.assertEqual(result["reason"], "submitted")
+            self.assertEqual(result["owned_child"], {
+                "started": True, "reaped": True, "exit_code": 0})
+            made = calls()
+            self.assertEqual([call["name"] for call in made], ["ListAgents", "SendMessage"])
+            self.assertEqual(made[0]["arguments"], {})
+            self.assertEqual(made[1]["arguments"]["to"], "claude-receiver")
+            envelope = json.loads(made[1]["arguments"]["message"].split("\n", 1)[1])
+            self.assertEqual(envelope["sender"], original["sender"])
+            self.assertEqual(envelope["actor"], request["actor"])
+            self.assertEqual(envelope["correlation_id"], "exchange-9")
+            retained = bookkeeping("show", "send-1")
+            self.assertEqual(retained["state"], "submitted")
+            bound = json.loads(retained["attempts"][0]["observations"][1]["detail"])
+            self.assertEqual(bound["path"], "name")
+            self.assertEqual(bound["to"], "claude-receiver")
+            self.assertEqual(bound["row"]["ref"], "3fa9c1")
+
+    def test_a_child_that_outlives_its_closed_input_is_terminated_not_killed(self):
+        with self.name_consumer(mode="lingers_after_input_closes", seconds=20) as (
+                original, request, send, bookkeeping, calls, trace):
+            result = send()
+            self.assertEqual(result["reason"], "submitted")
+            self.assertEqual(result["owned_child"], {
+                "started": True, "reaped": True, "exit_code": -15,
+                "closed_by": "terminate"})
+            # Input-close grace plus SIGTERM, far short of the 20-second deadline.
+            self.assertLess(result["elapsed"], 10)
+
+    def test_a_descendant_holding_the_pipes_does_not_extend_the_close(self):
+        with self.name_consumer(mode="descendant_holds_pipes", seconds=20) as (
+                original, request, send, bookkeeping, calls, trace):
+            result = send()
+            self.assertEqual(result["reason"], "submitted")
+            self.assertEqual(result["owned_child"], {
+                "started": True, "reaped": True, "exit_code": 0})
+            self.assertLess(result["elapsed"], 10)
+
+    def test_a_name_with_no_local_row_is_refused_before_the_call(self):
+        with self.name_consumer(name="nobody") as (_, request, send, bookkeeping, calls, _t):
+            self.assert_refused_without_send(send(), "no_matching_local_row", calls, bookkeeping)
+
+    def test_an_ambiguous_name_without_selection_is_refused_before_the_call(self):
+        with self.name_consumer(name="twin") as (_, request, send, bookkeeping, calls, _t):
+            detail = self.assert_refused_without_send(send(), "ambiguous_name", calls, bookkeeping)
+            self.assertIn("2 rows", detail)
+
+    def test_a_selected_row_is_addressed_by_its_name_and_this_listings_ref(self):
+        with self.name_consumer(name="twin", selection={"ref": "cc22dd"}) as (
+                _, request, send, bookkeeping, calls, _t):
+            result = send()
+            self.assertEqual(result["reason"], "submitted")
+            self.assertEqual(calls()[-1]["arguments"]["to"], "twin [cc22dd]")
+
+    def test_rows_that_are_not_local_sessions_are_refused_before_the_call(self):
+        for name in ("far-away", "up-there"):
+            with self.subTest(name=name), self.name_consumer(name=name) as (
+                    _, request, send, bookkeeping, calls, _t):
+                self.assert_refused_without_send(send(), "not_local_session", calls, bookkeeping)
+
+    def test_a_reference_not_in_this_attempts_listing_is_refused(self):
+        # A ref that an earlier attempt's listing showed is not shown in this one.
+        with self.name_consumer(name="twin", selection={"ref": "0ld0ne"}) as (
+                _, request, send, bookkeeping, calls, _t):
+            self.assert_refused_without_send(
+                send(), "selection_not_in_listing", calls, bookkeeping)
+
+    def test_a_refused_name_send_tries_no_second_path_and_cannot_be_replayed(self):
+        with self.name_consumer(name="nobody") as (_, request, send, bookkeeping, calls, _t):
+            send()
+            retained = bookkeeping("show", "send-1")
+            self.assertEqual([call["name"] for call in calls()], ["ListAgents"])
+            repeated = send()
+            self.assertFalse(repeated["claimed"])
+            self.assertEqual(repeated["reason"], "claim_not_acquired")
+            self.assertEqual(bookkeeping("show", "send-1"), retained)
+
+    def test_a_supplied_route_is_sent_by_that_route_without_the_name_path(self):
+        with self.name_consumer(target="uds:/synthetic/prepared.sock") as (
+                _, request, send, bookkeeping, calls, _t):
+            result = send()
+            self.assertEqual(result["path"], "route")
+            self.assertEqual(result["reason"], "submitted")
+            made = calls()
+            self.assertEqual([call["name"] for call in made], ["SendMessage"])
+            self.assertEqual(made[0]["arguments"]["to"], "uds:/synthetic/prepared.sock")
+
+    def test_a_listing_is_read_across_pages_within_one_attempt(self):
+        first = "\n".join([
+            "Peer sessions (2):",
+            "  twin [aa11bb]" + DOT + "interactive" + DOT + "busy",
+            '(… 1 more not shown — call again with cursor="0a1b2c3d" for the next page)',
+        ])
+        second = "\n".join([
+            "Peer sessions (2):", "  claude-receiver [3fa9c1]" + DOT + "bg" + DOT + "idle"])
+        with self.name_consumer(pages=(first, second)) as (
+                _, request, send, bookkeeping, calls, _t):
+            result = send()
+            self.assertEqual(result["reason"], "submitted")
+            made = calls()
+            self.assertEqual([call["name"] for call in made],
+                             ["ListAgents", "ListAgents", "SendMessage"])
+            self.assertEqual(made[1]["arguments"], {"cursor": "0a1b2c3d"})
+
+    def test_a_listing_that_reports_missing_rows_is_refused(self):
+        partial = LISTING + "\n  (the session list on this machine could not be read just now)"
+        with self.name_consumer(pages=(partial,)) as (_, request, send, bookkeeping, calls, _t):
+            self.assert_refused_without_send(send(), "listing_incomplete", calls, bookkeeping)
+
+    def test_a_listing_that_fails_records_a_refusal_without_a_send(self):
+        # The child fails on the listing call, so no SendMessage could be written.
+        with self.name_consumer(pages=()) as (_, request, send, bookkeeping, calls, _t):
+            detail = self.assert_refused_without_send(send(), "listing_failed", calls, bookkeeping)
+            self.assertIn("stdout_eof", detail)

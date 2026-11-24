@@ -271,6 +271,43 @@ class ClaudeRouteNominationTests(unittest.TestCase):
             self.assertFalse(Path(request["publication"]["path"]).exists())
             self.assertEqual(retained.read_bytes(), retained_bytes)
 
+    def test_prepare_by_name_uses_the_senders_own_launcher_and_no_nomination(self):
+        route, sender, mailbox_module = self.load_modules()
+        with tempfile.TemporaryDirectory(prefix="claude-route-") as temporary:
+            root = Path(temporary).resolve()
+            root.chmod(0o700)
+            recipient = {"thread_id": "claude-receiver", "host_id": "local"}
+            request = self.prepare_input(root, None, recipient)
+            del request["nomination"]
+            request["schema"] = "claude-name-request-preparation-v1"
+            request["name"] = "claude-receiver"
+            mailbox_path = Path(request["mailbox"])
+            self.initialize_mailbox(mailbox_module, mailbox_path)
+            request_path = root / "prepare-input.json"
+            self.write(request_path, request)
+            lookups = []
+
+            def lookup(name, path):
+                lookups.append((name, path))
+                return "/synthetic/credential-wrapper/bin/claude"
+
+            output = io.StringIO()
+            with contextlib.redirect_stdout(output):
+                route.main(["prepare", "--request", str(request_path)],
+                           effective_uid=os.geteuid(),
+                           environment={"PATH": "/synthetic/credential-wrapper/bin:/usr/bin"},
+                           launcher_lookup=lookup)
+            result = json.loads(output.getvalue())
+            self.assertTrue(result["prepared"], result)
+            self.assertEqual(lookups, [("claude", "/synthetic/credential-wrapper/bin:/usr/bin")])
+            prepared = json.loads(Path(result["path"]).read_text(encoding="utf-8"))
+            sender.validate(prepared)
+            self.assertEqual(prepared["name"], "claude-receiver")
+            self.assertNotIn("target", prepared)
+            self.assertEqual(prepared["command"],
+                             ["/synthetic/credential-wrapper/bin/claude", "mcp", "serve"])
+            self.assertEqual(prepared["recipient"], recipient)
+
     def test_prepare_refuses_an_oversized_frame_before_planning_or_publishing(self):
         route, _, mailbox_module = self.load_modules()
         with tempfile.TemporaryDirectory(prefix="claude-route-") as temporary:

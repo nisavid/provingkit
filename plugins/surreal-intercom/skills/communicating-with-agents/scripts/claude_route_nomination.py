@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Publish a receiver-owned Claude route or prepare its existing sender request."""
+"""Publish a receiver-owned Claude route, or prepare a Claude sender request.
+
+`prepare` builds the request for the ordinary by-name send from the caller's
+own `claude` launcher, or for the fallback route from a pinned nomination.
+"""
 
 import argparse
 import hashlib
@@ -298,19 +302,31 @@ def _mailbox_path(value, effective_uid):
     return path
 
 
-def _prepared_request(request, effective_uid):
-    required = {
-        "schema", "nomination", "message", "attempt_id", "actor", "limits",
-        "mailbox", "publication",
-    }
-    if (
-        not isinstance(request, dict)
-        or request.keys() != required
-        or request["schema"] != "claude-sender-request-preparation-v1"
+ROUTE_PREPARATION = "claude-sender-request-preparation-v1"
+NAME_PREPARATION = "claude-name-request-preparation-v1"
+
+
+def _prepared_request(request, effective_uid, environment, launcher_lookup):
+    common = {"schema", "message", "attempt_id", "actor", "limits", "mailbox", "publication"}
+    schema = request.get("schema") if isinstance(request, dict) else None
+    if schema == ROUTE_PREPARATION and request.keys() == common | {"nomination"}:
+        record = _read_private_nomination(request["nomination"], effective_uid)
+        recipient, command, target = _validated_nomination(record)
+        address = {"target": target}
+        evidence_ref = "sha256:" + request["nomination"]["sha256"]
+    elif schema == NAME_PREPARATION and request.keys() in (
+        common | {"name"}, common | {"name", "selection"},
     ):
+        # The ordinary first send: the sender's own launcher and the recipient's name.
+        recipient = _identity(
+            request["message"].get("recipient") if isinstance(request["message"], dict)
+            else None, "invalid-recipient")
+        command = [_launcher(environment, launcher_lookup), "mcp", "serve"]
+        address = {key: request[key] for key in ("name", "selection") if key in request}
+        target = request["name"]
+        evidence_ref = "claude-name:" + _nonempty(request["name"], "invalid-name")
+    else:
         raise RouteRefusal("invalid-preparation-request")
-    record = _read_private_nomination(request["nomination"], effective_uid)
-    recipient, command, target = _validated_nomination(record)
     message = request["message"]
     if not isinstance(message, dict) or message.get("recipient") != recipient:
         raise RouteRefusal("recipient-nomination-mismatch")
@@ -325,9 +341,9 @@ def _prepared_request(request, effective_uid):
         "attempt_id": attempt_id,
         "actor": actor,
         "recipient": recipient,
-        "target": target,
+        **address,
         "command": command,
-        "evidence_ref": "sha256:" + request["nomination"]["sha256"],
+        "evidence_ref": evidence_ref,
         "limits": request["limits"],
     }
     validate_sender_request(sender_request)
@@ -387,6 +403,8 @@ def main(argv=None, *, effective_uid=None, environment=None, launcher_lookup=Non
         else:
             output, capture, mailbox_path, message, sender_request, expected = _prepared_request(
                 request, uid,
+                os.environ if environment is None else environment,
+                _default_lookup if launcher_lookup is None else launcher_lookup,
             )
             mailbox = Mailbox(mailbox_path)
             try:
