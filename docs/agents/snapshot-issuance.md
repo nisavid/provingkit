@@ -273,8 +273,9 @@ objects, submit an `issue` request:
 ```
 
 Retain the exact successful standard output of this operation, and of each
-`add-variants`, as bytes: `reconcile` changes the stored record, so a replay
-returns different bytes.
+`add-variants`, as bytes in a file of its own, not the result file that later
+calls overwrite: `reconcile` changes the stored record, so a replay returns
+different bytes.
 
 The example binds one target. Include every target present in the transport
 commit; the three-target packing recipe requires three entries. Extra
