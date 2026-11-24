@@ -330,7 +330,10 @@ retry path.
 A lost response, attempted failure, missing result, or incomplete postcheck
 keeps the request pending. Recover it with `{"operation":"inspect"}` or the
 identical `issue` request. Retry recovers the original identity; it does not
-authorize replaying a push. The existing publication owner reconciles the
+authorize replaying a push. If the lost output was an `issue` or `add-variants`
+result, replay the identical request and keep that output before reconciling;
+`inspect` returns the whole state, not that result. The existing publication
+owner reconciles the
 original executor and remote outcome before retry or continuation. Do not
 clear the hold by constructing a successful result or initializing new state.
 
