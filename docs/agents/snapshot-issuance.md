@@ -274,8 +274,6 @@ objects, submit an `issue` request:
 
 Keep the exact standard output of this operation, and of each `add-variants`,
 in a file of its own, not the result file that later calls overwrite.
-`reconcile` changes the stored record, so a later identical replay returns the
-record with its later fields; the member-ZIP helper accepts either.
 
 The example binds one target. Include every target present in the transport
 commit; the three-target packing recipe requires three entries. Extra
@@ -331,9 +329,10 @@ A lost response, attempted failure, missing result, or incomplete postcheck
 keeps the request pending. Recover it with `{"operation":"inspect"}` or the
 identical `issue` request. Retry recovers the original identity; it does not
 authorize replaying a push. If the lost output was an `issue` or `add-variants`
-result, replay the identical request from the same working directory, or with
-absolute paths in the request, and keep what it prints. It returns the stored
-record, which a reconcile may have changed; `inspect` returns the whole state,
+result, replay the identical request and keep what it prints. Run it with the same
+`--state` path and working directory, or with absolute paths, and with the
+reviewed plan and variant files still readable and unchanged. It returns the
+stored record, which a reconcile may have changed; `inspect` returns the whole state,
 not that record. The existing publication owner reconciles the original
 executor and remote outcome before retry or continuation. Do not
 clear the hold by constructing a successful result or initializing new state.
@@ -358,9 +357,9 @@ The issuer has no remote cleanup operation.
 Use `scripts/member_zip.py` when a delivery needs one member's single-plugin
 ZIP and checksum file for Agent Plugins or Claude. It requires an issued
 snapshot: the packed complete-slate archive, its original receipt with the
-`delivery` record, its mode inventory, and the delivery record that the `issue`
+`delivery` record, its mode inventory, and the issuer result, the record that the `issue`
 or `add-variants` operation printed. A snapshot that was prepared
-and projected but not issued lacks that record, and until it is packed it also
+and projected but not issued lacks that result, and until it is packed it also
 lacks the archive and mode inventory, so the helper cannot make its ZIP. The
 helper only reads these files; it never opens the issuance state.
 
@@ -379,7 +378,7 @@ python scripts/member_zip.py verify --request "$MEMBER_ZIP_REQUEST" \
 hold the output, described under the limits below.
 
 The request names the target and member, binds the selected snapshot with `plugin_slate` in its receipt's recorded order, and pins
-each original file by its lowercase SHA-256 digest:
+each file by its lowercase SHA-256 digest:
 
 ```json
 {
@@ -442,7 +441,7 @@ A successful `derive` or `verify` establishes the local integrity of the
 derived files against the pinned snapshot evidence. It does not establish that
 the snapshot was authentically issued or that the pins came from its owner. It
 establishes nothing about exposure, any account, or installation: the reported
-exposure is copied from that record, not observed. The derivative is
+exposure is copied from the issuer result, not observed. The derivative is
 not an issued variant and never enters issuance history; uploading it remains
 with the delivery's own route and authorization.
 
