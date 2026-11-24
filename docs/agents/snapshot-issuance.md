@@ -368,7 +368,7 @@ python scripts/member_zip.py verify --request "$MEMBER_ZIP_REQUEST" \
 `MEMBER_ZIP_PARENT` is the absolute path of the private directory that will
 hold the output, described under the limits below.
 
-The request names the target and member, binds the selected snapshot, and pins
+The request names the target and member, binds the selected snapshot with `plugin_slate` in its receipt's recorded order, and pins
 each original file by its lowercase SHA-256 digest:
 
 ```json
@@ -450,14 +450,12 @@ The helper has these limits:
   without symlinks, outside the checkout, so the checkout stays clean.
 - It supports Agent Plugins and Claude, not Cursor, and snapshot versions only,
   so it rejects a named release.
-- It checks only the parent archive entries its tar reader yields. The reader
-  stops at the first header it cannot read or at the end of the stream, and the
-  helper does not require an end-of-archive marker or read an entry beyond that
-  point. Whether corruption elsewhere in the compressed stream is caught
-  depends on how the reader buffers it. The pins bind the archive's bytes to
-  the issued archive; they do not show that the archive holds no entry beyond
-  those read. The derived files are still checked against the receipt's
-  per-file digests.
+- It checks only the parent archive entries its tar reader yields and does not
+  require an end-of-archive marker. Whether corruption elsewhere in the
+  compressed stream is caught depends on how the reader buffers it. The pins
+  bind the archive's bytes to the issued archive; they do not show that the
+  archive holds no entry beyond those read. The derived files are still checked
+  against the receipt's per-file digests.
 - It expects the 12-character source-commit abbreviation the projector uses in
   the preview label, so it rejects a snapshot whose source commit needed a
   longer abbreviation.
