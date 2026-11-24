@@ -132,7 +132,9 @@ Preparation then resolves `claude` on the caller's own `PATH`, keeps the
 resolved path and invoked name without canonicalizing a wrapper, and uses
 `[launcher, "mcp", "serve"]` as the command. Its `evidence_ref` is
 `claude-name:<name>`. It does not list agents or start Claude; the sender binds
-the name to a listing row within its own attempt.
+the name to a listing row within its own attempt. Its frame check uses the `to`
+the sender will send, built by the sender's own helper: the name, or
+`name [ref]` with a selection.
 
 For genuine first setup only, select the private mailbox through the existing
 caller-owned bookkeeping procedure and create it once through the create-only

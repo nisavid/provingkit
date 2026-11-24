@@ -350,6 +350,56 @@ class ClaudeRouteNominationTests(unittest.TestCase):
                            effective_uid=os.geteuid())
             self.assertTrue(json.loads(output.getvalue())["prepared"])
 
+    def test_prepare_measures_a_selected_name_frame_as_the_sender_sends_it(self):
+        route, sender, mailbox_module = self.load_modules()
+        with tempfile.TemporaryDirectory(prefix="claude-route-") as temporary:
+            root = Path(temporary).resolve()
+            root.chmod(0o700)
+            recipient = {"thread_id": "twin", "host_id": "local"}
+            request = self.prepare_input(root, None, recipient)
+            del request["nomination"]
+            request["schema"] = "claude-name-request-preparation-v1"
+            request["name"] = "twin"
+            request["selection"] = {"ref": "cc22dd"}
+            mailbox_path = Path(request["mailbox"])
+            self.initialize_mailbox(mailbox_module, mailbox_path)
+            request_path = root / "prepare-input.json"
+
+            def frame_bytes(to):
+                return len(json.dumps(
+                    sender.sendmessage_call(request["message"], request["actor"], to),
+                    ensure_ascii=True, separators=(",", ":")).encode()) + 1
+
+            def prepare():
+                self.write(request_path, request)
+                output = io.StringIO()
+                with contextlib.redirect_stdout(output):
+                    route.main(["prepare", "--request", str(request_path)],
+                               effective_uid=os.geteuid(),
+                               environment={"PATH": "/synthetic/bin"},
+                               launcher_lookup=lambda _name, _path: "/synthetic/bin/claude")
+                return json.loads(output.getvalue())
+
+            # The bare name's frame is exactly at the ceiling; the sent `twin [cc22dd]` is over it.
+            request["message"]["payload"] = ""
+            request["message"]["payload"] = "x" * (4096 - frame_bytes("twin"))
+            self.assertEqual(frame_bytes("twin"), 4096)
+            self.assertGreater(frame_bytes("twin [cc22dd]"), 4096)
+            self.assertEqual(prepare(), {
+                "prepared": False, "reason": "sender-frame-byte-limit",
+                "closure": "no-provider-started",
+            })
+            self.assertFalse(Path(request["publication"]["path"]).exists())
+
+            # At the ceiling with the selected `to`, the request is prepared.
+            request["message"]["payload"] = ""
+            request["message"]["payload"] = "x" * (4096 - frame_bytes("twin [cc22dd]"))
+            self.assertEqual(frame_bytes("twin [cc22dd]"), 4096)
+            result = prepare()
+            self.assertTrue(result["prepared"], result)
+            prepared = json.loads(Path(result["path"]).read_text(encoding="utf-8"))
+            self.assertEqual(sender.request_destination(prepared), "twin [cc22dd]")
+
     def test_prepare_returns_safe_refusal_for_existing_corrupt_mailbox(self):
         route, _, _ = self.load_modules()
         with tempfile.TemporaryDirectory(prefix="claude-route-") as temporary:

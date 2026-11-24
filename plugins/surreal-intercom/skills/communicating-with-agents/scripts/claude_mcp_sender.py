@@ -135,6 +135,19 @@ def sendmessage_call(message, actor, target, identity=3):
     }
 
 
+def name_destination(name, ref=None):
+    """The SendMessage `to` for a name: bare, or `name [ref]` for a selected row."""
+    return name if ref is None else f"{name} [{ref}]"
+
+
+def request_destination(request):
+    """The `to` value a validated request addresses, built before any listing."""
+    if "target" in request:
+        return request["target"]
+    selection = request.get("selection")
+    return name_destination(request["name"], None if selection is None else selection["ref"])
+
+
 def frame_fits(value):
     try:
         encoded_frame(value)
@@ -326,8 +339,8 @@ def select_row(rows, name, selection):
             "The named row is not a session on this machine; only local sessions "
             "are addressed. No SendMessage was sent.")
     if selection is not None or len(named) > 1:
-        return f"{row['name']} [{row['ref']}]", row
-    return row["name"], row
+        return name_destination(row["name"], row["ref"]), row
+    return name_destination(row["name"]), row
 
 
 class StdioMcpChild:
@@ -580,7 +593,7 @@ def main():
                 raise InspectionError("incomplete_catalog")
             nominated = [tool for tool in tools if tool["name"] == "SendMessage"]
             listers = [tool for tool in tools if tool["name"] == "ListAgents"]
-            to = request.get("target", request.get("name"))
+            to = request_destination(request)
             if not nominated:
                 refuse("missing_sendmessage",
                        "Complete tools/list catalog has no SendMessage; no tools/call was sent.")

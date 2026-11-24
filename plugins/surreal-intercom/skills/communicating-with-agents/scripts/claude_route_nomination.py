@@ -17,7 +17,7 @@ import sqlite3
 import stat
 import sys
 
-from claude_mcp_sender import frame_fits, sendmessage_call
+from claude_mcp_sender import frame_fits, request_destination, sendmessage_call
 from claude_mcp_sender import validate as validate_sender_request
 from codex_capture import CaptureWriter
 from native_codex_mailbox import Mailbox
@@ -323,7 +323,6 @@ def _prepared_request(request, effective_uid, environment, launcher_lookup):
             else None, "invalid-recipient")
         command = [_launcher(environment, launcher_lookup), "mcp", "serve"]
         address = {key: request[key] for key in ("name", "selection") if key in request}
-        target = request["name"]
         evidence_ref = "claude-name:" + _nonempty(request["name"], "invalid-name")
     else:
         raise RouteRefusal("invalid-preparation-request")
@@ -351,7 +350,8 @@ def _prepared_request(request, effective_uid, environment, launcher_lookup):
     if len(encoded) > 32768:
         raise RouteRefusal("sender-request-byte-limit")
     # The sender would refuse this frame after claiming; refuse before planning.
-    if not frame_fits(sendmessage_call(message, actor, target)):
+    # The `to` is built as the sender builds it, with a selection's `name [ref]`.
+    if not frame_fits(sendmessage_call(message, actor, request_destination(sender_request))):
         raise RouteRefusal("sender-frame-byte-limit")
     return output, capture, mailbox_path, message, sender_request, encoded
 
