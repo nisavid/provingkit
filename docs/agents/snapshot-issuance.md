@@ -330,11 +330,12 @@ keeps the request pending. Recover it with `{"operation":"inspect"}` or the
 identical `issue` request. Retry recovers the original identity; it does not
 authorize replaying a push. If the lost output was an `issue` or `add-variants`
 result, replay the identical request and keep what it prints. Run it with the same
-`--state` path and working directory, or with absolute paths for `--state` and
+`--state` path and working directory, or with absolute paths for `--state`, `--request` and
 in the request, and with the reviewed plan and variant files still readable and
 unchanged. If the first attempt committed, the replay returns the stored
 record, which a reconcile may have changed; if it never committed, the replay
-issues for the first time. Pin only an output that carries `operation` and
+applies the issuer's current checks and either issues for the first time or is
+rejected. Pin only an output that carries `operation` and
 `exposure`; a rejection is not issuer evidence. `inspect` returns the whole
 state, not that record. The existing publication owner reconciles the original
 executor and remote outcome before retry or continuation. Do not
