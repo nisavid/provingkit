@@ -229,7 +229,7 @@ class ClaudeMcpSenderTests(unittest.TestCase):
                     self.assertEqual(attempt["actor"], request["actor"])
                     self.assertEqual([o["kind"] for o in attempt["observations"]], ["unknown", "unknown"])
                     self.assertEqual(json.loads(attempt["observations"][-1]["detail"]), {
-                        "phase": "possible_submission", "target": "uds:/synthetic/selected-peer.sock",
+                        "phase": "possible_submission", "path": "route", "to": "uds:/synthetic/selected-peer.sock",
                     })
                     self.assert_no_replay(request, send, bookkeeping, trace, retained)
 
@@ -458,7 +458,7 @@ class ClaudeMcpSenderTests(unittest.TestCase):
             self.assertEqual(attempt["actor"], request["actor"])
             self.assertEqual([o["kind"] for o in attempt["observations"]], ["unknown", "unknown"])
             self.assertEqual(json.loads(attempt["observations"][-1]["detail"]), {
-                "phase": "possible_submission", "target": request["target"],
+                "phase": "possible_submission", "path": "route", "to": request["target"],
             })
             self.assert_no_replay(request, send, bookkeeping, trace, retained)
 
@@ -487,7 +487,7 @@ class ClaudeMcpSenderTests(unittest.TestCase):
             before_call = next(r["before_call"] for r in records if "before_call" in r)
             self.assertEqual(before_call["state"], "unknown")
             self.assertEqual(json.loads(before_call["attempts"][0]["observations"][-1]["detail"]), {
-                "phase": "possible_submission", "target": request["target"],
+                "phase": "possible_submission", "path": "route", "to": request["target"],
             })
             self.assertFalse(any("stdin_eof" in r for r in records))
             retained = bookkeeping("show", "failure-1")
@@ -498,7 +498,7 @@ class ClaudeMcpSenderTests(unittest.TestCase):
             self.assertEqual(attempt["actor"], request["actor"])
             self.assertEqual([o["kind"] for o in attempt["observations"]], ["unknown", "unknown"])
             self.assertEqual(json.loads(attempt["observations"][-1]["detail"]), {
-                "phase": "possible_submission", "target": request["target"],
+                "phase": "possible_submission", "path": "route", "to": request["target"],
             })
             self.assert_no_replay(request, send, bookkeeping, trace, retained)
 
@@ -590,7 +590,7 @@ class ClaudeMcpSenderTests(unittest.TestCase):
             self.assertEqual(attempt["actor"], request["actor"])
             self.assertEqual([o["kind"] for o in attempt["observations"]], ["unknown", "unknown"])
             self.assertEqual(json.loads(attempt["observations"][-1]["detail"]), {
-                "phase": "possible_submission", "target": "uds:/synthetic/selected-peer.sock",
+                "phase": "possible_submission", "path": "route", "to": "uds:/synthetic/selected-peer.sock",
             })
             self.assert_no_replay(request, send, bookkeeping, trace, retained)
 
@@ -837,7 +837,7 @@ class ClaudeMcpSenderTests(unittest.TestCase):
             self.assertEqual(before_call["state"], "unknown")
             pending_detail = json.loads(before_call["attempts"][0]["observations"][-1]["detail"])
             self.assertEqual(pending_detail, {
-                "phase": "possible_submission", "target": target,
+                "phase": "possible_submission", "path": "route", "to": target,
             })
             self.assertEqual(records[-1], {"stdin_eof": True})
             retained = bookkeeping("show", "send-1")
@@ -1044,6 +1044,9 @@ class ClaudeNameSendTests(unittest.TestCase):
             retained = bookkeeping("show", "send-1")
             self.assertEqual(retained["state"], "submitted")
             bound = json.loads(retained["attempts"][0]["observations"][1]["detail"])
+            # The route path records the same shape without the row.
+            self.assertEqual(set(bound), {"phase", "path", "to", "row"})
+            self.assertEqual(bound["phase"], "possible_submission")
             self.assertEqual(bound["path"], "name")
             self.assertEqual(bound["to"], "claude-receiver")
             self.assertEqual(bound["row"]["ref"], "3fa9c1")

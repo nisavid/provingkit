@@ -641,7 +641,8 @@ def main():
             listers = [tool for tool in tools if tool["name"] == "ListAgents"]
             to = request_destination(request)
             identity = 3
-            bound = {"phase": "possible_submission", "target": to}
+            # One possible-submission record shape on both paths; a name adds its row.
+            bound = {"phase": "possible_submission", "path": path, "to": to}
             try:
                 # Every refusal below is definite and comes before any SendMessage call.
                 if not nominated:
@@ -687,7 +688,7 @@ def main():
                             "control_frame_limit",
                             "SendMessage frame exceeds the 4,096-byte control-frame ceiling; "
                             "no SendMessage was sent.")
-                    bound = {"phase": "possible_submission", "path": "name", "to": to, "row": row}
+                    bound["row"] = row
             except PathRefusal as refusal:
                 refuse(refusal.reason, refusal.detail)
             else:
