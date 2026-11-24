@@ -8,7 +8,7 @@
     "LICENSE": "68950fb14202e1a28da07612a6cc6978163fee3e678520c2740a0d1bde0680e8",
     "README.md": "f11269bdc0973109149f7d1b78ef69ebc045edbdbf0c10945a21791e6e880c7e",
     "plugin.json": "afa765ba1de71baef49395bd3612e9cd3e777664e2453e04cbd88f16f56e761a",
-    "skills/communicating-with-agents/SKILL.md": "297274dd88efe35d217ce8366cc5bba7ab0645b1ce6588e7af56d4c8f76b7f60",
+    "skills/communicating-with-agents/SKILL.md": "e4d1c5e7dce5996f3ed472e1784516dee7f19177fa8c35bd52c65148aa2e1ed4",
     "skills/communicating-with-agents/agents/openai.yaml": "fd5c3396a2f9eaa9dd6e0cf0c44da28cbbf95e3902c03ec74bfc0fb49ff59464",
     "skills/communicating-with-agents/references/claude-mcp-sender.md": "54117476abd8c6d7b5105dc32d2d69da35f6398b489e774bb6a9618c17a54621",
     "skills/communicating-with-agents/references/claude-route-nomination.md": "989bf76e4a81b546d49c5d6afa68ea6737eef0d33830c442732e8b0e33b32bc8",
@@ -36,10 +36,10 @@
     "topology.json": "d97d459e058c34f6867046f7d985346b2b3ce55a7c783b14f97b0743df006066"
   },
   "evaluations": {
-    "evals/surreal-intercom/skills/communicating-with-agents/evals.json": "3ed29693b497cdbb1ac8ffb6454f9fb4f286ce7ac02d0203632135b9eef3acf7",
+    "evals/surreal-intercom/skills/communicating-with-agents/evals.json": "5fdd54476f50f6b105e5f4f2706b8138c86781ad5e0475113c55246eb0ca8d7b",
     "evals/surreal-intercom/skills/communicating-with-agents/fixtures/claude-native-send.md": "96d6604db91b1c04e04ea7286b50088d96f13dc5819bc63f9ed51880011d0ab3",
     "evals/surreal-intercom/skills/communicating-with-agents/fixtures/codex-daybreak-recipient.md": "138a9369a7d5cc3e45edd33124cb6ba449592b736a08410e68fa0126ca99f270",
-    "evals/surreal-intercom/skills/communicating-with-agents/fixtures/held-reply-native-route.md": "f86bee99947c3853dfefd417d789a02b43ed35c0660720b5d774fec76d98a013",
+    "evals/surreal-intercom/skills/communicating-with-agents/fixtures/held-reply-native-route.md": "0b3eeca02c0716ce9029814101783e7a50488365bba5a016ea8c5a422bbcc9e4",
     "evals/surreal-intercom/skills/communicating-with-agents/fixtures/native-delegation.md": "29d13724128eb8fcb422b21c926b66e97c36f98f9a7e029ca8c995c619ccb341",
     "evals/surreal-intercom/skills/communicating-with-agents/fixtures/ordinary-entry.md": "53395bf106159ada480126fb6c54282eadd4d4a574d456c73abb17f546387ddb",
     "evals/surreal-intercom/skills/communicating-with-agents/fixtures/reply-follow-through.md": "a06819aa6fc60f9e343868c416f2f959ce1be799405c883200513e37b66abb6f",

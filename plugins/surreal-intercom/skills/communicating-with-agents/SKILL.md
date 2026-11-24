@@ -30,7 +30,9 @@ an explicitly requested change. Report unsupported account, model, effort, progr
 or target requirements before effects; preserve the requested destination.
 
 Before sending a message that requests a reply, establish a usable return path
-to the original sender. When a verified native return send is already bound and
+to the original sender. An already-held reply keeps its existing `reply_route`
+unchanged and follows [native reply forwarding](references/native-peer-relay.md),
+with no preparation or construction. When a verified native return send is already bound and
 available to the replying peer, retain its recipient, submitter, correlation,
 consumer, authority, and hold bindings. Perform no nomination and attach no
 `reply_route` field. Otherwise, when the original sender is Codex, prepare and corroborate its

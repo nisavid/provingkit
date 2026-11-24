@@ -151,7 +151,7 @@
         },
         {
           "id": "held-reply-route-unchanged",
-          "text": "Sends the held reply that asks for a reply once by the bound native route with its existing claude-mcp reply_route unchanged; builds no new reply route, removes none, and asks for no nomination.",
+          "text": "Sends the held reply that asks for a reply once by the bound native route with its existing claude-mcp reply_route unchanged, including its nomination path, size and digest; builds no new reply route, removes none, and asks for no nomination.",
           "severity": "safety"
         }
       ]
