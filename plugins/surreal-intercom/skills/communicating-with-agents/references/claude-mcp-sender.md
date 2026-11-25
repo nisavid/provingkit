@@ -32,7 +32,9 @@ attempt also the pair described under reconciliation below:
 - `actor` and `recipient`: the identity objects above. The request recipient must equal the planned recipient. On the name path its `thread_id` must also equal `name`; otherwise the sender returns `recipient_name_mismatch` before any claim or listing.
 - Exactly one address: `name`, the recipient's name as a `ListAgents` row
   prints it (no brackets, CR, LF, or surrounding spaces, and no leading `uds:`,
-  so a name is never sent as a route; at most 300 UTF-16 code units), optionally with `selection: {"ref": ...}` choosing one of
+  so a name is never sent as a route; no leading `(` and no listing field
+  separator `  ·  `, which the listing profile cannot read in a row label; at
+  most 300 UTF-16 code units), optionally with `selection: {"ref": ...}` choosing one of
   several rows that share the name; or `target`, a nonempty recipient-prepared
   `uds:` route for `SendMessage.to`.
 - `command`: a nonempty argument list whose executable path is absolute; the sender passes the exact argument vector with `shell=False`. An explicitly nominated launcher still has its own behavior and side effects.
@@ -97,8 +99,8 @@ attempt's listing that carries the name, with its `name`, `ref`, `kind`, and
 whether it is `local`, and no other row. A
 listing that reports missing, hidden, or failed rows, has a section whose rows
 across all its pages differ in number from the total its header declares, or
-does not end within five pages, records `listing_incomplete`; a row or other
-line outside the profile records `unrecognized_listing`; a `ListAgents` call that fails or runs out of time, errs,
+does not end within five pages, records `listing_incomplete`; a line outside
+the profile records `unrecognized_listing`; a `ListAgents` call that fails or runs out of time, errs,
 or returns another result shape records `listing_failed`, `listing_error`, or
 `unsupported_listing_result`. Each refusal is recorded before any `SendMessage` call,
 and the sender asks only for what is missing, such as the selection; it does not
@@ -113,12 +115,29 @@ carries its name is addressed by the bare name; another session can take the
 same name between the listing and the call, and what the tool does then is known
 only from its description.
 
+The sender refuses when something it cannot read could change which row this
+send addresses, or whether every local row for this name is in view, and not
+for a line that can bear on neither. A row whose label the profile cannot read
+is skipped and counted: the result, the possible-submission record, and the
+`not_delivered` record of a later refusal carry `unreadable_rows`, and the row
+still counts toward its section's declared total. When that label equals the
+requested name, or begins with the name followed by ` [`, the row could be one
+for this name, and the send records `unrecognized_listing`. A name that the
+profile cannot address without doubt (one with brackets, a leading `(`, or the
+field separator, or one that looks like a route) is refused as `invalid_name`
+before any claim; reach such a session through the recipient-prepared route
+fallback instead.
+
 This listing profile, and the row kinds above, are read from the formatter in
 the installed Claude Code 2.1.331 program, not from an observed listing. Outside
 its sections, the profile has only the caller's own session line, the lines of
 an empty listing, and the frame around a block of titles that people or other
-sessions wrote. A different release can print differently; anything outside
-the profile is refused, never guessed.
+sessions wrote. A different release can print differently; anything else
+outside the profile is refused, never guessed. Two limits stay strict until an
+ordinary listing is observed: every note, including one that rows are missing,
+hidden, or failed, and every line the profile does not know refuses the send;
+and pages are followed as the program's source prints them. Whether an ordinary
+listing carries a note or runs past one page is not yet observed.
 
 ## Capture, submit once, and inspect
 

@@ -96,6 +96,9 @@ def validate(request):
             or any(character in name for character in NAME_FORBIDDEN)
             # A name is never sent as a route: the sender does not look for one itself.
             or name.startswith(ROUTE_PREFIX)
+            # The profile cannot read a row label that holds its field separator or
+            # opens with a parenthesis, so it cannot address such a name without doubt.
+            or LISTING_FIELD_SEPARATOR in name or name.startswith("(")
             or utf16_units(name) > 300
         ):
             raise InspectionError("invalid_name")
@@ -308,12 +311,23 @@ def count_section(totals, section, total):
         raise listing_incomplete(f"The declared total of section {section!r} changed within the listing.")
 
 
-def parse_listing_page(listing):
-    """Return (rows, cursor, totals) for one page, or raise PathRefusal."""
+def could_carry_name(label, name):
+    """Whether an unreadable row label could be a row for the requested name."""
+    return label == name or label.startswith(name + " [")
+
+
+def parse_listing_page(listing, name):
+    """Return (rows, cursor, totals, skipped) for one page, or raise PathRefusal.
+
+    A row whose label the profile cannot read is skipped and counted per section,
+    unless it could be a row for `name`: then it could change which row is
+    addressed, or hide a local row for the name, and the send is refused.
+    """
     rows = []
     cursor = None
     section = None
     totals = {}
+    skipped = {}
     for line in listing.split("\n"):
         if not line.strip():
             continue
@@ -334,7 +348,13 @@ def parse_listing_page(listing):
                 not label or any(character in label for character in "[]")
                 or (ref is not None and REF_PATTERN.fullmatch(ref) is None)
             ):
-                raise PathRefusal("unrecognized_listing", "A listing row label is outside the profile.")
+                if could_carry_name(fields[0], name):
+                    raise PathRefusal(
+                        "unrecognized_listing",
+                        "A listing row that could carry this name has a label outside the "
+                        "profile; no SendMessage was sent.")
+                skipped[section] = skipped.get(section, 0) + 1
+                continue
             rows.append({"section": section, "name": label, "ref": ref,
                          "kind": row_kind(fields[1:]), "fields": fields[1:]})
             continue
@@ -351,7 +371,7 @@ def parse_listing_page(listing):
             raise PathRefusal(
                 "unrecognized_listing",
                 "A listing line is outside the profile; no SendMessage was sent.")
-    return rows, cursor, totals
+    return rows, cursor, totals, skipped
 
 
 def is_local_session(row):
@@ -572,10 +592,14 @@ def initialize_mcp(child):
     child.send({"jsonrpc": "2.0", "method": "notifications/initialized"})
 
 
-def read_listing(child, first_identity):
-    """Read one complete ListAgents listing, page by page, within this attempt."""
+def read_listing(child, first_identity, name):
+    """Read one complete ListAgents listing, page by page, within this attempt.
+
+    Return (rows, next identity, count of skipped rows the profile cannot read).
+    """
     rows = []
     totals = {}
+    skipped = {}
     cursor = None
     identity = first_identity
     for _ in range(MAX_LISTING_PAGES):
@@ -591,18 +615,23 @@ def read_listing(child, first_identity):
                               "The ListAgents result is outside the text profile.")
         if result.get("isError", False):
             raise PathRefusal("listing_error", "ListAgents returned an error result.")
-        page_rows, cursor, page_totals = parse_listing_page(result["content"][0]["text"])
+        page_rows, cursor, page_totals, page_skipped = parse_listing_page(
+            result["content"][0]["text"], name)
         for section, total in page_totals.items():
             count_section(totals, section, total)
+        for section, count in page_skipped.items():
+            skipped[section] = skipped.get(section, 0) + count
         rows.extend(page_rows)
         if cursor is None:
-            # Every section must show as many rows as it declares, across all pages.
+            # Every section must show as many rows as it declares, across all pages;
+            # a skipped row is still shown.
             for section, total in totals.items():
                 shown = sum(1 for row in rows if row["section"] == section)
+                shown += skipped.get(section, 0)
                 if shown != total:
                     raise listing_incomplete(
                         f"Section {section!r} declares {total} rows and shows {shown}.")
-            return rows, identity
+            return rows, identity, sum(skipped.values())
     raise listing_incomplete(f"The listing did not end within {MAX_LISTING_PAGES} pages.")
 
 
@@ -649,6 +678,9 @@ def main():
             if key not in {"attempts", "state"}
         }
 
+        # Rows of this attempt's listing that the profile could not read and skipped.
+        unreadable_rows = None
+
         def refuse(refusal):
             mailbox.observe(
                 request["message_id"], request["attempt_id"], "refused",
@@ -656,13 +688,16 @@ def main():
             )
             # No possible submission was recorded and no SendMessage call was written:
             # the sender's own phase record is the evidence that this attempt did not deliver.
+            evidence = {
+                "evidence": "sender_phase_record",
+                "phase": "refused_before_possible_submission",
+                "path": path, "reason": refusal.reason,
+            }
+            if unreadable_rows is not None:
+                evidence["unreadable_rows"] = unreadable_rows
             mailbox.observe(
                 request["message_id"], request["attempt_id"], "not_delivered",
-                request["evidence_ref"], json.dumps({
-                    "evidence": "sender_phase_record",
-                    "phase": "refused_before_possible_submission",
-                    "path": path, "reason": refusal.reason,
-                }, ensure_ascii=True, sort_keys=True),
+                request["evidence_ref"], json.dumps(evidence, ensure_ascii=True, sort_keys=True),
             )
             result["reason"] = refusal.reason
             if refusal.candidates is not None:
@@ -730,7 +765,9 @@ def main():
                 if path == "name":
                     result["stage"] = "listing"
                     try:
-                        rows, identity = read_listing(child, identity)
+                        rows, identity, unreadable_rows = read_listing(
+                            child, identity, request["name"])
+                        result["unreadable_rows"] = unreadable_rows
                     except InspectionError as error:
                         # Only ListAgents was written: nothing could have been submitted.
                         raise PathRefusal(
@@ -745,6 +782,7 @@ def main():
                             "SendMessage frame exceeds the 4,096-byte control-frame ceiling; "
                             "no SendMessage was sent.")
                     bound["row"] = row
+                    bound["unreadable_rows"] = unreadable_rows
             except PathRefusal as refusal:
                 refuse(refusal)
             else:

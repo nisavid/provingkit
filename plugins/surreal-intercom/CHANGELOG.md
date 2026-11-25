@@ -46,5 +46,9 @@
   the refusal, and let a caller ask for a later attempt by passing both
   `after_attempt` and `decision_ref` through `prepare` and the sender to the
   mailbox claim; the sender never starts one itself.
+- Skip and count a listing row whose label the profile cannot read unless it
+  could be a row for the requested name, so an unrelated session title no
+  longer stops every send; refuse a requested name the profile cannot address
+  before any claim. Notes and pages stay strict.
 - State the 2026-11-19 decision on a Claude reply waking a Codex sender, and
   that an envelope's sender and actor are claims without authority.

@@ -1055,7 +1055,10 @@ class ClaudeNameSendTests(unittest.TestCase):
         self.assertEqual([o["kind"] for o in observations], ["unknown", "refused", "not_delivered"])
         self.assertIn("no sendmessage was sent", observations[1]["detail"].lower())
         # The sender's own phase record is the evidence that the attempt did not deliver.
-        self.assertEqual(json.loads(observations[2]["detail"]), {
+        evidence = json.loads(observations[2]["detail"])
+        # A refusal after a complete listing also counts the rows it skipped.
+        self.assertIn(evidence.pop("unreadable_rows", 0), range(0, 100))
+        self.assertEqual(evidence, {
             "evidence": "sender_phase_record", "path": "name",
             "phase": "refused_before_possible_submission", "reason": reason})
         return observations[1]["detail"]
@@ -1079,7 +1082,8 @@ class ClaudeNameSendTests(unittest.TestCase):
             self.assertEqual(retained["state"], "submitted")
             bound = json.loads(retained["attempts"][0]["observations"][1]["detail"])
             # The route path records the same shape without the row.
-            self.assertEqual(set(bound), {"phase", "path", "to", "row"})
+            self.assertEqual(set(bound), {"phase", "path", "to", "row", "unreadable_rows"})
+            self.assertEqual(bound["unreadable_rows"], 0)
             self.assertEqual(bound["phase"], "possible_submission")
             self.assertEqual(bound["path"], "name")
             self.assertEqual(bound["to"], "claude-receiver")
@@ -1314,6 +1318,44 @@ class ClaudeNameSendTests(unittest.TestCase):
             with self.subTest(pages=len(pages)), self.name_consumer(pages=pages) as (
                     _, request, send, bookkeeping, calls, _t):
                 self.assert_refused_without_send(send(), "listing_incomplete", calls, bookkeeping)
+
+    def test_an_unreadable_row_for_another_name_is_skipped_and_counted(self):
+        unreadable = "  notes [draft] for later [ab12cd]" + DOT + "interactive" + DOT + "idle"
+        listing = LISTING.replace("Peer sessions (5):", "Peer sessions (6):") + "\n" + unreadable
+        with self.name_consumer(pages=(listing,)) as (_, request, send, bookkeeping, calls, _t):
+            result = send()
+            self.assertEqual(result["reason"], "submitted")
+            self.assertEqual(result["unreadable_rows"], 1)
+            bound = json.loads(
+                bookkeeping("show", "send-1")["attempts"][0]["observations"][1]["detail"])
+            self.assertEqual(bound["unreadable_rows"], 1)
+        # A refusal after that listing keeps the count in the attempt's record.
+        with self.name_consumer(name="twin", pages=(listing,)) as (
+                _, request, send, bookkeeping, calls, _t):
+            self.assertEqual(send()["reason"], "ambiguous_name")
+            observations = bookkeeping("show", "send-1")["attempts"][0]["observations"]
+            self.assertEqual(json.loads(observations[2]["detail"])["unreadable_rows"], 1)
+
+    def test_an_unreadable_row_that_could_carry_the_name_is_refused(self):
+        for label in ("claude-receiver [not a ref!]", "claude-receiver [3fa9c1] [x]"):
+            listing = "\n".join([
+                "Peer sessions (2):",
+                "  claude-receiver [3fa9c1]" + DOT + "interactive" + DOT + "idle",
+                "  " + label + DOT + "interactive" + DOT + "idle"])
+            with self.subTest(label=label), self.name_consumer(pages=(listing,)) as (
+                    _, request, send, bookkeeping, calls, _t):
+                self.assert_refused_without_send(
+                    send(), "unrecognized_listing", calls, bookkeeping)
+
+    def test_a_name_the_profile_cannot_address_is_refused_before_any_claim(self):
+        for name in ("left" + DOT + "right", "(draft) review"):
+            with self.subTest(name=name), self.name_consumer(name=name) as (
+                    _, request, send, bookkeeping, calls, trace):
+                result = send()
+                self.assertEqual(result["reason"], "invalid_name")
+                self.assertFalse(result["claimed"])
+                self.assertFalse(trace.exists())
+                self.assertEqual(bookkeeping("show", "send-1")["state"], "planned")
 
     def test_a_line_outside_the_listing_profile_is_refused(self):
         unparenthesized = LISTING + "\n… and 2 more sessions not shown"

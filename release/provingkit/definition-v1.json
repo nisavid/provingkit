@@ -112,7 +112,7 @@
         "content_identity": {
           "kind": "plugin-content-lock",
           "path": "release/plugin-content-locks/surreal-intercom.json",
-          "sha256": "sha256:78b6e29f23c13eb9e917cee1446faecb6e6597237f2c1066c1185d07f9ae5753"
+          "sha256": "sha256:feba621735e64653eaa44dd46f3ba52fe4f0629849f219fd5c1f985a1b3fc9e1"
         },
         "display_name": "Surreal Intercom",
         "distribution_kind": "agent-plugin",

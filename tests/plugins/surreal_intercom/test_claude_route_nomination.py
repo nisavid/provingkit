@@ -412,6 +412,30 @@ class ClaudeRouteNominationTests(unittest.TestCase):
             })
             self.assertFalse(Path(request["publication"]["path"]).exists())
 
+    def test_prepare_refuses_a_name_the_listing_profile_cannot_address(self):
+        route, _, mailbox_module = self.load_modules()
+        for name in ("left  ·  right", "(draft) review"):
+            with self.subTest(name=name), tempfile.TemporaryDirectory(
+                    prefix="claude-route-") as temporary:
+                root = Path(temporary).resolve()
+                root.chmod(0o700)
+                request = self.prepare_input(root, None, {"thread_id": name, "host_id": "local"})
+                del request["nomination"]
+                request.update({"schema": "claude-name-request-preparation-v1", "name": name})
+                self.initialize_mailbox(mailbox_module, Path(request["mailbox"]))
+                request_path = root / "prepare-input.json"
+                self.write(request_path, request)
+                output = io.StringIO()
+                with contextlib.redirect_stdout(output):
+                    route.main(["prepare", "--request", str(request_path)],
+                               effective_uid=os.geteuid(),
+                               environment={"PATH": "/synthetic/bin"},
+                               launcher_lookup=lambda _name, _path: "/synthetic/bin/claude")
+                self.assertEqual(json.loads(output.getvalue()), {
+                    "prepared": False, "reason": "invalid_name",
+                    "closure": "no-provider-started"})
+                self.assertFalse(Path(request["publication"]["path"]).exists())
+
     def test_prepare_refuses_a_recipient_that_does_not_carry_the_name(self):
         route, _, mailbox_module = self.load_modules()
         with tempfile.TemporaryDirectory(prefix="claude-route-") as temporary:

@@ -111,8 +111,11 @@ documents. Cover one submission with exactly one `SendMessage` call, paging by
 cursor within the attempt, and each refusal before the call: no local row, an
 ambiguous name without selection, a selection that matches more than one row,
 a row that is not a local session, a reference this listing does not show, an
-incomplete listing, a section with fewer rows than it declares, and a line
-outside the profile. Show that a planned recipient whose `thread_id` is not the
+incomplete listing, a section with fewer rows than it declares, a line
+outside the profile, and an unreadable row label that could carry the requested
+name. Show that an unreadable row for another name is skipped and counted, and
+that a name the profile cannot address is refused before any claim, in the
+sender and in `prepare`. Show that a planned recipient whose `thread_id` is not the
 requested name is refused by the sender and by `prepare` before any listing,
 and that a reply through an unchanged route of either kind still reaches the
 original sender when the outbound message went by name. Show that a refusal
