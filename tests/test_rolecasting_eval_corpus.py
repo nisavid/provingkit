@@ -24,7 +24,7 @@ SCOPED_OVERRIDE_RULES = {
         "Resolve model, effort, and Ultracode independently",
         "Honor current explicit operator choices",
         "without a routine approval question",
-        "the conditions its review explicitly covered",
+        "the task scope and conditions its review explicitly covered",
         "abstain from that selection profile",
         "or matching is uncertain, stale, unsupported, or failed",
         "Do not invent a registry",

@@ -19,7 +19,9 @@ both efforts.
 Case C: One proposed task matches an approved selection profile's recipient,
 bounded purpose, authority, conditions, and end. Another task has a similar
 title but fails a stated condition. A third task's record cannot establish one
-stated condition. All have an eligible ordinary appointment-configuration
+stated condition. A fourth task fits a purpose the selection profile's record
+lists, but the recorded review explicitly covered only a narrower purpose that
+excludes it. All have an eligible ordinary appointment-configuration
 default; no authority to broaden the selection profile or create a matching
 service is supplied.
 
