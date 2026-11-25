@@ -1273,14 +1273,14 @@ class ClaudeNameSendTests(unittest.TestCase):
                     _, request, send, bookkeeping, calls, _t):
                 self.assert_refused_without_send(send(), "not_local_session", calls, bookkeeping)
 
-    def test_a_row_with_both_local_and_remote_kinds_is_not_local(self):
+    def test_an_extra_kind_after_the_status_refuses_the_listing(self):
         listing = "\n".join([
             "Peer sessions (1):",
             "  alpha [a1]" + DOT + "interactive" + DOT + "idle" + DOT + "Remote Control",
         ])
         with self.name_consumer(name="alpha", pages=(listing,)) as (
                 _, request, send, bookkeeping, calls, _t):
-            self.assert_refused_without_send(send(), "not_local_session", calls, bookkeeping)
+            self.assert_refused_without_send(send(), "unrecognized_listing", calls, bookkeeping)
 
     def test_a_multi_match_locality_refusal_lists_only_matching_rows(self):
         listing = "\n".join([
@@ -1427,37 +1427,134 @@ class ClaudeNameSendTests(unittest.TestCase):
                     send(), "unrecognized_listing", calls, bookkeeping)
 
     def test_a_listing_note_with_separators_does_not_count_as_a_row(self):
-        listing = "\n".join([
-            "Peer sessions (2):",
-            "  claude-receiver [3fa9c1]" + DOT + "interactive" + DOT + "idle",
-            "  (missing session" + DOT + "interactive" + DOT + "idle)",
-        ])
-        with self.name_consumer(pages=(listing,)) as (_, request, send, bookkeeping, calls, _t):
-            self.assert_refused_without_send(send(), "listing_incomplete", calls, bookkeeping)
+        for note, ending in (("missing session", ")"), ("missing session", ""),
+                             ("missing session (hidden)", "")):
+            listing = "\n".join([
+                "Peer sessions (2):",
+                "  claude-receiver [3fa9c1]" + DOT + "interactive" + DOT + "idle",
+                "  (" + note + DOT + "interactive" + DOT + "idle" + ending,
+            ])
+            with self.subTest(note=note, ending=ending), self.name_consumer(pages=(listing,)) as (
+                    _, request, send, bookkeeping, calls, _t):
+                result = send()
+                self.assert_refused_without_send(result, "listing_incomplete", calls, bookkeeping)
+                self.assertEqual(result["unreadable_rows"], 0)
 
     def test_an_unrelated_parenthesized_row_is_skipped_and_counted(self):
+        for status in ("idle", "idle (waiting)", "(annotation)"):
+            listing = "\n".join([
+                "Peer sessions (2):",
+                "  claude-receiver [3fa9c1]" + DOT + "interactive" + DOT + status,
+                "  (draft) review [b2]" + DOT + "interactive" + DOT + status,
+            ])
+            with self.subTest(status=status), self.name_consumer(pages=(listing,)) as (
+                    _, request, send, bookkeeping, calls, _t):
+                result = send()
+                self.assertEqual(result["reason"], "submitted")
+                self.assertEqual(result["unreadable_rows"], 1)
+                self.assertEqual([call["name"] for call in calls()], ["ListAgents", "SendMessage"])
+
+    def test_trailing_kind_and_status_determine_where_the_title_ends(self):
+        for title in (
+            "alpha" + DOT + "interactive" + DOT + "notes  ·",
+            "other" + DOT + DOT + "notes [b2]",
+            "alpha" + DOT + "says it was a title fragment",
+        ):
+            listing = "\n".join([
+                "Peer sessions (2):",
+                "  alpha [a1]" + DOT + "interactive" + DOT + "idle",
+                "  " + title + DOT + "Remote Control" + DOT + "idle",
+            ])
+            with self.subTest(title=title), self.name_consumer(name="alpha", pages=(listing,)) as (
+                    _, request, send, bookkeeping, calls, _t):
+                result = send()
+                self.assertEqual(result["reason"], "submitted")
+                self.assertEqual(result["unreadable_rows"], 1)
+                self.assertEqual([call["name"] for call in calls()], ["ListAgents", "SendMessage"])
+                self.assertEqual(calls()[-1]["arguments"]["to"], "alpha")
+
+    def test_an_unrelated_former_name_with_a_separator_is_skipped(self):
         listing = "\n".join([
             "Peer sessions (2):",
-            "  claude-receiver [3fa9c1]" + DOT + "interactive" + DOT + "idle",
-            "  (draft) review [b2]" + DOT + "interactive" + DOT + "idle",
-        ])
-        with self.name_consumer(pages=(listing,)) as (_, request, send, bookkeeping, calls, _t):
-            result = send()
-            self.assertEqual(result["reason"], "submitted")
-            self.assertEqual(result["unreadable_rows"], 1)
-            self.assertEqual([call["name"] for call in calls()], ["ListAgents", "SendMessage"])
-
-    def test_a_separator_inside_a_title_does_not_create_a_name_match(self):
-        listing = "\n".join([
-            "Peer sessions (1):",
-            "  alpha" + DOT + "notes [b2]" + DOT + "interactive" + DOT + "idle",
+            "  alpha [a1]" + DOT + "interactive" + DOT + "idle",
+            "  other [b2]" + DOT + "says it was old" + DOT + "notes until 1m ago"
+            + DOT + "bg" + DOT + "idle",
         ])
         with self.name_consumer(name="alpha", pages=(listing,)) as (
                 _, request, send, bookkeeping, calls, _t):
-            self.assert_refused_without_send(
-                send(), "no_matching_local_row", calls, bookkeeping)
+            result = send()
+            self.assertEqual(result["reason"], "submitted")
+            self.assertEqual(result["unreadable_rows"], 1)
+            self.assertEqual(calls()[-1]["arguments"]["to"], "alpha")
 
-    def test_a_separator_with_an_uncertain_name_boundary_refuses(self):
+    def test_an_ambiguous_current_or_former_name_refuses_the_whole_send(self):
+        for label, former in (
+            ("alpha [b2]", "old" + DOT + "notes"),
+            ("other" + DOT + "notes [b2]", "alpha"),
+            ("alpha", "old" + DOT + "notes"),
+        ):
+            listing = "\n".join([
+                "Peer sessions (2):",
+                "  alpha [a1]" + DOT + "interactive" + DOT + "idle",
+                "  " + label + DOT + "says it was " + former + " until 1m ago"
+                + DOT + "bg" + DOT + "idle",
+            ])
+            with self.subTest(label=label, former=former), self.name_consumer(
+                    name="alpha", pages=(listing,)) as (_, request, send, bookkeeping, calls, _t):
+                result = send()
+                self.assert_refused_without_send(
+                    result, "unrecognized_listing", calls, bookkeeping)
+                self.assertEqual(result["unreadable_rows"], 0)
+
+    def test_non_peer_sections_require_their_own_row_fields(self):
+        for section, line in (
+            ("Cloud and Remote Control sessions", "[one session hidden]" + DOT + "unavailable"),
+            ("Cloud and Remote Control sessions", "diagnostic" + DOT + "one row hidden"),
+            ("Cloud and Remote Control sessions", "other [b2]" + DOT + "bg" + DOT + "idle"),
+            ("Cloud and Remote Control sessions", "other [b2]" + DOT + "cloud" + DOT + "garbled"),
+            ("Teammates", "unknown" + DOT + "line"),
+            ("Unexpected sessions", "other [b2]" + DOT + "bg" + DOT + "idle"),
+        ):
+            listing = "\n".join([
+                "Peer sessions (1):",
+                "  alpha [a1]" + DOT + "interactive" + DOT + "idle",
+                section + " (1):",
+                "  " + line,
+            ])
+            with self.subTest(line=line), self.name_consumer(name="alpha", pages=(listing,)) as (
+                    _, request, send, bookkeeping, calls, _t):
+                result = send()
+                self.assert_refused_without_send(
+                    result, "unrecognized_listing", calls, bookkeeping)
+                self.assertEqual(result["unreadable_rows"], 0)
+
+    def test_a_teammate_title_with_a_separator_does_not_create_a_name_match(self):
+        listing = "\n".join([
+            "Peer sessions (1):",
+            "  alpha [a1]" + DOT + "interactive" + DOT + "idle",
+            "Teammates (1):",
+            "  alpha" + DOT + "notes [b2]" + DOT + "teammate" + DOT + "idle",
+        ])
+        with self.name_consumer(name="alpha", pages=(listing,)) as (
+                _, request, send, bookkeeping, calls, _t):
+            result = send()
+            self.assertEqual(result["reason"], "submitted")
+            self.assertEqual(result["unreadable_rows"], 1)
+            self.assertEqual(calls()[-1]["arguments"]["to"], "alpha")
+
+    def test_a_separator_inside_a_title_does_not_create_a_name_match(self):
+        for row in (
+            "alpha" + DOT + "notes [b2]" + DOT + "interactive" + DOT + "idle",
+            "alpha" + DOT + "interactive" + DOT + "notes  ·" + DOT + "Remote Control" + DOT + "idle",
+        ):
+            listing = "\n".join(["Peer sessions (1):", "  " + row])
+            with self.subTest(row=row), self.name_consumer(name="alpha", pages=(listing,)) as (
+                    _, request, send, bookkeeping, calls, _t):
+                result = send()
+                self.assert_refused_without_send(result, "no_matching_local_row", calls, bookkeeping)
+                self.assertEqual(result["unreadable_rows"], 1)
+
+    def test_kind_words_in_a_title_do_not_create_a_name_match(self):
         for label in ("alpha" + DOT + "interactive" + DOT + "idle" + DOT + "notes [b2]",
                       "alpha" + DOT + "interactive"):
             listing = "\n".join([
@@ -1466,7 +1563,7 @@ class ClaudeNameSendTests(unittest.TestCase):
             with self.subTest(label=label), self.name_consumer(name="alpha", pages=(listing,)) as (
                     _, request, send, bookkeeping, calls, _t):
                 self.assert_refused_without_send(
-                    send(), "unrecognized_listing", calls, bookkeeping)
+                    send(), "no_matching_local_row", calls, bookkeeping)
 
     def test_a_section_that_shows_fewer_rows_than_it_declares_is_refused(self):
         one_short = "\n".join([

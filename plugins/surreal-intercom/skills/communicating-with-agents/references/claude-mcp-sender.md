@@ -119,14 +119,14 @@ carries its name is addressed by the bare name; another session can take the
 same name between the listing and the call, and what the tool does then is known
 only from its description.
 
-The sender refuses when something it cannot read could change which row this
-send addresses, or whether every local row for this name is in view, and not
-for a line that can bear on neither. A row whose label the profile cannot read
-is skipped and counted: the result, the possible-submission record, and the
-`not_delivered` record of a later refusal carry `unreadable_rows`, and the row
-still counts toward its section's declared total. When that label equals the
-requested name, or begins with the name followed by ` [`, the row could be one
-for this name, and the send records `unrecognized_listing`. A name that the
+The sender reads each section's row fields from the right, so separators or
+kind words in a title leave the label boundary intact. A complete row whose
+label the profile cannot read is skipped and counted if neither the current
+title nor a possible former name could carry the requested name. The result,
+the possible-submission record, and the `not_delivered` record of a later
+refusal carry `unreadable_rows`, and the row still counts toward its section's
+declared total. If a possible label equals the requested name or begins with
+that name followed by ` [`, the send records `unrecognized_listing`. A name that the
 profile cannot address without doubt (one with brackets, a leading `(`, or the
 field separator, or one that looks like a route) is refused as `invalid_name`
 before any claim; reach such a session through the recipient-prepared route
