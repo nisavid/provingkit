@@ -278,6 +278,12 @@ LOCAL_SESSION_KINDS = frozenset({"interactive", "bg", "daemon", "daemon-worker"}
 REMOTE_ROW_TYPES = frozenset({"cloud", "cloud session", "Remote Control"})
 
 
+def row_kind(fields):
+    """The row's one session kind or remote type, or None when it shows none or several."""
+    kinds = set(fields) & (LOCAL_SESSION_KINDS | REMOTE_ROW_TYPES)
+    return next(iter(kinds)) if len(kinds) == 1 else None
+
+
 def listing_incomplete(detail):
     return PathRefusal("listing_incomplete", detail + " No SendMessage was sent.")
 
@@ -315,7 +321,8 @@ def parse_listing_page(listing):
                 or (ref is not None and REF_PATTERN.fullmatch(ref) is None)
             ):
                 raise PathRefusal("unrecognized_listing", "A listing row label is outside the profile.")
-            rows.append({"section": section, "name": label, "ref": ref, "fields": fields[1:]})
+            rows.append({"section": section, "name": label, "ref": ref,
+                         "kind": row_kind(fields[1:]), "fields": fields[1:]})
             continue
         stripped = line.strip()
         page = LISTING_NEXT_PAGE.match(stripped)
@@ -606,6 +613,9 @@ def main():
         planned = mailbox.get(request["message_id"])
         if planned["recipient"] != request["recipient"]:
             raise InspectionError("recipient_mismatch")
+        # On the name path the record names its recipient by the address it is sent to.
+        if path == "name" and planned["recipient"]["thread_id"] != request["name"]:
+            raise InspectionError("recipient_name_mismatch")
         claim = mailbox.claim(request["message_id"], request["attempt_id"], request["actor"])
         result["claimed"] = claim["claimed"] is True
         result["attempt_id"] = request["attempt_id"]

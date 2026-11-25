@@ -950,7 +950,8 @@ LISTING = "\n".join([
 class ClaudeNameSendTests(unittest.TestCase):
     @contextmanager
     def name_consumer(self, *, name="claude-receiver", selection=None, pages=(LISTING,),
-                      mode="ordinary", target=None, seconds=8, stdout_bytes=65536):
+                      mode="ordinary", target=None, seconds=8, stdout_bytes=65536,
+                      recipient_thread=None):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             store = root / "mailbox.sqlite3"
@@ -958,10 +959,13 @@ class ClaudeNameSendTests(unittest.TestCase):
             child = root / "name_child.py"
             child.write_text(NAME_CHILD, encoding="utf-8")
             mailbox = SCRIPTS / "native_codex_mailbox.py"
+            if recipient_thread is None:
+                # On the name path the planned recipient is named by the requested name.
+                recipient_thread = name if target is None else "claude-receiver"
             original = {
                 "message_id": "send-1", "correlation_id": "exchange-9",
                 "sender": {"thread_id": "original", "host_id": "origin-host"},
-                "recipient": {"thread_id": "claude-receiver", "host_id": "local"},
+                "recipient": {"thread_id": recipient_thread, "host_id": "local"},
                 "owner": {"thread_id": "owner", "host_id": "local"},
                 "payload": "Compare the two results.\n",
                 "authority_ref": "synthetic://grant/compare", "holds": ["No publication."],
@@ -1057,7 +1061,23 @@ class ClaudeNameSendTests(unittest.TestCase):
             self.assertEqual(bound["phase"], "possible_submission")
             self.assertEqual(bound["path"], "name")
             self.assertEqual(bound["to"], "claude-receiver")
-            self.assertEqual(bound["row"]["ref"], "3fa9c1")
+            # The record keeps the row it addressed: its name, reference and kind.
+            self.assertEqual(
+                {key: bound["row"][key] for key in ("name", "ref", "kind")},
+                {"name": "claude-receiver", "ref": "3fa9c1", "kind": "interactive"})
+            self.assertEqual(retained["recipient"]["thread_id"], request["name"])
+
+    def test_the_planned_recipient_must_carry_the_requested_name(self):
+        # The record and the address must say the same thing; a session id is not the name.
+        with self.name_consumer(recipient_thread="3fa9c1-session-id") as (
+                _, request, send, bookkeeping, calls, trace):
+            result = send()
+            self.assertEqual(result["reason"], "recipient_name_mismatch")
+            self.assertFalse(result["claimed"])
+            self.assertEqual(result["owned_child"], {
+                "started": False, "reaped": False, "exit_code": None})
+            self.assertFalse(trace.exists())
+            self.assertEqual(bookkeeping("show", "send-1")["state"], "planned")
 
     def test_a_child_that_outlives_its_closed_input_is_terminated_not_killed(self):
         with self.name_consumer(mode="lingers_after_input_closes", seconds=20) as (

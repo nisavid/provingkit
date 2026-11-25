@@ -346,6 +346,9 @@ def _prepared_request(request, effective_uid, environment, launcher_lookup):
         "limits": request["limits"],
     }
     validate_sender_request(sender_request)
+    # The record's recipient is named by the address the sender will send to.
+    if "name" in sender_request and recipient["thread_id"] != sender_request["name"]:
+        raise RouteRefusal("recipient-name-mismatch")
     encoded = json.dumps(sender_request, sort_keys=True, separators=(",", ":")).encode()
     if len(encoded) > 32768:
         raise RouteRefusal("sender-request-byte-limit")

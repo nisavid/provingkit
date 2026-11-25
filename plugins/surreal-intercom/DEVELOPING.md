@@ -112,7 +112,10 @@ cursor within the attempt, and each refusal before the call: no local row, an
 ambiguous name without selection, a selection that matches more than one row,
 a row that is not a local session, a reference this listing does not show, an
 incomplete listing, a section with fewer rows than it declares, and a line
-outside the profile. Show that a
+outside the profile. Show that a planned recipient whose `thread_id` is not the
+requested name is refused by the sender and by `prepare` before any listing,
+and that a reply through an unchanged route of either kind still reaches the
+original sender when the outbound message went by name. Show that a
 supplied route is sent by that route with no listing, and that a refused name
 request tries no second path. Cover the close: a child that exits on closed
 input takes no signal, one that outlives it is terminated rather than killed,

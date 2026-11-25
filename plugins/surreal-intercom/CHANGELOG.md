@@ -37,5 +37,9 @@
 - Close the Claude sender's child as the MCP stdio lifecycle describes: close
   its input, wait briefly, then `SIGTERM`, then `SIGKILL`, waiting on its exit
   rather than its pipes, so it is no longer run to the deadline.
+- Bind the by-name send's planned recipient to the requested name: the sender
+  and `prepare` refuse a recipient `thread_id` that differs from it, and the
+  attempt keeps the addressed row's name, reference, and kind. The name is an
+  unauthenticated label, not a session identifier.
 - State the 2026-11-19 decision on a Claude reply waking a Codex sender, and
   that an envelope's sender and actor are claims without authority.

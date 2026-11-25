@@ -28,7 +28,7 @@ Give each distinct message a unique immutable `message_id`. Optional `correlatio
 The trusted local UTF-8 JSON request has exactly these fields:
 
 - `message_id`, `attempt_id`, and `evidence_ref`: nonempty strings; the JSON-escaped attempt ID is limited to 256 characters by the source validator.
-- `actor` and `recipient`: the identity objects above. The request recipient must equal the planned recipient.
+- `actor` and `recipient`: the identity objects above. The request recipient must equal the planned recipient. On the name path its `thread_id` must also equal `name`; otherwise the sender returns `recipient_name_mismatch` before any claim or listing.
 - Exactly one address: `name`, the recipient's name as a `ListAgents` row
   prints it (no brackets, CR, LF, or surrounding spaces, and no leading `uds:`,
   so a name is never sent as a route; at most 300 UTF-16 code units), optionally with `selection: {"ref": ...}` choosing one of
@@ -97,6 +97,15 @@ line outside the profile records `unrecognized_listing`; a `ListAgents` call tha
 or returns another result shape records `listing_failed`, `listing_error`, or
 `unsupported_listing_result`. Each refusal is recorded before any `SendMessage` call,
 and the sender asks only for what is missing, such as the selection.
+
+On the name path the planned recipient's `thread_id` is the name as the listing
+prints it. That name is a label the recipient session chose, not a session
+identifier, and nothing authenticates it: the equality binds the mailbox record
+to the address, not to a session. The attempt's possible-submission record
+keeps the row it addressed, with its name, reference, and kind. A row that alone
+carries its name is addressed by the bare name; another session can take the
+same name between the listing and the call, and what the tool does then is known
+only from its description.
 
 This listing profile, and the row kinds above, are read from the formatter in
 the installed Claude Code 2.1.331 program, not from an observed listing. Outside

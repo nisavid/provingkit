@@ -124,7 +124,9 @@ For the ordinary send by name, the agent creates a
 `attempt_id`, `actor`, `limits`, `mailbox`, and `publication` fields, no
 `nomination`, and:
 
-- `name`: the recipient's name as its `ListAgents` row prints it; and
+- `name`: the recipient's name as its `ListAgents` row prints it, equal to the
+  message recipient's `thread_id` (otherwise `recipient-name-mismatch`, before
+  planning or publishing); and
 - optionally `selection: {"ref": ...}`, only when the caller already knows which
   of several same-named rows it means.
 
