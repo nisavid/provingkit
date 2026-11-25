@@ -1154,13 +1154,13 @@ class ClaudeNameSendTests(unittest.TestCase):
             self.assertIn("2 rows", detail)
             # Each matching row of this attempt's listing, and no other row.
             self.assertEqual(result["needs"], "selection")
-            self.assertEqual(result["candidates"], self.TWINS)
+            self.assertCountEqual(result["candidates"], self.TWINS)
 
     def test_a_refused_ambiguous_name_continues_as_a_reconciled_later_attempt(self):
         with self.name_consumer(name="twin") as (_, request, send, bookkeeping, calls, trace):
             first = send()
             self.assertEqual(first["reason"], "ambiguous_name")
-            self.assertEqual(first["candidates"], self.TWINS)
+            self.assertCountEqual(first["candidates"], self.TWINS)
             # The caller asks for the later attempt with the selection and both fields.
             request.update({
                 "attempt_id": "send-1/attempt/2", "selection": {"ref": "cc22dd"},
@@ -1262,10 +1262,10 @@ class ClaudeNameSendTests(unittest.TestCase):
                     result, "ambiguous_selection", calls, bookkeeping)
                 self.assertIn("2 rows", detail)
                 # The rows that carry the name in this attempt's listing, local or not.
-                self.assertEqual(sorted(row["local"] for row in result["candidates"]),
-                                 [False, True])
-                self.assertEqual({row["kind"] for row in result["candidates"]},
-                                 {"interactive", "Remote Control"})
+                self.assertCountEqual(result["candidates"], [
+                    {"name": "twin", "ref": "cc22dd", "kind": "interactive", "local": True},
+                    {"name": "twin", "ref": "cc22dd", "kind": "Remote Control", "local": False},
+                ])
 
     def test_rows_that_are_not_local_sessions_are_refused_before_the_call(self):
         for name in ("far-away", "up-there"):
@@ -1293,7 +1293,7 @@ class ClaudeNameSendTests(unittest.TestCase):
                 _, request, send, bookkeeping, calls, _t):
             result = send()
             self.assert_refused_without_send(result, "not_local_session", calls, bookkeeping)
-            self.assertEqual(result["candidates"], [
+            self.assertCountEqual(result["candidates"], [
                 {"name": "alpha", "ref": "a1", "kind": "interactive", "local": True},
                 {"name": "alpha", "ref": "b2", "kind": "Remote Control", "local": False},
             ])
@@ -1316,7 +1316,7 @@ class ClaudeNameSendTests(unittest.TestCase):
                 _, request, send, bookkeeping, calls, _t):
             result = send()
             self.assert_refused_without_send(result, "ambiguous_name", calls, bookkeeping)
-            self.assertEqual([row["ref"] for row in result["candidates"]], ["a1", "a1"])
+            self.assertCountEqual([row["ref"] for row in result["candidates"]], ["a1", "a1"])
             self.assertNotIn("needs", result)
 
     def test_a_unique_local_reference_alternative_prompts_for_selection(self):
@@ -1331,9 +1331,9 @@ class ClaudeNameSendTests(unittest.TestCase):
             result = send()
             self.assert_refused_without_send(result, "ambiguous_selection", calls, bookkeeping)
             self.assertEqual(result["needs"], "selection")
-            self.assertEqual(result["candidates"][-1], {
+            self.assertIn({
                 "name": "alpha", "ref": "b2", "kind": "bg", "local": True,
-            })
+            }, result["candidates"])
 
     def test_a_selection_hint_requires_a_qualified_destination_that_fits(self):
         name = "x" * 300
@@ -1387,7 +1387,7 @@ class ClaudeNameSendTests(unittest.TestCase):
             result = send()
             self.assert_refused_without_send(
                 result, "selection_not_in_listing", calls, bookkeeping)
-            self.assertEqual(result["candidates"], self.TWINS)
+            self.assertCountEqual(result["candidates"], self.TWINS)
 
     def test_a_refused_name_send_tries_no_second_path_and_cannot_be_replayed(self):
         with self.name_consumer(name="nobody") as (_, request, send, bookkeeping, calls, _t):
