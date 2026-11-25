@@ -565,7 +565,7 @@ class MemberZipContract(unittest.TestCase):
                     parent.save_request()
                 elif case == "output-ancestor":
                     real = self.base / "real-output-parent"
-                    real.mkdir()
+                    real.mkdir(mode=0o700)
                     link = self.base / "output-link"
                     link.symlink_to(real, target_is_directory=True)
                     output = link / "fresh"
