@@ -475,10 +475,14 @@ def parse_listing_page(listing, name, totals, skipped):
         header = LISTING_SECTION.match(line)
         if header:
             section = header["title"]
+            try:
+                total = int(header["total"])
+            except ValueError as error:
+                raise listing_incomplete("A listing section has an invalid row total.") from error
             if section not in LISTING_ROW_KINDS:
                 raise PathRefusal("unrecognized_listing", "A listing section is outside the profile; "
                                   "no SendMessage was sent.")
-            count_section(totals, section, int(header["total"]))
+            count_section(totals, section, total)
             continue
         page = LISTING_NEXT_PAGE.match(stripped)
         if page:

@@ -1605,6 +1605,8 @@ class ClaudeNameSendTests(unittest.TestCase):
         for failure, page, reason in (
                 ("same-page note", "\n".join([first, note, unreadable]), "listing_incomplete"),
                 ("section total", first, "listing_incomplete"),
+                ("oversized section total",
+                 first + "\nTeammates (" + "9" * 4400 + "):", "listing_incomplete"),
                 ("later-page read", "\n".join([first, next_page]), "listing_failed")):
             with self.subTest(failure=failure), self.name_consumer(pages=(page,)) as (
                     _, request, send, bookkeeping, calls, _t):
