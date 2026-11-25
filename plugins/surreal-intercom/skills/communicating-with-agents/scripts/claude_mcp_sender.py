@@ -293,11 +293,13 @@ LISTING_HEAD_LINES = tuple(re.compile(pattern) for pattern in (
 LOCAL_SESSION_SECTION = "Peer sessions"
 LOCAL_SESSION_KINDS = frozenset({"interactive", "bg", "daemon", "daemon-worker"})
 REMOTE_ROW_TYPES = frozenset({"cloud", "cloud session", "Remote Control"})
+SESSION_ROW_TYPES = LOCAL_SESSION_KINDS | REMOTE_ROW_TYPES
+FORMER_NAME_FIELD = re.compile(r"says it was .+ until .+ ago")
 
 
 def row_kind(fields):
     """The row's one session kind or remote type, or None when it shows none or several."""
-    kinds = set(fields) & (LOCAL_SESSION_KINDS | REMOTE_ROW_TYPES)
+    kinds = set(fields) & SESSION_ROW_TYPES
     return next(iter(kinds)) if len(kinds) == 1 else None
 
 
@@ -314,6 +316,25 @@ def count_section(totals, section, total):
 def could_carry_name(label, name):
     """Whether an unreadable row label could be a row for the requested name."""
     return label == name or label.startswith(name + " [")
+
+
+def listing_row_boundaries(fields, section):
+    """Find where session metadata can begin without splitting a title on sight."""
+    if len(fields) < 2 or not all(field.strip() for field in fields):
+        return []
+    boundaries = []
+    for index in range(1, len(fields) - 1):
+        if fields[index] not in SESSION_ROW_TYPES:
+            continue
+        if index > 1 and fields[index - 1] in SESSION_ROW_TYPES:
+            continue
+        if index > 1 and FORMER_NAME_FIELD.fullmatch(fields[index - 1]):
+            boundaries.append(index - 1)
+        boundaries.append(index)
+    if not boundaries and section != LOCAL_SESSION_SECTION:
+        # Subagents and teammates have their own kind and status vocabulary.
+        boundaries.append(1)
+    return boundaries
 
 
 def parse_listing_page(listing, name):
@@ -336,27 +357,32 @@ def parse_listing_page(listing, name):
             section = header["title"]
             count_section(totals, section, int(header["total"]))
             continue
-        if line.startswith("  ") and not line.startswith("  ("):
+        fields = line[2:].split(LISTING_FIELD_SEPARATOR) if line.startswith("  ") else []
+        boundaries = listing_row_boundaries(fields, section)
+        if boundaries:
             if section is None:
                 raise PathRefusal("unrecognized_listing", "A listing row has no section.")
-            fields = line[2:].split(LISTING_FIELD_SEPARATOR)
-            label = fields[0]
+            labels = [LISTING_FIELD_SEPARATOR.join(fields[:index]) for index in boundaries]
+            label = labels[0]
             ref = None
             if label.endswith("]") and " [" in label:
                 label, _, ref = label[:-1].rpartition(" [")
             if (
-                not label or any(character in label for character in "[]")
+                len(labels) != 1 or label.startswith("(")
+                or LISTING_FIELD_SEPARATOR in label
+                or not label or any(character in label for character in "[]")
                 or (ref is not None and REF_PATTERN.fullmatch(ref) is None)
             ):
-                if could_carry_name(fields[0], name):
+                if any(could_carry_name(label, name) for label in labels):
                     raise PathRefusal(
                         "unrecognized_listing",
                         "A listing row that could carry this name has a label outside the "
                         "profile; no SendMessage was sent.")
                 skipped[section] = skipped.get(section, 0) + 1
                 continue
+            metadata = fields[boundaries[0]:]
             rows.append({"section": section, "name": label, "ref": ref,
-                         "kind": row_kind(fields[1:]), "fields": fields[1:]})
+                         "kind": row_kind(metadata), "fields": metadata})
             continue
         stripped = line.strip()
         page = LISTING_NEXT_PAGE.match(stripped)
