@@ -4,7 +4,7 @@
 A request addresses its recipient either by name, resolved in this attempt's
 own `ListAgents` listing, or by a recipient-prepared `uds:` route that the
 caller supplies. This source profile uses MCP 2024-11-05 negotiation; the
-listing profile is read from the installed program's source, not observed.
+listing profile is read from the installed formatter and listing fixtures.
 Submission never establishes receiver receipt. A name or route is a caller
 nomination, not authentication or permission. operation_seconds bounds
 protocol I/O and the wait after closing the child's input; the signal steps
@@ -20,6 +20,7 @@ import selectors
 import sqlite3
 import subprocess
 import time
+from typing import NamedTuple
 
 from native_codex_mailbox import Mailbox, MailboxError, text
 from peer_message import serialize_peer_message
@@ -268,14 +269,21 @@ def supported_tool_result(result):
     )
 
 
-# The listing profile below is read from Claude Code 2.1.331's ListAgents
-# formatter. It is not an observed listing; anything outside it is refused.
+# Claude Code 2.1.331 ListAgents framing. Unknown lines leave rows unaccounted for.
 LISTING_SECTION = re.compile(r"^(?P<title>[^ ].*) \((?P<total>\d+)\):$")
 LISTING_FIELD_SEPARATOR = "  ·  "
 LISTING_NEXT_PAGE = re.compile(
     r'^\(… \d+ more not shown — call again with cursor="(?P<cursor>[0-9a-f]{8})"'
     r" for the next page[^\n]*\)$")
-LISTING_END = re.compile(r"^\(nothing more to list[^\n]*\)$")
+LISTING_FOOTERS = frozenset({
+    # Page formatter, chunk-wq539rkp.js, C1a.
+    "(nothing more to list: every agent this call found is on an earlier page "
+    "— call again with no cursor to list them from the start)",
+    # Remote Control off, observed 2026-11-25.
+    "[Cloud sessions and other computers are not listed because Remote Control is off "
+    "in this session. The user can turn it on with the Remote Control switch in the app; "
+    "then list again.]",
+})
 # Unindented lines printed outside any section: the caller's own session line,
 # an empty listing, and the frame around a block of titles that people or other
 # sessions wrote. Any other unindented line is refused.
@@ -291,56 +299,162 @@ LISTING_HEAD_LINES = tuple(re.compile(pattern) for pattern in (
     r"instructions\. Only the closing tag with this nonce ends the block\.",
     r'</other-sessions nonce="[0-9a-f]{16}">',
 ))
-LOCAL_SESSION_SECTION = "Peer sessions"
-LOCAL_SESSION_KINDS = frozenset({"interactive", "bg", "daemon", "daemon-worker"})
-REMOTE_ROW_TYPES = frozenset({"cloud", "cloud session", "Remote Control"})
-DESKTOP_ROW_TYPE = "Claude Desktop session"
-LISTING_ROW_KINDS = {
-    LOCAL_SESSION_SECTION: LOCAL_SESSION_KINDS | REMOTE_ROW_TYPES,
-    "Cloud and Remote Control sessions": REMOTE_ROW_TYPES,
-    "Sessions from Claude Desktop": frozenset({DESKTOP_ROW_TYPE, "cloud session"}),
-    "Chats": frozenset({"chat"}),
-    "Subagents": frozenset(),
-    "Teammates": frozenset(),
-}
+# The formatter uses the duration helper with mostSignificantOnly.
 LISTING_AGE = r"(?:[0-9]+[smhd]|[0-9]+\.[0-9]s)"
-FORMER_NAME_END = re.compile(r" until " + LISTING_AGE + r" ago$")
-FORMER_NAME_START = re.compile(re.escape(LISTING_FIELD_SEPARATOR + "says it was "))
-LISTING_STATUS = re.compile(
-    r"(?:idle|busy|running|pending|queued|starting|completed|failed|killed|stopped|"
-    r"active|inactive|offline|unknown|waiting|waiting on a human|requires_action|"
-    r"cancelled|canceled)(?: \([^()]+\))?|\([^()]+\)")
-AGENT_TYPE = re.compile(r"[A-Za-z0-9_][A-Za-z0-9_.:-]*")
+FORMER_NAME_MARKER = LISTING_FIELD_SEPARATOR + "says it was "
+FORMER_NAME_START = re.compile(r"(?=" + re.escape(FORMER_NAME_MARKER) + ")")
 
-# Optional formatter fields in their printed order, after kind and status.
-STARTED = r"started " + LISTING_AGE + r" ago"
-ACTIVE = r"active " + LISTING_AGE + r" ago"
-STARTED_HERE = r"started by this session"
-MESSAGING_OFF = r"can't receive cross-session messages \(off in that session\)"
-CLOUD_ROW_DETAILS = (
-    ACTIVE, STARTED_HERE,
-    r"not reachable with SendMessage(?: or [A-Za-z0-9_]+)? from this cloud session",
+
+class ListingField(NamedTuple):
+    suffix: re.Pattern
+    examples: tuple[str, ...]
+    optional: bool
+
+
+class ListingRowShape(NamedTuple):
+    kind: ListingField
+    details: tuple[ListingField, ...] = ()
+    ref_required: bool = False
+    local: bool = False
+
+
+def listing_field(pattern, *examples, optional=False):
+    return ListingField(re.compile(re.escape(LISTING_FIELD_SEPARATOR) + f"({pattern})\\Z"),
+                        examples, optional)
+
+
+def listing_words(*words, optional=False):
+    return listing_field("|".join(map(re.escape, words)), *words, optional=optional)
+
+
+# Shared fields in the Claude Code 2.1.331 formatter. Each shape below places
+# its fields in print order. Examples are synthetic and exercise the grammar.
+STARTED_AGE = listing_field(r"started " + LISTING_AGE + r" ago", "started 1m ago")
+ACTIVE_AGE = listing_field(r"active " + LISTING_AGE + r" ago", "active 1m ago", optional=True)
+STARTED_HERE = listing_words("started by this session", optional=True)
+MESSAGING_OFF = listing_words("can't receive cross-session messages (off in that session)", optional=True)
+DESKTOP_ORIGIN = "Claude Desktop session"
+PARENTHESIZED_STATUS = r"\([^()]+\)"
+# 2.1.331 local status reader, plus test_an_unrelated_parenthesized_row_is_skipped_and_counted.
+PEER_STATUS = listing_field(
+    rf"(?:(?:busy|shell|idle|waiting)(?: {PARENTHESIZED_STATUS})?|{PARENTHESIZED_STATUS})",
+    "busy", "shell", "idle", "waiting", "idle (draft  ·  notes)", "(annotation)", optional=True,
+)
+# Formatter ne/H and the service worker status map (chunk-f2tfd4jn.js, chunk-38sff8pn.js).
+CLOUD_STATUS = listing_words(
+    "running", "idle", "waiting on a human", "pending", "offline", optional=True,
+)
+TASK_STATUSES = ("pending", "running", "completed", "failed", "killed", "paused")
+AGENT_TYPE = listing_field(r"[A-Za-z0-9_][A-Za-z0-9_.:-]*", "reviewer")
+API_STATUS = r"(?:Rate limited|API overloaded|Authentication failed|API error)"
+TEAMMATE_ADDRESS_NOTE = listing_words(
+    "not messageable by name while a subagent in this session is registered under "
+    "that name (the name reaches the subagent)",
+    "message it by this exact name as printed — no [ref]: a subagent here is registered "
+    "under a variant spelling of it",
+    optional=True,
+)
+CLOUD_DETAILS = (
+    ACTIVE_AGE, STARTED_HERE,
+    listing_words(
+        "not reachable with SendMessage from this cloud session",
+        "not reachable with SendMessage or SendFile from this cloud session", optional=True,
+    ),
     MESSAGING_OFF,
 )
-LOCAL_ROW_DETAILS = (
-    DESKTOP_ROW_TYPE, r"tmux [^\s/\\]+", STARTED, r'titled "[^"]+" in Claude Desktop',
-    STARTED_HERE, r"id [A-Za-z0-9_-]+",
-)
-ROW_DETAILS = {
-    "Cloud and Remote Control sessions": CLOUD_ROW_DETAILS,
+
+# claude-mcp-sender.md, “Find the named recipient”, identifies the 2.1.331
+# formatter. Its row constructors (ge, pe, he, ne, ye, be, we) are the source
+# for the shapes below. LISTING refers to the sender's consumer fixture.
+LISTING_ROW_SHAPES = {
+    "Peer sessions": (
+        # he, observed 2026-11-25 (Desktop origin, started hours ago, idle/busy).
+        # LISTING and test_claude_route_nomination.LISTING also omit optional fields.
+        ListingRowShape(listing_words("interactive", "bg", "daemon", "daemon-worker"), (
+            PEER_STATUS,
+            listing_words(DESKTOP_ORIGIN, optional=True),
+            listing_field(r"tmux [^\s/\\]{1,64}", "tmux draft", optional=True),
+            STARTED_AGE._replace(optional=True),
+            listing_field(
+                r'titled "[^"]+" in Claude Desktop',
+                'titled "draft  ·  notes" in Claude Desktop', optional=True,
+            ),
+            STARTED_HERE,
+            listing_field(r"id [A-Za-z0-9_-]+", "id local_synthetic", optional=True),
+        ), local=True),
+        # he/ne and LISTING (bridge account rows use cloud or Remote Control).
+        ListingRowShape(listing_words("cloud session", "Remote Control"), (
+            listing_words("running", "idle", "waiting on a human", "offline", optional=True),
+            *CLOUD_DETAILS,
+        )),
+        ListingRowShape(listing_words("cloud", "Remote Control"), (
+            listing_words("running", "idle", "waiting on a human", "offline",
+                          "busy", "shell", "waiting", optional=True),
+            STARTED_HERE, MESSAGING_OFF,
+        )),
+    ),
+    "Cloud and Remote Control sessions": (
+        # ye/ne, including statusless activity rows reproduced by the runtime critic.
+        # test_the_profiles_head_and_title_frame_lines_are_accepted covers the framed list.
+        ListingRowShape(listing_words("cloud session", "Remote Control"),
+                        (CLOUD_STATUS, *CLOUD_DETAILS)),
+    ),
     "Sessions from Claude Desktop": (
-        f"(?:{STARTED}|{ACTIVE})", r"branch \S+", r"PR #[0-9]+",
-        r"Remote Control on", STARTED_HERE,
+        # we, O and listDesktopSessions. The latter supplies status only for local
+        # Desktop rows. Cloud rows print "started" and Desktop rows print "active".
+        ListingRowShape(listing_words("cloud session"), (
+            STARTED_AGE._replace(optional=True),
+            listing_field(r"branch \S+", "branch draft", optional=True),
+            listing_field(r"PR #[0-9]+", "PR #12", optional=True),
+            listing_words("Remote Control on", optional=True), STARTED_HERE,
+        ), ref_required=True),
+        ListingRowShape(listing_words(DESKTOP_ORIGIN), (
+            listing_words("pending", "busy", "idle", "stopped", optional=True), ACTIVE_AGE,
+            listing_field(r"branch \S+", "branch draft", optional=True),
+            listing_field(r"PR #[0-9]+", "PR #12", optional=True),
+            listing_words("Remote Control on", optional=True), STARTED_HERE,
+        ), ref_required=True),
+    ),
+    "Chats": (
+        # be calls O with the paired chat ID, which follows the title in brackets.
+        ListingRowShape(listing_words("chat"), ref_required=True),
     ),
     "Subagents": (
-        STARTED, r"(?:compacting its conversation|API requests failing|retrying its API request)"
-        r" for .+",
+        # ge prints either a named ref or the agent ID. vgo supplies the wait note.
+        ListingRowShape(AGENT_TYPE, (
+            listing_words(*TASK_STATUSES), STARTED_AGE,
+            listing_field(
+                rf"compacting its conversation for {LISTING_AGE}|"
+                rf"API requests failing for {LISTING_AGE} \({API_STATUS}\); "
+                rf"the retry was due {LISTING_AGE} ago|"
+                rf"retrying its API request for {LISTING_AGE} "
+                rf"\({API_STATUS}, attempt [0-9]+(?:, next try in {LISTING_AGE})?\)",
+                "compacting its conversation for 1m",
+                "API requests failing for 2m (Rate limited); the retry was due 1m ago",
+                "retrying its API request for 2m (API error, attempt 3, next try in 1m)",
+                optional=True,
+            ),
+        )),
     ),
     "Teammates": (
-        r"pane|roster", f"(?:{STARTED}|joined {LISTING_AGE} ago)",
-        r"not messageable by name while a subagent in this session is registered under "
-        r"that name \(the name reaches the subagent\)|message it by this exact name as "
-        r"printed — no \[ref\]: a subagent here is registered under a variant spelling of it",
+        # pe/J print optional type and status for an in-process teammate.
+        # test_a_teammate_title_with_a_separator_does_not_create_a_name_match.
+        ListingRowShape(AGENT_TYPE._replace(optional=True), (
+            listing_words("idle", *TASK_STATUSES),
+            STARTED_AGE._replace(optional=True),
+        )),
+        # pe/J print pane or roster in place of status. The age can be absent.
+        ListingRowShape(AGENT_TYPE._replace(optional=True), (
+            listing_words("pane"), STARTED_AGE._replace(optional=True),
+        )),
+        ListingRowShape(AGENT_TYPE._replace(optional=True), (
+            listing_words("roster"),
+            listing_field(r"joined " + LISTING_AGE + r" ago", "joined 2d ago", optional=True),
+            TEAMMATE_ADDRESS_NOTE,
+        )),
+        # pe/J can omit status for an in-process teammate. The age anchors the
+        # label when status and backend are absent.
+        ListingRowShape(AGENT_TYPE._replace(optional=True), (STARTED_AGE,)),
     ),
 }
 
@@ -355,14 +469,9 @@ def count_section(totals, section, total):
         raise listing_incomplete(f"The declared total of section {section!r} changed within the listing.")
 
 
-def could_carry_name(label, name, start=0, end=None):
+def could_carry_name(label, name):
     """Whether an unreadable row label could be a row for the requested name."""
-    if end is None:
-        end = len(label)
-    return (
-        end - start == len(name) and label.startswith(name, start, end)
-        or label.startswith(name + " [", start, end)
-    )
+    return label == name or label.startswith(name + " [")
 
 
 def unreadable_label():
@@ -372,29 +481,19 @@ def unreadable_label():
         "profile; no SendMessage was sent.")
 
 
-def row_fields(line, section, kinds, details):
-    """Read one formatter suffix from right to left, leaving the label intact."""
-    separator = LISTING_FIELD_SEPARATOR
+def row_fields(line, shape):
+    """Remove complete suffix fields from the right, preserving the title."""
     end = len(line)
-    for pattern in reversed(details):
-        boundary = line.rfind(separator, 0, end)
-        if boundary >= 0 and re.fullmatch(pattern, line[boundary + len(separator):end]):
-            end = boundary
-
-    head, _, last = line[:end].rpartition(separator)
-    if section == "Chats":
-        return (head, last, [last]) if head and last == "chat" else None
-    if not LISTING_STATUS.fullmatch(last):
-        return None
-    label, _, kind = head.rpartition(separator)
-    if section in {"Subagents", "Teammates"}:
-        # Agent types can be user-defined. The printed ref anchors their labels.
-        valid_kind = AGENT_TYPE.fullmatch(kind) and label.endswith("]") and " [" in label
-    else:
-        valid_kind = kind in kinds
-    if not label or not valid_kind:
-        return None
-    return label, kind, line[len(label) + len(separator):].split(separator)
+    kind = None
+    for field in reversed((shape.kind, *shape.details)):
+        match = field.suffix.search(line, 0, end)
+        if match:
+            end = match.start()
+            if field is shape.kind:
+                kind = match[1]
+        elif not field.optional:
+            return None
+    return line[:end], kind
 
 
 def has_closed_opening_parenthesis(label):
@@ -409,53 +508,73 @@ def has_closed_opening_parenthesis(label):
     return False
 
 
+def split_listing_reference(label):
+    if label.endswith("]") and " [" in label:
+        title, _, ref = label[:-1].rpartition(" [")
+        return title, ref
+    return label, None
+
+
+def has_former_name(label, name):
+    # All possible "until" boundaries matter. An uncertain age (including a
+    # malformed suffix) can hide a name just like 1m, 1h 30m or 2d can.
+    ends = {match.start() for match in re.finditer(r"(?= until )", label)}
+    if not ends:
+        return False
+
+    # Look ahead so a title ending in "says it was" does not consume any of
+    # the next separator. Check leftmost, rightmost and intervening boundaries.
+    last_end = max(ends)
+    has_former = False
+    for marker in FORMER_NAME_START.finditer(label, 0, last_end):
+        former = marker.start() + len(FORMER_NAME_MARKER)
+        if former > last_end:
+            continue
+        has_former = True
+        current = label[:marker.start()]
+        title, _ = split_listing_reference(current)
+        former_is_name = former + len(name) in ends and label.startswith(name, former)
+        former_has_ref = label.startswith(name + " [", former, last_end)
+        if not title.strip() or could_carry_name(current, name) or former_is_name or former_has_ref:
+            raise unreadable_label()
+    return has_former
+
+
 def listing_row(line, section, name):
-    """Return a parsed row, or None for a complete row with an unrelated unreadable label."""
+    """Return a row, or None for a complete row with an unrelated unreadable label."""
     content = line[2:]
-    if section == LOCAL_SESSION_SECTION:
-        fields = row_fields(content, section, LOCAL_SESSION_KINDS, LOCAL_ROW_DETAILS)
-        if fields is None:
-            fields = row_fields(content, section, REMOTE_ROW_TYPES, CLOUD_ROW_DETAILS)
-    elif section is None:
-        fields = None
+    for shape in LISTING_ROW_SHAPES.get(section, ()):
+        fields = row_fields(content, shape)
+        if fields is not None:
+            break
     else:
-        fields = row_fields(
-            content, section, LISTING_ROW_KINDS[section], ROW_DETAILS.get(section, ()))
+        fields = None
+
     parenthesized = content.lstrip().startswith("(")
     if fields is None or (parenthesized and not has_closed_opening_parenthesis(fields[0])):
-        # An opening parenthesis in the title is allowed to close inside the
-        # label. A note's closing parenthesis surrounds the whole line.
+        # A row's opening parenthesis closes inside the label. A note's
+        # closing parenthesis surrounds the line.
         if parenthesized:
             raise listing_incomplete("The listing reports missing or hidden rows.")
         raise PathRefusal("unrecognized_listing", "A listing line is outside the profile; "
                           "no SendMessage was sent.")
 
-    raw_label, kind, metadata = fields
-    former_boundary = False
-    if section == LOCAL_SESSION_SECTION and kind in LOCAL_SESSION_KINDS:
-        if former_end := FORMER_NAME_END.search(raw_label):
-            # The formatter does not escape title or former-name separators.
-            # Check every possible boundary before discarding an unreadable label.
-            for marker in FORMER_NAME_START.finditer(raw_label, 0, former_end.start()):
-                if marker.start() and marker.end() < former_end.start():
-                    former_boundary = True
-                    if could_carry_name(raw_label, name, 0, marker.start()) or could_carry_name(
-                        raw_label, name, marker.end(), former_end.start()
-                    ):
-                        raise unreadable_label()
-    label = raw_label
-    ref = None
-    if label.endswith("]") and " [" in label:
-        label, _, ref = label[:-1].rpartition(" [")
+    raw_label, kind = fields
+    former = shape.local and has_former_name(raw_label, name)
+    label, ref = split_listing_reference(raw_label)
+    if not label.strip() or (shape.ref_required and (
+            ref is None or REF_PATTERN.fullmatch(ref) is None)):
+        raise PathRefusal("unrecognized_listing", "A listing row is missing its title or "
+                          "required reference; no SendMessage was sent.")
     if (
-        former_boundary or label.startswith("(") or LISTING_FIELD_SEPARATOR in label
-        or not label or any(character in label for character in "[]")
+        former or label.startswith("(") or LISTING_FIELD_SEPARATOR in label
+        or any(character in label for character in "[]")
         or (ref is not None and REF_PATTERN.fullmatch(ref) is None)
     ):
         if could_carry_name(raw_label, name):
             raise unreadable_label()
         return None
-    return {"section": section, "name": label, "ref": ref, "kind": kind, "fields": metadata}
+    return {"section": section, "name": label, "ref": ref, "kind": kind, "local": shape.local}
 
 
 def parse_listing_page(listing, name, totals, skipped):
@@ -479,7 +598,7 @@ def parse_listing_page(listing, name, totals, skipped):
                 total = int(header["total"])
             except ValueError as error:
                 raise listing_incomplete("A listing section has an invalid row total.") from error
-            if section not in LISTING_ROW_KINDS:
+            if section not in LISTING_ROW_SHAPES:
                 raise PathRefusal("unrecognized_listing", "A listing section is outside the profile; "
                                   "no SendMessage was sent.")
             count_section(totals, section, total)
@@ -488,7 +607,7 @@ def parse_listing_page(listing, name, totals, skipped):
         if page:
             cursor = page["cursor"]
             continue
-        if LISTING_END.match(stripped):
+        if stripped in LISTING_FOOTERS:
             continue
         if line.startswith("  "):
             row = listing_row(line, section, name)
@@ -508,7 +627,7 @@ def parse_listing_page(listing, name, totals, skipped):
 
 
 def is_local_session(row):
-    return row["section"] == LOCAL_SESSION_SECTION and row["kind"] in LOCAL_SESSION_KINDS
+    return row["local"]
 
 
 def candidate_view(row):

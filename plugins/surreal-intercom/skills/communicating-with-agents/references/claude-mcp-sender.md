@@ -120,29 +120,31 @@ carries its name is addressed by the bare name; another session can take the
 same name between the listing and the call, and what the tool does then is known
 only from its description.
 
-The sender reads each section's row fields from the right, so separators or
-kind words in a title leave the label boundary intact. A complete row whose
+The sender reads each section's complete fields from the right. The separator
+is a middle dot with two spaces on each side. A dot with single spaces belongs
+to the title, and separators inside a quoted Desktop title or a parenthesized
+status annotation stay inside that field. A complete row whose
 label the profile cannot read is skipped and counted if neither the current
 title nor a possible former name could carry the requested name. The result,
 the possible-submission record, and the `not_delivered` record of a later
 refusal carry `unreadable_rows`, and the row still counts toward its section's
 declared total. If a possible label equals the requested name or begins with
-that name followed by ` [`, the send records `unrecognized_listing`. A name that the
-profile cannot address without doubt (one with brackets, a leading `(`, or the
+that name followed by ` [`, the send records `unrecognized_listing`. The
+same refusal applies when a former-name phrase with an unfamiliar age or
+overlapping phrase boundaries could carry the name. Rows with blank labels
+and chat titles without their trailing bracketed ID leave the listing unreadable.
+A name that the profile cannot address without doubt (one with brackets, a leading `(`, or the
 field separator, or one that looks like a route) is refused as `invalid_name`
 before any claim; reach such a session through the recipient-prepared route
 fallback instead.
 
-This listing profile, and the row kinds above, are read from the formatter in
-the installed Claude Code 2.1.331 program, not from an observed listing. Outside
-its sections, the profile has only the caller's own session line, the lines of
-an empty listing, and the frame around a block of titles that people or other
-sessions wrote. A different release can print differently; anything else
-outside the profile is refused, never guessed. Two limits stay strict until an
-ordinary listing is observed: every note, including one that rows are missing,
-hidden, or failed, and every line the profile does not know refuses the send;
-and pages are followed as the program's source prints them. Whether an ordinary
-listing carries a note or runs past one page is not yet observed.
+The row profile follows Claude Code 2.1.331's formatter and the sender
+fixtures. A Claude Desktop listing observed on 2026-11-25 confirms the caller
+header, the Desktop peer origin and start age, and the Remote Control off
+footer. The sender recognizes that footer and the end-of-list footer by their
+full text. Missing, hidden, or failed-session notes and unknown lines refuse
+the send. The sender follows pages as the formatter prints them. Multi-page
+behavior is covered by fixtures.
 
 ## Capture, submit once, and inspect
 

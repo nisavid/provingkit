@@ -1,5 +1,6 @@
 """Consumer catalog refusal through a real CLI and disposable MCP child."""
 from contextlib import contextmanager
+from itertools import product
 import json
 import os
 from pathlib import Path
@@ -11,6 +12,7 @@ import tempfile
 import textwrap
 import time
 import unittest
+from unittest.mock import patch
 
 SCRIPTS = (
     Path(__file__).resolve().parents[3]
@@ -1355,8 +1357,8 @@ class ClaudeNameSendTests(unittest.TestCase):
     def test_a_selection_hint_requires_a_qualified_frame_that_fits(self):
         listing = "\n".join([
             "Peer sessions (2):",
-            "  alpha [a]" + DOT + "interactive" + DOT + "idle",
             "  alpha [b234]" + DOT + "bg" + DOT + "idle",
+            "  alpha [a]" + DOT + "interactive" + DOT + "idle",
         ])
         # Only the bare frame fits with 3,484 payload characters. With 3,480,
         # adding the four bytes of " [a]" fits exactly and " [b234]" exceeds the limit.
@@ -1458,6 +1460,185 @@ class ClaudeNameSendTests(unittest.TestCase):
         partial = LISTING + "\n  (the session list on this machine could not be read just now)"
         with self.name_consumer(pages=(partial,)) as (_, request, send, bookkeeping, calls, _t):
             self.assert_refused_without_send(send(), "listing_incomplete", calls, bookkeeping)
+
+    def test_the_listing_footer_is_matched_in_full(self):
+        footer = (
+            "(nothing more to list: every agent this call found is on an earlier page "
+            "— call again with no cursor to list them from the start)")
+        local = "  " + DOT.join(("alpha [a1]", "interactive", "idle"))
+        cases = (
+            ("Peer sessions (1):", footer, "submitted", 0),
+            ("Peer sessions (1):", "  (nothing more to list; other sessions could not be read)",
+             "listing_incomplete", 0),
+            ("Peer sessions (2):", "  " + DOT.join(
+                ("(nothing more to list) review [b2]", "interactive", "idle (waiting)")),
+             "submitted", 1),
+        )
+        for heading, last_line, reason, skips in cases:
+            listing = "\n".join((heading, local, last_line))
+            with self.subTest(last_line=last_line), self.name_consumer(
+                    name="alpha", pages=(listing,)) as (_, _, send, bookkeeping, calls, _):
+                result = send()
+                if reason == "submitted":
+                    self.assertEqual(result["reason"], reason)
+                    self.assertEqual(calls()[-1]["arguments"]["to"], "alpha")
+                else:
+                    self.assert_refused_without_send(result, reason, calls, bookkeeping)
+                self.assertEqual(result["unreadable_rows"], skips)
+
+    def test_quoted_titles_and_status_annotations_keep_internal_separators(self):
+        for words in ("draft notes", "draft" + DOT + "notes"):
+            for details in (("idle", f'titled "{words}" in Claude Desktop'), (f"idle ({words})",)):
+                for label, skips in (("other [b2]", 0), ("other [draft] [b2]", 1)):
+                    listing = "\n".join((
+                        "Peer sessions (2):",
+                        "  " + DOT.join(("alpha [a1]", "interactive", "idle")),
+                        "  " + DOT.join((label, "interactive", *details)),
+                    ))
+                    with self.subTest(details=details, label=label), self.name_consumer(
+                            name="alpha", pages=(listing,)) as (_, _, send, _, calls, _):
+                        result = send()
+                        self.assertEqual(result["reason"], "submitted")
+                        self.assertEqual(result["unreadable_rows"], skips)
+                        self.assertEqual(calls()[-1]["arguments"]["to"], "alpha")
+
+    def test_supported_rows_with_and_without_optional_fields(self):
+        cases = (
+            ("Peer sessions", ("(draft) peer", "bg", "idle")),
+            ("Peer sessions", ("(draft) · notes [a1b2c3]", "interactive", "busy",
+                               "Claude Desktop session", "started 8h ago")),
+            ("Subagents", ("a1234", "reviewer", "running", "started 3s ago")),
+            ("Subagents", ("(draft) reviewer [b2]", "reviewer", "running", "started 3s ago")),
+            ("Teammates", ("(draft) peer", "reviewer", "roster")),
+            ("Teammates", ("(draft) peer [b2]", "reviewer", "roster", "joined 2d ago")),
+            ("Teammates", ("(draft) peer [b2]", "reviewer", "running", "started 3s ago")),
+            ("Teammates", ("(draft) peer [b2]", "reviewer", "started 3s ago")),
+            ("Cloud and Remote Control sessions", ("(draft) cloud", "cloud session", "active 1m ago")),
+            ("Cloud and Remote Control sessions", ("(draft) cloud [b2]", "cloud session", "running")),
+            ("Chats", ("(draft) chat [b2]", "chat")),
+        )
+        for section, fields in cases:
+            local = "  " + DOT.join(("alpha [a1]", "interactive", "idle"))
+            other = "  " + DOT.join(fields)
+            if section == "Peer sessions":
+                lines = ("Peer sessions (2):", local, other)
+            else:
+                lines = ("Peer sessions (1):", local, f"{section} (1):", other)
+            with self.subTest(section=section, fields=fields), self.name_consumer(
+                    name="alpha", pages=("\n".join(lines),)) as (_, _, send, _, calls, _):
+                result = send()
+                self.assertEqual(result["reason"], "submitted")
+                self.assertEqual(result["unreadable_rows"], int(fields[0] != "a1234"))
+                self.assertEqual(calls()[-1]["arguments"]["to"], "alpha")
+
+    def test_listing_grammar_renderings_require_every_mandatory_field(self):
+        with patch.object(sys, "path", [str(SCRIPTS), *sys.path]):
+            from claude_mcp_sender import LISTING_ROW_SHAPES, PathRefusal, parse_listing_page
+
+        for section, shapes in LISTING_ROW_SHAPES.items():
+            for shape in shapes:
+                fields = (shape.kind, *shape.details)
+                values = [(*field.examples, None) if field.optional else field.examples
+                          for field in fields]
+                references = (" [b2]",) if shape.ref_required else ("", " [b2]")
+                for reference, *suffix in product(references, *values):
+                    parts = ["x" + reference, *(value for value in suffix if value is not None)]
+                    line = f"{section} (1):\n  " + DOT.join(parts)
+                    with self.subTest(line=line):
+                        rows, cursor = parse_listing_page(line, "alpha", {}, {})
+                        self.assertIsNone(cursor)
+                        self.assertEqual(len(rows), 1)
+                        self.assertEqual(rows[0]["name"], "x")
+                        self.assertEqual(rows[0]["ref"], "b2" if reference else None)
+                        self.assertEqual(rows[0]["kind"], suffix[0])
+                        self.assertEqual(rows[0]["local"], shape.local)
+                        skipped = {}
+                        unreadable = f"{section} (1):\n  (draft) " + DOT.join(parts)
+                        self.assertEqual(parse_listing_page(unreadable, "alpha", {}, skipped),
+                                         ([], None))
+                        self.assertEqual(skipped, {section: 1})
+
+                # Corrupt each character of every mandatory field in a minimal
+                # rendering, where another optional field cannot anchor the row.
+                label = "x [b2]" if shape.ref_required else "x"
+                mandatory = [value for field, value in zip(fields, values) if not field.optional]
+                for suffix in product(*mandatory):
+                    rendered = DOT.join((label, *suffix))
+                    for index in range(len(rendered)):
+                        replacement = " " if index == 0 else "?"
+                        altered = rendered[:index] + replacement + rendered[index + 1:]
+                        line = f"{section} (1):\n  " + altered
+                        with self.subTest(line=line):
+                            with self.assertRaises(PathRefusal) as refusal:
+                                parse_listing_page(line, "alpha", {}, {})
+                            self.assertEqual(refusal.exception.reason, "unrecognized_listing")
+
+    def test_the_observed_desktop_listing_accepts_single_spaced_dots_and_shell_peers(self):
+        listing = "\n".join((
+            "This session is Synthetic Sender [123abc] — the name other sessions use to message it "
+            "(it is not listed below; a message to it would be a message to yourself).",
+            "Peer sessions (2):",
+            "  " + DOT.join(("alpha [a1b2c3]", "interactive", "shell",
+                              "Claude Desktop session", "started 8h ago")),
+            "  " + DOT.join(("Synthetic · Draft [c1b2a3]", "interactive", "idle",
+                              "Claude Desktop session", "started 3h ago")),
+            "[Cloud sessions and other computers are not listed because Remote Control is off "
+            "in this session. The user can turn it on with the Remote Control switch in the app; "
+            "then list again.]",
+        ))
+        with self.name_consumer(name="alpha", pages=(listing,)) as (_, _, send, _, calls, _):
+            result = send()
+            self.assertEqual(result["reason"], "submitted")
+            self.assertEqual(result["unreadable_rows"], 0)
+            self.assertEqual(calls()[-1]["arguments"]["to"], "alpha")
+
+    def test_missing_peer_labels_and_chat_ids_refuse(self):
+        local = "  " + DOT.join(("alpha [a1]", "interactive", "idle"))
+        for lines in (
+                ("Peer sessions (2):", local, "  " + DOT.join(("", "interactive", "idle"))),
+                ("Peer sessions (2):", local, "  " + DOT.join(("   ", "interactive", "idle"))),
+                ("Peer sessions (2):", local, "  " + DOT.join((" [b2]", "interactive", "idle"))),
+                ("Peer sessions (2):", local, "  " + DOT.join(
+                    (" [b2]", "says it was another until 1m ago", "interactive", "idle"))),
+                ("Peer sessions (1):", local, "Chats (1):",
+                 "  " + DOT.join(("[one session hidden]", "chat")))):
+            with self.subTest(lines=lines), self.name_consumer(
+                    name="alpha", pages=("\n".join(lines),)) as (_, _, send, bookkeeping, calls, _):
+                result = send()
+                self.assert_refused_without_send(result, "unrecognized_listing", calls, bookkeeping)
+                self.assertEqual(result["unreadable_rows"], 0)
+
+    def test_former_names_with_compound_unknown_and_overlapping_boundaries(self):
+        cases = (
+            ("alpha" + DOT + "says it was  until 1m ago", "unrecognized_listing"),
+            ("alpha" + DOT + "says it was other until 1h 30m ago", "unrecognized_listing"),
+            ("alpha" + DOT + "says it was other until an hour ago", "unrecognized_listing"),
+            ("other" + DOT + "says it was alpha until just now", "unrecognized_listing"),
+            ("other" + DOT + "says it was alpha until about then until 1m ago",
+             "unrecognized_listing"),
+            ("other" + DOT + "says it was alpha until 2d ago", "unrecognized_listing"),
+            ("other" + DOT + "says it was another until 2d ago", "submitted"),
+            ("other" + DOT + "says it was" + DOT + "says it was alpha until 1m ago",
+             "unrecognized_listing"),
+            ("other" + DOT + "says it was" + DOT + "says it was another until 1m ago",
+             "submitted"),
+        )
+        for label, reason in cases:
+            listing = "\n".join((
+                "Peer sessions (2):",
+                "  " + DOT.join(("alpha [a1]", "interactive", "idle")),
+                "  " + DOT.join((label, "bg", "idle")),
+            ))
+            with self.subTest(label=label), self.name_consumer(
+                    name="alpha", pages=(listing,)) as (_, _, send, bookkeeping, calls, _):
+                result = send()
+                if reason == "submitted":
+                    self.assertEqual(result["reason"], reason)
+                    self.assertEqual(result["unreadable_rows"], 1)
+                    self.assertEqual(calls()[-1]["arguments"]["to"], "alpha")
+                else:
+                    self.assert_refused_without_send(result, reason, calls, bookkeeping)
+                    self.assertEqual(result["unreadable_rows"], 0)
 
     def test_indented_fieldless_lines_do_not_count_as_rows(self):
         for line in ("  [one session hidden]", "  one session hidden"):
