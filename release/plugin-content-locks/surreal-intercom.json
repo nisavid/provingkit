@@ -20,7 +20,7 @@
     "skills/communicating-with-agents/references/native-codex-mailbox.md": "3e03276eb0f20df83afc17ca18e7ee3a0ca66fb322d56a7171045fee75cb0787",
     "skills/communicating-with-agents/references/native-peer-relay.md": "e781ddfcd65c68cd9de4e3fe8ee855d0b90947605e32dfe3a987d5ad1a3327b5",
     "skills/communicating-with-agents/references/peer-messages.md": "907601c16e493230062da47691fbfc493e1bc6d97960747de896d49f7b687c4a",
-    "skills/communicating-with-agents/scripts/claude_mcp_sender.py": "f537c8cccc9c33102ebad3a12bab3d14339146b2556c93eb47b7a589cc9bc12d",
+    "skills/communicating-with-agents/scripts/claude_mcp_sender.py": "a67b61d8b7d0240a80cb822c8b69149a391623e6dbf0f86faa080f9e93c2e536",
     "skills/communicating-with-agents/scripts/claude_route_nomination.py": "60da91c70dad682a8ed6e74f361534459c1e5dc4d07af4c435bf39a5ac7bb01d",
     "skills/communicating-with-agents/scripts/codex_capture.py": "9e4621bab683cb310b70df8326b7555d23932348ad8a73fe0bcb25c7c16228f2",
     "skills/communicating-with-agents/scripts/codex_daybreak_sender.py": "220d49c11d2dcc26df41334e11f311805b9f091fe3bb0d7203dee8f548981be9",
@@ -30,7 +30,7 @@
     "skills/communicating-with-agents/scripts/codex_ipc_transport.py": "057117f9439133d82f7b02fa8010a1745bcefb0d9682928655a7664fb8022440",
     "skills/communicating-with-agents/scripts/codex_route_nomination.py": "5c77bedbb76e78516d755e4b47134c5c64a575b01e7abe54851b316552746a83",
     "skills/communicating-with-agents/scripts/codex_worker_observer.py": "5e9cda52d6aee1ac54cd366c673d76f695410e094a667cfd0a4b8676afe0d824",
-    "skills/communicating-with-agents/scripts/native_codex_mailbox.py": "7f59f99187ed1fa8101012850f2f6a66f0c4fe89b853e419f8488bc428d8e4fc",
+    "skills/communicating-with-agents/scripts/native_codex_mailbox.py": "fb440e9ad6a87ebb780994bd7375beda9a3f79310d7ecaf6d9e2a3d895b4c97c",
     "skills/communicating-with-agents/scripts/owner_admission_sender.py": "8f86eea2d4dee9f272359c0d8903df38dd9955d5adbadcc83b56077dac393d2c",
     "skills/communicating-with-agents/scripts/peer_message.py": "778fbabb5d42f0d5a3d876c86452b47046b22a1552b57c98c46ffe5653656a9a",
     "topology.json": "d97d459e058c34f6867046f7d985346b2b3ce55a7c783b14f97b0743df006066"

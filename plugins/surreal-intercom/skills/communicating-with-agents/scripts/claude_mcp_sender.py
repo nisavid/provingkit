@@ -698,10 +698,6 @@ def main():
         }
 
         def refuse(refusal):
-            mailbox.observe(
-                request["message_id"], request["attempt_id"], "refused",
-                request["evidence_ref"], refusal.detail,
-            )
             # No possible submission was recorded and no SendMessage call was written:
             # the sender's own phase record is the evidence that this attempt did not deliver.
             evidence = {
@@ -711,9 +707,11 @@ def main():
             }
             if "unreadable_rows" in result:
                 evidence["unreadable_rows"] = result["unreadable_rows"]
-            mailbox.observe(
-                request["message_id"], request["attempt_id"], "not_delivered",
-                request["evidence_ref"], json.dumps(evidence, ensure_ascii=True, sort_keys=True),
+            mailbox.observe_many(
+                request["message_id"], request["attempt_id"], request["evidence_ref"], (
+                    ("refused", refusal.detail),
+                    ("not_delivered", json.dumps(evidence, ensure_ascii=True, sort_keys=True)),
+                ),
             )
             result["reason"] = refusal.reason
             if refusal.candidates is not None:

@@ -4,6 +4,7 @@ import json
 import os
 from pathlib import Path
 import signal
+import sqlite3
 import subprocess
 import sys
 import tempfile
@@ -1290,6 +1291,34 @@ class ClaudeNameSendTests(unittest.TestCase):
             self.assertFalse(repeated["claimed"])
             self.assertEqual(repeated["reason"], "claim_not_acquired")
             self.assertEqual(bookkeeping("show", "send-1"), retained)
+
+    def test_a_failure_between_refusal_observations_commits_neither(self):
+        for path, target in (("name", None), ("route", "uds:" + "x" * 300)):
+            with self.subTest(path=path), self.name_consumer(name="nobody", target=target) as (
+                    _, request, send, bookkeeping, calls, trace):
+                connection = sqlite3.connect(trace.parent / "mailbox.sqlite3")
+                try:
+                    connection.execute("""
+                        CREATE TRIGGER fail_after_refused BEFORE INSERT ON observations
+                        WHEN NEW.kind = 'not_delivered' AND EXISTS (
+                            SELECT 1 FROM observations
+                            WHERE attempt_id = NEW.attempt_id AND kind = 'refused'
+                        )
+                        BEGIN
+                            SELECT RAISE(ABORT, 'synthetic failure after refused');
+                        END
+                    """)
+                finally:
+                    connection.close()
+
+                result = send()
+                self.assertEqual(result["path"], path)
+                self.assertEqual(result["reason"], "local_or_protocol_failure")
+                self.assertEqual(result["peer_input"], "not_attempted")
+                self.assertNotIn("SendMessage", [call["name"] for call in calls()])
+                # The show command opens a new connection after the failed sender exits.
+                observations = bookkeeping("show", "send-1")["attempts"][0]["observations"]
+                self.assertEqual([observation["kind"] for observation in observations], ["unknown"])
 
     def test_a_supplied_route_is_sent_by_that_route_without_the_name_path(self):
         with self.name_consumer(target="uds:/synthetic/prepared.sock") as (
