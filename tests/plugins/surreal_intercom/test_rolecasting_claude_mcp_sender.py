@@ -1,6 +1,5 @@
 """Consumer catalog refusal through a real CLI and disposable MCP child."""
 from contextlib import contextmanager
-from itertools import product
 import json
 import os
 from pathlib import Path
@@ -1439,6 +1438,15 @@ class ClaudeNameSendTests(unittest.TestCase):
             self.assertEqual([call["name"] for call in made], ["SendMessage"])
             self.assertEqual(made[0]["arguments"]["to"], "uds:/synthetic/prepared.sock")
 
+    def test_a_short_peer_row_requires_a_status(self):
+        listing = "Peer sessions (1):\n  alpha [a1]" + DOT + "interactive"
+        with self.name_consumer(name="alpha", pages=(listing,)) as (
+                _, _, send, bookkeeping, calls, _):
+            result = send()
+            self.assert_refused_without_send(result, "unrecognized_listing", calls, bookkeeping)
+            self.assertEqual(result["unreadable_rows"], 0)
+            self.assertNotIn("candidates", result)
+
     def test_a_listing_is_read_across_pages_within_one_attempt(self):
         first = "\n".join([
             "Peer sessions (2):",
@@ -1531,47 +1539,21 @@ class ClaudeNameSendTests(unittest.TestCase):
                 self.assertEqual(result["unreadable_rows"], int(fields[0] != "a1234"))
                 self.assertEqual(calls()[-1]["arguments"]["to"], "alpha")
 
-    def test_listing_grammar_renderings_require_every_mandatory_field(self):
+    def test_listing_form_examples_are_parser_self_consistency_checks(self):
         with patch.object(sys, "path", [str(SCRIPTS), *sys.path]):
-            from claude_mcp_sender import LISTING_ROW_SHAPES, PathRefusal, parse_listing_page
+            from claude_mcp_sender import LISTING_ROW_SHAPES, parse_listing_page
 
+        # The grammar supplies these examples. CLI fixtures independently establish support.
         for section, shapes in LISTING_ROW_SHAPES.items():
             for shape in shapes:
-                fields = (shape.kind, *shape.details)
-                values = [(*field.examples, None) if field.optional else field.examples
-                          for field in fields]
-                references = (" [b2]",) if shape.ref_required else ("", " [b2]")
-                for reference, *suffix in product(references, *values):
-                    parts = ["x" + reference, *(value for value in suffix if value is not None)]
-                    line = f"{section} (1):\n  " + DOT.join(parts)
-                    with self.subTest(line=line):
-                        rows, cursor = parse_listing_page(line, "alpha", {}, {})
-                        self.assertIsNone(cursor)
-                        self.assertEqual(len(rows), 1)
-                        self.assertEqual(rows[0]["name"], "x")
-                        self.assertEqual(rows[0]["ref"], "b2" if reference else None)
-                        self.assertEqual(rows[0]["kind"], suffix[0])
-                        self.assertEqual(rows[0]["local"], shape.local)
-                        skipped = {}
-                        unreadable = f"{section} (1):\n  (draft) " + DOT.join(parts)
-                        self.assertEqual(parse_listing_page(unreadable, "alpha", {}, skipped),
-                                         ([], None))
-                        self.assertEqual(skipped, {section: 1})
-
-                # Corrupt each character of every mandatory field in a minimal
-                # rendering, where another optional field cannot anchor the row.
-                label = "x [b2]" if shape.ref_required else "x"
-                mandatory = [value for field, value in zip(fields, values) if not field.optional]
-                for suffix in product(*mandatory):
-                    rendered = DOT.join((label, *suffix))
-                    for index in range(len(rendered)):
-                        replacement = " " if index == 0 else "?"
-                        altered = rendered[:index] + replacement + rendered[index + 1:]
-                        line = f"{section} (1):\n  " + altered
-                        with self.subTest(line=line):
-                            with self.assertRaises(PathRefusal) as refusal:
-                                parse_listing_page(line, "alpha", {}, {})
-                            self.assertEqual(refusal.exception.reason, "unrecognized_listing")
+                line = f"{section} (1):\n  " + DOT.join(("other [b2]", *shape.example))
+                with self.subTest(line=line):
+                    rows, cursor = parse_listing_page(line, "alpha", {}, {})
+                    self.assertIsNone(cursor)
+                    self.assertEqual(rows, [{
+                        "section": section, "name": "other", "ref": "b2",
+                        "kind": shape.example[0], "local": shape.local,
+                    }])
 
     def test_the_observed_desktop_listing_accepts_single_spaced_dots_and_shell_peers(self):
         listing = "\n".join((

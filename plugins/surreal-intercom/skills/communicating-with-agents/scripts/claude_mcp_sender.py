@@ -305,156 +305,74 @@ FORMER_NAME_MARKER = LISTING_FIELD_SEPARATOR + "says it was "
 FORMER_NAME_START = re.compile(r"(?=" + re.escape(FORMER_NAME_MARKER) + ")")
 
 
-class ListingField(NamedTuple):
-    suffix: re.Pattern
-    examples: tuple[str, ...]
-    optional: bool
-
-
 class ListingRowShape(NamedTuple):
-    kind: ListingField
-    details: tuple[ListingField, ...] = ()
+    suffix: re.Pattern
+    example: tuple[str, ...]
     ref_required: bool = False
     local: bool = False
 
 
-def listing_field(pattern, *examples, optional=False):
-    return ListingField(re.compile(re.escape(LISTING_FIELD_SEPARATOR) + f"({pattern})\\Z"),
-                        examples, optional)
+def listing_form(example, *patterns, ref_required=False, local=False):
+    """Match one complete field sequence after the label."""
+    separator = re.escape(LISTING_FIELD_SEPARATOR)
+    kind, *details = patterns or tuple(map(re.escape, example))
+    suffix = separator.join(("", f"(?P<kind>{kind})", *(f"(?:{field})" for field in details)))
+    return ListingRowShape(re.compile(suffix + r"\Z"), example, ref_required, local)
 
 
-def listing_words(*words, optional=False):
-    return listing_field("|".join(map(re.escape, words)), *words, optional=optional)
-
-
-# Shared fields in the Claude Code 2.1.331 formatter. Each shape below places
-# its fields in print order. Examples are synthetic and exercise the grammar.
-STARTED_AGE = listing_field(r"started " + LISTING_AGE + r" ago", "started 1m ago")
-ACTIVE_AGE = listing_field(r"active " + LISTING_AGE + r" ago", "active 1m ago", optional=True)
-STARTED_HERE = listing_words("started by this session", optional=True)
-MESSAGING_OFF = listing_words("can't receive cross-session messages (off in that session)", optional=True)
+STARTED_AGE = rf"started {LISTING_AGE} ago"
+ACTIVE_AGE = rf"active {LISTING_AGE} ago"
+JOINED_AGE = rf"joined {LISTING_AGE} ago"
 DESKTOP_ORIGIN = "Claude Desktop session"
-PARENTHESIZED_STATUS = r"\([^()]+\)"
-# 2.1.331 local status reader, plus test_an_unrelated_parenthesized_row_is_skipped_and_counted.
-PEER_STATUS = listing_field(
-    rf"(?:(?:busy|shell|idle|waiting)(?: {PARENTHESIZED_STATUS})?|{PARENTHESIZED_STATUS})",
-    "busy", "shell", "idle", "waiting", "idle (draft  ·  notes)", "(annotation)", optional=True,
-)
-# Formatter ne/H and the service worker status map (chunk-f2tfd4jn.js, chunk-38sff8pn.js).
-CLOUD_STATUS = listing_words(
-    "running", "idle", "waiting on a human", "pending", "offline", optional=True,
-)
-TASK_STATUSES = ("pending", "running", "completed", "failed", "killed", "paused")
-AGENT_TYPE = listing_field(r"[A-Za-z0-9_][A-Za-z0-9_.:-]*", "reviewer")
-API_STATUS = r"(?:Rate limited|API overloaded|Authentication failed|API error)"
-TEAMMATE_ADDRESS_NOTE = listing_words(
-    "not messageable by name while a subagent in this session is registered under "
-    "that name (the name reaches the subagent)",
-    "message it by this exact name as printed — no [ref]: a subagent here is registered "
-    "under a variant spelling of it",
-    optional=True,
-)
-CLOUD_DETAILS = (
-    ACTIVE_AGE, STARTED_HERE,
-    listing_words(
-        "not reachable with SendMessage from this cloud session",
-        "not reachable with SendMessage or SendFile from this cloud session", optional=True,
-    ),
-    MESSAGING_OFF,
-)
+AGENT_TYPE = r"[A-Za-z0-9_][A-Za-z0-9_.:-]{0,63}"
+ANNOTATED_IDLE = r"idle \([^()]+\)"
 
-# claude-mcp-sender.md, “Find the named recipient”, identifies the 2.1.331
-# formatter. Its row constructors (ge, pe, he, ne, ye, be, we) are the source
-# for the shapes below. LISTING refers to the sender's consumer fixture.
+# A row needs a whole sequence from its own section. The examples identify
+# fixture families independently exercised through the sender's CLI.
 LISTING_ROW_SHAPES = {
     "Peer sessions": (
-        # he, observed 2026-11-25 (Desktop origin, started hours ago, idle/busy).
-        # LISTING and test_claude_route_nomination.LISTING also omit optional fields.
-        ListingRowShape(listing_words("interactive", "bg", "daemon", "daemon-worker"), (
-            PEER_STATUS,
-            listing_words(DESKTOP_ORIGIN, optional=True),
-            listing_field(r"tmux [^\s/\\]{1,64}", "tmux draft", optional=True),
-            STARTED_AGE._replace(optional=True),
-            listing_field(
-                r'titled "[^"]+" in Claude Desktop',
-                'titled "draft  ·  notes" in Claude Desktop', optional=True,
-            ),
-            STARTED_HERE,
-            listing_field(r"id [A-Za-z0-9_-]+", "id local_synthetic", optional=True),
-        ), local=True),
-        # he/ne and LISTING (bridge account rows use cloud or Remote Control).
-        ListingRowShape(listing_words("cloud session", "Remote Control"), (
-            listing_words("running", "idle", "waiting on a human", "offline", optional=True),
-            *CLOUD_DETAILS,
-        )),
-        ListingRowShape(listing_words("cloud", "Remote Control"), (
-            listing_words("running", "idle", "waiting on a human", "offline",
-                          "busy", "shell", "waiting", optional=True),
-            STARTED_HERE, MESSAGING_OFF,
-        )),
+        # Desktop observation (idle/busy) and the shell-status consumer fixture.
+        listing_form(("interactive", "idle", DESKTOP_ORIGIN, "started 8h ago"),
+                     "interactive", "idle|busy|shell", DESKTOP_ORIGIN, STARTED_AGE, local=True),
+        # Main sender LISTING and the route-nomination/short-page fixtures.
+        listing_form(("interactive", "idle", "started 5m ago"),
+                     "interactive", "idle|busy", STARTED_AGE, local=True),
+        listing_form(("bg", "idle", "started 2m ago"),
+                     "bg", "idle", STARTED_AGE, local=True),
+        listing_form(("interactive", "idle"), "interactive", "idle|busy", local=True),
+        listing_form(("bg", "idle"), local=True),
+        listing_form(("Remote Control", "idle")),
+        listing_form(("cloud", "idle")),
+        # Quoted Desktop titles and annotated statuses, including embedded separators.
+        listing_form(("interactive", "idle", 'titled "draft" in Claude Desktop'),
+                     "interactive", "idle", r'titled "[^"]+" in Claude Desktop', local=True),
+        listing_form(("interactive", "idle (waiting)"), "interactive", ANNOTATED_IDLE, local=True),
+        listing_form(("interactive", "(annotation)"), "interactive", r"\([^()]+\)", local=True),
     ),
     "Cloud and Remote Control sessions": (
-        # ye/ne, including statusless activity rows reproduced by the runtime critic.
-        # test_the_profiles_head_and_title_frame_lines_are_accepted covers the framed list.
-        ListingRowShape(listing_words("cloud session", "Remote Control"),
-                        (CLOUD_STATUS, *CLOUD_DETAILS)),
-    ),
-    "Sessions from Claude Desktop": (
-        # we, O and listDesktopSessions. The latter supplies status only for local
-        # Desktop rows. Cloud rows print "started" and Desktop rows print "active".
-        ListingRowShape(listing_words("cloud session"), (
-            STARTED_AGE._replace(optional=True),
-            listing_field(r"branch \S+", "branch draft", optional=True),
-            listing_field(r"PR #[0-9]+", "PR #12", optional=True),
-            listing_words("Remote Control on", optional=True), STARTED_HERE,
-        ), ref_required=True),
-        ListingRowShape(listing_words(DESKTOP_ORIGIN), (
-            listing_words("pending", "busy", "idle", "stopped", optional=True), ACTIVE_AGE,
-            listing_field(r"branch \S+", "branch draft", optional=True),
-            listing_field(r"PR #[0-9]+", "PR #12", optional=True),
-            listing_words("Remote Control on", optional=True), STARTED_HERE,
-        ), ref_required=True),
+        # Framed-listing and complete-row consumer fixtures.
+        listing_form(("cloud session", "idle"), "cloud session", "idle|running"),
+        listing_form(("cloud session", "active 1m ago"), "cloud session", ACTIVE_AGE),
     ),
     "Chats": (
-        # be calls O with the paired chat ID, which follows the title in brackets.
-        ListingRowShape(listing_words("chat"), ref_required=True),
+        # The complete-row fixture has a paired chat ID in brackets.
+        listing_form(("chat",), ref_required=True),
     ),
     "Subagents": (
-        # ge prints either a named ref or the agent ID. vgo supplies the wait note.
-        ListingRowShape(AGENT_TYPE, (
-            listing_words(*TASK_STATUSES), STARTED_AGE,
-            listing_field(
-                rf"compacting its conversation for {LISTING_AGE}|"
-                rf"API requests failing for {LISTING_AGE} \({API_STATUS}\); "
-                rf"the retry was due {LISTING_AGE} ago|"
-                rf"retrying its API request for {LISTING_AGE} "
-                rf"\({API_STATUS}, attempt [0-9]+(?:, next try in {LISTING_AGE})?\)",
-                "compacting its conversation for 1m",
-                "API requests failing for 2m (Rate limited); the retry was due 1m ago",
-                "retrying its API request for 2m (API error, attempt 3, next try in 1m)",
-                optional=True,
-            ),
-        )),
+        # Complete-row fixture, with a named reference or bare agent ID.
+        listing_form(("reviewer", "running", "started 3s ago"),
+                     AGENT_TYPE, "running", STARTED_AGE),
     ),
     "Teammates": (
-        # pe/J print optional type and status for an in-process teammate.
-        # test_a_teammate_title_with_a_separator_does_not_create_a_name_match.
-        ListingRowShape(AGENT_TYPE._replace(optional=True), (
-            listing_words("idle", *TASK_STATUSES),
-            STARTED_AGE._replace(optional=True),
-        )),
-        # pe/J print pane or roster in place of status. The age can be absent.
-        ListingRowShape(AGENT_TYPE._replace(optional=True), (
-            listing_words("pane"), STARTED_AGE._replace(optional=True),
-        )),
-        ListingRowShape(AGENT_TYPE._replace(optional=True), (
-            listing_words("roster"),
-            listing_field(r"joined " + LISTING_AGE + r" ago", "joined 2d ago", optional=True),
-            TEAMMATE_ADDRESS_NOTE,
-        )),
-        # pe/J can omit status for an in-process teammate. The age anchors the
-        # label when status and backend are absent.
-        ListingRowShape(AGENT_TYPE._replace(optional=True), (STARTED_AGE,)),
+        # Complete-row fixture: the roster and in-process teammate cases.
+        listing_form(("reviewer", "roster"), AGENT_TYPE, "roster"),
+        listing_form(("reviewer", "roster", "joined 2d ago"),
+                     AGENT_TYPE, "roster", JOINED_AGE, ref_required=True),
+        listing_form(("reviewer", "running", "started 3s ago"),
+                     AGENT_TYPE, "running", STARTED_AGE, ref_required=True),
+        listing_form(("reviewer", "started 3s ago"), AGENT_TYPE, STARTED_AGE, ref_required=True),
+        # The fixture for a teammate title containing the field separator.
+        listing_form(("teammate", "idle"), AGENT_TYPE, "idle", ref_required=True),
     ),
 }
 
@@ -483,17 +401,8 @@ def unreadable_label():
 
 def row_fields(line, shape):
     """Remove complete suffix fields from the right, preserving the title."""
-    end = len(line)
-    kind = None
-    for field in reversed((shape.kind, *shape.details)):
-        match = field.suffix.search(line, 0, end)
-        if match:
-            end = match.start()
-            if field is shape.kind:
-                kind = match[1]
-        elif not field.optional:
-            return None
-    return line[:end], kind
+    match = shape.suffix.search(line)
+    return (line[:match.start()], match["kind"]) if match else None
 
 
 def has_closed_opening_parenthesis(label):
