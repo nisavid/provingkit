@@ -53,4 +53,6 @@
 - Build a by-name send's `to` from the selected listing row's own name and
   reference rather than from the request's text.
 - State the 2026-11-19 decision on a Claude reply waking a Codex sender, and
-  that an envelope's sender and actor are claims without authority.
+  that an envelope's sender and actor are claims without authority. The
+  Claude sender reference points its note that the child ends after the call
+  at that decision.

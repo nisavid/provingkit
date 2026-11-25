@@ -1376,6 +1376,16 @@ class ClaudeNameSendTests(unittest.TestCase):
                 self.assertFalse(trace.exists())
                 self.assertEqual(bookkeeping("show", "send-1")["state"], "planned")
 
+    def test_the_sender_reference_points_its_child_end_at_the_wake_decision(self):
+        # Where the reference says no process remains for a later notice, it must not
+        # read as saying that no wake is intended.
+        reference = (SCRIPTS.parent / "references" / "claude-mcp-sender.md").read_text(
+            encoding="utf-8")
+        paragraph = next(part for part in reference.split("\n\n")
+                         if "has no process to reach" in part)
+        self.assertIn("2026-11-19 decision", paragraph)
+        self.assertIn("(../SKILL.md)", paragraph)
+
     def test_a_line_outside_the_listing_profile_is_refused(self):
         unparenthesized = LISTING + "\n… and 2 more sessions not shown"
         with self.name_consumer(pages=(unparenthesized,)) as (
