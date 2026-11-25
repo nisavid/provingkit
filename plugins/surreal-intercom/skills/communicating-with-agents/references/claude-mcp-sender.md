@@ -120,33 +120,47 @@ carries its name is addressed by the bare name; another session can take the
 same name between the listing and the call, and what the tool does then is known
 only from its description.
 
-The sender requires a complete field sequence for the row's section. The
-observed Desktop peer prints an interactive mode, status, Desktop origin, and
-start age. The age-less peer fixtures still carry a status. The cloud, chat,
+The sender requires every field of a supported form for the row's section.
+The observed Desktop peer prints a name with a six-hex bracketed reference,
+interactive mode, status, Desktop origin, and start age. The age-less peer
+fixtures still carry a status. The cloud, chat,
 subagent, and teammate forms come from sender fixtures. A subagent row needs
 a type, running status, start age, and either a named reference or a bare
 agent ID. A chat row needs its bracketed ID. The field separator is a middle
 dot with two spaces on each side. A dot with single spaces belongs to the
-title, and separators inside a quoted Desktop title or status annotation stay
-inside that field.
+title. The profile bounds names, references, titles, numeric counts, and ages,
+and accepts only the fixture-backed parenthesized statuses. Separators inside
+a quoted Desktop title or supported status annotation stay inside that field.
 
 A complete row with an unreadable label is skipped and counts toward its
 section's total only when every possible current or former name excludes the
 requested name. An unreadable label could match if it equals the name or begins
 with that name followed by ` [`. The result, the possible-submission record,
 and the `not_delivered` record of a refusal retain the count in
-`unreadable_rows`. A truncated or ambiguous former-name phrase, an uncertain
-label boundary, an invalid bare agent ID, or an unsupported field combination
-refuses the listing without counting the offending line or returning candidates.
+`unreadable_rows`. A trailing bracketed token in a short `bg` row can be
+part of the title. If treating it as a reference could change the destination,
+the sender refuses. A former-name marker and its `until <age>` tail must
+both be complete. An uncertain label boundary, invalid bare agent ID, or
+unsupported field combination also refuses the listing without counting the
+offending line or returning candidates.
 A name that the profile cannot address without doubt (one with brackets, a leading `(`, or the
 field separator, or one that looks like a route) is refused as `invalid_name`
 before any claim; reach such a session through the recipient-prepared route
 fallback instead.
 
-The control lines follow complete Claude Code 2.1.331 formatter text, including
-the observed caller header and Remote Control off footer. Missing, hidden, or
-failed-session notices and altered or unknown lines refuse the send before the
-sender follows another cursor. Multi-page handling is covered by fixtures.
+The control lines follow complete Claude Code 2.1.331 formatter text. A caller
+heading begins the page, and an empty-list or
+`SendMessage does not reach these sessions` heading stands alone. A title block
+opens with its explanatory note and closes with the same nonce. A Remote Control
+off footer ends the page and conflicts with any cloud or other-computer row,
+including an unreadable row or one on an earlier page. The sender refuses a title
+or row field containing listing control text, even when the row's other fields
+form a complete sequence. This includes hidden-session notices with or without
+brackets and pagination text with invalid counts or cursors. Missing or
+failed-session notices and altered or unknown lines also refuse the send.
+Every pagination footer's remaining count must equal the complete rows on the
+next page plus any count that page carries forward. Section totals must also
+reconcile before submission. Multi-page handling is covered by fixtures.
 
 The profile conservatively refuses an ordinary peer send beside a running
 subagent with a compaction note or a shadowed roster teammate without a
