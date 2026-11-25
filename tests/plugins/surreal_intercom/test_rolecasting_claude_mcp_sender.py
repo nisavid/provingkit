@@ -1400,6 +1400,23 @@ class ClaudeNameSendTests(unittest.TestCase):
             observations = bookkeeping("show", "send-1")["attempts"][0]["observations"]
             self.assertEqual(json.loads(observations[2]["detail"])["unreadable_rows"], 1)
 
+    def test_a_listing_failure_retains_only_rows_already_skipped(self):
+        unreadable = "  notes [draft] for later [ab12cd]" + DOT + "interactive" + DOT + "idle"
+        first = "\n".join(["Peer sessions (2):", unreadable])
+        note = "  (the session list on this machine could not be read just now)"
+        next_page = '(… 1 more not shown — call again with cursor="0a1b2c3d" for the next page)'
+        for failure, page, reason in (
+                ("same-page note", "\n".join([first, note, unreadable]), "listing_incomplete"),
+                ("section total", first, "listing_incomplete"),
+                ("later-page read", "\n".join([first, next_page]), "listing_failed")):
+            with self.subTest(failure=failure), self.name_consumer(pages=(page,)) as (
+                    _, request, send, bookkeeping, calls, _t):
+                result = send()
+                self.assert_refused_without_send(result, reason, calls, bookkeeping)
+                self.assertEqual(result["unreadable_rows"], 1)
+                observations = bookkeeping("show", "send-1")["attempts"][0]["observations"]
+                self.assertEqual(json.loads(observations[-1]["detail"])["unreadable_rows"], 1)
+
     def test_an_unreadable_row_that_could_carry_the_name_is_refused(self):
         for label in ("claude-receiver [not a ref!]", "claude-receiver [3fa9c1] [x]"):
             listing = "\n".join([

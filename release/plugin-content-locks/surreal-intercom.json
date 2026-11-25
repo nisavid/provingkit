@@ -20,7 +20,7 @@
     "skills/communicating-with-agents/references/native-codex-mailbox.md": "3e03276eb0f20df83afc17ca18e7ee3a0ca66fb322d56a7171045fee75cb0787",
     "skills/communicating-with-agents/references/native-peer-relay.md": "e781ddfcd65c68cd9de4e3fe8ee855d0b90947605e32dfe3a987d5ad1a3327b5",
     "skills/communicating-with-agents/references/peer-messages.md": "907601c16e493230062da47691fbfc493e1bc6d97960747de896d49f7b687c4a",
-    "skills/communicating-with-agents/scripts/claude_mcp_sender.py": "a0fe2dacfa53992138d1101127626ca9bb5c656e4bb7c1feae55672a26287ab9",
+    "skills/communicating-with-agents/scripts/claude_mcp_sender.py": "f537c8cccc9c33102ebad3a12bab3d14339146b2556c93eb47b7a589cc9bc12d",
     "skills/communicating-with-agents/scripts/claude_route_nomination.py": "60da91c70dad682a8ed6e74f361534459c1e5dc4d07af4c435bf39a5ac7bb01d",
     "skills/communicating-with-agents/scripts/codex_capture.py": "9e4621bab683cb310b70df8326b7555d23932348ad8a73fe0bcb25c7c16228f2",
     "skills/communicating-with-agents/scripts/codex_daybreak_sender.py": "220d49c11d2dcc26df41334e11f311805b9f091fe3bb0d7203dee8f548981be9",
