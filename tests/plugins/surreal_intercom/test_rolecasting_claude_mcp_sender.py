@@ -1469,6 +1469,35 @@ class ClaudeNameSendTests(unittest.TestCase):
         with self.name_consumer(pages=(partial,)) as (_, request, send, bookkeeping, calls, _t):
             self.assert_refused_without_send(send(), "listing_incomplete", calls, bookkeeping)
 
+    def test_an_altered_control_line_refuses_before_following_a_cursor(self):
+        cursor = '(… 1 more not shown — call again with cursor="0a1b2c3d" for the next page)'
+        warning = "; other sessions could not be read"
+        local = "  " + DOT.join(("alpha [a1]", "interactive", "idle"))
+        unreadable = "  " + DOT.join(("notes [draft] [b2]", "interactive", "idle"))
+        remaining = "\n".join((
+            "Peer sessions (3):", "  " + DOT.join(("other [c3]", "interactive", "idle")),
+        ))
+        for last_lines, reason in (
+            ((cursor[:-1] + warning + ")",), "listing_incomplete"),
+            (("No reachable agents — no other Claude session is running on this "
+              "machine right now" + warning, cursor), "unrecognized_listing"),
+            (("No other session appears in this listing right now" + warning, cursor),
+             "unrecognized_listing"),
+            (("The brackets after each name below hold that session's id." + warning, cursor),
+             "unrecognized_listing"),
+            (("This session is Synthetic Caller [ac1234] — the name other sessions use "
+              "to message it (it is not listed below; other sessions could not be read).",
+              cursor), "unrecognized_listing"),
+        ):
+            first = "\n".join(("Peer sessions (3):", local, unreadable, *last_lines))
+            with self.subTest(last_lines=last_lines), self.name_consumer(
+                    name="alpha", pages=(first, remaining)) as (_, _, send, bookkeeping, calls, _):
+                result = send()
+                self.assert_refused_without_send(result, reason, calls, bookkeeping)
+                self.assertEqual([call["name"] for call in calls()], ["ListAgents"])
+                self.assertEqual(result["unreadable_rows"], 1)
+                self.assertNotIn("candidates", result)
+
     def test_the_listing_footer_is_matched_in_full(self):
         footer = (
             "(nothing more to list: every agent this call found is on an earlier page "
