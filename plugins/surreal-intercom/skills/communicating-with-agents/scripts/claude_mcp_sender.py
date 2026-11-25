@@ -29,12 +29,16 @@ class InspectionError(ValueError):
 
 
 class PathRefusal(Exception):
-    """A definite refusal before any SendMessage call, with its reason."""
+    """A definite refusal before any SendMessage call, with its reason.
 
-    def __init__(self, reason, detail):
+    `candidates` lists the rows of this attempt's listing a caller can select from.
+    """
+
+    def __init__(self, reason, detail, candidates=None):
         super().__init__(reason)
         self.reason = reason
         self.detail = detail
+        self.candidates = candidates
 
 
 # Close the child's input, then wait this long (within the deadline) for exit.
@@ -45,6 +49,7 @@ MAX_LISTING_PAGES = 5
 NAME_FORBIDDEN = "[]\r\n\0"
 ROUTE_PREFIX = "uds:"
 REF_PATTERN = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
+RECONCILIATION_FIELDS = frozenset({"after_attempt", "decision_ref"})
 
 
 def utf16_units(value):
@@ -59,6 +64,15 @@ def validate(request):
     if not isinstance(request, dict):
         raise InspectionError("invalid_request")
     keys = set(request)
+    # A later attempt names the latest attempt and the caller's decision: both or neither.
+    reconciliation = keys & RECONCILIATION_FIELDS
+    if reconciliation:
+        if reconciliation != RECONCILIATION_FIELDS or any(
+            not isinstance(request[key], str) or not request[key].strip()
+            for key in RECONCILIATION_FIELDS
+        ):
+            raise InspectionError("invalid_reconciliation")
+        keys -= reconciliation
     if keys not in (base | {"target"}, base | {"name"}, base | {"name", "selection"}):
         raise InspectionError("invalid_request")
     for key in ("message_id", "attempt_id", "evidence_ref"):
@@ -349,6 +363,11 @@ def is_local_session(row):
     )
 
 
+def candidate_view(row):
+    return {"name": row["name"], "ref": row["ref"], "kind": row["kind"],
+            "local": is_local_session(row)}
+
+
 def select_row(rows, name, selection):
     """Bind the requested name to exactly one local row of this attempt's listing.
 
@@ -356,18 +375,20 @@ def select_row(rows, name, selection):
     built from the request before the listing is the one this row is addressed by.
     """
     named = [row for row in rows if row["name"] == name]
+    # The rows a caller can select from: those of this listing that carry the name.
+    candidates = [candidate_view(row) for row in named]
     if selection is not None:
         chosen = [row for row in named if row["ref"] == selection["ref"]]
         if not chosen:
             raise PathRefusal(
                 "selection_not_in_listing",
                 "The selected reference is not shown for this name in this attempt's "
-                "listing; no SendMessage was sent.")
+                "listing; no SendMessage was sent.", candidates)
         if len(chosen) > 1:
             raise PathRefusal(
                 "ambiguous_selection",
                 f"{len(chosen)} rows in this attempt's listing show this name and the "
-                "selected reference; no SendMessage was sent.")
+                "selected reference; no SendMessage was sent.", candidates)
         row = chosen[0]
     elif not named:
         raise PathRefusal(
@@ -377,7 +398,7 @@ def select_row(rows, name, selection):
         raise PathRefusal(
             "ambiguous_name",
             f"{len(named)} rows in this attempt's listing have this name and no "
-            "selection was supplied; no SendMessage was sent.")
+            "selection was supplied; no SendMessage was sent.", candidates)
     else:
         row = named[0]
     if not is_local_session(row):
@@ -616,7 +637,11 @@ def main():
         # On the name path the record names its recipient by the address it is sent to.
         if path == "name" and planned["recipient"]["thread_id"] != request["name"]:
             raise InspectionError("recipient_name_mismatch")
-        claim = mailbox.claim(request["message_id"], request["attempt_id"], request["actor"])
+        # The mailbox's own rule decides whether a requested later attempt may be claimed.
+        claim = mailbox.claim(
+            request["message_id"], request["attempt_id"], request["actor"],
+            request.get("after_attempt"), request.get("decision_ref"),
+        )
         result["claimed"] = claim["claimed"] is True
         result["attempt_id"] = request["attempt_id"]
         message = {
@@ -624,12 +649,25 @@ def main():
             if key not in {"attempts", "state"}
         }
 
-        def refuse(reason, detail):
+        def refuse(refusal):
             mailbox.observe(
                 request["message_id"], request["attempt_id"], "refused",
-                request["evidence_ref"], detail,
+                request["evidence_ref"], refusal.detail,
             )
-            result["reason"] = reason
+            # No possible submission was recorded and no SendMessage call was written:
+            # the sender's own phase record is the evidence that this attempt did not deliver.
+            mailbox.observe(
+                request["message_id"], request["attempt_id"], "not_delivered",
+                request["evidence_ref"], json.dumps({
+                    "evidence": "sender_phase_record",
+                    "phase": "refused_before_possible_submission",
+                    "path": path, "reason": refusal.reason,
+                }, ensure_ascii=True, sort_keys=True),
+            )
+            result["reason"] = refusal.reason
+            if refusal.candidates is not None:
+                result["needs"] = "selection"
+                result["candidates"] = refusal.candidates
 
         if not result["claimed"]:
             result["reason"] = "claim_not_acquired"
@@ -708,7 +746,7 @@ def main():
                             "no SendMessage was sent.")
                     bound["row"] = row
             except PathRefusal as refusal:
-                refuse(refusal.reason, refusal.detail)
+                refuse(refusal)
             else:
                 call = sendmessage_call(message, request["actor"], to, identity)
                 result["stage"] = "call"
@@ -743,7 +781,8 @@ def main():
             result["owned_child"] = child.close()
         if mailbox is not None:
             mailbox.close()
-    # Fixed vocabulary and a bounded request keep this single result bounded.
+    # Fixed vocabulary, a bounded request, and candidate rows read within the stdout
+    # limit keep this single result bounded.
     print(json.dumps(result, ensure_ascii=True, sort_keys=True))
     return 0
 

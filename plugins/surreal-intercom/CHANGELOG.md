@@ -41,5 +41,10 @@
   and `prepare` refuse a recipient `thread_id` that differs from it, and the
   attempt keeps the addressed row's name, reference, and kind. The name is an
   unauthenticated label, not a session identifier.
+- Record `not_delivered` after every Claude sender refusal made before
+  possible submission, on both paths. List an ambiguous name's matching rows in
+  the refusal, and let a caller ask for a later attempt by passing both
+  `after_attempt` and `decision_ref` through `prepare` and the sender to the
+  mailbox claim; the sender never starts one itself.
 - State the 2026-11-19 decision on a Claude reply waking a Codex sender, and
   that an envelope's sender and actor are claims without authority.

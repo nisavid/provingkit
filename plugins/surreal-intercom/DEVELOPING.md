@@ -115,7 +115,14 @@ incomplete listing, a section with fewer rows than it declares, and a line
 outside the profile. Show that a planned recipient whose `thread_id` is not the
 requested name is refused by the sender and by `prepare` before any listing,
 and that a reply through an unchanged route of either kind still reaches the
-original sender when the outbound message went by name. Show that a
+original sender when the outbound message went by name. Show that a refusal
+before possible submission records `not_delivered` on both paths, including the
+frame-size refusal, that an ambiguous name's refusal lists only the rows that
+carry the name, and that a later attempt with the selection and both
+`after_attempt` and `decision_ref` submits one message whose reconciliation the
+mailbox keeps. Show that one of those fields without the other is refused before
+any claim, in the sender and in `prepare`, and that an attempt that recorded
+possible submission is not followed by another. Show that a
 supplied route is sent by that route with no listing, and that a refused name
 request tries no second path. Cover the close: a child that exits on closed
 input takes no signal, one that outlives it is terminated rather than killed,

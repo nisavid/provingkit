@@ -25,7 +25,8 @@ Plan an immutable message with `message_id`, `sender`, `recipient`, `owner`, `pa
 
 Give each distinct message a unique immutable `message_id`. Optional `correlation_id` links related messages in an exchange; it is not the duplicate-suppression identity. When omitted, the serializer uses `message_id` as the envelope correlation value without adding that field to the stored legacy message. Adding it later changes immutable content and is rejected for an existing identity. Preserve payload text, authority references, holds, and the referenced constraints transitively; serialization does not resolve or verify those references. Check the original grant, releases, recipient, actual actor, and retained holds before action. Existing verified grants, including their valid transitive scope, can cover ordinary calls; helper use alone does not require a fresh per-hop approval. Forwarding grants no new authority or ownership.
 
-The trusted local UTF-8 JSON request has exactly these fields:
+The trusted local UTF-8 JSON request has exactly these fields, and for a later
+attempt also the pair described under reconciliation below:
 
 - `message_id`, `attempt_id`, and `evidence_ref`: nonempty strings; the JSON-escaped attempt ID is limited to 256 characters by the source validator.
 - `actor` and `recipient`: the identity objects above. The request recipient must equal the planned recipient. On the name path its `thread_id` must also equal `name`; otherwise the sender returns `recipient_name_mismatch` before any claim or listing.
@@ -89,14 +90,19 @@ them by the reference this attempt's listing shows; the call then addresses
 selected reference that this listing does not show records
 `selection_not_in_listing`, and one it shows on more than one row records
 `ambiguous_selection`; a reference from an earlier attempt is
-never reused, because each attempt starts its own child and lists again. A
+never reused, because each attempt starts its own child and lists again. For
+`ambiguous_name`, `selection_not_in_listing`, and `ambiguous_selection`, the
+result says `needs: "selection"` and its `candidates` list each row of this
+attempt's listing that carries the name, with its `name`, `ref`, `kind`, and
+whether it is `local`, and no other row. A
 listing that reports missing, hidden, or failed rows, has a section whose rows
 across all its pages differ in number from the total its header declares, or
 does not end within five pages, records `listing_incomplete`; a row or other
 line outside the profile records `unrecognized_listing`; a `ListAgents` call that fails or runs out of time, errs,
 or returns another result shape records `listing_failed`, `listing_error`, or
 `unsupported_listing_result`. Each refusal is recorded before any `SendMessage` call,
-and the sender asks only for what is missing, such as the selection.
+and the sender asks only for what is missing, such as the selection; it does not
+look for the missing value itself.
 
 On the name path the planned recipient's `thread_id` is the name as the listing
 prints it. That name is a label the recipient session chose, not a session
@@ -131,7 +137,7 @@ Use `init` only for authorized initial setup. The request's `message_id` must ma
 
 The sender acquires the claim itself. Do not preclaim through the mailbox CLI: an existing claim prevents the sender from proceeding. Before launching its child, it commits the attempt and an `unknown` observation containing the request. A crash can leave uncertainty before or after any external effect. Repeated invocation of that attempt cannot acquire another claim; a fresh attempt ID alone cannot reopen the message.
 
-After initialization and catalog inspection, the sender makes at most one `SendMessage` call, after the `ListAgents` reads of a name request. A missing tool, an unsupported schema, or a call frame over the 4,096-byte ceiling (`control_frame_limit`) records refusal without that call. Before writing a supported call, it records possible submission on both paths as `phase`, `path`, and the `to` value, and for a name also the bound listing `row`. A supported non-error tool result records `submitted`; errors, malformed replies, unsupported results, interrupted writes, and other uncertain outcomes do not establish nondelivery. Inspect the returned JSON and retained observations; the process exit code alone does not establish successful submission.
+After initialization and catalog inspection, the sender makes at most one `SendMessage` call, after the `ListAgents` reads of a name request. A missing tool, an unsupported schema, or a call frame over the 4,096-byte ceiling (`control_frame_limit`) records refusal without that call. Every refusal the sender records before possible submission is definite, on both paths: no `SendMessage` call was written in that attempt. It records `refused` with its reason and then `not_delivered`, whose evidence is the sender's own record of the phase. Before writing a supported call, it records possible submission on both paths as `phase`, `path`, and the `to` value, and for a name also the bound listing `row`. A supported non-error tool result records `submitted`; errors, malformed replies, unsupported results, interrupted writes, and other uncertain outcomes do not establish nondelivery. Inspect the returned JSON and retained observations; the process exit code alone does not establish successful submission.
 
 `submitted` reports the tool result, not receiver receipt, ACK, handling, or fulfillment. The tool's own description says a successful call puts the message in the recipient's inbox, not read yet; report it as submission. The child ends after the call, so a later cross-session delivery notice has no process to reach. An ACK needs correlated receiver evidence and its meaning must be stated. Record receipt, handling, and completion only from separately acquired authorized evidence tied to the intended receiver, message, and attempt. Preserve contradictions and uncertainty; do not infer fulfillment from envelope serialization or sender success.
 
@@ -143,9 +149,9 @@ The sender shuts its child down as the MCP 2024-11-05 stdio lifecycle describes.
 
 The fixed sender's close against a real session is not yet observed. Child closure does not establish receiver shutdown, descendant closure, or total process-tree control. A closure failure does not erase an earlier submission observation.
 
-After refusal, uncertainty, or interruption, inspect the same mailbox and reconcile through separately authorized receiver observations. A bounded history with no match is not conclusive nondelivery. Preserve claims, evidence, original sender, actual actor, owner, and holds across replacement intake. Do not automatically resend, start a fallback, change settings, or release a hold.
+After uncertainty or interruption, inspect the same mailbox and reconcile through separately authorized receiver observations. A bounded history with no match is not conclusive nondelivery. Preserve claims, evidence, original sender, actual actor, owner, and holds across replacement intake. Do not automatically resend, start a fallback, change settings, or release a hold.
 
-Mailbox bookkeeping permits a later claim only after conclusive nondelivery reconciliation and an explicit owning-task decision, with every prior attempt satisfying its retained reconciliation conditions and no receipt, handling, or completion evidence. The sender request currently exposes neither `after_attempt` nor `decision_ref`; this sender cannot actuate that later-attempt route. Preclaiming does not bridge the gap. Return the need to the owning task rather than minting a new message identity or bypassing the claim.
+Mailbox bookkeeping permits a later claim only when it names the latest attempt, every earlier attempt ended `not_delivered`, and none shows receipt, handling, or completion. A later attempt is a new attempt ID under the same message identity, made only when the caller asks for it: the request then carries both `after_attempt` (the latest attempt) and `decision_ref` (the owning task's decision for this attempt), and the sender passes them to the claim unchanged. One without the other returns `invalid_reconciliation` before any claim. After a refused name send, for example, the caller supplies the missing `selection` from the refusal's `candidates` with both fields; the new attempt lists again and checks the selection against its own listing. The sender never starts a later attempt itself. An attempt that recorded possible submission ends in the sender's own record as `submitted` or `unknown`, never `not_delivered`, so no later attempt follows it through the sender; that needs nondelivery reconciled from the receiver's side, as [mailbox bookkeeping](native-codex-mailbox.md) says. Preclaiming does not bridge the gap, and a new message identity for the same obligation is not a later attempt.
 
 ## Consumer completion and compatibility
 

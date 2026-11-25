@@ -285,7 +285,7 @@ class ClaudeMcpSenderTests(unittest.TestCase):
                     self.assertEqual(retained["state"], "refused")
                     self.assertEqual(len(retained["attempts"]), 1)
                     self.assertEqual([o["kind"] for o in retained["attempts"][0]["observations"]], [
-                        "unknown", "refused",
+                        "unknown", "refused", "not_delivered",
                     ])
 
     def test_malformed_input_refuses_without_claim_child_or_replay(self):
@@ -401,7 +401,7 @@ class ClaudeMcpSenderTests(unittest.TestCase):
             self.assertEqual(attempt["actor"], request["actor"])
             self.assertEqual(attempt["submission"], "refused")
             self.assertEqual([o["kind"] for o in attempt["observations"]], [
-                "unknown", "refused",
+                "unknown", "refused", "not_delivered",
             ])
             self.assertEqual(json.loads(attempt["observations"][0]["detail"]), request)
             self.assertIn("no tools/call was sent", attempt["observations"][1]["detail"])
@@ -426,9 +426,26 @@ class ClaudeMcpSenderTests(unittest.TestCase):
             self.assertNotIn("tools/call", [r.get("method") for r in records])
             retained = bookkeeping("show", "failure-1")
             self.assertEqual(retained["state"], "refused")
-            self.assertEqual(
-                [o["kind"] for o in retained["attempts"][0]["observations"]],
-                ["unknown", "refused"])
+            observations = retained["attempts"][0]["observations"]
+            self.assertEqual([o["kind"] for o in observations], ["unknown", "refused", "not_delivered"])
+            # The frame-size refusal is definite too: no call was written in this attempt.
+            self.assertEqual(json.loads(observations[2]["detail"]), {
+                "evidence": "sender_phase_record", "path": "route",
+                "phase": "refused_before_possible_submission", "reason": "control_frame_limit"})
+
+    def test_an_uncertain_attempt_is_not_followed_by_another_through_the_senders_record(self):
+        with self.consumer() as (original, request, send, bookkeeping, trace, source):
+            first = send()
+            self.assertEqual(first["peer_input"], "possible_submission")
+            retained = bookkeeping("show", "failure-1")
+            trace_bytes = trace.read_bytes()
+            later = {**request, "attempt_id": "attempt-later", "after_attempt": "attempt-failure",
+                     "decision_ref": "synthetic://decision/later"}
+            repeated = send(raw=json.dumps(later).encode("utf-8"))
+            self.assertFalse(repeated["claimed"])
+            self.assertEqual(repeated["reason"], "claim_not_acquired")
+            self.assertEqual(trace.read_bytes(), trace_bytes)
+            self.assertEqual(bookkeeping("show", "failure-1"), retained)
 
     def test_stderr_overflow_at_one_mib_preserves_failure_and_uncertainty(self):
         with self.consumer(mode="stderr_overflow") as (
@@ -635,7 +652,8 @@ class ClaudeMcpSenderTests(unittest.TestCase):
             attempt = retained["attempts"][0]
             self.assertEqual(attempt["attempt_id"], "attempt-catalog")
             self.assertEqual(attempt["actor"], actor)
-            self.assertEqual([item["kind"] for item in attempt["observations"]], ["unknown", "refused"])
+            self.assertEqual([item["kind"] for item in attempt["observations"]], [
+                "unknown", "refused", "not_delivered"])
             self.assertEqual(attempt["observations"][-1]["evidence_ref"], request["evidence_ref"])
             self.assertFalse(attempt["received"])
             self.assertFalse(attempt["handled"])
@@ -707,10 +725,10 @@ class ClaudeMcpSenderTests(unittest.TestCase):
             self.assertEqual(retained["state"], "refused")
             self.assertEqual(len(retained["attempts"]), 1)
             observations = retained["attempts"][0]["observations"]
-            self.assertEqual([o["kind"] for o in observations], ["unknown", "refused"])
+            self.assertEqual([o["kind"] for o in observations], ["unknown", "refused", "not_delivered"])
             self.assertEqual(json.loads(observations[0]["detail"])["target"], target)
             if diagnosis is not None:
-                self.assertIn(diagnosis, observations[-1]["detail"])
+                self.assertIn(diagnosis, observations[1]["detail"])
             self.assert_no_replay(request, send, bookkeeping, trace, retained)
 
     def test_destination_cr_or_lf_refuses_before_possible_submission(self):
@@ -1034,9 +1052,13 @@ class ClaudeNameSendTests(unittest.TestCase):
         retained = bookkeeping("show", "send-1")
         self.assertEqual(retained["state"], "refused")
         observations = retained["attempts"][0]["observations"]
-        self.assertEqual([o["kind"] for o in observations], ["unknown", "refused"])
-        self.assertIn("no sendmessage was sent", observations[-1]["detail"].lower())
-        return observations[-1]["detail"]
+        self.assertEqual([o["kind"] for o in observations], ["unknown", "refused", "not_delivered"])
+        self.assertIn("no sendmessage was sent", observations[1]["detail"].lower())
+        # The sender's own phase record is the evidence that the attempt did not deliver.
+        self.assertEqual(json.loads(observations[2]["detail"]), {
+            "evidence": "sender_phase_record", "path": "name",
+            "phase": "refused_before_possible_submission", "reason": reason})
+        return observations[1]["detail"]
 
     def test_name_submits_with_one_call_and_closes_without_a_signal(self):
         with self.name_consumer() as (original, request, send, bookkeeping, calls, trace):
@@ -1115,10 +1137,74 @@ class ClaudeNameSendTests(unittest.TestCase):
         with self.name_consumer(name="nobody") as (_, request, send, bookkeeping, calls, _t):
             self.assert_refused_without_send(send(), "no_matching_local_row", calls, bookkeeping)
 
+    TWINS = [
+        {"name": "twin", "ref": "aa11bb", "kind": "interactive", "local": True},
+        {"name": "twin", "ref": "cc22dd", "kind": "bg", "local": True},
+    ]
+
     def test_an_ambiguous_name_without_selection_is_refused_before_the_call(self):
         with self.name_consumer(name="twin") as (_, request, send, bookkeeping, calls, _t):
-            detail = self.assert_refused_without_send(send(), "ambiguous_name", calls, bookkeeping)
+            result = send()
+            detail = self.assert_refused_without_send(result, "ambiguous_name", calls, bookkeeping)
             self.assertIn("2 rows", detail)
+            # Each matching row of this attempt's listing, and no other row.
+            self.assertEqual(result["needs"], "selection")
+            self.assertEqual(result["candidates"], self.TWINS)
+
+    def test_a_refused_ambiguous_name_continues_as_a_reconciled_later_attempt(self):
+        with self.name_consumer(name="twin") as (_, request, send, bookkeeping, calls, trace):
+            first = send()
+            self.assertEqual(first["reason"], "ambiguous_name")
+            self.assertEqual(first["candidates"], self.TWINS)
+            # The caller asks for the later attempt with the selection and both fields.
+            request.update({
+                "attempt_id": "send-1/attempt/2", "selection": {"ref": "cc22dd"},
+                "after_attempt": "send-1/attempt/1",
+                "decision_ref": "synthetic://decision/select-cc22dd",
+            })
+            second = send()
+            self.assertTrue(second["claimed"])
+            self.assertEqual(second["reason"], "submitted")
+            made = calls()
+            self.assertEqual([call["name"] for call in made],
+                             ["ListAgents", "ListAgents", "SendMessage"])
+            self.assertEqual(made[-1]["arguments"]["to"], "twin [cc22dd]")
+            retained = bookkeeping("show", "send-1")
+            self.assertEqual(retained["state"], "submitted")
+            first_attempt, second_attempt = retained["attempts"]
+            self.assertEqual([o["kind"] for o in first_attempt["observations"]],
+                             ["unknown", "refused", "not_delivered"])
+            self.assertIsNone(first_attempt["reconciliation"])
+            self.assertEqual(second_attempt["reconciliation"], {
+                "after_attempt": "send-1/attempt/1",
+                "nondelivery_ref": request["evidence_ref"],
+                "decision_ref": "synthetic://decision/select-cc22dd",
+            })
+            self.assertEqual([o["kind"] for o in second_attempt["observations"]],
+                             ["unknown", "unknown", "submitted"])
+
+    def test_one_reconciliation_field_without_the_other_is_refused_before_any_claim(self):
+        for field in ("after_attempt", "decision_ref"):
+            with self.subTest(field=field), self.name_consumer() as (
+                    _, request, send, bookkeeping, calls, trace):
+                request[field] = "synthetic://only-one"
+                result = send()
+                self.assertEqual(result["reason"], "invalid_reconciliation")
+                self.assertFalse(result["claimed"])
+                self.assertFalse(trace.exists())
+                self.assertEqual(bookkeeping("show", "send-1")["state"], "planned")
+
+    def test_a_submitted_attempt_is_not_followed_by_another_through_the_senders_record(self):
+        with self.name_consumer() as (_, request, send, bookkeeping, calls, trace):
+            self.assertEqual(send()["reason"], "submitted")
+            retained = bookkeeping("show", "send-1")
+            request.update({"attempt_id": "send-1/attempt/2", "after_attempt": "send-1/attempt/1",
+                            "decision_ref": "synthetic://decision/again"})
+            repeated = send()
+            self.assertFalse(repeated["claimed"])
+            self.assertEqual(repeated["reason"], "claim_not_acquired")
+            self.assertEqual([call["name"] for call in calls()], ["ListAgents", "SendMessage"])
+            self.assertEqual(bookkeeping("show", "send-1"), retained)
 
     def test_a_selected_row_is_addressed_by_its_name_and_this_listings_ref(self):
         with self.name_consumer(name="twin", selection={"ref": "cc22dd"}) as (
@@ -1147,9 +1233,15 @@ class ClaudeNameSendTests(unittest.TestCase):
             with self.subTest(first=order[0]), self.name_consumer(
                     name="twin", selection={"ref": "cc22dd"}, pages=(listing,)) as (
                     _, request, send, bookkeeping, calls, _t):
+                result = send()
                 detail = self.assert_refused_without_send(
-                    send(), "ambiguous_selection", calls, bookkeeping)
+                    result, "ambiguous_selection", calls, bookkeeping)
                 self.assertIn("2 rows", detail)
+                # The rows that carry the name in this attempt's listing, local or not.
+                self.assertEqual(sorted(row["local"] for row in result["candidates"]),
+                                 [False, True])
+                self.assertEqual({row["kind"] for row in result["candidates"]},
+                                 {"interactive", "Remote Control"})
 
     def test_rows_that_are_not_local_sessions_are_refused_before_the_call(self):
         for name in ("far-away", "up-there"):
@@ -1161,8 +1253,10 @@ class ClaudeNameSendTests(unittest.TestCase):
         # A ref that an earlier attempt's listing showed is not shown in this one.
         with self.name_consumer(name="twin", selection={"ref": "0ld0ne"}) as (
                 _, request, send, bookkeeping, calls, _t):
+            result = send()
             self.assert_refused_without_send(
-                send(), "selection_not_in_listing", calls, bookkeeping)
+                result, "selection_not_in_listing", calls, bookkeeping)
+            self.assertEqual(result["candidates"], self.TWINS)
 
     def test_a_refused_name_send_tries_no_second_path_and_cannot_be_replayed(self):
         with self.name_consumer(name="nobody") as (_, request, send, bookkeeping, calls, _t):

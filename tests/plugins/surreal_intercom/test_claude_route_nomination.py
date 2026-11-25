@@ -308,6 +308,43 @@ class ClaudeRouteNominationTests(unittest.TestCase):
                              ["/synthetic/credential-wrapper/bin/claude", "mcp", "serve"])
             self.assertEqual(prepared["recipient"], recipient)
 
+    def test_prepare_passes_a_later_attempts_fields_through_both_or_neither(self):
+        route, sender, mailbox_module = self.load_modules()
+        reconciliation = {"after_attempt": "message-1/attempt/1",
+                          "decision_ref": "synthetic://decision/select"}
+        for fields in (("after_attempt", "decision_ref"), ("after_attempt",), ("decision_ref",)):
+            with self.subTest(fields=fields), tempfile.TemporaryDirectory(
+                    prefix="claude-route-") as temporary:
+                root = Path(temporary).resolve()
+                root.chmod(0o700)
+                recipient = {"thread_id": "twin", "host_id": "local"}
+                request = self.prepare_input(root, None, recipient)
+                del request["nomination"]
+                request.update({"schema": "claude-name-request-preparation-v1", "name": "twin",
+                                "selection": {"ref": "cc22dd"}, "attempt_id": "message-1/attempt/2"})
+                request.update({key: reconciliation[key] for key in fields})
+                self.initialize_mailbox(mailbox_module, Path(request["mailbox"]))
+                request_path = root / "prepare-input.json"
+                self.write(request_path, request)
+                output = io.StringIO()
+                with contextlib.redirect_stdout(output):
+                    route.main(["prepare", "--request", str(request_path)],
+                               effective_uid=os.geteuid(),
+                               environment={"PATH": "/synthetic/bin"},
+                               launcher_lookup=lambda _name, _path: "/synthetic/bin/claude")
+                result = json.loads(output.getvalue())
+                if len(fields) == 2:
+                    self.assertTrue(result["prepared"], result)
+                    prepared = json.loads(Path(result["path"]).read_text(encoding="utf-8"))
+                    sender.validate(prepared)
+                    self.assertEqual(
+                        {key: prepared[key] for key in reconciliation}, reconciliation)
+                else:
+                    self.assertEqual(result, {
+                        "prepared": False, "reason": "invalid_reconciliation",
+                        "closure": "no-provider-started"})
+                    self.assertFalse(Path(request["publication"]["path"]).exists())
+
     def test_prepare_refuses_an_oversized_frame_before_planning_or_publishing(self):
         route, _, mailbox_module = self.load_modules()
         with tempfile.TemporaryDirectory(prefix="claude-route-") as temporary:

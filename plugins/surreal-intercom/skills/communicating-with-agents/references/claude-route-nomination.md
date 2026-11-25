@@ -130,6 +130,11 @@ For the ordinary send by name, the agent creates a
 - optionally `selection: {"ref": ...}`, only when the caller already knows which
   of several same-named rows it means.
 
+For a later attempt that the caller asks for, either request may also carry
+both `after_attempt` and `decision_ref`; preparation passes them into the sender
+request unchanged, and the sender's parser refuses one without the other as
+`invalid_reconciliation` before planning or publishing.
+
 Preparation then resolves `claude` on the caller's own `PATH`, keeps the
 resolved path and invoked name without canonicalizing a wrapper, and uses
 `[launcher, "mcp", "serve"]` as the command. Its `evidence_ref` is

@@ -309,12 +309,18 @@ NAME_PREPARATION = "claude-name-request-preparation-v1"
 def _prepared_request(request, effective_uid, environment, launcher_lookup):
     common = {"schema", "message", "attempt_id", "actor", "limits", "mailbox", "publication"}
     schema = request.get("schema") if isinstance(request, dict) else None
-    if schema == ROUTE_PREPARATION and request.keys() == common | {"nomination"}:
+    # A later attempt's fields pass through unchanged; the sender's parser checks the pair.
+    reconciliation = (
+        {key: request[key] for key in ("after_attempt", "decision_ref") if key in request}
+        if isinstance(request, dict) else {}
+    )
+    keys = request.keys() - reconciliation.keys() if isinstance(request, dict) else set()
+    if schema == ROUTE_PREPARATION and keys == common | {"nomination"}:
         record = _read_private_nomination(request["nomination"], effective_uid)
         recipient, command, target = _validated_nomination(record)
         address = {"target": target}
         evidence_ref = "sha256:" + request["nomination"]["sha256"]
-    elif schema == NAME_PREPARATION and request.keys() in (
+    elif schema == NAME_PREPARATION and keys in (
         common | {"name"}, common | {"name", "selection"},
     ):
         # The ordinary first send: the sender's own launcher and the recipient's name.
@@ -344,6 +350,7 @@ def _prepared_request(request, effective_uid, environment, launcher_lookup):
         "command": command,
         "evidence_ref": evidence_ref,
         "limits": request["limits"],
+        **reconciliation,
     }
     validate_sender_request(sender_request)
     # The record's recipient is named by the address the sender will send to.
