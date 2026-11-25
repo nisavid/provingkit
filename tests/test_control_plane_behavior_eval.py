@@ -3055,7 +3055,7 @@ def test_incumbent_snapshot_preserves_safe_names_and_frozen_bytes(tmp_path):
     try:
         snapshot = snapshots["example:skill"]
         assert snapshot.root == Path(temporary.name) / "example--skill"
-        assert snapshot.root.resolve().is_relative_to(Path(temporary.name))
+        assert snapshot.root.resolve().is_relative_to(Path(temporary.name).resolve())
         assert (snapshot.root / "SKILL.md").read_bytes() == b"frozen incumbent\n"
         assert snapshot.archive_relpath == "artifacts/incumbents/example--skill/tree.tar"
         assert (output / snapshot.archive_relpath).is_file()
