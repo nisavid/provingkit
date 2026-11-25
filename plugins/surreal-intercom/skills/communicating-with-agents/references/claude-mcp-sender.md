@@ -81,8 +81,8 @@ Replies must be newline-delimited JSON-RPC objects with the expected integer ID 
 
 A name request reads one `ListAgents` listing in the same attempt, following its
 cursor to later pages, at most five, before any `SendMessage` call. Only a
-session on this machine is addressed: a row in the listing's `Peer sessions`
-section whose kind is `interactive`, `bg`, `daemon`, or `daemon-worker`. A row
+session on this machine is addressed, using a complete `interactive` or `bg`
+row in the listing's `Peer sessions` section. A row
 for another machine, the cloud, or Remote Control is refused before the call
 with `not_local_session`; widening that is the operator's decision. A name that
 matches no row records `no_matching_local_row`. A name that matches more than
@@ -120,31 +120,38 @@ carries its name is addressed by the bare name; another session can take the
 same name between the listing and the call, and what the tool does then is known
 only from its description.
 
-The sender reads each section's complete fields from the right. The separator
-is a middle dot with two spaces on each side. A dot with single spaces belongs
-to the title, and separators inside a quoted Desktop title or a parenthesized
-status annotation stay inside that field. A complete row whose
-label the profile cannot read is skipped and counted if neither the current
-title nor a possible former name could carry the requested name. The result,
-the possible-submission record, and the `not_delivered` record of a later
-refusal carry `unreadable_rows`, and the row still counts toward its section's
-declared total. If a possible label equals the requested name or begins with
-that name followed by ` [`, the send records `unrecognized_listing`. The
-same refusal applies when a former-name phrase with an unfamiliar age or
-overlapping phrase boundaries could carry the name. Rows with blank labels
-and chat titles without their trailing bracketed ID leave the listing unreadable.
+The sender requires a complete field sequence for the row's section. The
+observed Desktop peer prints an interactive mode, status, Desktop origin, and
+start age. The age-less peer fixtures still carry a status. The cloud, chat,
+subagent, and teammate forms come from sender fixtures. A subagent row needs
+a type, running status, start age, and either a named reference or a bare
+agent ID. A chat row needs its bracketed ID. The field separator is a middle
+dot with two spaces on each side. A dot with single spaces belongs to the
+title, and separators inside a quoted Desktop title or status annotation stay
+inside that field.
+
+A complete row with an unreadable label is skipped and counts toward its
+section's total only when every possible current or former name excludes the
+requested name. An unreadable label could match if it equals the name or begins
+with that name followed by ` [`. The result, the possible-submission record,
+and the `not_delivered` record of a refusal retain the count in
+`unreadable_rows`. A truncated or ambiguous former-name phrase, an uncertain
+label boundary, an invalid bare agent ID, or an unsupported field combination
+refuses the listing without counting the offending line or returning candidates.
 A name that the profile cannot address without doubt (one with brackets, a leading `(`, or the
 field separator, or one that looks like a route) is refused as `invalid_name`
 before any claim; reach such a session through the recipient-prepared route
 fallback instead.
 
-The row profile follows Claude Code 2.1.331's formatter and the sender
-fixtures. A Claude Desktop listing observed on 2026-11-25 confirms the caller
-header, the Desktop peer origin and start age, and the Remote Control off
-footer. The sender recognizes that footer and the end-of-list footer by their
-full text. Missing, hidden, or failed-session notes and unknown lines refuse
-the send. The sender follows pages as the formatter prints them. Multi-page
-behavior is covered by fixtures.
+The control lines follow complete Claude Code 2.1.331 formatter text, including
+the observed caller header and Remote Control off footer. Missing, hidden, or
+failed-session notices and altered or unknown lines refuse the send before the
+sender follows another cursor. Multi-page handling is covered by fixtures.
+
+The profile conservatively refuses an ordinary peer send beside a running
+subagent with a compaction note or a shadowed roster teammate without a
+reference. These forms await observation in
+[the installed Intercom verification](https://github.com/nisavid/provingkit/issues/997).
 
 ## Capture, submit once, and inspect
 

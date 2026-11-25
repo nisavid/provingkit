@@ -1046,7 +1046,8 @@ class ClaudeNameSendTests(unittest.TestCase):
                         except OSError:
                             pass
 
-    def assert_refused_without_send(self, result, reason, calls, bookkeeping):
+    def assert_refused_without_send(
+            self, result, reason, calls, bookkeeping, *, unreadable_rows=None):
         self.assertEqual(result["path"], "name")
         self.assertEqual(result["reason"], reason)
         self.assertEqual(result["peer_input"], "not_attempted")
@@ -1058,8 +1059,14 @@ class ClaudeNameSendTests(unittest.TestCase):
         self.assertIn("no sendmessage was sent", observations[1]["detail"].lower())
         # The sender's own phase record is the evidence that the attempt did not deliver.
         evidence = json.loads(observations[2]["detail"])
-        # A refusal after a complete listing also counts the rows it skipped.
-        self.assertIn(evidence.pop("unreadable_rows", 0), range(0, 100))
+        # Listing failures retain only the complete rows skipped before the failure.
+        recorded_skips = evidence.pop("unreadable_rows", 0)
+        if unreadable_rows is None:
+            self.assertIn(recorded_skips, range(0, 100))
+        else:
+            self.assertEqual(result["unreadable_rows"], unreadable_rows)
+            self.assertEqual(recorded_skips, unreadable_rows)
+            self.assertNotIn("candidates", result)
         self.assertEqual(evidence, {
             "evidence": "sender_phase_record", "path": "name",
             "phase": "refused_before_possible_submission", "reason": reason})
@@ -1443,31 +1450,34 @@ class ClaudeNameSendTests(unittest.TestCase):
         with self.name_consumer(name="alpha", pages=(listing,)) as (
                 _, _, send, bookkeeping, calls, _):
             result = send()
-            self.assert_refused_without_send(result, "unrecognized_listing", calls, bookkeeping)
-            self.assertEqual(result["unreadable_rows"], 0)
-            self.assertNotIn("candidates", result)
+            self.assert_refused_without_send(
+                result, "unrecognized_listing", calls, bookkeeping, unreadable_rows=0)
 
     def test_a_listing_is_read_across_pages_within_one_attempt(self):
-        first = "\n".join([
-            "Peer sessions (2):",
-            "  twin [aa11bb]" + DOT + "interactive" + DOT + "busy",
-            '(… 1 more not shown — call again with cursor="0a1b2c3d" for the next page)',
-        ])
         second = "\n".join([
             "Peer sessions (2):", "  claude-receiver [3fa9c1]" + DOT + "bg" + DOT + "idle"])
-        with self.name_consumer(pages=(first, second)) as (
-                _, request, send, bookkeeping, calls, _t):
-            result = send()
-            self.assertEqual(result["reason"], "submitted")
-            made = calls()
-            self.assertEqual([call["name"] for call in made],
-                             ["ListAgents", "ListAgents", "SendMessage"])
-            self.assertEqual(made[1]["arguments"], {"cursor": "0a1b2c3d"})
+        for tail in ("", "; SendMessage still finds all of them by name, "
+                         "or by a unique prefix of 3+ characters"):
+            first = "\n".join([
+                "Peer sessions (2):",
+                "  twin [aa11bb]" + DOT + "interactive" + DOT + "busy",
+                '(… 1 more not shown — call again with cursor="0a1b2c3d" for the next page'
+                + tail + ")",
+            ])
+            with self.subTest(tail=tail), self.name_consumer(pages=(first, second)) as (
+                    _, request, send, bookkeeping, calls, _t):
+                result = send()
+                self.assertEqual(result["reason"], "submitted")
+                made = calls()
+                self.assertEqual([call["name"] for call in made],
+                                 ["ListAgents", "ListAgents", "SendMessage"])
+                self.assertEqual(made[1]["arguments"], {"cursor": "0a1b2c3d"})
 
     def test_a_listing_that_reports_missing_rows_is_refused(self):
         partial = LISTING + "\n  (the session list on this machine could not be read just now)"
         with self.name_consumer(pages=(partial,)) as (_, request, send, bookkeeping, calls, _t):
-            self.assert_refused_without_send(send(), "listing_incomplete", calls, bookkeeping)
+            self.assert_refused_without_send(
+                send(), "listing_incomplete", calls, bookkeeping, unreadable_rows=0)
 
     def test_an_altered_control_line_refuses_before_following_a_cursor(self):
         cursor = '(… 1 more not shown — call again with cursor="0a1b2c3d" for the next page)'
@@ -1479,6 +1489,11 @@ class ClaudeNameSendTests(unittest.TestCase):
         ))
         for last_lines, reason in (
             ((cursor[:-1] + warning + ")",), "listing_incomplete"),
+            ((cursor.replace("… 1 more", "… 1234567890 more"),), "listing_incomplete"),
+            ((cursor[:-1] + "; SendMessage still finds 1 of them by name, or by a "
+              "unique prefix of 3+ characters)",), "listing_incomplete"),
+            ((cursor, "  (the session list on this machine could not be read just now)"),
+             "listing_incomplete"),
             (("No reachable agents — no other Claude session is running on this "
               "machine right now" + warning, cursor), "unrecognized_listing"),
             (("No other session appears in this listing right now" + warning, cursor),
@@ -1493,10 +1508,9 @@ class ClaudeNameSendTests(unittest.TestCase):
             with self.subTest(last_lines=last_lines), self.name_consumer(
                     name="alpha", pages=(first, remaining)) as (_, _, send, bookkeeping, calls, _):
                 result = send()
-                self.assert_refused_without_send(result, reason, calls, bookkeeping)
+                self.assert_refused_without_send(
+                    result, reason, calls, bookkeeping, unreadable_rows=1)
                 self.assertEqual([call["name"] for call in calls()], ["ListAgents"])
-                self.assertEqual(result["unreadable_rows"], 1)
-                self.assertNotIn("candidates", result)
 
     def test_the_listing_footer_is_matched_in_full(self):
         footer = (
@@ -1520,7 +1534,8 @@ class ClaudeNameSendTests(unittest.TestCase):
                     self.assertEqual(result["reason"], reason)
                     self.assertEqual(calls()[-1]["arguments"]["to"], "alpha")
                 else:
-                    self.assert_refused_without_send(result, reason, calls, bookkeeping)
+                    self.assert_refused_without_send(
+                        result, reason, calls, bookkeeping, unreadable_rows=0)
                 self.assertEqual(result["unreadable_rows"], skips)
 
     def test_quoted_titles_and_status_annotations_keep_internal_separators(self):
@@ -1539,7 +1554,7 @@ class ClaudeNameSendTests(unittest.TestCase):
                         self.assertEqual(result["unreadable_rows"], skips)
                         self.assertEqual(calls()[-1]["arguments"]["to"], "alpha")
 
-    def test_supported_rows_with_and_without_optional_fields(self):
+    def test_documented_complete_rows_allow_a_local_send(self):
         cases = (
             ("Peer sessions", ("(draft) peer", "bg", "idle")),
             ("Peer sessions", ("(draft) · notes [a1b2c3]", "interactive", "busy",
@@ -1625,9 +1640,54 @@ class ClaudeNameSendTests(unittest.TestCase):
             with self.subTest(section=section, fields=fields), self.name_consumer(
                     name="alpha", pages=(listing,)) as (_, _, send, bookkeeping, calls, _):
                 result = send()
-                self.assert_refused_without_send(result, "unrecognized_listing", calls, bookkeeping)
-                self.assertEqual(result["unreadable_rows"], 0)
-                self.assertNotIn("candidates", result)
+                self.assert_refused_without_send(
+                    result, "unrecognized_listing", calls, bookkeeping, unreadable_rows=0)
+
+    def test_unobserved_wait_note_and_shadowed_roster_refuse(self):
+        cases = (
+            ("Subagents", ("other [b2]", "reviewer", "running", "started 1m ago",
+                           "compacting its conversation for 1m")),
+            ("Teammates", ("other", "reviewer", "roster",
+                           "not messageable by name while a subagent in this session is "
+                           "registered under that name (the name reaches the subagent)")),
+        )
+        for section, fields in cases:
+            listing = "\n".join((
+                "Peer sessions (1):",
+                "  " + DOT.join(("alpha [a1]", "interactive", "idle")),
+                f"{section} (1):",
+                "  " + DOT.join(fields),
+            ))
+            with self.subTest(section=section), self.name_consumer(
+                    name="alpha", pages=(listing,)) as (_, _, send, bookkeeping, calls, _):
+                self.assert_refused_without_send(
+                    send(), "unrecognized_listing", calls, bookkeeping, unreadable_rows=0)
+
+    def test_deleting_required_fields_cannot_supply_a_row(self):
+        # Removing Desktop origin still leaves the fixture-backed started peer.
+        # Removing the joined age still leaves the fixture-backed short roster.
+        cases = (
+            ("Peer sessions", ("other [b2]", "interactive", "idle"), (0, 1, 2)),
+            ("Peer sessions", ("other [b2]", "interactive", "busy",
+                               "Claude Desktop session", "started 8h ago"), (0, 1, 2, 4)),
+            ("Peer sessions", ("other [b2]", "Remote Control", "idle"), (0, 1, 2)),
+            ("Subagents", ("other [b2]", "reviewer", "running", "started 1m ago"), (0, 1, 2, 3)),
+            ("Teammates", ("other [b2]", "reviewer", "roster", "joined 2d ago"), (0, 1, 2)),
+            ("Cloud and Remote Control sessions",
+             ("other [b2]", "cloud session", "running"), (0, 1, 2)),
+            ("Chats", ("other [b2]", "chat"), (0, 1)),
+        )
+        local = "  " + DOT.join(("alpha [a1]", "interactive", "idle"))
+        for section, fields, required in cases:
+            headings = (("Peer sessions (2):", local) if section == "Peer sessions" else
+                        ("Peer sessions (1):", local, f"{section} (1):"))
+            for index in required:
+                row = DOT.join(fields[:index] + fields[index + 1:])
+                listing = "\n".join((*headings, "  " + row))
+                with self.subTest(section=section, deleted=fields[index]), self.name_consumer(
+                        name="alpha", pages=(listing,)) as (_, _, send, bookkeeping, calls, _):
+                    self.assert_refused_without_send(
+                        send(), "unrecognized_listing", calls, bookkeeping, unreadable_rows=0)
 
     def test_missing_peer_labels_and_chat_ids_refuse(self):
         local = "  " + DOT.join(("alpha [a1]", "interactive", "idle"))
@@ -1642,8 +1702,8 @@ class ClaudeNameSendTests(unittest.TestCase):
             with self.subTest(lines=lines), self.name_consumer(
                     name="alpha", pages=("\n".join(lines),)) as (_, _, send, bookkeeping, calls, _):
                 result = send()
-                self.assert_refused_without_send(result, "unrecognized_listing", calls, bookkeeping)
-                self.assertEqual(result["unreadable_rows"], 0)
+                self.assert_refused_without_send(
+                    result, "unrecognized_listing", calls, bookkeeping, unreadable_rows=0)
 
     def test_former_names_with_compound_unknown_and_overlapping_boundaries(self):
         cases = (
@@ -1674,8 +1734,8 @@ class ClaudeNameSendTests(unittest.TestCase):
                     self.assertEqual(result["unreadable_rows"], 1)
                     self.assertEqual(calls()[-1]["arguments"]["to"], "alpha")
                 else:
-                    self.assert_refused_without_send(result, reason, calls, bookkeeping)
-                    self.assertEqual(result["unreadable_rows"], 0)
+                    self.assert_refused_without_send(
+                        result, reason, calls, bookkeeping, unreadable_rows=0)
 
     def test_indented_fieldless_lines_do_not_count_as_rows(self):
         for line in ("  [one session hidden]", "  one session hidden"):
@@ -1687,7 +1747,7 @@ class ClaudeNameSendTests(unittest.TestCase):
             with self.subTest(line=line), self.name_consumer(pages=(listing,)) as (
                     _, request, send, bookkeeping, calls, _t):
                 self.assert_refused_without_send(
-                    send(), "unrecognized_listing", calls, bookkeeping)
+                    send(), "unrecognized_listing", calls, bookkeeping, unreadable_rows=0)
 
     def test_a_listing_note_with_separators_does_not_count_as_a_row(self):
         for note, ending in (("missing session", ")"), ("missing session", ""),
@@ -1700,8 +1760,8 @@ class ClaudeNameSendTests(unittest.TestCase):
             with self.subTest(note=note, ending=ending), self.name_consumer(pages=(listing,)) as (
                     _, request, send, bookkeeping, calls, _t):
                 result = send()
-                self.assert_refused_without_send(result, "listing_incomplete", calls, bookkeeping)
-                self.assertEqual(result["unreadable_rows"], 0)
+                self.assert_refused_without_send(
+                    result, "listing_incomplete", calls, bookkeeping, unreadable_rows=0)
 
     def test_an_unrelated_parenthesized_row_is_skipped_and_counted(self):
         for status in ("idle", "idle (waiting)", "(annotation)"):
@@ -1766,8 +1826,7 @@ class ClaudeNameSendTests(unittest.TestCase):
                     name="alpha", pages=(listing,)) as (_, request, send, bookkeeping, calls, _t):
                 result = send()
                 self.assert_refused_without_send(
-                    result, "unrecognized_listing", calls, bookkeeping)
-                self.assertEqual(result["unreadable_rows"], 0)
+                    result, "unrecognized_listing", calls, bookkeeping, unreadable_rows=0)
 
     def test_non_peer_sections_require_their_own_row_fields(self):
         for section, line in (
@@ -1788,8 +1847,7 @@ class ClaudeNameSendTests(unittest.TestCase):
                     _, request, send, bookkeeping, calls, _t):
                 result = send()
                 self.assert_refused_without_send(
-                    result, "unrecognized_listing", calls, bookkeeping)
-                self.assertEqual(result["unreadable_rows"], 0)
+                    result, "unrecognized_listing", calls, bookkeeping, unreadable_rows=0)
 
     def test_a_teammate_title_with_a_separator_does_not_create_a_name_match(self):
         listing = "\n".join([
@@ -1888,7 +1946,7 @@ class ClaudeNameSendTests(unittest.TestCase):
             with self.subTest(label=label), self.name_consumer(pages=(listing,)) as (
                     _, request, send, bookkeeping, calls, _t):
                 self.assert_refused_without_send(
-                    send(), "unrecognized_listing", calls, bookkeeping)
+                    send(), "unrecognized_listing", calls, bookkeeping, unreadable_rows=0)
 
     def test_a_name_the_profile_cannot_address_is_refused_before_any_claim(self):
         for name in ("left" + DOT + "right", "(draft) review"):
@@ -1914,7 +1972,8 @@ class ClaudeNameSendTests(unittest.TestCase):
         unparenthesized = LISTING + "\n… and 2 more sessions not shown"
         with self.name_consumer(pages=(unparenthesized,)) as (
                 _, request, send, bookkeeping, calls, _t):
-            self.assert_refused_without_send(send(), "unrecognized_listing", calls, bookkeeping)
+            self.assert_refused_without_send(
+                send(), "unrecognized_listing", calls, bookkeeping, unreadable_rows=0)
 
     def test_the_profiles_head_and_title_frame_lines_are_accepted(self):
         listing = "\n".join([
