@@ -23,11 +23,16 @@ release. A missing account, unsupported route, or conflicting installed version
 is an owned gap, not evidence that the other accounts failed. Continue the
 independent eligible account and surface rows while that gap is resolved.
 
-After saving a plugin update used in Claude Desktop Code, checkpoint affected
-work and follow the [Desktop refresh procedure](../install-and-update.md#refresh-claude-desktop-after-an-update)
-before verifying the rollout. Record the saved and loaded identities separately.
-After restart, verify each peer route tied to the old connection reaches its
-intended recipient before sending on it. Do not send on a route whose recipient cannot be confirmed.
+After saving and enabling a plugin update used in Claude Desktop Code, run
+`/reload-plugins` in the affected Code session. Invoke a skill from the plugin.
+Check the loaded version or a changed file from the loaded plugin against the
+reviewed release. Record the saved and loaded identities separately.
+If the loaded copy matches, continue. If the check still shows the previous release,
+[refresh Claude Desktop](../install-and-update.md#refresh-claude-desktop-after-an-update)
+and record the loaded identity again.
+If you restarted Desktop, verify each peer route tied to the old connection
+reaches its intended recipient before sending on it. Do not send on a route
+whose recipient cannot be confirmed.
 Reconcile an uncertain send with its original attempt before retrying it or
 switching its route. Verify fresh-session discovery and useful use separately
 from the recovery of a session whose transcript survived the restart.
