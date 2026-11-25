@@ -1273,6 +1273,15 @@ class ClaudeNameSendTests(unittest.TestCase):
                     _, request, send, bookkeeping, calls, _t):
                 self.assert_refused_without_send(send(), "not_local_session", calls, bookkeeping)
 
+    def test_a_row_with_both_local_and_remote_kinds_is_not_local(self):
+        listing = "\n".join([
+            "Peer sessions (1):",
+            "  alpha [a1]" + DOT + "interactive" + DOT + "idle" + DOT + "Remote Control",
+        ])
+        with self.name_consumer(name="alpha", pages=(listing,)) as (
+                _, request, send, bookkeeping, calls, _t):
+            self.assert_refused_without_send(send(), "not_local_session", calls, bookkeeping)
+
     def test_a_multi_match_locality_refusal_lists_only_matching_rows(self):
         listing = "\n".join([
             "Peer sessions (3):",
@@ -1417,6 +1426,15 @@ class ClaudeNameSendTests(unittest.TestCase):
                 self.assert_refused_without_send(
                     send(), "unrecognized_listing", calls, bookkeeping)
 
+    def test_a_listing_note_with_separators_does_not_count_as_a_row(self):
+        listing = "\n".join([
+            "Peer sessions (2):",
+            "  claude-receiver [3fa9c1]" + DOT + "interactive" + DOT + "idle",
+            "  (missing session" + DOT + "interactive" + DOT + "idle)",
+        ])
+        with self.name_consumer(pages=(listing,)) as (_, request, send, bookkeeping, calls, _t):
+            self.assert_refused_without_send(send(), "listing_incomplete", calls, bookkeeping)
+
     def test_an_unrelated_parenthesized_row_is_skipped_and_counted(self):
         listing = "\n".join([
             "Peer sessions (2):",
@@ -1440,15 +1458,15 @@ class ClaudeNameSendTests(unittest.TestCase):
                 send(), "no_matching_local_row", calls, bookkeeping)
 
     def test_a_separator_with_an_uncertain_name_boundary_refuses(self):
-        listing = "\n".join([
-            "Peer sessions (1):",
-            "  alpha" + DOT + "interactive" + DOT + "idle" + DOT + "notes [b2]"
-            + DOT + "interactive" + DOT + "idle",
-        ])
-        with self.name_consumer(name="alpha", pages=(listing,)) as (
-                _, request, send, bookkeeping, calls, _t):
-            self.assert_refused_without_send(
-                send(), "unrecognized_listing", calls, bookkeeping)
+        for label in ("alpha" + DOT + "interactive" + DOT + "idle" + DOT + "notes [b2]",
+                      "alpha" + DOT + "interactive"):
+            listing = "\n".join([
+                "Peer sessions (1):", "  " + label + DOT + "interactive" + DOT + "idle",
+            ])
+            with self.subTest(label=label), self.name_consumer(name="alpha", pages=(listing,)) as (
+                    _, request, send, bookkeeping, calls, _t):
+                self.assert_refused_without_send(
+                    send(), "unrecognized_listing", calls, bookkeeping)
 
     def test_a_section_that_shows_fewer_rows_than_it_declares_is_refused(self):
         one_short = "\n".join([

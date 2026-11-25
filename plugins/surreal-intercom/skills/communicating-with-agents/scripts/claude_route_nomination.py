@@ -17,7 +17,7 @@ import sqlite3
 import stat
 import sys
 
-from claude_mcp_sender import frame_fits, request_destination, sendmessage_call
+from claude_mcp_sender import RECONCILIATION_FIELDS, frame_fits, request_destination, sendmessage_call
 from claude_mcp_sender import validate as validate_sender_request
 from codex_capture import CaptureWriter
 from native_codex_mailbox import Mailbox
@@ -311,7 +311,7 @@ def _prepared_request(request, effective_uid, environment, launcher_lookup):
     schema = request.get("schema") if isinstance(request, dict) else None
     # A later attempt's fields pass through unchanged; the sender's parser checks the pair.
     reconciliation = (
-        {key: request[key] for key in ("after_attempt", "decision_ref") if key in request}
+        {key: request[key] for key in RECONCILIATION_FIELDS if key in request}
         if isinstance(request, dict) else {}
     )
     keys = request.keys() - reconciliation.keys() if isinstance(request, dict) else set()

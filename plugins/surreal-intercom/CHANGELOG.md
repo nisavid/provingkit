@@ -27,31 +27,26 @@
   forwarding actor neither builds nor removes one.
 - Let Claude route preparation accept a received reply route's `nomination`
   field unchanged, and cover a reply sent back through each route kind.
-- Record a definite refusal when the Claude sender's call frame exceeds its
-  ceiling, and refuse that frame in `prepare` before planning or publishing.
-- Make a local Claude agent's name the ordinary first-send address: the sender
-  finds it in one `ListAgents` listing of its own `claude mcp serve` child and
-  makes one `SendMessage` call, refusing non-local, unmatched, ambiguous, or
-  stale-reference rows before the call. A supplied recipient-prepared route
-  stays the fallback, and the result names the path used.
+- Use a local Claude agent's name as its ordinary first-send address. The name
+  is an unauthenticated label and must equal the planned recipient's `thread_id`.
+  The sender reads one `ListAgents` listing from its own `claude mcp serve`
+  child, builds the address from the matching row, and records that row's name,
+  reference, and kind.
+  The sender makes at most one `SendMessage` call. A supplied recipient-prepared
+  route takes the fallback path, and the result names the path used.
 - Close the Claude sender's child as the MCP stdio lifecycle describes: close
   its input, wait briefly, then `SIGTERM`, then `SIGKILL`, waiting on its exit
   rather than its pipes, so it is no longer run to the deadline.
-- Bind the by-name send's planned recipient to the requested name: the sender
-  and `prepare` refuse a recipient `thread_id` that differs from it, and the
-  attempt keeps the addressed row's name, reference, and kind. The name is an
-  unauthenticated label, not a session identifier.
-- Record `not_delivered` after every Claude sender refusal made before
-  possible submission, on both paths. List an ambiguous name's matching rows in
-  the refusal, and let a caller ask for a later attempt by passing both
-  `after_attempt` and `decision_ref` through `prepare` and the sender to the
-  mailbox claim; the sender never starts one itself.
-- Skip and count a listing row whose label the profile cannot read unless it
-  could be a row for the requested name, so an unrelated session title no
-  longer stops every send; refuse a requested name the profile cannot address
-  before any claim. Notes and pages stay strict.
-- Build a by-name send's `to` from the selected listing row's own name and
-  reference rather than from the request's text.
+- Refuse unmatched, ambiguous, non-local, and stale-reference destinations.
+  Disclose matching rows when resolution requires them and ask for a selection
+  when a unique local reference is available. Refuse an oversized call frame in
+  `prepare` before planning or publishing. On either send path, commit a definite
+  pre-submission `refused` observation together with `not_delivered`. Callers can
+  request a later attempt by supplying both `after_attempt` and `decision_ref`.
+- Require a recognizable listing row before counting or matching it. Skip and
+  count an unreadable row only when it cannot carry the requested name, and
+  retain the count even if the listing fails. Refuse unaddressable names before
+  claiming an attempt. Notes and pages stay strict.
 - State the 2026-11-19 decision on a Claude reply waking a Codex sender, and
   that an envelope's sender and actor are claims without authority. The
   Claude sender reference points its note that the child ends after the call

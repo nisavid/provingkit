@@ -327,8 +327,6 @@ def listing_row_boundaries(fields, section):
     for index in range(1, len(fields) - 1):
         if fields[index] not in SESSION_ROW_TYPES:
             continue
-        if index > 1 and fields[index - 1] in SESSION_ROW_TYPES:
-            continue
         if index > 1 and FORMER_NAME_FIELD.fullmatch(fields[index - 1]):
             boundaries.append(index - 1)
         boundaries.append(index)
@@ -349,30 +347,41 @@ def parse_listing_page(listing, name, totals, skipped):
     cursor = None
     section = None
     for line in listing.split("\n"):
-        if not line.strip():
+        stripped = line.strip()
+        if not stripped:
             continue
         header = LISTING_SECTION.match(line)
         if header:
             section = header["title"]
             count_section(totals, section, int(header["total"]))
             continue
+        page = LISTING_NEXT_PAGE.match(stripped)
+        if page:
+            cursor = page["cursor"]
+            continue
+        if LISTING_END.match(stripped):
+            continue
+        if stripped.startswith("(") and stripped.endswith(")"):
+            raise listing_incomplete("The listing reports missing or hidden rows.")
         fields = line[2:].split(LISTING_FIELD_SEPARATOR) if line.startswith("  ") else []
         boundaries = listing_row_boundaries(fields, section)
         if boundaries:
             if section is None:
                 raise PathRefusal("unrecognized_listing", "A listing row has no section.")
-            labels = [LISTING_FIELD_SEPARATOR.join(fields[:index]) for index in boundaries]
-            label = labels[0]
+            raw_label = LISTING_FIELD_SEPARATOR.join(fields[:boundaries[0]])
+            label = raw_label
             ref = None
             if label.endswith("]") and " [" in label:
                 label, _, ref = label[:-1].rpartition(" [")
             if (
-                len(labels) != 1 or label.startswith("(")
+                len(boundaries) != 1 or label.startswith("(")
                 or LISTING_FIELD_SEPARATOR in label
                 or not label or any(character in label for character in "[]")
                 or (ref is not None and REF_PATTERN.fullmatch(ref) is None)
             ):
-                if any(could_carry_name(label, name) for label in labels):
+                # Every other possible label extends this one with the separator,
+                # which cannot be part of the requested name.
+                if could_carry_name(raw_label, name):
                     raise PathRefusal(
                         "unrecognized_listing",
                         "A listing row that could carry this name has a label outside the "
@@ -383,13 +392,7 @@ def parse_listing_page(listing, name, totals, skipped):
             rows.append({"section": section, "name": label, "ref": ref,
                          "kind": row_kind(metadata), "fields": metadata})
             continue
-        stripped = line.strip()
-        page = LISTING_NEXT_PAGE.match(stripped)
-        if page:
-            cursor = page["cursor"]
-        elif LISTING_END.match(stripped):
-            continue
-        elif stripped.startswith("("):
+        if stripped.startswith("("):
             # Failed, truncated or partial listing notes leave rows unknown.
             raise listing_incomplete("The listing reports missing or hidden rows.")
         elif not any(pattern.fullmatch(line) for pattern in LISTING_HEAD_LINES):
@@ -400,12 +403,7 @@ def parse_listing_page(listing, name, totals, skipped):
 
 
 def is_local_session(row):
-    fields = set(row["fields"])
-    return (
-        row["section"] == LOCAL_SESSION_SECTION
-        and len(fields & LOCAL_SESSION_KINDS) == 1
-        and not fields & REMOTE_ROW_TYPES
-    )
+    return row["section"] == LOCAL_SESSION_SECTION and row["kind"] in LOCAL_SESSION_KINDS
 
 
 def candidate_view(row):
