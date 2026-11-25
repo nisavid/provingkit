@@ -100,7 +100,8 @@ never reused, because each attempt starts its own child and lists again. For
 result lists the matching rows in `candidates`. A `not_local_session` result
 also lists them when more than one row matches. Each entry gives the `name`,
 `ref`, `kind`, and whether the row is `local`. The result says
-`needs: "selection"` when a local row has a reference no other matching row shares. A
+`needs: "selection"` when a local row has a reference no other matching row
+shares and its qualified address fits the destination and call-frame limits. A
 listing that reports missing, hidden, or failed rows, has a section whose rows
 across all its pages differ in number from the total its header declares, or
 does not end within five pages, records `listing_incomplete`; a line outside

@@ -558,6 +558,19 @@ def select_row(rows, name, selection):
     return row
 
 
+def has_actionable_selection(candidates, tool, message, actor, identity):
+    ref_counts = Counter(row["ref"] for row in candidates)
+    for row in candidates:
+        if not row["local"] or row["ref"] is None or ref_counts[row["ref"]] != 1:
+            continue
+        target = name_destination(row["name"], row["ref"])
+        if destination_violation(tool, target) is None and frame_fits(
+            sendmessage_call(message, actor, target, identity)
+        ):
+            return True
+    return False
+
+
 class StdioMcpChild:
     """One owned child; byte counts cover only this invocation's pipe reads."""
 
@@ -820,10 +833,6 @@ def main():
             result["reason"] = refusal.reason
             if refusal.candidates is not None:
                 result["candidates"] = refusal.candidates
-                ref_counts = Counter(row["ref"] for row in refusal.candidates)
-                if any(row["local"] and row["ref"] is not None and ref_counts[row["ref"]] == 1
-                       for row in refusal.candidates):
-                    result["needs"] = "selection"
 
         if not result["claimed"]:
             result["reason"] = "claim_not_acquired"
@@ -912,6 +921,10 @@ def main():
                     bound["unreadable_rows"] = result["unreadable_rows"]
             except PathRefusal as refusal:
                 refuse(refusal)
+                if refusal.candidates and has_actionable_selection(
+                    refusal.candidates, nominated[0], message, request["actor"], identity
+                ):
+                    result["needs"] = "selection"
             else:
                 call = sendmessage_call(message, request["actor"], to, identity)
                 result["stage"] = "call"

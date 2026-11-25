@@ -970,7 +970,7 @@ class ClaudeNameSendTests(unittest.TestCase):
     @contextmanager
     def name_consumer(self, *, name="claude-receiver", selection=None, pages=(LISTING,),
                       mode="ordinary", target=None, seconds=8, stdout_bytes=65536,
-                      recipient_thread=None):
+                      recipient_thread=None, payload="Compare the two results.\n"):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             store = root / "mailbox.sqlite3"
@@ -986,7 +986,7 @@ class ClaudeNameSendTests(unittest.TestCase):
                 "sender": {"thread_id": "original", "host_id": "origin-host"},
                 "recipient": {"thread_id": recipient_thread, "host_id": "local"},
                 "owner": {"thread_id": "owner", "host_id": "local"},
-                "payload": "Compare the two results.\n",
+                "payload": payload,
                 "authority_ref": "synthetic://grant/compare", "holds": ["No publication."],
             }
             (root / "message.json").write_text(json.dumps(original), encoding="utf-8")
@@ -1334,6 +1334,51 @@ class ClaudeNameSendTests(unittest.TestCase):
             self.assertEqual(result["candidates"][-1], {
                 "name": "alpha", "ref": "b2", "kind": "bg", "local": True,
             })
+
+    def test_a_selection_hint_requires_a_qualified_destination_that_fits(self):
+        name = "x" * 300
+        listing = "\n".join([
+            "Peer sessions (2):",
+            "  " + name + " [a1]" + DOT + "interactive" + DOT + "idle",
+            "  " + name + " [b2]" + DOT + "bg" + DOT + "idle",
+        ])
+        with self.name_consumer(name=name, pages=(listing,)) as (
+                _, request, send, bookkeeping, calls, _t):
+            result = send()
+            self.assert_refused_without_send(result, "ambiguous_name", calls, bookkeeping)
+            self.assertCountEqual(result["candidates"], [
+                {"name": name, "ref": "a1", "kind": "interactive", "local": True},
+                {"name": name, "ref": "b2", "kind": "bg", "local": True},
+            ])
+            self.assertNotIn("needs", result)
+
+    def test_a_selection_hint_requires_a_qualified_frame_that_fits(self):
+        listing = "\n".join([
+            "Peer sessions (2):",
+            "  alpha [a]" + DOT + "interactive" + DOT + "idle",
+            "  alpha [b234]" + DOT + "bg" + DOT + "idle",
+        ])
+        # Only the bare frame fits with 3,484 payload characters. With 3,480,
+        # adding the four bytes of " [a]" fits exactly and " [b234]" exceeds the limit.
+        for length, needs, continuation in (
+            (3484, None, "control_frame_limit"), (3480, "selection", "submitted"),
+        ):
+            with self.subTest(length=length), self.name_consumer(
+                    name="alpha", pages=(listing,), payload="x" * length) as (
+                    _, request, send, bookkeeping, calls, _t):
+                result = send()
+                self.assert_refused_without_send(result, "ambiguous_name", calls, bookkeeping)
+                self.assertEqual(result.get("needs"), needs)
+                request.update({
+                    "attempt_id": "send-1/attempt/2", "selection": {"ref": "a"},
+                    "after_attempt": "send-1/attempt/1",
+                    "decision_ref": "synthetic://decision/select-a",
+                })
+                self.assertEqual(send()["reason"], continuation)
+                if continuation == "submitted":
+                    self.assertEqual(calls()[-1]["arguments"]["to"], "alpha [a]")
+                else:
+                    self.assertEqual([call["name"] for call in calls()], ["ListAgents"])
 
     def test_a_reference_not_in_this_attempts_listing_is_refused(self):
         # A ref that an earlier attempt's listing showed is not shown in this one.
