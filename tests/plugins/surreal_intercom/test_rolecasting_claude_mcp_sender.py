@@ -1273,6 +1273,59 @@ class ClaudeNameSendTests(unittest.TestCase):
                     _, request, send, bookkeeping, calls, _t):
                 self.assert_refused_without_send(send(), "not_local_session", calls, bookkeeping)
 
+    def test_a_multi_match_locality_refusal_lists_only_matching_rows(self):
+        listing = "\n".join([
+            "Peer sessions (3):",
+            "  alpha [a1]" + DOT + "interactive" + DOT + "idle",
+            "  alpha [b2]" + DOT + "Remote Control" + DOT + "idle",
+            "  unrelated [c3]" + DOT + "bg" + DOT + "idle",
+        ])
+        with self.name_consumer(name="alpha", selection={"ref": "b2"}, pages=(listing,)) as (
+                _, request, send, bookkeeping, calls, _t):
+            result = send()
+            self.assert_refused_without_send(result, "not_local_session", calls, bookkeeping)
+            self.assertEqual(result["candidates"], [
+                {"name": "alpha", "ref": "a1", "kind": "interactive", "local": True},
+                {"name": "alpha", "ref": "b2", "kind": "Remote Control", "local": False},
+            ])
+
+    def test_no_matching_row_does_not_request_a_selection(self):
+        with self.name_consumer(name="nobody", selection={"ref": "a1"}) as (
+                _, request, send, bookkeeping, calls, _t):
+            result = send()
+            self.assert_refused_without_send(result, "selection_not_in_listing", calls, bookkeeping)
+            self.assertEqual(result["candidates"], [])
+            self.assertNotIn("needs", result)
+
+    def test_an_inseparable_reference_collision_does_not_request_a_selection(self):
+        listing = "\n".join([
+            "Peer sessions (2):",
+            "  alpha [a1]" + DOT + "interactive" + DOT + "idle",
+            "  alpha [a1]" + DOT + "bg" + DOT + "idle",
+        ])
+        with self.name_consumer(name="alpha", pages=(listing,)) as (
+                _, request, send, bookkeeping, calls, _t):
+            result = send()
+            self.assert_refused_without_send(result, "ambiguous_name", calls, bookkeeping)
+            self.assertEqual([row["ref"] for row in result["candidates"]], ["a1", "a1"])
+            self.assertNotIn("needs", result)
+
+    def test_a_unique_local_reference_alternative_prompts_for_selection(self):
+        listing = "\n".join([
+            "Peer sessions (3):",
+            "  alpha [a1]" + DOT + "interactive" + DOT + "idle",
+            "  alpha [a1]" + DOT + "Remote Control" + DOT + "idle",
+            "  alpha [b2]" + DOT + "bg" + DOT + "idle",
+        ])
+        with self.name_consumer(name="alpha", selection={"ref": "a1"}, pages=(listing,)) as (
+                _, request, send, bookkeeping, calls, _t):
+            result = send()
+            self.assert_refused_without_send(result, "ambiguous_selection", calls, bookkeeping)
+            self.assertEqual(result["needs"], "selection")
+            self.assertEqual(result["candidates"][-1], {
+                "name": "alpha", "ref": "b2", "kind": "bg", "local": True,
+            })
+
     def test_a_reference_not_in_this_attempts_listing_is_refused(self):
         # A ref that an earlier attempt's listing showed is not shown in this one.
         with self.name_consumer(name="twin", selection={"ref": "0ld0ne"}) as (

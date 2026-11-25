@@ -97,9 +97,10 @@ selected reference that this listing does not show records
 `ambiguous_selection`; a reference from an earlier attempt is
 never reused, because each attempt starts its own child and lists again. For
 `ambiguous_name`, `selection_not_in_listing`, and `ambiguous_selection`, the
-result says `needs: "selection"` and its `candidates` list each row of this
-attempt's listing that carries the name, with its `name`, `ref`, `kind`, and
-whether it is `local`, and no other row. A
+result lists the matching rows in `candidates`. A `not_local_session` result
+also lists them when more than one row matches. Each entry gives the `name`,
+`ref`, `kind`, and whether the row is `local`. The result says
+`needs: "selection"` when a local row has a reference no other matching row shares. A
 listing that reports missing, hidden, or failed rows, has a section whose rows
 across all its pages differ in number from the total its header declares, or
 does not end within five pages, records `listing_incomplete`; a line outside

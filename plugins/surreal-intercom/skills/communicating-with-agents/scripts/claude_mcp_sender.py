@@ -11,6 +11,7 @@ protocol I/O and the wait after closing the child's input; the signal steps
 that follow, and reaping, may exceed it. No descendant closure is asserted.
 """
 import argparse
+from collections import Counter
 import json
 import math
 import os
@@ -31,7 +32,7 @@ class InspectionError(ValueError):
 class PathRefusal(Exception):
     """A definite refusal before any SendMessage call, with its reason.
 
-    `candidates` lists the rows of this attempt's listing a caller can select from.
+    `candidates` lists matching rows from this attempt's listing.
     """
 
     def __init__(self, reason, detail, candidates=None):
@@ -420,7 +421,7 @@ def select_row(rows, name, selection):
     addresses the returned row by its own name and reference.
     """
     named = [row for row in rows if row["name"] == name]
-    # The rows a caller can select from: those of this listing that carry the name.
+    # Disclose every matching row, including rows the sender cannot address.
     candidates = [candidate_view(row) for row in named]
     if selection is not None:
         chosen = [row for row in named if row["ref"] == selection["ref"]]
@@ -450,7 +451,7 @@ def select_row(rows, name, selection):
         raise PathRefusal(
             "not_local_session",
             "The named row is not a session on this machine; only local sessions "
-            "are addressed. No SendMessage was sent.")
+            "are addressed. No SendMessage was sent.", candidates if len(named) > 1 else None)
     return row
 
 
@@ -715,8 +716,11 @@ def main():
             )
             result["reason"] = refusal.reason
             if refusal.candidates is not None:
-                result["needs"] = "selection"
                 result["candidates"] = refusal.candidates
+                ref_counts = Counter(row["ref"] for row in refusal.candidates)
+                if any(row["local"] and row["ref"] is not None and ref_counts[row["ref"]] == 1
+                       for row in refusal.candidates):
+                    result["needs"] = "selection"
 
         if not result["claimed"]:
             result["reason"] = "claim_not_acquired"
