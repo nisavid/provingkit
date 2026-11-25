@@ -341,8 +341,8 @@ replay's request ID with the same operation, version, publication and variants,
 the replay returns that stored record. A reconcile may have changed it. The
 transport checkout is not part of that match, so the replay returns the record
 even if the checkout it names differs or is unavailable. If the original
-attempt never committed, the replay is the first issuance, with all its effects
-on the state. The issuer reads the
+attempt never committed, the replay runs as a first issuance under the issuer's
+current checks, so it either issues or is rejected. The issuer reads the
 state under a write lock, so a busy state database may reject a replay; re-run
 it after the lock clears. A rejection is not issuer evidence and does not show
 that no delivery exists. Pin only an output that carries `operation` and
