@@ -50,5 +50,7 @@
   could be a row for the requested name, so an unrelated session title no
   longer stops every send; refuse a requested name the profile cannot address
   before any claim. Notes and pages stay strict.
+- Build a by-name send's `to` from the selected listing row's own name and
+  reference rather than from the request's text.
 - State the 2026-11-19 decision on a Claude reply waking a Codex sender, and
   that an envelope's sender and actor are claims without authority.

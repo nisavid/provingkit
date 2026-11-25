@@ -1217,6 +1217,25 @@ class ClaudeNameSendTests(unittest.TestCase):
             self.assertEqual(result["reason"], "submitted")
             self.assertEqual(calls()[-1]["arguments"]["to"], "twin [cc22dd]")
 
+    def test_a_selection_with_a_unique_name_must_match_that_row(self):
+        with self.name_consumer(selection={"ref": "zz99yy"}) as (
+                _, request, send, bookkeeping, calls, _t):
+            result = send()
+            self.assert_refused_without_send(
+                result, "selection_not_in_listing", calls, bookkeeping)
+            self.assertEqual(result["candidates"], [
+                {"name": "claude-receiver", "ref": "3fa9c1", "kind": "interactive", "local": True}])
+        with self.name_consumer(selection={"ref": "3fa9c1"}) as (
+                _, request, send, bookkeeping, calls, _t):
+            self.assertEqual(send()["reason"], "submitted")
+            self.assertEqual(calls()[-1]["arguments"]["to"], "claude-receiver [3fa9c1]")
+            bound = json.loads(
+                bookkeeping("show", "send-1")["attempts"][0]["observations"][1]["detail"])
+            # The address is the listing row's own name and reference.
+            self.assertEqual(bound["to"], "claude-receiver [3fa9c1]")
+            self.assertEqual((bound["row"]["name"], bound["row"]["ref"]),
+                             ("claude-receiver", "3fa9c1"))
+
     def test_a_name_that_looks_like_a_route_is_refused_before_any_claim(self):
         route_name = "uds:/synthetic/outside.sock"
         listing = "\n".join([

@@ -161,7 +161,7 @@ def name_destination(name, ref=None):
 
 
 def request_destination(request):
-    """The `to` value a validated request addresses, built before any listing."""
+    """The `to` value a validated request will send, for checks before any listing."""
     if "target" in request:
         return request["target"]
     selection = request.get("selection")
@@ -391,8 +391,9 @@ def candidate_view(row):
 def select_row(rows, name, selection):
     """Bind the requested name to exactly one local row of this attempt's listing.
 
-    The row shows the request's name and selected reference, so the destination
-    built from the request before the listing is the one this row is addressed by.
+    A selection is the caller's claim about which row it means: it must match
+    exactly one row of this listing, and that row must be local. The caller then
+    addresses the returned row by its own name and reference.
     """
     named = [row for row in rows if row["name"] == name]
     # The rows a caller can select from: those of this listing that carry the name.
@@ -752,7 +753,8 @@ def main():
                 if path == "name" and to.startswith(ROUTE_PREFIX):
                     raise PathRefusal("invalid_name",
                                       "A name destination looks like a route; no tools/call was sent.")
-                # `to` is final here on both paths: a selection's `name [ref]` included.
+                # The `to` checked here is the one sent: a name path rebuilds it from the
+                # listing row, which shows the same name and selected reference.
                 if violation := destination_violation(nominated[0], to):
                     raise PathRefusal("destination_constraint_violation",
                                       violation + " No tools/call was sent.")
@@ -775,6 +777,10 @@ def main():
                             f"ListAgents did not complete ({error}); no SendMessage was sent.",
                         ) from error
                     row = select_row(rows, request["name"], request.get("selection"))
+                    # Address this listing's row, never the request's text. The row shows
+                    # the requested name and selected reference, so the checks above hold.
+                    to = name_destination(row["name"], row["ref"] if "selection" in request else None)
+                    bound["to"] = to
                     # The listing moved the call's id; check the frame that would be sent.
                     if not frame_fits(sendmessage_call(message, request["actor"], to, identity)):
                         raise PathRefusal(

@@ -88,7 +88,10 @@ with `not_local_session`; widening that is the operator's decision. A name that
 matches no row records `no_matching_local_row`. A name that matches more than
 one row records `ambiguous_name` unless the request's `selection` names one of
 them by the reference this attempt's listing shows; the call then addresses
-`name [ref]` from that listing. A selection must match exactly one row: a
+`name [ref]`, built from that listing's row and never from the request's text.
+A selection is the caller's claim about which row it means and must match
+exactly one row, which must be local; a selection sent with a name that only
+one row carries is accepted only if it matches that row. A
 selected reference that this listing does not show records
 `selection_not_in_listing`, and one it shows on more than one row records
 `ambiguous_selection`; a reference from an earlier attempt is
