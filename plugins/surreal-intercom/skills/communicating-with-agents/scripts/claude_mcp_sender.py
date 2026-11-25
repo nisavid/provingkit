@@ -301,8 +301,11 @@ LISTING_HEAD_LINES = tuple(re.compile(pattern) for pattern in (
 ))
 # The formatter uses the duration helper with mostSignificantOnly.
 LISTING_AGE = r"(?:[0-9]+[smhd]|[0-9]+\.[0-9]s)"
-FORMER_NAME_MARKER = LISTING_FIELD_SEPARATOR + "says it was "
-FORMER_NAME_START = re.compile(r"(?=" + re.escape(FORMER_NAME_MARKER) + ")")
+FORMER_NAME_START = re.compile(
+    re.escape(LISTING_FIELD_SEPARATOR) + r"says it was(?= |$)")
+FORMER_NAME_AGE = re.compile(rf"{LISTING_AGE} ago")
+# The complete-row fixture abbreviates the formatter's 16-hex agent ID.
+BARE_SUBAGENT_ID = re.compile(r"a(?:[0-9a-f]{4}|[0-9a-f]{16})")
 
 
 class ListingRowShape(NamedTuple):
@@ -310,14 +313,16 @@ class ListingRowShape(NamedTuple):
     example: tuple[str, ...]
     ref_required: bool = False
     local: bool = False
+    allows_former_name: bool = False
 
 
-def listing_form(example, *patterns, ref_required=False, local=False):
+def listing_form(example, *patterns, ref_required=False, local=False, allows_former_name=False):
     """Match one complete field sequence after the label."""
     separator = re.escape(LISTING_FIELD_SEPARATOR)
     kind, *details = patterns or tuple(map(re.escape, example))
     suffix = separator.join(("", f"(?P<kind>{kind})", *(f"(?:{field})" for field in details)))
-    return ListingRowShape(re.compile(suffix + r"\Z"), example, ref_required, local)
+    return ListingRowShape(
+        re.compile(suffix + r"\Z"), example, ref_required, local, allows_former_name)
 
 
 STARTED_AGE = rf"started {LISTING_AGE} ago"
@@ -340,7 +345,8 @@ LISTING_ROW_SHAPES = {
         listing_form(("bg", "idle", "started 2m ago"),
                      "bg", "idle", STARTED_AGE, local=True),
         listing_form(("interactive", "idle"), "interactive", "idle|busy", local=True),
-        listing_form(("bg", "idle"), local=True),
+        # Former-name consumer fixtures use the short background form.
+        listing_form(("bg", "idle"), local=True, allows_former_name=True),
         listing_form(("Remote Control", "idle")),
         listing_form(("cloud", "idle")),
         # Quoted Desktop titles and annotated statuses, including embedded separators.
@@ -424,29 +430,20 @@ def split_listing_reference(label):
     return label, None
 
 
-def has_former_name(label, name):
-    # All possible "until" boundaries matter. An uncertain age (including a
-    # malformed suffix) can hide a name just like 1m, 1h 30m or 2d can.
-    ends = {match.start() for match in re.finditer(r"(?= until )", label)}
-    if not ends:
-        return False
-
-    # Look ahead so a title ending in "says it was" does not consume any of
-    # the next separator. Check leftmost, rightmost and intervening boundaries.
-    last_end = max(ends)
-    has_former = False
-    for marker in FORMER_NAME_START.finditer(label, 0, last_end):
-        former = marker.start() + len(FORMER_NAME_MARKER)
-        if former > last_end:
-            continue
-        has_former = True
-        current = label[:marker.start()]
-        title, _ = split_listing_reference(current)
-        former_is_name = former + len(name) in ends and label.startswith(name, former)
-        former_has_ref = label.startswith(name + " [", former, last_end)
-        if not title.strip() or could_carry_name(current, name) or former_is_name or former_has_ref:
-            raise unreadable_label()
-    return has_former
+def peer_label_and_former_name(raw_label):
+    marker = FORMER_NAME_START.search(raw_label)
+    if marker is None:
+        return raw_label, None
+    current = raw_label[:marker.start()]
+    phrase = raw_label[marker.end():]
+    former, _, age = phrase.removeprefix(" ").partition(" until ")
+    if (not phrase.startswith(" ") or not former or former != former.strip()
+            or FORMER_NAME_AGE.fullmatch(age) is None
+            or FORMER_NAME_START.search(raw_label, marker.end())):
+        raise PathRefusal(
+            "unrecognized_listing",
+            "A listing row has a truncated or ambiguous former name; no SendMessage was sent.")
+    return current, former
 
 
 def listing_row(line, section, name):
@@ -469,20 +466,32 @@ def listing_row(line, section, name):
                           "no SendMessage was sent.")
 
     raw_label, kind = fields
-    former = shape.local and has_former_name(raw_label, name)
-    label, ref = split_listing_reference(raw_label)
-    if not label.strip() or (shape.ref_required and (
-            ref is None or REF_PATTERN.fullmatch(ref) is None)):
-        raise PathRefusal("unrecognized_listing", "A listing row is missing its title or "
-                          "required reference; no SendMessage was sent.")
+    current, former = peer_label_and_former_name(raw_label) if shape.local else (raw_label, None)
+    label, ref = split_listing_reference(current)
+    valid_ref = ref is not None and REF_PATTERN.fullmatch(ref) is not None
     if (
-        former or label.startswith("(") or LISTING_FIELD_SEPARATOR in label
-        or any(character in label for character in "[]")
-        or (ref is not None and REF_PATTERN.fullmatch(ref) is None)
+        (former is not None and not shape.allows_former_name)
+        or not label.strip() or current != current.strip()
+        or (label.startswith("[") and not valid_ref)
+        or (shape.ref_required and not valid_ref)
+        or (section == "Subagents" and not valid_ref and not BARE_SUBAGENT_ID.fullmatch(current))
     ):
-        if could_carry_name(raw_label, name):
+        raise PathRefusal(
+            "unrecognized_listing",
+            "A listing row lacks a supported title, reference, or agent ID; "
+            "no SendMessage was sent.")
+    if (
+        former is not None or label.startswith("(") or LISTING_FIELD_SEPARATOR in label
+        or any(character in label for character in "[]")
+        or (ref is not None and not valid_ref)
+    ):
+        if could_carry_name(current, name) or (former is not None and could_carry_name(former, name)):
             raise unreadable_label()
         return None
+    if section == "Teammates" and not valid_ref:
+        # The bare roster fixture has an unreadable title. A readable bare
+        # prefix could be either the title or only part of it.
+        raise unreadable_label()
     return {"section": section, "name": label, "ref": ref, "kind": kind, "local": shape.local}
 
 

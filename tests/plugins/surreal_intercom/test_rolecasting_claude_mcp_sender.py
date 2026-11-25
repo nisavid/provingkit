@@ -1574,6 +1574,32 @@ class ClaudeNameSendTests(unittest.TestCase):
             self.assertEqual(result["unreadable_rows"], 0)
             self.assertEqual(calls()[-1]["arguments"]["to"], "alpha")
 
+    def test_unproven_rows_refuse_without_counting_or_disclosing_a_candidate(self):
+        cases = (
+            ("Peer sessions", ("alpha", "says it was other", "interactive", "idle")),
+            ("Peer sessions", ("alpha", "says it was another until", "bg", "idle")),
+            ("Peer sessions", ("other", "says it was another until", "bg", "idle")),
+            ("Subagents", ("[one session hidden]", "reviewer", "running", "started 1m ago")),
+            ("Subagents", ("not-an-agent-id", "reviewer", "running", "started 1m ago")),
+            ("Subagents", ("other [b2]", "reviewer", "completed", "started 1m ago",
+                           "compacting its conversation for 1m")),
+            ("Teammates", ("alpha", "notes", "idle")),
+            ("Teammates", ("other [b2]", "reviewer", "roster",
+                           "not messageable by name while a subagent in this session is "
+                           "registered under that name (the name reaches the subagent)")),
+        )
+        local = "  " + DOT.join(("alpha [a1]", "interactive", "idle"))
+        for section, fields in cases:
+            headings = (("Peer sessions (2):", local) if section == "Peer sessions" else
+                        ("Peer sessions (1):", local, f"{section} (1):"))
+            listing = "\n".join((*headings, "  " + DOT.join(fields)))
+            with self.subTest(section=section, fields=fields), self.name_consumer(
+                    name="alpha", pages=(listing,)) as (_, _, send, bookkeeping, calls, _):
+                result = send()
+                self.assert_refused_without_send(result, "unrecognized_listing", calls, bookkeeping)
+                self.assertEqual(result["unreadable_rows"], 0)
+                self.assertNotIn("candidates", result)
+
     def test_missing_peer_labels_and_chat_ids_refuse(self):
         local = "  " + DOT.join(("alpha [a1]", "interactive", "idle"))
         for lines in (
@@ -1603,7 +1629,7 @@ class ClaudeNameSendTests(unittest.TestCase):
             ("other" + DOT + "says it was" + DOT + "says it was alpha until 1m ago",
              "unrecognized_listing"),
             ("other" + DOT + "says it was" + DOT + "says it was another until 1m ago",
-             "submitted"),
+             "unrecognized_listing"),
         )
         for label, reason in cases:
             listing = "\n".join((
