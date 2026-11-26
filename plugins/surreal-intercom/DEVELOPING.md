@@ -105,17 +105,19 @@ cases establish source addressability, not current installation, permission,
 delivery, or reply handling.
 
 By-name Claude sends use a disposable stdio child that serves a catalog with
-`SendMessage` and `ListAgents` and scripted listing pages in the profile the
+`SendMessage` and `ListAgents` and a synthetic listing in the one observed
+Claude Desktop layout the
 [Claude MCP sender](skills/communicating-with-agents/references/claude-mcp-sender.md)
-documents. Cover one submission with exactly one `SendMessage` call, paging by
-cursor within the attempt, and each refusal before the call: no local row, an
-ambiguous name without selection, a selection that matches more than one row,
-a row that is not a local session, a reference this listing does not show, an
-incomplete listing, a section with fewer rows than it declares, a line
-outside the profile, and an unreadable row label that could carry the requested
-name. Show that an unreadable row for another name is skipped and counted, and
-that a name the profile cannot address is refused before any claim, in the
-sender and in `prepare`. Show that a planned recipient whose `thread_id` is not the
+documents. Cover a submission with exactly one `ListAgents` call and one
+`SendMessage` call. Check that every invalid listing refuses before
+`SendMessage`, including unsupported rows beside a valid destination,
+embedded control text, pagination, caller identity conflicts, and a peer total
+that differs from its row count. Exercise no matching row, ambiguous name,
+ambiguous selection, and a selected reference absent from the listing.
+Check every parsed field of the example rows and restore the initialized
+mailbox before each listing mutation. Show that the sender and `prepare` refuse
+a name the profile cannot address before any claim. Show that a planned
+recipient whose `thread_id` is not the
 requested name is refused by the sender and by `prepare` before any listing,
 and that a reply through an unchanged route of either kind still reaches the
 original sender when the outbound message went by name. Show that a refusal
@@ -130,6 +132,6 @@ supplied route is sent by that route with no listing, and that a refused name
 request tries no second path. Cover the close: a child that exits on closed
 input takes no signal, one that outlives it is terminated rather than killed,
 one that writes while it stops is drained rather than killed, and a descendant
-that holds the pipes does not extend the close. The listing
-profile is read from the installed program's source; when a Claude Code release
-changes its formatter, update the profile and these fixtures together.
+that holds the pipes does not extend the close. Keep the listing profile and
+its synthetic fixtures tied to the observed layout. The duration units come
+from the Claude Code 2.1.331 formatter.

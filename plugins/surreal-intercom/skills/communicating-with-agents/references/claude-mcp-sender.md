@@ -71,7 +71,7 @@ The `to` property may additionally contain exactly this literal `allOf` pair, in
 
 For this recognized profile, the sender checks the actual supplied target before recording possible submission: it must contain no CR or LF and at most 300 UTF-16 code units. Astral characters count as two code units; BMP characters and combining marks each count as one. This conservative source support limit does not claim general JSON Schema Unicode or regular-expression semantics. Without `to.allOf`, the legacy profile has no added destination constraint. Existing request and control-frame bounds still apply.
 
-A name request also requires exactly one `ListAgents` entry whose object schema has a string `cursor` property, no required properties, and `additionalProperties: false`; the sender passes no argument but `cursor`. Without it the request records `unsupported_listagents` and no call is made.
+A name request also requires exactly one `ListAgents` entry whose object schema has a string `cursor` property, no required properties, and `additionalProperties: false`; the sender calls it once with an empty arguments object. Without it the request records `unsupported_listagents` and no call is made.
 
 Unknown dialects, altered or partial pattern pairs, extra constraints on supplied arguments, and unknown root constraints remain unsupported before the call. The sender compares literal constraint forms; it does not evaluate arbitrary patterns, resolve schemas, or validate a general schema. A recognized profile with an unmet destination constraint records `destination_constraint_violation`, a constraint diagnosis, and refusal before `tools/call` or possible submission. An unsupported profile retains `unsupported_sendmessage_schema`. Inspect those outcomes separately from submission.
 
@@ -79,13 +79,46 @@ Replies must be newline-delimited JSON-RPC objects with the expected integer ID 
 
 ## Find the named recipient
 
-A name request reads one `ListAgents` listing in the same attempt, following its
-cursor to later pages, at most five, before any `SendMessage` call. Only a
-session on this machine is addressed, using a complete `interactive` or `bg`
-row in the listing's `Peer sessions` section. A row
-for another machine, the cloud, or Remote Control is refused before the call
-with `not_local_session`; widening that is the operator's decision. A name that
-matches no row records `no_matching_local_row`. A name that matches more than
+A name request makes one `ListAgents` call before it can call `SendMessage`.
+The entire response must match the observed Claude Desktop layout, including
+the two blank lines. The names and references below are synthetic.
+
+```text
+This session is Fixture Origin [ab12ef] — the name other sessions use to message it (it is not listed below; a message to it would be a message to yourself).
+
+Peer sessions (2):
+  Fixture Team · Receiver [aa12bc]  ·  interactive  ·  idle  ·  Claude Desktop session  ·  started 8h ago
+  Second Peer [bb34cd]  ·  interactive  ·  busy  ·  Claude Desktop session  ·  started 3h ago
+
+[Cloud sessions and other computers are not listed because Remote Control is off in this session. The user can turn it on with the Remote Control switch in the app; then list again.]
+```
+
+The peer heading must declare the exact positive row count. Each row uses two
+leading spaces, a name and a required six-digit lowercase hexadecimal
+reference, `interactive`, `idle` or `busy`, `Claude Desktop session`, and
+`started <age> ago`. The field separator is a middle dot with two spaces on
+each side. A middle dot with single spaces can be part of a name. The caller
+and row names must fit the name bounds and contain no field separators or
+listing control text, including headings, footer text, and notices about
+missing, hidden, or unreadable sessions.
+
+The Claude Code 2.1.331 duration formatter in `mostSignificantOnly` mode
+emits an integer with an `s`, `m`, `h`, or `d` suffix. The profile keeps
+`0s` and positive integers of up to nine digits without zero padding. The
+section count has the same nine-digit bound.
+
+An altered or missing part, extra line, unsupported row, other section, note,
+empty-list form, title block, or pagination footer refuses the entire listing
+before any `SendMessage` call. A layout or count failure records
+`listing_incomplete`, and a heading, row, or label outside the profile records
+`unrecognized_listing`. A row reusing the caller's reference also records
+`listing_incomplete`. The caller's own name, the reserved name `main`, and a
+selection of the caller's reference record `self_destination`. A `ListAgents`
+call that fails or runs out of time, errs, or returns another result shape
+records `listing_failed`, `listing_error`, or `unsupported_listing_result`,
+respectively.
+
+A name that matches no row records `no_matching_local_row`. A name that matches more than
 one row records `ambiguous_name` unless the request's `selection` names one of
 them by the reference this attempt's listing shows; the call then addresses
 `name [ref]`, built from that listing's row and never from the request's text.
@@ -97,19 +130,10 @@ selected reference that this listing does not show records
 `ambiguous_selection`; a reference from an earlier attempt is
 never reused, because each attempt starts its own child and lists again. For
 `ambiguous_name`, `selection_not_in_listing`, and `ambiguous_selection`, the
-result lists the matching rows in `candidates`. A `not_local_session` result
-also lists them when more than one row matches. Each entry gives the `name`,
+result lists the matching rows in `candidates`. Each entry gives the `name`,
 `ref`, `kind`, and whether the row is `local`. The result says
 `needs: "selection"` when a local row has a reference no other matching row
-shares and its qualified address fits the destination and call-frame limits. A
-listing that reports missing, hidden, or failed rows, has a section whose rows
-across all its pages differ in number from the total its header declares, or
-does not end within five pages, records `listing_incomplete`; a line outside
-the profile records `unrecognized_listing`; a `ListAgents` call that fails or runs out of time, errs,
-or returns another result shape records `listing_failed`, `listing_error`, or
-`unsupported_listing_result`. Each refusal is recorded before any `SendMessage` call,
-and the sender asks only for what is missing, such as the selection; it does not
-look for the missing value itself.
+shares and its qualified address fits the destination and call-frame limits.
 
 On the name path the planned recipient's `thread_id` is the name as the listing
 prints it. That name is a label the recipient session chose, not a session
@@ -120,52 +144,10 @@ carries its name is addressed by the bare name; another session can take the
 same name between the listing and the call, and what the tool does then is known
 only from its description.
 
-The sender requires every field of a supported form for the row's section.
-The observed Desktop peer prints a name with a six-hex bracketed reference,
-interactive mode, status, Desktop origin, and start age. The age-less peer
-fixtures still carry a status. The cloud, chat,
-subagent, and teammate forms come from sender fixtures. A subagent row needs
-a type, running status, start age, and either a named reference or a bare
-agent ID. A chat row needs its bracketed ID. The field separator is a middle
-dot with two spaces on each side. A dot with single spaces belongs to the
-title. The profile bounds names, references, titles, numeric counts, and ages,
-and accepts only the fixture-backed parenthesized statuses. Separators inside
-a quoted Desktop title or supported status annotation stay inside that field.
-
-A complete row with an unreadable label is skipped and counts toward its
-section's total only when every possible current or former name excludes the
-requested name. An unreadable label could match if it equals the name or begins
-with that name followed by ` [`. The result, the possible-submission record,
-and the `not_delivered` record of a refusal retain the count in
-`unreadable_rows`. A trailing bracketed token in a short `bg` row can be
-part of the title. If treating it as a reference could change the destination,
-the sender refuses. A former-name marker and its `until <age>` tail must
-both be complete. An uncertain label boundary, invalid bare agent ID, or
-unsupported field combination also refuses the listing without counting the
-offending line or returning candidates.
 A name that the profile cannot address without doubt (one with brackets, a leading `(`, or the
 field separator, or one that looks like a route) is refused as `invalid_name`
 before any claim; reach such a session through the recipient-prepared route
 fallback instead.
-
-The control lines follow complete Claude Code 2.1.331 formatter text. A caller
-heading begins the page, and an empty-list or
-`SendMessage does not reach these sessions` heading stands alone. A title block
-opens with its explanatory note and closes with the same nonce. A Remote Control
-off footer ends the page and conflicts with any cloud or other-computer row,
-including an unreadable row or one on an earlier page. The sender refuses a title
-or row field containing listing control text, even when the row's other fields
-form a complete sequence. This includes hidden-session notices with or without
-brackets and pagination text with invalid counts or cursors. Missing or
-failed-session notices and altered or unknown lines also refuse the send.
-Every pagination footer's remaining count must equal the complete rows on the
-next page plus any count that page carries forward. Section totals must also
-reconcile before submission. Multi-page handling is covered by fixtures.
-
-The profile conservatively refuses an ordinary peer send beside a running
-subagent with a compaction note or a shadowed roster teammate without a
-reference. These forms await observation in
-[the installed Intercom verification](https://github.com/nisavid/provingkit/issues/997).
 
 ## Capture, submit once, and inspect
 

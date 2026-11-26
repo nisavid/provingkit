@@ -990,7 +990,16 @@ import sys
 from pathlib import Path
 
 assert sys.argv[1:] == ["mcp", "serve"], sys.argv
-LISTING = "Peer sessions (1):\\n  claude-receiver [3fa9c1]  \\u00b7  interactive  \\u00b7  idle"
+LISTING = (
+    "This session is Fixture Origin [ab12ef] — the name other sessions use to message it "
+    "(it is not listed below; a message to it would be a message to yourself).\\n\\n"
+    "Peer sessions (1):\\n"
+    "  claude-receiver [3fa9c1]  ·  interactive  ·  idle  ·  Claude Desktop session  ·  "
+    "started 8h ago\\n\\n"
+    "[Cloud sessions and other computers are not listed because Remote Control is off "
+    "in this session. The user can turn it on with the Remote Control switch in the app; "
+    "then list again.]"
+)
 CURSOR = {"type": "string"}
 CATALOG = {"tools": [
     {"name": "SendMessage", "inputSchema": {
