@@ -283,9 +283,13 @@ The validator checks the live corpus, coverage, fixtures, projections, and
 runtime contracts. It also checks the retained requests, runs, and grades
 against their original inputs and reports each observed freshness mismatch.
 An entry must describe an actual mismatch. Remove it when current evidence
-passes. `python scripts/validate_mergecraft.py .` requires fresh passing
-evidence regardless of pending entries. A source-stage content lock records
-source identity only.
+passes. Run `python scripts/validate_mergecraft.py .` for strict mode. Strict
+mode must ignore pending status, require fresh passing evidence for current
+inputs and the pinned executor, and reject contradictions that a partial
+refresh or rebind can leave in selected records. The validator can check those
+records for consistency. Matching records and digests can be deliberately
+fabricated in a reviewed commit. Establishing that a run occurred requires
+independent evidence. A source-stage content lock records source identity only.
 
 The feedback-response [experiment](skills/interacting-with-pr-review-feedback/evals/response-evidence.json)
 binds the raw scenarios, delivered skill and reference bytes, source and test

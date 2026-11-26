@@ -1214,6 +1214,7 @@ def validate_markdown_authoring_eval_corpus(
                 and expectation["id"] not in expectation_ids
                 and isinstance(expectation["text"], str)
                 and expectation["text"]
+                and isinstance(expectation["severity"], str)
                 and expectation["severity"] in {"safety", "quality"}
                 and expectation["text"] not in fixture,
                 f"Markdown authoring eval expectation drift: {name}",
@@ -1816,6 +1817,28 @@ def load_repository_json(repo_root: Path, relative: Path) -> Any:
     return strict_json(read_repository_file(repo_root, relative), relative.as_posix())
 
 
+def validate_relation_opus_output(run: dict, model: str) -> None:
+    message = f"Opus output attribution drift: {run['id']}"
+    usage = run.get("model_usage")
+    require(isinstance(usage, dict), message)
+    has_output = False
+    for name, record in usage.items():
+        canonical = (
+            record.get("canonicalModel", name) if isinstance(record, dict) else name
+        )
+        if not (
+            name.startswith("claude-opus-")
+            or (isinstance(canonical, str) and canonical.startswith("claude-opus-"))
+        ):
+            continue
+        output = record.get("outputTokens") if isinstance(record, dict) else None
+        require(type(output) is int and output >= 0, message)
+        if output > 0:
+            require(name == canonical == model, message)
+            has_output = True
+    require(has_output, message)
+
+
 def _validate_relation_evidence(repo: Path, *, source_stage: bool) -> list[str]:
     folder = RELATION_EVAL_RELATIVE
     skill = "plugins/mergecraft/skills/maintaining-issue-pr-relations"
@@ -1946,6 +1969,12 @@ def _validate_relation_evidence(repo: Path, *, source_stage: bool) -> list[str]:
             declared_models[name] == model, f"declared experiment model drift: {name}"
         )
 
+    compact_invocation_fields = {
+        "argv",
+        "retained_argv_sha256",
+        "redactions",
+        "retained_argv_digest_format",
+    }
     selected_ids = set()
     expected_thresholds = []
     for case_id, case in cases.items():
@@ -2003,13 +2032,21 @@ def _validate_relation_evidence(repo: Path, *, source_stage: bool) -> list[str]:
                 run, "behavior", "actual executor identity", PREVIOUS_RELATION_EXECUTOR
             )
             require_experiment_model(selected_behavior, model)
+            validate_relation_opus_output(run, model)
             invocation = run["invocation"]
             argv = invocation["argv"]
-            if "retained_argv_sha256" in invocation:
+            if invocation.keys() <= compact_invocation_fields:
                 retained_command = json.dumps(argv, separators=(",", ":"))
-                retained_digest = invocation["retained_argv_sha256"]
+                retained_digest = invocation.get("retained_argv_sha256")
             else:
-                # The case refresh retained the full invocation, including argv.
+                require(
+                    "retained_argv_sha256" not in invocation,
+                    f"behavior compact argv digest on full invocation: {run_id}",
+                )
+                require(
+                    invocation.get("model_requested") == model,
+                    f"behavior full invocation model drift: {run_id}",
+                )
                 retained_command = json.dumps(invocation, indent=2) + "\n"
                 retained_digest = run.get("command_sha256")
             require(
@@ -2018,14 +2055,15 @@ def _validate_relation_evidence(repo: Path, *, source_stage: bool) -> list[str]:
                 and digest(retained_command) == retained_digest,
                 f"behavior retained argv digest drift: {run_id}",
             )
+            options = argv[: argv.index("--")] if "--" in argv else argv
             model_args = [
                 index
-                for index, arg in enumerate(argv)
+                for index, arg in enumerate(options)
                 if arg == "--model" or arg.startswith("--model=")
             ]
             require(
                 len(model_args) == 1
-                and argv[model_args[0] : model_args[0] + 2] == ["--model", model],
+                and options[model_args[0] : model_args[0] + 2] == ["--model", model],
                 f"behavior command model drift: {run_id}",
             )
             require(
@@ -2115,6 +2153,7 @@ def _validate_relation_evidence(repo: Path, *, source_stage: bool) -> list[str]:
             run, "trigger", "native model/effort", PREVIOUS_RELATION_EXECUTOR
         )
         require_experiment_model(selected_trigger, model)
+        validate_relation_opus_output(run, model)
         require(
             run["init"]["plugins"]
             == [
@@ -2128,11 +2167,13 @@ def _validate_relation_evidence(repo: Path, *, source_stage: bool) -> list[str]:
             and target in run["init"]["skills"],
             "native plugin exclusivity",
         )
-        argv = run["invocation"]["argv"]
+        invocation = run["invocation"]
+        argv = invocation["argv"]
         require(
-            digest(json.dumps(argv, separators=(",", ":")))
-            == run["invocation"]["retained_argv_sha256"]
-            and run["invocation"]["redactions"]
+            invocation.keys() <= compact_invocation_fields
+            and digest(json.dumps(argv, separators=(",", ":")))
+            == invocation.get("retained_argv_sha256")
+            and invocation["redactions"]
             and run["metadata_redactions"],
             "native invocation/redaction binding",
         )

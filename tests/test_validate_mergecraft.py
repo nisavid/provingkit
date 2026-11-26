@@ -152,19 +152,31 @@ class ValidateMergecraftTests(unittest.TestCase):
             ].get(str(run["case_id"])):
                 continue
             model = models[group]
-            self.set_relation_command_model(run, model)
-            run["model_requested"] = run["init"]["model"] = model
-            run["assistant_models"] = [model]
+            self.set_relation_executor(run, model)
         path.write_text(json.dumps(experiment), encoding="utf-8")
 
-    @staticmethod
-    def set_relation_command_model(run: dict, model: str) -> None:
-        invocation = run["invocation"]
-        argv = invocation["argv"]
+    def set_relation_executor(self, run: dict, model: str) -> None:
+        usage = run["model_usage"]
+        opus_usage = usage.pop(run["model_requested"])
+        opus_usage["canonicalModel"] = model
+        usage[model] = opus_usage
+        run["model_requested"] = run["init"]["model"] = model
+        run["assistant_models"] = [model]
+        if "model_requested" in run["invocation"]:
+            run["invocation"]["model_requested"] = model
+        self.set_relation_command_model(run, model)
+
+    def set_relation_command_model(self, run: dict, model: str) -> None:
+        argv = run["invocation"]["argv"]
         argv[argv.index("--model") + 1] = model
+        self.hash_relation_command(run)
+
+    @staticmethod
+    def hash_relation_command(run: dict) -> None:
+        invocation = run["invocation"]
         if "retained_argv_sha256" in invocation:
             invocation["retained_argv_sha256"] = hashlib.sha256(
-                json.dumps(argv, separators=(",", ":")).encode("utf-8")
+                json.dumps(invocation["argv"], separators=(",", ":")).encode("utf-8")
             ).hexdigest()
         else:
             run["command_sha256"] = hashlib.sha256(
@@ -187,8 +199,8 @@ class ValidateMergecraftTests(unittest.TestCase):
             timeout=30,
         )
 
-    def assert_rejected(self, expected: str) -> None:
-        result = self.run_validator()
+    def assert_rejected(self, expected: str, *flags: str) -> None:
+        result = self.run_validator(*flags)
         self.assertNotEqual(result.returncode, 0, result.stdout)
         self.assertIn(expected, result.stderr)
 
@@ -803,6 +815,93 @@ class ValidateMergecraftTests(unittest.TestCase):
                     else:
                         self.assert_rejected(diagnostic)
 
+    def test_full_relation_invocation_model_must_match_the_selected_executor(
+        self,
+    ) -> None:
+        path = self.repo / RELATION_EVIDENCE / "experiment.json"
+        experiment = json.loads(path.read_bytes())
+        group = experiment["selection"]["behavior_by_case"]["11"]
+        run = next(
+            row
+            for row in experiment["behavior_runs"]
+            if row["id"] == f"{group}/case-11-with-skill-1"
+        )
+        run["invocation"]["model_requested"] = "claude-opus-5"
+        self.hash_relation_command(run)
+        path.write_text(json.dumps(experiment), encoding="utf-8")
+        self.assert_rejected("full invocation model drift")
+        self.assert_rejected("full invocation model drift", "--write-content-lock")
+
+    def test_relation_opus_output_must_match_each_selected_executor(self) -> None:
+        path = self.repo / RELATION_EVIDENCE / "experiment.json"
+        original = json.loads(path.read_bytes())
+        selection = original["selection"]
+        for collection, run_id in (
+            (
+                "behavior_runs",
+                f"{selection['behavior_by_case']['0']}/case-00-with-skill-1",
+            ),
+            ("native_and_trigger_runs", f"{selection['trigger_experiment']}/case-00"),
+        ):
+            with self.subTest(run_id=run_id):
+                experiment = copy.deepcopy(original)
+                run = next(row for row in experiment[collection] if row["id"] == run_id)
+                usage = run["model_usage"]
+                old_opus = usage.pop("claude-opus-5-5")
+                old_opus["canonicalModel"] = "claude-opus-5"
+                usage["claude-opus-5"] = old_opus
+                path.write_text(json.dumps(experiment), encoding="utf-8")
+                diagnostic = f"Opus output attribution drift: {run_id}"
+                self.assert_rejected(diagnostic)
+                self.assert_rejected(diagnostic, "--write-content-lock")
+
+    def test_relation_behavior_model_pair_must_precede_the_argv_delimiter(self) -> None:
+        path = self.repo / RELATION_EVIDENCE / "experiment.json"
+        experiment = json.loads(path.read_bytes())
+        group = experiment["selection"]["behavior_by_case"]["0"]
+        run = next(
+            row
+            for row in experiment["behavior_runs"]
+            if row["id"] == f"{group}/case-00-with-skill-1"
+        )
+        argv = run["invocation"]["argv"]
+        option = argv.index("--model")
+        pair = argv[option : option + 2]
+        del argv[option : option + 2]
+        argv.extend(["--", *pair])
+        self.hash_relation_command(run)
+        path.write_text(json.dumps(experiment), encoding="utf-8")
+        self.assert_rejected("behavior command model drift")
+        self.assert_rejected("behavior command model drift", "--write-content-lock")
+
+    def test_full_relation_invocation_rejects_a_compact_argv_digest(self) -> None:
+        path = self.repo / RELATION_EVIDENCE / "experiment.json"
+        for pending in (False, True):
+            with self.subTest(pending=pending):
+                self.construct_relation_evidence(
+                    trigger_model="claude-opus-5" if pending else "claude-opus-5-5"
+                )
+                experiment = json.loads(path.read_bytes())
+                group = experiment["selection"]["behavior_by_case"]["11"]
+                run = next(
+                    row
+                    for row in experiment["behavior_runs"]
+                    if row["id"] == f"{group}/case-11-with-skill-1"
+                )
+                run["command_sha256"] = "0" * 64
+                invocation = run["invocation"]
+                invocation["retained_argv_sha256"] = hashlib.sha256(
+                    json.dumps(invocation["argv"], separators=(",", ":")).encode()
+                ).hexdigest()
+                path.write_text(json.dumps(experiment), encoding="utf-8")
+                diagnostic = "compact argv digest on full invocation"
+                if pending:
+                    self.write_pending_evidence(RELATION_EVIDENCE, "claude-opus-5-5")
+                    self.assert_pending_rejected(diagnostic)
+                else:
+                    self.assert_rejected(diagnostic)
+                    self.assert_rejected(diagnostic, "--write-content-lock")
+
     def test_selected_relation_runs_require_the_declared_experiment_model(self) -> None:
         path = self.repo / RELATION_EVIDENCE / "experiment.json"
         for pending in (False, True):
@@ -825,9 +924,7 @@ class ValidateMergecraftTests(unittest.TestCase):
                             for row in experiment["behavior_runs"]
                             if row["id"] == f"{name}/case-00-with-skill-1"
                         )
-                        self.set_relation_command_model(run, wrong_model)
-                        run["model_requested"] = run["init"]["model"] = wrong_model
-                        run["assistant_models"] = [wrong_model]
+                        self.set_relation_executor(run, wrong_model)
                     else:
                         record = next(
                             row
@@ -1123,6 +1220,19 @@ class ValidateMergecraftTests(unittest.TestCase):
                     MARKDOWN_EVIDENCE, relative, content, copy.deepcopy(experiment)
                 )
                 self.assert_pending_rejected(diagnostic)
+
+    def test_pending_markdown_non_string_severity_identifies_the_case(self) -> None:
+        folder = self.repo / MARKDOWN_EVIDENCE
+        experiment = json.loads((folder / "experiment.json").read_bytes())
+        corpus = json.loads((folder / "evals.json").read_bytes())
+        case = corpus["evals"][0]
+        case["expectations"][0]["severity"] = []
+        self.bind_retained_test_input(
+            MARKDOWN_EVIDENCE, "evals/evals.json", json.dumps(corpus), experiment
+        )
+        self.assert_pending_rejected(
+            f"Markdown authoring eval expectation drift: {case['name']}"
+        )
 
     def test_publication_rejects_malformed_relation_evaluation_without_traceback(self) -> None:
         evidence = self.repo / EVAL_ROOT / "skills/maintaining-issue-pr-relations"
