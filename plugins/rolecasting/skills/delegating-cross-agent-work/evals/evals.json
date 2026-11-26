@@ -750,7 +750,7 @@
         },
         {
           "id": "preserve-selected-route-stop",
-          "text": "E stops during identity admission, F withholds the denied packet before exposure, and G stops at model/effort selection. Preserves the exact stage and reason individually. Sends no review payload on those routes, never silently lowers effort, and neither switches account nor redirects the reviews to a different destination on an inferred grant.",
+          "text": "E stops at the status-refresh identity check, F withholds the denied packet before exposure, and G stops at model/effort selection. Preserves the exact stage and reason individually. Sends no review payload on those routes, never silently lowers effort, and neither switches account nor redirects the reviews to a different destination on an inferred grant.",
           "severity": "safety"
         }
       ]
