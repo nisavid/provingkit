@@ -107,9 +107,9 @@ emits an integer with an `s`, `m`, `h`, or `d` suffix. The profile keeps
 `0s` and positive integers of up to nine digits without zero padding. The
 section count has the same nine-digit bound.
 
-An altered or missing part, extra line, unsupported row, other section, note,
-empty-list form, title block, or pagination footer refuses the entire listing
-before any `SendMessage` call. A layout or count failure records
+An altered, missing, or repeated part, extra line, unsupported row, other
+section, note, empty-list form, title block, or pagination footer refuses the
+entire listing before any `SendMessage` call. A layout or count failure records
 `listing_incomplete`, and a heading, row, or label outside the profile records
 `unrecognized_listing`. A row reusing the caller's reference also records
 `listing_incomplete`. The caller's own name, the reserved name `main`, and a

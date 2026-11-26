@@ -292,19 +292,25 @@ LISTING_REMOTE_OFF = (
 # A free-form label must not absorb any of the listing's control text. Match
 # fragments that identify the controls even where their counts or refs vary.
 LISTING_CONTROL_TEXT = re.compile(
-    r"This session is |This process's main session is |it is not listed below"
+    r"This session is |This session:|This process's main session is |it is not listed below"
+    r"|the name other sessions use to message it|would be a message to yourself"
+    r"|address the main conversation"
     r"|(?:Peer sessions|Cloud and Remote Control sessions|Chats|Subagents|Teammates) \([^)]*\):"
-    r"|Cloud sessions and other computers are not listed|No reachable agents"
+    r"|Cloud sessions and other computers are not listed|Remote Control is off"
+    r"|Remote Control switch|then list again|No reachable agents"
     r"|No other session appears in this listing|The brackets after each name below"
     r"|Your user allowed this session to message the chats below"
     r"|People or other Claude sessions wrote the titles in this block|</?other-sessions\b"
     r"|Session names and \[ref\]s listed here|nothing more to list"
     r"|one session hidden|(?:sessions?|agents?) (?:hidden|not shown)"
-    r"|more(?: sessions)? not shown|(?:sessions|agents) (?:are|may be) missing from this"
+    r"|more(?: sessions)? not shown|missing from this listing|agents may be missing from this page"
+    r"|call again with cursor|for the next page|SendMessage still finds"
     r"|other sessions could not be read|the session list on this machine could not be read"
     r"|account session list incomplete|the Remote Control session list for your account"
     r"|cloud session list could not be fetched|Cross-session messaging is switched off"
     r"|None of the agents below can be messaged"
+    r"|session list too long|not chosen by a human|withheld on this connection"
+    r"|not messageable by name|message it by this exact name"
 )
 
 
@@ -329,8 +335,12 @@ def parse_listing(listing, name, selection):
     if caller is None or section is None:
         raise PathRefusal("unrecognized_listing", "A listing heading is outside the profile; "
                           "no SendMessage was sent.")
-    if int(section["total"]) != len(lines) - 5:
+    peer_lines = lines[3:-2]
+    if int(section["total"]) != len(peer_lines):
         raise PathRefusal("listing_incomplete", "The declared peer total differs from the row count; "
+                          "no SendMessage was sent.")
+    if len(set(peer_lines)) != len(peer_lines):
+        raise PathRefusal("listing_incomplete", "The listing repeats a peer row; "
                           "no SendMessage was sent.")
 
     caller_name = listing_label(caller)
@@ -339,7 +349,7 @@ def parse_listing(listing, name, selection):
                           "no SendMessage was sent.")
 
     rows = []
-    for line in lines[3:-2]:
+    for line in peer_lines:
         row = LISTING_ROW.fullmatch(line)
         if row is None:
             raise PathRefusal("unrecognized_listing", "A listing row is outside the profile; "

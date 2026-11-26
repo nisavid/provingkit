@@ -1465,6 +1465,35 @@ class ClaudeNameSendTests(unittest.TestCase):
                         "bb34cd"),
         ), reason="unrecognized_listing")
 
+    def test_embedded_heading_footer_and_formatter_notices_refuse_the_listing(self):
+        for text in (
+            "(session list too long to fetch completely — sessions beyond the first pages "
+            "are missing from this listing)",
+            "(session names and directories not chosen by a human are withheld on this "
+            "connection — /rename a session on its own machine to give it an addressable "
+            "name here)",
+            "session list too long",
+            "missing from this listing",
+            "not chosen by a human",
+            "withheld on this connection",
+            "This session:",
+            "not messageable by name",
+            "message it by this exact name",
+            "Remote Control is off",
+            "Remote Control switch",
+            "then list again",
+            "call again with cursor",
+            "for the next page",
+            "SendMessage still finds",
+            "the name other sessions use to message it",
+            "would be a message to yourself",
+            "address the main conversation",
+        ):
+            with self.subTest(control=text):
+                self.assert_listing_refuses(desktop_listing(
+                    desktop_row("alpha", "aa12bc"), desktop_row(f"Draft {text}", "bb34cd"),
+                ), reason="unrecognized_listing")
+
     def test_a_peer_cannot_repeat_the_caller_name_and_reference(self):
         self.assert_listing_refuses(desktop_listing(desktop_row("Fixture Origin", "ab12ef")),
                                     name="Fixture Origin", reason="self_destination")
@@ -1554,21 +1583,41 @@ class ClaudeNameSendTests(unittest.TestCase):
             with self.subTest(listing=listing):
                 self.assert_listing_refuses(listing, reason="listing_incomplete")
 
-    def test_the_observed_desktop_listing_keeps_single_spaced_dots(self):
-        name = "Fixture Team · Receiver"
-        listing = desktop_listing(desktop_row(name, "aa12bc", status="busy", age="3h"))
-        with self.name_consumer(name=name, pages=(listing,)) as (
-                _, _, send, _, calls, _):
-            self.assertEqual(send()["reason"], "submitted")
-            self.assertEqual(calls()[-1]["arguments"]["to"], name)
+    def test_a_repeated_row_refuses_even_with_a_matching_count(self):
+        other = desktop_row("other", "bb34cd")
+        self.assert_listing_refuses(desktop_listing(desktop_row("alpha", "aa12bc"), other, other),
+                                    reason="listing_incomplete")
 
-    def test_the_listing_parser_returns_each_complete_example_row(self):
+    def test_the_documented_desktop_listing_parses_and_addresses_each_example_row(self):
+        reference = (SCRIPTS.parent / "references" / "claude-mcp-sender.md").read_text(
+            encoding="utf-8")
+        section = reference.split("## Find the named recipient", 1)[1]
+        listing = section.split("```text\n", 1)[1].split("\n```", 1)[0]
+        expected = [
+            {"name": name, "ref": ref, "section": "Peer sessions", "kind": "interactive",
+             "local": True}
+            for name, ref in (("Fixture Team · Receiver", "aa12bc"), ("Second Peer", "bb34cd"))
+        ]
+        with patch.object(sys, "path", [str(SCRIPTS), *sys.path]):
+            import claude_mcp_sender as sender
+
+        self.assertEqual(sender.parse_listing(listing, expected[0]["name"], None), expected)
+        for row in expected:
+            with self.subTest(name=row["name"]), self.name_consumer(
+                    name=row["name"], pages=(listing,)) as (_, _, send, bookkeeping, calls, _):
+                self.assertEqual(send()["reason"], "submitted")
+                self.assertEqual(calls()[-1]["arguments"]["to"], row["name"])
+                record = bookkeeping("show", "send-1")
+                self.assertEqual(record["state"], "submitted")
+                bound = json.loads(record["attempts"][0]["observations"][1]["detail"])
+                self.assertEqual(bound["row"], row)
+                self.assertEqual(bound["to"], row["name"])
+
+    def test_the_listing_parser_accepts_the_duration_formatter_units(self):
         with patch.object(sys, "path", [str(SCRIPTS), *sys.path]):
             import claude_mcp_sender as sender
 
         examples = (
-            ("Fixture Team · Receiver", "f1e2d3", "idle", "8h"),
-            ("Second Peer", "a3b4c5", "busy", "3h"),
             ("Just Started", "a1b2c3", "idle", "0s"),
             ("Seconds", "d4e5f6", "busy", "12s"),
             ("Minutes", "c3d4e5", "idle", "5m"),
