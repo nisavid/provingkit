@@ -38,7 +38,8 @@ unqualified and exposure stays held.
 
 Qualify state retention and recovery under that owner: retain the database,
 pending request, original reviewed plan, original executor result if available,
-and artifacts through process and custody changes. Use SQLite's backup API or
+the exact successful standard output of each `issue` and `add-variants`
+operation, and artifacts through process and custody changes. Use SQLite's backup API or
 quiesce the issuer before copying its database and any active journal. A copied
 or restored older database must not become a second issuer. Initialization is
 only for a release unit with no prior snapshot state; inventory existing
@@ -271,6 +272,9 @@ objects, submit an `issue` request:
 }
 ```
 
+Keep the exact standard output of this operation, and of each `add-variants`,
+in a file of its own, not the result file that later calls overwrite.
+
 The example binds one target. Include every target present in the transport
 commit; the three-target packing recipe requires three entries. Extra
 unrecorded snapshot files or variants in its outgoing history are rejected.
@@ -321,12 +325,22 @@ closed. Source, version, existing variants, and high-water position are
 unchanged. An uncertain attempted addition remains pending and blocks this
 retry path.
 
-A lost response, attempted failure, missing result, or incomplete postcheck
-keeps the request pending. Recover it with `{"operation":"inspect"}` or the
-identical `issue` request. Retry recovers the original identity; it does not
+A lost or missing executor result, an attempted failure, or an incomplete
+postcheck keeps the request pending. Recover its state with
+`{"operation":"inspect"}`. Retry recovers the original identity; it does not
 authorize replaying a push. The existing publication owner reconciles the
-original executor and remote outcome before retry or continuation. Do not
-clear the hold by constructing a successful result or initializing new state.
+original executor and remote outcome before retry or continuation. Do not clear
+the hold by constructing a successful result or initializing new state.
+
+If the output of an `issue` or `add-variants` operation is lost, replay that
+operation's identical request and keep what it prints. Run it with the same
+`--state` path and working directory, or with absolute paths for `--state`, for
+`--request`, and in the request, and with the reviewed plan and variant files
+still readable, regular and unchanged. A replay with the same request ID
+returns the stored record, issues, or is rejected. A reconcile may have changed
+a stored record. A rejection is not issuer evidence and does not show
+that no delivery exists. Pin only an output that carries `operation` and
+`exposure`. `inspect` returns the whole state, not that record.
 
 ## Extend, redeliver, and advance
 
@@ -342,6 +356,133 @@ clear the hold by constructing a successful result or initializing new state.
 After every uncertain result, recover the same state before choosing another
 operation. Retain it while a version or recovery selection remains supported.
 The issuer has no remote cleanup operation.
+
+## Derive a member ZIP from an issued snapshot
+
+Use `scripts/member_zip.py` when a delivery needs one member's single-plugin
+ZIP and checksum file for Agent Plugins or Claude. It requires an issued
+snapshot: the packed complete-slate archive, its original receipt with the
+`delivery` record, its mode inventory, and the issuer result, the record that the `issue`
+or `add-variants` operation printed. A snapshot that was prepared
+and projected but not issued lacks that result, and until it is packed it also
+lacks the archive and mode inventory, so the helper cannot make its ZIP. The
+helper only reads these files; it never opens the issuance state.
+
+Run it from a clean checkout of the reviewed revision. Each operation reads one
+JSON request and writes one JSON result to stdout:
+
+```sh
+python scripts/member_zip.py derive --request "$MEMBER_ZIP_REQUEST" \
+  --output "$MEMBER_ZIP_PARENT/fresh-output"
+python scripts/member_zip.py verify --request "$MEMBER_ZIP_REQUEST" \
+  --output "$MEMBER_ZIP_PARENT/fresh-output" --record-sha256 "$RETAINED_RECORD_SHA256"
+```
+
+`MEMBER_ZIP_REQUEST` is the absolute path of the request file, and
+`MEMBER_ZIP_PARENT` is the absolute path of the private directory that will
+hold the output, described under the limits below.
+
+The request names the target and member, binds the selected snapshot with `plugin_slate` in its receipt's recorded order, and pins
+each file by its lowercase SHA-256 digest:
+
+```json
+{
+  "schema": "provingkit-member-zip-request-v1",
+  "target": "agent-plugins",
+  "member": "mergecraft",
+  "identity": {
+    "source_commit": "<full product commit>",
+    "projector_revision": "<full projector commit>",
+    "version": "0.1.0-alpha.7.snapshot.9",
+    "request_id": "<preparation request ID>",
+    "issuer_request_id": "<issue or add-variants request ID>",
+    "preparation_sha256": "<preparation digest>",
+    "policy_sha256": "<projection policy digest>",
+    "plugin_slate": ["rolecasting", "tricritical", "versionkeeping", "mergecraft",
+                     "artifact-customs", "proseweaving", "surreal-intercom"]
+  },
+  "parent": {
+    "archive": {"path": "/absolute/packed/agent-plugins/artifact.tar.gz", "sha256": "<digest>"},
+    "receipt": {"path": "/absolute/packed/agent-plugins/RECEIPT.json", "sha256": "<digest>"},
+    "modes": {"path": "/absolute/packed/agent-plugins/modes.tsv", "sha256": "<digest>"}
+  },
+  "issuer_result": {"path": "/absolute/retained/issue-result.json", "sha256": "<digest>"}
+}
+```
+
+An `issue` result must carry the preparation's request ID; an `add-variants`
+result must carry a different one. Prefer the output captured when that operation
+ran; a record recovered by replaying the identical request, as the paragraph on lost
+`issue` or `add-variants` output above describes, is also
+accepted. Keep the exact file you pin, because `verify` needs the same bytes.
+Before writing, the
+helper checks every pin, the entries its tar reader yields from the parent
+archive, the receipt's file inventory and tree digest, the
+mode inventory, the receipt identity, stamped manifests and catalog, and the
+issuer result's recorded variant for the target. It then writes a fresh
+directory containing exactly the member ZIP, its checksum file, and
+`DERIVATIVE.json`. The ZIP holds the member's files and directories without the
+`plugins/<member>/` prefix, with their original bytes and modes and a
+deterministic encoding. Archive and checksum names follow the
+[archive naming rule](release-presentation.md#name-archives-and-preserve-published-downloads):
+`provingkit-<member>-<version>.zip` for Agent Plugins and
+`provingkit-<member>-<version>-claude.zip` for Claude.
+
+`derive` never replaces an existing output and reads back what it wrote. Its
+success reports `"status": "verified"`, `"scope":
+"local-derivative-integrity"`, the derivative record's digest as
+`record_sha256`, and the issuer result's exposure value as `issuer_exposure`. Retain that digest
+apart from the output; `verify` requires it and is read-only.
+`DERIVATIVE.json` also records the SHA-256 of the helper file that ran `derive`
+and that run's exact Python and zlib versions, because ZIP bytes can vary
+across runtimes. `verify` therefore passes only with the same
+`scripts/member_zip.py` bytes under the same Python and zlib versions, so
+record the helper revision with the retained digest. `verify` also requires the
+output directory and its parent to stay owned by the current user with no group
+or other permissions; `derive` creates the output that way. A rejection exits
+nonzero with `"status": "rejected"` and a reason; a failed write can leave a
+partial output that is not a usable derivative.
+
+A successful `derive` or `verify` establishes the local integrity of the
+derived files against the pinned snapshot evidence. It does not establish that
+the snapshot was authentically issued or that the pins came from its owner. It
+establishes nothing about exposure, any account, or installation: the reported
+exposure is copied from the issuer result, not observed. The derivative is
+not an issued variant and never enters issuance history; uploading it remains
+with the delivery's own route and authorization.
+
+The helper has these limits:
+
+- The caller establishes that the output's parent hierarchy is trusted. Create
+  a fresh output below a parent owned by the current user with no group or
+  other permissions. The helper checks that parent and rejects an ancestor that
+  its group or other users can write unless it is sticky; it does not
+  establish ancestor ownership.
+- It opens every path it reads or writes, including its own file, without
+  following symlinks, and rejects a path with a symlink in any component.
+  Relative paths, including those in the request, resolve against the current
+  working directory, not the request's directory. Invoke it as
+  `scripts/member_zip.py` from the checkout root, as shown, or by another path
+  without symlinks. Give the request, evidence and output as absolute paths
+  without symlinks, outside the checkout, so the checkout stays clean.
+- It supports Agent Plugins and Claude, not Cursor, and snapshot versions only,
+  so it rejects a named release.
+- It checks only the parent archive entries its tar reader yields and does not
+  require an end-of-archive marker. Whether corruption elsewhere in the
+  compressed stream is caught depends on how the reader buffers it. The pins
+  bind the archive's bytes to the issued archive; they do not show that the
+  archive holds no entry beyond those read. The derived files are still checked
+  against the receipt's per-file digests.
+- It expects the 12-character source-commit abbreviation the projector uses in
+  the preview label, so it rejects a snapshot whose source commit needed a
+  longer abbreviation.
+- The seven-member slate and this repository's address are written into it.
+- Its tests are synthetic and were run on Linux. Real issuance, another
+  operating-system identity, very large inputs, which it holds in memory, and
+  other runtimes are not qualified.
+
+Run its tests with `python -m unittest tests.test_member_zip`; the source
+workflow's artifact-projections job runs them.
 
 ## Verify and hand off
 
@@ -360,7 +501,8 @@ required; the record states its review or that there is none. The installation
 owner then qualifies the selected client with useful earlier and later source
 selections, without runtime markers or unrelated edits. Provide the reviewed
 implementation and procedure revision, both delivered versions, source commits,
-the source-standing record, original complete receipts, exact projected and
+the source-standing record, original complete receipts, the retained
+output of each `issue` and `add-variants` operation, exact projected and
 packed bytes, mode inventories and digests, ordering/retry/variant outcomes,
 pinned transport identities, and publication/readback results. Record the
 owner's procedure revision and naturally useful invocation; installed use is

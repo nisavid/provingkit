@@ -251,7 +251,7 @@ jobs:
 
       - name: Validate the projector and stage each target
         run: |
-          python -m unittest tests.test_build_release_artifacts tests.test_build_cloud_coordination
+          python -m unittest tests.test_build_release_artifacts tests.test_build_cloud_coordination tests.test_member_zip
           python scripts/build_release_artifacts.py --target agent-plugins --output "$RUNNER_TEMP/provingkit-agent"
           python scripts/build_release_artifacts.py --target claude --output "$RUNNER_TEMP/provingkit-claude"
           python scripts/build_release_artifacts.py --target cursor --output "$RUNNER_TEMP/provingkit-cursor"
