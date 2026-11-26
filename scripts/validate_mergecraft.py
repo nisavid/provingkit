@@ -2046,9 +2046,10 @@ def _validate_relation_evidence(repo: Path, *, source_stage: bool) -> list[str]:
                     "retained_argv_sha256" not in invocation,
                     f"behavior compact argv digest on full invocation: {run_id}",
                 )
+                invocation_model = invocation.get("model_requested")
                 require(
-                    not bind_invocation_and_usage
-                    or invocation.get("model_requested") == model,
+                    isinstance(invocation_model, str)
+                    and (not bind_invocation_and_usage or invocation_model == model),
                     f"behavior full invocation model drift: {run_id}",
                 )
                 retained_command = json.dumps(invocation, indent=2) + "\n"
