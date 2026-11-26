@@ -24,12 +24,17 @@ is an owned gap, not evidence that the other accounts failed. Continue the
 independent eligible account and surface rows while that gap is resolved.
 
 After saving and enabling a plugin update used in Claude Desktop Code, run
-`/reload-plugins` in the affected Code session. Invoke a skill from the plugin.
-Check the loaded version or a changed file from the loaded plugin against the
-reviewed release. Record the saved and loaded identities separately.
-If the loaded copy matches, continue. If the check still shows the previous release,
-[refresh Claude Desktop](../install-and-update.md#refresh-claude-desktop-after-an-update)
-and record the loaded identity again.
+`/reload-plugins` in the affected Code session. Compare the loaded version or
+a changed file from the loaded plugin with the reviewed release. Keep the check
+read-only. Inspect the version or file directly, or use a skill that sends
+nothing and changes nothing. Record the saved and loaded identities separately.
+
+If the loaded copy matches, continue. If the check identifies the previous
+release, [refresh Claude Desktop](../install-and-update.md#refresh-claude-desktop-after-an-update)
+and record the loaded identity again. If you cannot identify the loaded release,
+stop. Report the expected release, the observed difference, and any reload error
+to the installation owner. Do not restart on that basis alone.
+
 If you restarted Desktop, verify each peer route tied to the old connection
 reaches its intended recipient before sending on it. Do not send on a route
 whose recipient cannot be confirmed.
