@@ -1,6 +1,6 @@
 # General Model Tiers
 
-The published-text rule applies to authorship on every route. Use the general tiers only outside the three security classes after checking complete-operation Jev suitability. Within the applicable writer preference and the assignment's judgment margin, select the lowest-cost proven pair. Assess workers by task fit; use the role-specific defaults below for operational coordination and intake. The comparisons here are operator guidance and observations, not benchmark results or proof of live settings.
+The published-text rule applies to authorship on every route. Use the general tiers only outside the three security classes after checking complete-operation Jev suitability. For work other than published-text authorship, select the lowest-cost proven pair preserving the assignment's judgment margin. Assess workers by task fit; use the role-specific defaults below for operational coordination and intake. The comparisons here are operator guidance and observations, not benchmark results or proof of live settings.
 
 GPT-6.2 Sol and Claude Opus 5.5 handle ordinary demanding work. Start precise, recoverable implementation, debugging, analysis, and focused tests on a supported Sol `medium` pair when its judgment margin suffices; raise effort with task demands. Default an independent reviewer to Sol `high` when the review is consequential but lacks the exceptional high-stakes cognitive conjunction below. Prefer Claude for UI, UX, and visual design, and GPT for review. Before dispatch, when an eligible and authorized other-provider target would satisfy the preference, recommend target reconsideration to the owning delegating workflow and wait for its revised plan before selecting on that target. Do not silently change the settled worker target. An explicitly operator-fixed target or the sole eligible target remains in force; choose an eligible proven pair and disclose the provider preference limit.
 
@@ -26,7 +26,7 @@ Published text speaks for the project and its operator to readers who cannot ask
 | Comments addressing or replying to a person | Fable or Astra | None | Excluded |
 | High-impact, high-consequence, or highly quality-sensitive creative work, such as a plugin description | Fable or Astra | None | Excluded |
 
-Choose a proven, authorized preferred writer before considering the also-allowed column. Security judgments still follow their required route. When drafting can be assigned separately, give the writer the settled facts. If the work is inseparable, the writer must meet both requirements. If no proven, authorized writer qualifies on the settled target, return the unresolved assignment to the delegator.
+Choose a preferred writer if available. Otherwise choose an also-allowed writer. If neither is available, there is no eligible writer.
 
 Treat the current Sol as Opus's equal in every row. Sonnet writes no published text. Apply the maintainer's rule with these three interpretations:
 

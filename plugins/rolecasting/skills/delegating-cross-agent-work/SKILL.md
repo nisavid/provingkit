@@ -7,7 +7,7 @@ description: Use when choosing delegation, worker topology, authority, or execut
 
 ## Scope
 
-Coordinators assign, track, and verify. Workers execute. Delegate bounded parallel, specialist, or waiting work.
+Keep consequential judgment, ambiguity, architecture, and coordination local. Delegate bounded parallel, specialist, or waiting work.
 
 Own target, topology, authority, execution handoffs, assurance, and integration.
 Apply the [message/execution boundary](../choosing-agent-models/references/capability-probes-and-fallbacks.md#distinguish-messages-from-execution-assignments) first;
@@ -72,4 +72,4 @@ Use `surreal-intercom:communicating-with-agents` for peer communication and reco
 - Review patches, claims, captures, logs, and summaries.
 - Treat worker results as inputs, not decisions.
 - Integrate in the owning worktree; verify the contract.
-- Own consequential judgment, ambiguity, architecture, root cause, external actions, and message intent. Outside coordinating roles, write copy locally only if [qualified for it](../choosing-agent-models/references/general-tiers.md#published-text). Otherwise assign a qualified writer. Any authorized model may apply the writer's text verbatim.
+- Retain authority for architecture, root cause, message intent, and external actions. Coordinators assign, track, and verify. Delegate [published text, as choosing-agent-models defines it](../choosing-agent-models/references/general-tiers.md#published-text), unless writing as its qualified worker. Any authorized model may apply it verbatim.
