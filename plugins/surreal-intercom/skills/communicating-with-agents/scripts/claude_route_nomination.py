@@ -329,7 +329,7 @@ def _prepared_request(request, effective_uid, environment, launcher_lookup):
             else None, "invalid-recipient")
         command = [_launcher(environment, launcher_lookup), "mcp", "serve"]
         address = {key: request[key] for key in ("name", "selection") if key in request}
-        evidence_ref = "claude-name:" + _nonempty(request["name"], "invalid-name")
+        evidence_ref = f"claude-name:{request['name']}"
     else:
         raise RouteRefusal("invalid-preparation-request")
     message = request["message"]
@@ -359,8 +359,8 @@ def _prepared_request(request, effective_uid, environment, launcher_lookup):
     encoded = json.dumps(sender_request, sort_keys=True, separators=(",", ":")).encode()
     if len(encoded) > 32768:
         raise RouteRefusal("sender-request-byte-limit")
-    # The sender would refuse this frame after claiming; refuse before planning.
-    # The `to` is built as the sender builds it, with a selection's `name [ref]`.
+    # Check before planning, using the qualified frame when a selection is present.
+    # Only the sender's listing can determine whether it will send the bare name.
     if not frame_fits(sendmessage_call(message, actor, request_destination(sender_request))):
         raise RouteRefusal("sender-frame-byte-limit")
     return output, capture, mailbox_path, message, sender_request, encoded

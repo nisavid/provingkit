@@ -30,11 +30,8 @@ attempt also the pair described under reconciliation below:
 
 - `message_id`, `attempt_id`, and `evidence_ref`: nonempty strings; the JSON-escaped attempt ID is limited to 256 characters by the source validator.
 - `actor` and `recipient`: the identity objects above. The request recipient must equal the planned recipient. On the name path its `thread_id` must also equal `name`; otherwise the sender returns `recipient_name_mismatch` before any claim or listing.
-- Exactly one address: `name`, the recipient's name as a `ListAgents` row
-  prints it (no brackets, CR, LF, or surrounding spaces, and no leading `uds:`,
-  so a name is never sent as a route; no leading `(` and no listing field
-  separator `  ·  `, which the listing profile cannot read in a row label; at
-  most 300 UTF-16 code units), optionally with `selection: {"ref": ...}` to check a
+- Exactly one address: `name`, the recipient's readable name as a `ListAgents` row
+  prints it, optionally with `selection: {"ref": ...}` to check a
   single row's reference or choose among rows sharing the name; or `target`, a
   nonempty recipient-prepared `uds:` route for `SendMessage.to`.
 - `command`: a nonempty argument list whose executable path is absolute; the sender passes the exact argument vector with `shell=False`. An explicitly nominated launcher still has its own behavior and side effects.
@@ -69,7 +66,12 @@ The `to` property may additionally contain exactly this literal `allOf` pair, in
 {"allOf": [{"pattern": "^[^\\n\\r]*$"}, {"pattern": "^[\\s\\S]{0,300}$"}]}
 ```
 
-For this recognized profile, the sender checks the actual supplied target before recording possible submission: it must contain no CR or LF and at most 300 UTF-16 code units. Astral characters count as two code units; BMP characters and combining marks each count as one. This conservative source support limit does not claim general JSON Schema Unicode or regular-expression semantics. Without `to.allOf`, the legacy profile has no added destination constraint. Existing request and control-frame bounds still apply.
+The sender requires a by-name address to contain no CR or LF and to fit within
+300 UTF-16 code units, even in a catalog without `to.allOf`. It applies the limit
+to the address checked before listing and to any selection it offers. A supplied
+route gets the same check when the catalog includes the recognized `allOf` pair.
+Astral characters count as two code units. BMP characters and combining marks
+each count as one. Existing request and control-frame bounds also apply.
 
 A name request also requires exactly one `ListAgents` entry whose object schema has a string `cursor` property, no required properties, and `additionalProperties: false`; the sender calls it once with an empty arguments object. Without it the request records `unsupported_listagents` and no call is made.
 
@@ -162,10 +164,12 @@ carries its name is addressed by the bare name; another session can take the
 same name between the listing and the call, and what the tool does then is known
 only from its description.
 
-A name that the profile cannot address without doubt (one with brackets, a leading `(`, or the
-field separator, or one that looks like a route) is refused as `invalid_name`
-before any claim; reach such a session through the recipient-prepared route
-fallback instead.
+`prepare` and the sender both refuse a name the listing profile cannot read
+as `invalid_name` before publication, claim, or listing. Names must fit within
+300 UTF-16 code units and exclude control characters, line separators,
+surrounding whitespace, brackets, the field separator, and listing control
+text. A name cannot start with `(`, `<`, or `uds:`. The recipient-prepared
+route is available for a session the name path cannot address.
 
 ## Capture, submit once, and inspect
 

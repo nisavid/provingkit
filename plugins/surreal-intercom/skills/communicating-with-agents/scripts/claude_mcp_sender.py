@@ -46,7 +46,6 @@ class PathRefusal(Exception):
 INPUT_CLOSE_GRACE_SECONDS = 3
 # After SIGTERM, wait this long before SIGKILL; this wait may pass the deadline.
 TERMINATE_GRACE_SECONDS = 2
-NAME_FORBIDDEN = "[]\r\n\0"
 ROUTE_PREFIX = "uds:"
 REF_PATTERN = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
 RECONCILIATION_FIELDS = frozenset({"after_attempt", "decision_ref"})
@@ -92,14 +91,9 @@ def validate(request):
     else:
         name = request["name"]
         if (
-            not isinstance(name, str) or not name.strip() or name != name.strip()
-            or any(character in name for character in NAME_FORBIDDEN)
+            not supported_listing_label(name) or unreadable_listing_label(name)
             # A name is never sent as a route: the sender does not look for one itself.
             or name.startswith(ROUTE_PREFIX)
-            # The profile cannot read a row label that holds its field separator or
-            # opens with a parenthesis, so it cannot address such a name without doubt.
-            or LISTING_FIELD_SEPARATOR in name or name.startswith("(")
-            or utf16_units(name) > 300
         ):
             raise InspectionError("invalid_name")
         if "selection" in request:
@@ -161,7 +155,7 @@ def name_destination(name, ref=None):
 
 
 def request_destination(request):
-    """The `to` value a validated request will send, for checks before any listing."""
+    """The address checked before listing, including a reference when selected."""
     if "target" in request:
         return request["target"]
     selection = request.get("selection")
@@ -241,9 +235,7 @@ def supports_listagents(tool):
     )
 
 
-def destination_violation(tool, target):
-    if "allOf" not in tool["inputSchema"]["properties"]["to"]:
-        return None
+def destination_violation(target):
     if "\r" in target or "\n" in target:
         return "Destination contains CR/LF."
     # Conservative source limit: astral characters consume two UTF-16 code units.
@@ -272,7 +264,8 @@ def supported_tool_result(result):
 LISTING_FIELD_SEPARATOR = "  ·  "
 LISTING_COUNT = r"[1-9][0-9]{0,8}"
 LISTING_AGE = rf"(?:0s|{LISTING_COUNT}[smhd])"
-LISTING_LABEL = r"(?P<name>[^\x00-\x1f\x7f-\x9f\u2028\u2029]{1,300}) \[(?P<ref>[0-9a-f]{6})\]"
+LISTING_TITLE = re.compile(r"[^\x00-\x1f\x7f-\x9f\u2028\u2029]{1,300}")
+LISTING_LABEL = rf"(?P<name>{LISTING_TITLE.pattern}) \[(?P<ref>[0-9a-f]{{6}})\]"
 LISTING_CALLER = re.compile(
     rf"This session is {LISTING_LABEL} — the name other sessions use to message it "
     r"\(it is not listed below; a message to it would be a message to yourself\)\."
@@ -314,9 +307,20 @@ LISTING_CONTROL_TEXT = re.compile(
 )
 
 
+def supported_listing_label(name):
+    return (
+        isinstance(name, str)
+        and LISTING_TITLE.fullmatch(name) is not None
+        and name == name.strip()
+        and not name.startswith("<")
+        and utf16_units(name) <= 300
+        and LISTING_FIELD_SEPARATOR not in name
+        and LISTING_CONTROL_TEXT.search(name) is None
+    )
+
+
 def check_listing_label(name):
-    if (name != name.strip() or name.startswith("<") or utf16_units(name) > 300
-            or LISTING_FIELD_SEPARATOR in name or LISTING_CONTROL_TEXT.search(name)):
+    if not supported_listing_label(name):
         raise PathRefusal("unrecognized_listing", "A listing label is outside the profile; "
                           "no SendMessage was sent.")
 
@@ -338,9 +342,6 @@ def parse_listing(listing, name, selection):
         raise PathRefusal("unrecognized_listing", "A listing heading is outside the profile; "
                           "no SendMessage was sent.")
     peer_lines = lines[3:-2]
-    if len(set(peer_lines)) != len(peer_lines):
-        raise PathRefusal("listing_incomplete", "The listing repeats a peer row; "
-                          "no SendMessage was sent.")
 
     caller_name = caller["name"]
     check_listing_label(caller_name)
@@ -351,7 +352,12 @@ def parse_listing(listing, name, selection):
         raise PathRefusal("self_destination", "The name or selection can address the caller; "
                           "no SendMessage was sent.")
 
+    seen_lines = set()
     for line in peer_lines:
+        if line in seen_lines:
+            raise PathRefusal("listing_incomplete", "The listing repeats a peer row; "
+                              "no SendMessage was sent.")
+        seen_lines.add(line)
         row = LISTING_ROW.fullmatch(line)
         if row is None:
             raise PathRefusal("unrecognized_listing", "A listing row is outside the profile; "
@@ -411,13 +417,13 @@ def select_row(rows, name, selection):
     return row, name_destination(row["name"], row["ref"] if len(named) > 1 else None)
 
 
-def has_actionable_selection(candidates, tool, message, actor, identity):
+def has_actionable_selection(candidates, message, actor, identity):
     ref_counts = Counter(row["ref"] for row in candidates)
     for row in candidates:
         if ref_counts[row["ref"]] != 1:
             continue
         target = name_destination(row["name"], row["ref"])
-        if destination_violation(tool, target) is None and frame_fits(
+        if destination_violation(target) is None and frame_fits(
             sendmessage_call(message, actor, target, identity)
         ):
             return True
@@ -712,10 +718,11 @@ def main():
                 if path == "name" and to.startswith(ROUTE_PREFIX):
                     raise PathRefusal("invalid_name",
                                       "A name destination looks like a route; no tools/call was sent.")
-                # Before listing, allow for the selected name needing its reference.
-                if violation := destination_violation(nominated[0], to):
-                    raise PathRefusal("destination_constraint_violation",
-                                      violation + " No tools/call was sent.")
+                # The by-name profile budgets for a reference even in a legacy catalog.
+                if path == "name" or "allOf" in nominated[0]["inputSchema"]["properties"]["to"]:
+                    if violation := destination_violation(to):
+                        raise PathRefusal("destination_constraint_violation",
+                                          violation + " No tools/call was sent.")
                 if not frame_fits(sendmessage_call(message, request["actor"], to)):
                     # Refuse oversized frames before any call or possible submission.
                     raise PathRefusal(
@@ -753,7 +760,7 @@ def main():
             except PathRefusal as refusal:
                 refuse(refusal)
                 if refusal.candidates and has_actionable_selection(
-                    refusal.candidates, nominated[0], message, request["actor"], identity
+                    refusal.candidates, message, request["actor"], identity
                 ):
                     result["needs"] = "selection"
             else:

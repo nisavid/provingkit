@@ -991,7 +991,8 @@ class ClaudeNameSendTests(unittest.TestCase):
     @contextmanager
     def name_consumer(self, *, name="claude-receiver", selection=None, pages=(LISTING,),
                       mode="ordinary", target=None, seconds=8, stdout_bytes=65536,
-                      recipient_thread=None, payload="Compare the two results.\n"):
+                      recipient_thread=None, payload="Compare the two results.\n",
+                      constrained_destination=True):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             store = root / "mailbox.sqlite3"
@@ -1011,8 +1012,11 @@ class ClaudeNameSendTests(unittest.TestCase):
                 "authority_ref": "synthetic://grant/compare", "holds": ["No publication."],
             }
             (root / "message.json").write_text(json.dumps(original), encoding="utf-8")
-            config = {"pages": list(pages), "mode": mode, "catalog": {"tools": [
-                retained_destination_catalog()["tools"][0], LISTAGENTS_TOOL]}}
+            send_tool = retained_destination_catalog()["tools"][0]
+            if not constrained_destination:
+                del send_tool["inputSchema"]["properties"]["to"]["allOf"]
+            config = {"pages": list(pages), "mode": mode,
+                      "catalog": {"tools": [send_tool, LISTAGENTS_TOOL]}}
             (root / "config.json").write_text(json.dumps(config), encoding="utf-8")
 
             def bookkeeping(*arguments):
@@ -1338,6 +1342,21 @@ class ClaudeNameSendTests(unittest.TestCase):
                              ["unknown", "refused", "not_delivered"])
             self.assertNotIn("unreadable_rows", json.loads(observations[-1]["detail"]))
 
+    def test_selected_300_unit_name_refuses_before_listing_in_both_catalog_profiles(self):
+        name = "x" * 300
+        listing = desktop_listing(desktop_row(name, "aa12bc"), desktop_row(name, "bb34cd"))
+        for constrained in (True, False):
+            with self.subTest(constrained=constrained), self.name_consumer(
+                    name=name, pages=(listing,), selection={"ref": "aa12bc"},
+                    constrained_destination=constrained) as (_, _, send, bookkeeping, calls, _):
+                result = send()
+                self.assertEqual(result["reason"], "destination_constraint_violation")
+                self.assertEqual(result["peer_input"], "not_attempted")
+                self.assertEqual(calls(), [])
+                observations = bookkeeping("show", "send-1")["attempts"][0]["observations"]
+                self.assertEqual([item["kind"] for item in observations],
+                                 ["unknown", "refused", "not_delivered"])
+
     def test_a_singleton_bare_frame_sends_at_4096_bytes(self):
         listing = desktop_listing(desktop_row("alpha", "aa12bc"))
         with self.name_consumer(name="alpha", pages=(listing,), payload="x" * 3484) as (
@@ -1351,15 +1370,17 @@ class ClaudeNameSendTests(unittest.TestCase):
     def test_a_selection_hint_requires_a_qualified_destination_that_fits(self):
         name = "x" * 300
         listing = desktop_listing(desktop_row(name, "aa12bc"), desktop_row(name, "bb34cd"))
-        with self.name_consumer(name=name, pages=(listing,)) as (
-                _, request, send, bookkeeping, calls, _t):
-            result = send()
-            self.assert_refused_without_send(result, "ambiguous_name", calls, bookkeeping)
-            self.assertCountEqual(result["candidates"], [
-                {"name": name, "ref": "aa12bc", "kind": "interactive", "local": True},
-                {"name": name, "ref": "bb34cd", "kind": "interactive", "local": True},
-            ])
-            self.assertNotIn("needs", result)
+        for constrained in (True, False):
+            with self.subTest(constrained=constrained), self.name_consumer(
+                    name=name, pages=(listing,), constrained_destination=constrained) as (
+                    _, _, send, bookkeeping, calls, _):
+                result = send()
+                self.assert_refused_without_send(result, "ambiguous_name", calls, bookkeeping)
+                self.assertCountEqual(result["candidates"], [
+                    {"name": name, "ref": "aa12bc", "kind": "interactive", "local": True},
+                    {"name": name, "ref": "bb34cd", "kind": "interactive", "local": True},
+                ])
+                self.assertNotIn("needs", result)
 
     def test_a_selection_hint_requires_a_qualified_frame_that_fits(self):
         listing = desktop_listing(
@@ -1539,6 +1560,11 @@ class ClaudeNameSendTests(unittest.TestCase):
         self.assert_listing_refuses(desktop_listing(desktop_row("Fixture Origin", "aa12bc")),
                                     name="Fixture Origin", reason="self_destination")
 
+    def test_notice_text_in_the_caller_name_refuses_the_listing(self):
+        caller = CALLER.replace("Fixture Origin", "Fixture No reachable agents.")
+        self.assert_listing_refuses(desktop_listing(desktop_row("alpha", "aa12bc"), caller=caller),
+                                    reason="unrecognized_listing")
+
     def test_the_caller_reference_cannot_appear_on_an_unrelated_row(self):
         self.assert_listing_refuses(desktop_listing(
             desktop_row("alpha", "aa12bc"), desktop_row("other", "ab12ef"),
@@ -1667,6 +1693,17 @@ class ClaudeNameSendTests(unittest.TestCase):
         other = desktop_row("other", "bb34cd")
         self.assert_listing_refuses(desktop_listing(desktop_row("alpha", "aa12bc"), other, other),
                                     reason="listing_incomplete")
+
+    def test_a_later_duplicate_row_retains_the_earlier_skip(self):
+        unreadable = desktop_row("other [draft]", "bb34cd")
+        target = desktop_row("alpha", "aa12bc")
+        self.assert_listing_refuses(desktop_listing(unreadable, target, target),
+                                    reason="listing_incomplete", unreadable_rows=1)
+
+    def test_an_unrelated_301_character_peer_title_refuses_the_listing(self):
+        self.assert_listing_refuses(desktop_listing(
+            desktop_row("alpha", "aa12bc"), desktop_row("x" * 301, "bb34cd"),
+        ), reason="unrecognized_listing")
 
     def test_the_documented_desktop_listing_parses_and_addresses_each_example_row(self):
         reference = (SCRIPTS.parent / "references" / "claude-mcp-sender.md").read_text(
@@ -1853,8 +1890,10 @@ class ClaudeNameSendTests(unittest.TestCase):
                     self.assertEqual(evidence["unreadable_rows"], expected_skips)
 
     def test_a_name_the_profile_cannot_address_is_refused_before_any_claim(self):
-        for name in ("left" + DOT + "right", "(draft) review"):
-            with self.subTest(name=name), self.name_consumer(name=name) as (
+        for name in ("left" + DOT + "right", "(draft) review", "No reachable agents.", "<alpha",
+                     "alpha\tpeer", "alpha\u2028peer", "alpha\0peer", "", " ", None):
+            recipient = name if isinstance(name, str) and name.strip() else "fixture"
+            with self.subTest(name=name), self.name_consumer(name=name, recipient_thread=recipient) as (
                     _, request, send, bookkeeping, calls, trace):
                 result = send()
                 self.assertEqual(result["reason"], "invalid_name")

@@ -414,12 +414,14 @@ class ClaudeRouteNominationTests(unittest.TestCase):
 
     def test_prepare_refuses_a_name_the_listing_profile_cannot_address(self):
         route, _, mailbox_module = self.load_modules()
-        for name in ("left  ·  right", "(draft) review"):
+        for name in ("left  ·  right", "(draft) review", "No reachable agents.", "<alpha",
+                     "alpha\tpeer", "alpha\u2028peer", "alpha\0peer", "", " ", None):
             with self.subTest(name=name), tempfile.TemporaryDirectory(
                     prefix="claude-route-") as temporary:
                 root = Path(temporary).resolve()
                 root.chmod(0o700)
-                request = self.prepare_input(root, None, {"thread_id": name, "host_id": "local"})
+                recipient_name = name if isinstance(name, str) and name.strip() else "fixture"
+                request = self.prepare_input(root, None, {"thread_id": recipient_name, "host_id": "local"})
                 del request["nomination"]
                 request.update({"schema": "claude-name-request-preparation-v1", "name": name})
                 self.initialize_mailbox(mailbox_module, Path(request["mailbox"]))
@@ -435,6 +437,11 @@ class ClaudeRouteNominationTests(unittest.TestCase):
                     "prepared": False, "reason": "invalid_name",
                     "closure": "no-provider-started"})
                 self.assertFalse(Path(request["publication"]["path"]).exists())
+                mailbox = mailbox_module.Mailbox(Path(request["mailbox"]))
+                try:
+                    self.assertEqual(mailbox.pending(), [])
+                finally:
+                    mailbox.close()
 
     def test_prepare_refuses_a_recipient_that_does_not_carry_the_name(self):
         route, _, mailbox_module = self.load_modules()
@@ -468,20 +475,26 @@ class ClaudeRouteNominationTests(unittest.TestCase):
             finally:
                 mailbox.close()
 
-    def test_prepare_measures_a_selected_name_with_the_reference_before_listing(self):
+    def test_prepare_checks_the_qualified_frame_before_a_selected_singleton_sends_bare(self):
         route, sender, mailbox_module = self.load_modules()
         with tempfile.TemporaryDirectory(prefix="claude-route-") as temporary:
             root = Path(temporary).resolve()
             root.chmod(0o700)
-            recipient = {"thread_id": "twin", "host_id": "local"}
+            name, ref = "claude-receiver", "3fa9c1"
+            qualified = f"{name} [{ref}]"
+            recipient = {"thread_id": name, "host_id": "local"}
             request = self.prepare_input(root, None, recipient)
             del request["nomination"]
             request["schema"] = "claude-name-request-preparation-v1"
-            request["name"] = "twin"
-            request["selection"] = {"ref": "cc22dd"}
+            request["name"] = name
+            request["selection"] = {"ref": ref}
             mailbox_path = Path(request["mailbox"])
             self.initialize_mailbox(mailbox_module, mailbox_path)
             request_path = root / "prepare-input.json"
+            launcher = root / "claude"
+            launcher.write_text(f"#!{sys.executable}\n" + BY_NAME_CHILD, encoding="utf-8")
+            launcher.chmod(0o700)
+            trace = root / "name-child.jsonl"
 
             def frame_bytes(to):
                 return len(json.dumps(
@@ -494,15 +507,15 @@ class ClaudeRouteNominationTests(unittest.TestCase):
                 with contextlib.redirect_stdout(output):
                     route.main(["prepare", "--request", str(request_path)],
                                effective_uid=os.geteuid(),
-                               environment={"PATH": "/synthetic/bin"},
-                               launcher_lookup=lambda _name, _path: "/synthetic/bin/claude")
+                               environment={"PATH": str(root)},
+                               launcher_lookup=lambda _name, _path: str(launcher))
                 return json.loads(output.getvalue())
 
             # The bare frame fits, but another row might require the qualified form.
             request["message"]["payload"] = ""
-            request["message"]["payload"] = "x" * (4096 - frame_bytes("twin"))
-            self.assertEqual(frame_bytes("twin"), 4096)
-            self.assertEqual(frame_bytes("twin [cc22dd]"), 4105)
+            request["message"]["payload"] = "x" * (4096 - frame_bytes(name))
+            self.assertEqual(frame_bytes(name), 4096)
+            self.assertEqual(frame_bytes(qualified), 4105)
             self.assertEqual(prepare(), {
                 "prepared": False, "reason": "sender-frame-byte-limit",
                 "closure": "no-provider-started",
@@ -511,12 +524,24 @@ class ClaudeRouteNominationTests(unittest.TestCase):
 
             # At the ceiling with the selected `to`, the request is prepared.
             request["message"]["payload"] = ""
-            request["message"]["payload"] = "x" * (4096 - frame_bytes("twin [cc22dd]"))
-            self.assertEqual(frame_bytes("twin [cc22dd]"), 4096)
+            request["message"]["payload"] = "x" * (4096 - frame_bytes(qualified))
+            self.assertEqual(frame_bytes(qualified), 4096)
             result = prepare()
             self.assertTrue(result["prepared"], result)
             prepared = json.loads(Path(result["path"]).read_text(encoding="utf-8"))
-            self.assertEqual(sender.request_destination(prepared), "twin [cc22dd]")
+            self.assertEqual(sender.request_destination(prepared), qualified)
+            self.assertFalse(trace.exists())
+
+            sent = subprocess.run([
+                sys.executable, "-B", str(SCRIPTS / "claude_mcp_sender.py"),
+                "--store", str(mailbox_path), "--request", result["path"],
+            ], capture_output=True, text=True, timeout=12)
+            self.assertEqual(sent.returncode, 0, sent.stderr)
+            self.assertEqual(json.loads(sent.stdout)["reason"], "submitted")
+            requests = (json.loads(line) for line in trace.read_text(encoding="utf-8").splitlines())
+            calls = [item["params"] for item in requests if item.get("method") == "tools/call"]
+            self.assertEqual([call["name"] for call in calls], ["ListAgents", "SendMessage"])
+            self.assertEqual(calls[-1]["arguments"]["to"], name)
 
     def test_prepare_returns_safe_refusal_for_existing_corrupt_mailbox(self):
         route, _, _ = self.load_modules()
