@@ -494,7 +494,7 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
             " ".join(probing.split()),
         )
         for phrase in (
-            "invoke choosing-agent-models and its daybreak routing reference",
+            "invoke choosing-agent-models before reprobing",
             "both native review-turn rejections",
             "both cli requests are pending",
             "only intent has a usable review",
