@@ -1817,7 +1817,7 @@ def load_repository_json(repo_root: Path, relative: Path) -> Any:
     return strict_json(read_repository_file(repo_root, relative), relative.as_posix())
 
 
-def validate_relation_opus_output(run: dict, model: str) -> None:
+def validate_relation_opus_output(run: dict, model: str | None) -> None:
     message = f"Opus output attribution drift: {run['id']}"
     usage = run.get("model_usage")
     require(isinstance(usage, dict), message)
@@ -1834,7 +1834,7 @@ def validate_relation_opus_output(run: dict, model: str) -> None:
         output = record.get("outputTokens") if isinstance(record, dict) else None
         require(type(output) is int and output >= 0, message)
         if output > 0:
-            require(name == canonical == model, message)
+            require(name == canonical and (model is None or name == model), message)
             has_output = True
     require(has_output, message)
 
@@ -2033,8 +2033,9 @@ def _validate_relation_evidence(repo: Path, *, source_stage: bool) -> list[str]:
                 run, "behavior", "actual executor identity", PREVIOUS_RELATION_EXECUTOR
             )
             require_experiment_model(selected_behavior, model)
-            if bind_invocation_and_usage:
-                validate_relation_opus_output(run, model)
+            validate_relation_opus_output(
+                run, model if bind_invocation_and_usage else None
+            )
             invocation = run["invocation"]
             argv = invocation["argv"]
             if invocation.keys() <= compact_invocation_fields:
@@ -2161,8 +2162,7 @@ def _validate_relation_evidence(repo: Path, *, source_stage: bool) -> list[str]:
             run, "trigger", "native model/effort", PREVIOUS_RELATION_EXECUTOR
         )
         require_experiment_model(selected_trigger, model)
-        if bind_invocation_and_usage:
-            validate_relation_opus_output(run, model)
+        validate_relation_opus_output(run, model if bind_invocation_and_usage else None)
         require(
             run["init"]["plugins"]
             == [

@@ -857,6 +857,49 @@ class ValidateMergecraftTests(unittest.TestCase):
                 self.assert_rejected(diagnostic)
                 self.assert_rejected(diagnostic, "--write-content-lock")
 
+    def test_pending_relation_evidence_still_validates_opus_usage(self) -> None:
+        self.construct_relation_evidence(trigger_model="claude-opus-5")
+        path = self.repo / RELATION_EVIDENCE / "experiment.json"
+        original = json.loads(path.read_bytes())
+        selection = original["selection"]
+        behavior_id = f"{selection['behavior_by_case']['0']}/case-00-with-skill-1"
+        trigger_id = f"{selection['trigger_experiment']}/case-00"
+        for case, collection, run_id, model in (
+            ("missing usage", "behavior_runs", behavior_id, "claude-opus-5-5"),
+            ("negative tokens", "native_and_trigger_runs", trigger_id, "claude-opus-5"),
+            ("boolean tokens", "native_and_trigger_runs", trigger_id, "claude-opus-5"),
+            ("no positive count", "behavior_runs", behavior_id, "claude-opus-5-5"),
+            ("contradictory name", "behavior_runs", behavior_id, "claude-opus-5-5"),
+        ):
+            with self.subTest(case=case):
+                experiment = copy.deepcopy(original)
+                run = next(row for row in experiment[collection] if row["id"] == run_id)
+                opus = run["model_usage"][model]
+                if case == "missing usage":
+                    del run["model_usage"]
+                elif case == "contradictory name":
+                    opus["canonicalModel"] = "claude-opus-5"
+                else:
+                    opus["outputTokens"] = {
+                        "negative tokens": -1,
+                        "boolean tokens": True,
+                        "no positive count": 0,
+                    }[case]
+                path.write_text(json.dumps(experiment), encoding="utf-8")
+                self.write_pending_evidence(RELATION_EVIDENCE, "claude-opus-5-5")
+                self.assert_pending_rejected(f"Opus output attribution drift: {run_id}")
+
+        run = next(row for row in original["behavior_runs"] if row["id"] == behavior_id)
+        usage = run["model_usage"]
+        opus = usage.pop("claude-opus-5-5")
+        del opus["canonicalModel"]
+        usage["claude-opus-5"] = opus
+        path.write_text(json.dumps(original), encoding="utf-8")
+        self.write_pending_evidence(RELATION_EVIDENCE, "claude-opus-5-5")
+        for flags in (("--source-stage",), ("--source-stage", "--write-content-lock")):
+            result = self.run_validator(*flags)
+            self.assertEqual(result.returncode, 0, result.stderr)
+
     def test_relation_behavior_model_pair_must_precede_the_argv_delimiter(self) -> None:
         path = self.repo / RELATION_EVIDENCE / "experiment.json"
         experiment = json.loads(path.read_bytes())

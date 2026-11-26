@@ -287,12 +287,15 @@ digests and leaves each retained invocation and usage record's association
 with an individual run unverified.
 An entry must describe an actual mismatch. Remove it when current evidence
 passes. Run `python scripts/validate_mergecraft.py .` for strict mode. Strict
-mode must ignore pending status, require fresh passing evidence for current
-inputs and the pinned executor, and reject contradictions that a partial
-refresh or rebind can leave in selected records. The validator can check those
-records for consistency. Matching records and digests can be deliberately
-fabricated in a reviewed commit. Establishing that a run occurred requires
-independent evidence. A source-stage content lock records source identity only.
+mode ignores pending status and requires fresh passing evidence for current
+inputs and the pinned executor. For relations, it checks the selected run
+and experiment executor identities, the model in the command and full
+invocation record, and Opus output attribution. It verifies the retained
+argv or full invocation checksum. A copied behavior invocation and its
+matching checksum can pass under another repetition. Matching records and
+digests can be deliberately fabricated in a reviewed commit. Establishing
+that a run occurred requires independent evidence. A source-stage content
+lock records source identity only.
 
 The feedback-response [experiment](skills/interacting-with-pr-review-feedback/evals/response-evidence.json)
 binds the raw scenarios, delivered skill and reference bytes, source and test
