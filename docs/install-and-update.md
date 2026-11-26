@@ -141,18 +141,21 @@ Run `/reload-plugins` in the affected Code session. Compare the loaded version
 or a changed file from the loaded plugin with the reviewed release. Customize
 and the CLI can show a newer copy than Desktop loads.
 
-- If the loaded copy matches the reviewed release, choose a plugin skill that
-  sends nothing and changes nothing. Invoke it in the affected session, then continue.
-  If the plugin has no such skill, record that no read-only skill was available
-  and continue on the inspection alone.
+- If the loaded copy matches the reviewed release, invoke a plugin skill that
+  sends nothing and changes nothing. Continue only if it succeeds in the affected
+  session. If the plugin has no such skill, record this session’s loaded identity
+  as matched and its skill discovery as unverified. Independent rollout work may continue.
 - If the check identifies the previous release before a restart, checkpoint
   active work. Fully quit Claude Desktop and reopen it. Return to the affected
   Code session. Verify that each peer route tied to the old connection reaches
-  its intended recipient before sending anything on it. Send any report only on
-  a route whose recipient you confirmed or one that does not use the old
-  connection. Run `/reload-plugins` again and repeat the check.
-- For any other result, stop. Do not restart. Report the expected release,
-  what you observed, and any reload error to the installation owner.
+  its intended recipient before sending anything on it. Run `/reload-plugins`
+  again and repeat the check.
+- For any other result, including a failed skill invocation, stop without
+  restarting. Report the expected release, what you observed, and any reload
+  or invocation error.
+
+Send any report only on a route you have confirmed reaches the installation
+owner, even if the route is new. If you cannot confirm a route, hold the report.
 
 See [Claude's plugin guide](https://claude.com/docs/plugins/overview#find-and-add-a-plugin).
 
