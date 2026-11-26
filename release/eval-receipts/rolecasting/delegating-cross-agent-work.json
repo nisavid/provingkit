@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
-  "candidate_revision": "f9d5d1d63a52d74a6ca0215e47f7ec474ac18779",
+  "candidate_revision": "e7b3bc6b7567684605485316e098ea06475aa917",
   "snapshot": {
-    "candidate_revision": "f9d5d1d63a52d74a6ca0215e47f7ec474ac18779",
+    "candidate_revision": "e7b3bc6b7567684605485316e098ea06475aa917",
     "inputs": {
       "evals/comparative-review-lifecycle-matrix.json": {
         "mode": "100644",
@@ -14,7 +14,7 @@
       },
       "plugins/rolecasting/content-lock.json": {
         "mode": "100644",
-        "sha256": "75438bfee6dcb0211303e965caf97aa25df82ee51998deab00c58e64e9661c10"
+        "sha256": "a75b57e2895123def4f27f8d46438f3765006935aef822bb090ce59db48fb5ef"
       },
       "plugins/rolecasting/evals/delivery.json": {
         "mode": "100644",
@@ -70,7 +70,7 @@
       },
       "plugins/rolecasting/skills/delegating-cross-agent-work/SKILL.md": {
         "mode": "100644",
-        "sha256": "8c389f42d375f9b22440f9f93b7060c6cf86ad66a3aa895b78f3b753185b622c"
+        "sha256": "d51d11a49f223ba228d0c4ba0251127dcfc46e4f7232905429b3f70299aeea2d"
       },
       "plugins/rolecasting/skills/delegating-cross-agent-work/agents/openai.yaml": {
         "mode": "100644",
@@ -78,7 +78,7 @@
       },
       "plugins/rolecasting/skills/delegating-cross-agent-work/evals/evals.json": {
         "mode": "100644",
-        "sha256": "0294a1f84ffe34e983ddc57969cb75bf4a37d897138611f3e2c49a7f0b19de56"
+        "sha256": "0bfe14ce369def29685e72e2dfd36d4d2b41c66657aa059e33adfc98b838896b"
       },
       "plugins/rolecasting/skills/delegating-cross-agent-work/evals/fixtures/absent-foreign-executable-native-fallback.md": {
         "mode": "100644",
@@ -127,6 +127,10 @@
       "plugins/rolecasting/skills/delegating-cross-agent-work/evals/fixtures/foreign-peer-authority.md": {
         "mode": "100644",
         "sha256": "ba258f940cbb8131c04174e80af9dbc5de230a3b33eaa5a8dff2d1dafd97ddda"
+      },
+      "plugins/rolecasting/skills/delegating-cross-agent-work/evals/fixtures/high-reviews-after-desktop-rejection.md": {
+        "mode": "100644",
+        "sha256": "689e7cafbc85c300d71967b9686319d7b55994bb4da0a04ee4835ee58376628e"
       },
       "plugins/rolecasting/skills/delegating-cross-agent-work/evals/fixtures/insufficient-foreign-isolation-blocked.md": {
         "mode": "100644",
@@ -194,7 +198,7 @@
       },
       "plugins/rolecasting/skills/delegating-cross-agent-work/evals/trigger-evals.json": {
         "mode": "100644",
-        "sha256": "481ee70254cda4bf52d635b363604b09eff6fc89a7ebb08ff4f65b899b1c5819"
+        "sha256": "a6a08c74cc2d977b7e8ab367cbb3c32b4ef34cb3f006b38a28f1ce1b7eb9c20e"
       },
       "plugins/rolecasting/skills/delegating-cross-agent-work/references/dispatch-evidence.md": {
         "mode": "100644",
@@ -262,7 +266,7 @@
       },
       "release/provingkit/definition-v1.json": {
         "mode": "100644",
-        "sha256": "fc0293703484b8a9c42fc999fe75e5de1bc7686b8417140fdffcce0ad1eec844"
+        "sha256": "7e6e5604410a56b7b30f31b113c322c0530c83dc28d9eedd0b584c9893c6b367"
       },
       "scripts/behavior_eval_corpora.py": {
         "mode": "100644",
@@ -308,6 +312,7 @@
         "plugins/rolecasting/skills/delegating-cross-agent-work/evals/fixtures/explicit-continuation-selection.md",
         "plugins/rolecasting/skills/delegating-cross-agent-work/evals/fixtures/explicit-thread-selection.md",
         "plugins/rolecasting/skills/delegating-cross-agent-work/evals/fixtures/foreign-peer-authority.md",
+        "plugins/rolecasting/skills/delegating-cross-agent-work/evals/fixtures/high-reviews-after-desktop-rejection.md",
         "plugins/rolecasting/skills/delegating-cross-agent-work/evals/fixtures/insufficient-foreign-isolation-blocked.md",
         "plugins/rolecasting/skills/delegating-cross-agent-work/evals/fixtures/isolated-task-companion-boundary.md",
         "plugins/rolecasting/skills/delegating-cross-agent-work/evals/fixtures/leader-integration.md",
@@ -419,6 +424,10 @@
           "source": "plugins/rolecasting/skills/delegating-cross-agent-work/evals/evals.json"
         },
         {
+          "pointer": "/evals/28",
+          "source": "plugins/rolecasting/skills/delegating-cross-agent-work/evals/evals.json"
+        },
+        {
           "pointer": "/evals/3",
           "source": "plugins/rolecasting/skills/delegating-cross-agent-work/evals/evals.json"
         },
@@ -472,6 +481,14 @@
         },
         {
           "pointer": "/6",
+          "source": "plugins/rolecasting/skills/delegating-cross-agent-work/evals/trigger-evals.json"
+        },
+        {
+          "pointer": "/7",
+          "source": "plugins/rolecasting/skills/delegating-cross-agent-work/evals/trigger-evals.json"
+        },
+        {
+          "pointer": "/8",
           "source": "plugins/rolecasting/skills/delegating-cross-agent-work/evals/trigger-evals.json"
         }
       ],
