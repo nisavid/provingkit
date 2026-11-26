@@ -125,7 +125,10 @@ jobs:
 
   versionkeeping:
     name: Versionkeeping source contract
-    runs-on: ubuntu-latest
+    # Pinned until https://github.com/nisavid/provingkit/issues/1146 lets the
+    # credential fallback bind on ubuntu-26.04; see
+    # https://github.com/nisavid/provingkit/issues/1147.
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -248,7 +251,7 @@ jobs:
 
       - name: Validate the projector and stage each target
         run: |
-          python -m unittest tests.test_build_release_artifacts tests.test_build_cloud_coordination
+          python -m unittest tests.test_build_release_artifacts tests.test_build_cloud_coordination tests.test_member_zip
           python scripts/build_release_artifacts.py --target agent-plugins --output "$RUNNER_TEMP/provingkit-agent"
           python scripts/build_release_artifacts.py --target claude --output "$RUNNER_TEMP/provingkit-claude"
           python scripts/build_release_artifacts.py --target cursor --output "$RUNNER_TEMP/provingkit-cursor"

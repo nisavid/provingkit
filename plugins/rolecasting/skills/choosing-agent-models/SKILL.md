@@ -7,9 +7,13 @@ description: Use when selecting model and effort for new workers or execution co
 
 ## Scope
 
-Own model and effort selection after [delegating-cross-agent-work](../delegating-cross-agent-work/SKILL.md) settles target, ownership, transport, authority, and assurance. Model choice is a separate decision; it cannot repair those boundaries. First distinguish [ordinary peer messages from execution assignments](references/capability-probes-and-fallbacks.md#distinguish-messages-from-execution-assignments). Classify the complete bounded execution before each new assignment, execution continuation, and review; read [scope classification and refusal diagnosis](references/classifying-security-work.md). Previous assignments do not carry execution classification forward.
+Own model and effort selection after [delegating-cross-agent-work](../delegating-cross-agent-work/SKILL.md) settles target, ownership, transport, authority, and assurance. Model choice is a separate decision; it cannot repair those boundaries. First distinguish [ordinary peer messages from execution assignments](references/capability-probes-and-fallbacks.md#distinguish-messages-from-execution-assignments). Classify complete bounded execution before each assignment, continuation, and review; read [scope classification and refusal diagnosis](references/classifying-security-work.md). Previous assignments do not carry classification forward.
+
+Apply [appointment configuration and scoped overrides](references/appointment-and-scoped-overrides.md).
 
 ## Selection Order
+
+[Published-text rules](references/general-tiers.md#published-text) supersede conflicting tiers.
 
 Apply [effort eligibility](references/effort-policy.md) to every route: Astra/Fable and Sol/Opus require `medium` or higher, including inherited or fixed selection; OpenAI and Anthropic `max` requires every model, problem, workflow, and capability gate. Terra Low/Medium/High follow their task and role boundaries; exclude Luna XHigh/Max and Sol Light.
 

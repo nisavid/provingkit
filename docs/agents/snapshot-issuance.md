@@ -38,7 +38,8 @@ unqualified and exposure stays held.
 
 Qualify state retention and recovery under that owner: retain the database,
 pending request, original reviewed plan, original executor result if available,
-and artifacts through process and custody changes. Use SQLite's backup API or
+the exact successful standard output of each `issue` and `add-variants`
+operation, and artifacts through process and custody changes. Use SQLite's backup API or
 quiesce the issuer before copying its database and any active journal. A copied
 or restored older database must not become a second issuer. Initialization is
 only for a release unit with no prior snapshot state; inventory existing
@@ -138,6 +139,116 @@ Complete the owning projection checks, mode checks, and packing procedure before
 constructing a publication commit. Use the versioned generation
 `ad-hoc/<source-commit>/<delivered-version>/<target>/`; retain older paths.
 
+## Record where the source stands before first exposure
+
+Ivan selected this rule on 2026-11-19; the record is the "Source standing,
+settled on 2026-11-19" section of
+[the versioning contract decision](https://github.com/nisavid/provingkit/issues/1075).
+It governs first exposures made after those selections were recorded. This
+guidance calls no earlier delivery compliant or not.
+
+Before a snapshot's first exposure, its delivery record holds three things:
+
+- The review of its source commit, or a statement that there is none.
+- Whether the commit is on the release line, with the `main` commit it was
+  tested against.
+- When it is not, the ticket that lands the commit or withdraws the copy, and
+  the named remote ref, which is kept, that holds the commit.
+
+A record that states no review also names the channels it permits. After a
+landing, the record gains the landing note described below.
+
+Delivery from source that is not on the release line needs this record and no
+approval of its own. A snapshot whose record states no review goes only to the
+channels its record names and carries the same landing or withdrawal ticket.
+Client probes of draft work do not wait for a review. Each installation still
+needs Ivan's authorization, and the request to him states the review status.
+
+The issuer does not yet hold or check any of this: its `prepare` request takes
+a request name and a source commit, and its state has no place for the record.
+Until it does, whoever issues the snapshot writes the record, retains it with
+the preparation response, and provides it at handoff. Complete it before the
+`issue` request below; that transaction does not check it.
+
+**What counts as a review to name.** For a source commit on the release line,
+name the reviews of the pull requests that changed what is delivered since the
+preceding named release. For a source commit off the release line, name each
+review of the difference between that commit and its merge base with the
+release line, by the commit the review covered. A review of one part of that
+difference is recorded as a review of that part. Where the parts were reviewed
+and the combination was not, say exactly that; the snapshot is then treated as
+having no review. The cases differ on purpose: on the release line every change
+has passed that line's own review and merge, and off it the combination has
+passed neither.
+
+**How landing is recorded.** After a landing, the delivery record gains the
+commit that landed the source and says whether the delivered source equals it.
+The note changes no delivered identity. It is what lets "landed" survive a
+squash merge, where the source commit itself never joins the release line.
+
+**Release-line status by hand.** The release line is `main` on the canonical
+remote, the GitHub repository `nisavid/provingkit`. A local `main` is not the
+release line, and the projector's `--channel` argument is not evidence of the
+status. The status comes from Git, not from an argument. Until the issuer
+computes it, whoever issues the snapshot works in the checkout that holds the
+source commit. First confirm that `origin` is the canonical repository itself,
+not a fork or a similarly named repository: `git remote get-url origin` prints
+exactly `https://github.com/nisavid/provingkit` or
+`git@github.com:nisavid/provingkit`, with or without a final `.git`. Also
+confirm that `git rev-parse --is-shallow-repository` prints `false`. Then fetch
+`main` into `refs/remotes/origin/main`, test the source commit against that one
+fetched commit, and record that commit:
+
+```sh
+git fetch origin +refs/heads/main:refs/remotes/origin/main &&
+  main=$(git rev-parse --verify 'refs/remotes/origin/main^{commit}') && {
+  if git merge-base --is-ancestor <source commit> "$main"; then
+    rc=0
+  else
+    rc=$?
+  fi
+  echo "status=$rc main=$main"
+}
+```
+
+Record the exit status together with that `main` commit:
+
+| Exit status | Meaning to record |
+| --- | --- |
+| 0 | The source commit is on the release line. |
+| 1 | The source commit is not on the release line. |
+| Any other | The answer could not be established. |
+
+Record "could not be established", never "not on the release line", for any
+other status, when the commands print no status, when the fetch fails, when the
+checkout is shallow, and when `origin` is not the canonical repository. Such a
+record does not yet say whether the commit is on the release line, so the
+snapshot's first exposure waits until a later check establishes it.
+
+**What makes a remote ref kept.** [Ivan answered on 2026-11-19](https://github.com/nisavid/provingkit/issues/1075#issuecomment-7016813642):
+a protected place. A named remote ref is kept when it sits under the name that
+a repository rule protects from deletion, where delivered sources that are not
+on the release line are pushed. A branch that can be deleted does not meet the
+rule, and a written commitment on the landing ticket does not either. A commit
+that is not on the release line meets the rule only when such a ref holds it,
+and until then its first exposure waits. Each push to that place needs its own
+authority.
+
+In this repository that place is `refs/heads/retained/delivered/<version>`,
+where `<version>` is the delivered version: one ref per delivered version,
+pushed once, under a name the repository's rules protect from update and
+deletion.
+
+The push that puts a delivered source into the protected place goes through the
+Versionkeeping planner, as a create-only push. When the source is not at or
+above the tip of some branch on the remote, for example a merged pull request's
+head whose branch is gone, the plan is blocked. Such a blocked plan is not
+restated as a plain push: the push stops, and Ivan decides on a one-time
+exception for that exact push. This
+paragraph grants no push and no exception. The [ticket that tracks the planner
+change](https://github.com/nisavid/provingkit/issues/531#issuecomment-7018079892)
+says why, and holds the change that would let the planner plan such a push.
+
 ## Commit issuance before the first exposure
 
 Prepare and review the normal Versionkeeping publication plan for the immutable
@@ -160,6 +271,9 @@ objects, submit an `issue` request:
   }
 }
 ```
+
+Keep the exact standard output of this operation, and of each `add-variants`,
+in a file of its own, not the result file that later calls overwrite.
 
 The example binds one target. Include every target present in the transport
 commit; the three-target packing recipe requires three entries. Extra
@@ -211,12 +325,22 @@ closed. Source, version, existing variants, and high-water position are
 unchanged. An uncertain attempted addition remains pending and blocks this
 retry path.
 
-A lost response, attempted failure, missing result, or incomplete postcheck
-keeps the request pending. Recover it with `{"operation":"inspect"}` or the
-identical `issue` request. Retry recovers the original identity; it does not
+A lost or missing executor result, an attempted failure, or an incomplete
+postcheck keeps the request pending. Recover its state with
+`{"operation":"inspect"}`. Retry recovers the original identity; it does not
 authorize replaying a push. The existing publication owner reconciles the
-original executor and remote outcome before retry or continuation. Do not
-clear the hold by constructing a successful result or initializing new state.
+original executor and remote outcome before retry or continuation. Do not clear
+the hold by constructing a successful result or initializing new state.
+
+If the output of an `issue` or `add-variants` operation is lost, replay that
+operation's identical request and keep what it prints. Run it with the same
+`--state` path and working directory, or with absolute paths for `--state`, for
+`--request`, and in the request, and with the reviewed plan and variant files
+still readable, regular and unchanged. A replay with the same request ID
+returns the stored record, issues, or is rejected. A reconcile may have changed
+a stored record. A rejection is not issuer evidence and does not show
+that no delivery exists. Pin only an output that carries `operation` and
+`exposure`. `inspect` returns the whole state, not that record.
 
 ## Extend, redeliver, and advance
 
@@ -233,6 +357,133 @@ After every uncertain result, recover the same state before choosing another
 operation. Retain it while a version or recovery selection remains supported.
 The issuer has no remote cleanup operation.
 
+## Derive a member ZIP from an issued snapshot
+
+Use `scripts/member_zip.py` when a delivery needs one member's single-plugin
+ZIP and checksum file for Agent Plugins or Claude. It requires an issued
+snapshot: the packed complete-slate archive, its original receipt with the
+`delivery` record, its mode inventory, and the issuer result, the record that the `issue`
+or `add-variants` operation printed. A snapshot that was prepared
+and projected but not issued lacks that result, and until it is packed it also
+lacks the archive and mode inventory, so the helper cannot make its ZIP. The
+helper only reads these files; it never opens the issuance state.
+
+Run it from a clean checkout of the reviewed revision. Each operation reads one
+JSON request and writes one JSON result to stdout:
+
+```sh
+python scripts/member_zip.py derive --request "$MEMBER_ZIP_REQUEST" \
+  --output "$MEMBER_ZIP_PARENT/fresh-output"
+python scripts/member_zip.py verify --request "$MEMBER_ZIP_REQUEST" \
+  --output "$MEMBER_ZIP_PARENT/fresh-output" --record-sha256 "$RETAINED_RECORD_SHA256"
+```
+
+`MEMBER_ZIP_REQUEST` is the absolute path of the request file, and
+`MEMBER_ZIP_PARENT` is the absolute path of the private directory that will
+hold the output, described under the limits below.
+
+The request names the target and member, binds the selected snapshot with `plugin_slate` in its receipt's recorded order, and pins
+each file by its lowercase SHA-256 digest:
+
+```json
+{
+  "schema": "provingkit-member-zip-request-v1",
+  "target": "agent-plugins",
+  "member": "mergecraft",
+  "identity": {
+    "source_commit": "<full product commit>",
+    "projector_revision": "<full projector commit>",
+    "version": "0.1.0-alpha.7.snapshot.9",
+    "request_id": "<preparation request ID>",
+    "issuer_request_id": "<issue or add-variants request ID>",
+    "preparation_sha256": "<preparation digest>",
+    "policy_sha256": "<projection policy digest>",
+    "plugin_slate": ["rolecasting", "tricritical", "versionkeeping", "mergecraft",
+                     "artifact-customs", "proseweaving", "surreal-intercom"]
+  },
+  "parent": {
+    "archive": {"path": "/absolute/packed/agent-plugins/artifact.tar.gz", "sha256": "<digest>"},
+    "receipt": {"path": "/absolute/packed/agent-plugins/RECEIPT.json", "sha256": "<digest>"},
+    "modes": {"path": "/absolute/packed/agent-plugins/modes.tsv", "sha256": "<digest>"}
+  },
+  "issuer_result": {"path": "/absolute/retained/issue-result.json", "sha256": "<digest>"}
+}
+```
+
+An `issue` result must carry the preparation's request ID; an `add-variants`
+result must carry a different one. Prefer the output captured when that operation
+ran; a record recovered by replaying the identical request, as the paragraph on lost
+`issue` or `add-variants` output above describes, is also
+accepted. Keep the exact file you pin, because `verify` needs the same bytes.
+Before writing, the
+helper checks every pin, the entries its tar reader yields from the parent
+archive, the receipt's file inventory and tree digest, the
+mode inventory, the receipt identity, stamped manifests and catalog, and the
+issuer result's recorded variant for the target. It then writes a fresh
+directory containing exactly the member ZIP, its checksum file, and
+`DERIVATIVE.json`. The ZIP holds the member's files and directories without the
+`plugins/<member>/` prefix, with their original bytes and modes and a
+deterministic encoding. Archive and checksum names follow the
+[archive naming rule](release-presentation.md#name-archives-and-preserve-published-downloads):
+`provingkit-<member>-<version>.zip` for Agent Plugins and
+`provingkit-<member>-<version>-claude.zip` for Claude.
+
+`derive` never replaces an existing output and reads back what it wrote. Its
+success reports `"status": "verified"`, `"scope":
+"local-derivative-integrity"`, the derivative record's digest as
+`record_sha256`, and the issuer result's exposure value as `issuer_exposure`. Retain that digest
+apart from the output; `verify` requires it and is read-only.
+`DERIVATIVE.json` also records the SHA-256 of the helper file that ran `derive`
+and that run's exact Python and zlib versions, because ZIP bytes can vary
+across runtimes. `verify` therefore passes only with the same
+`scripts/member_zip.py` bytes under the same Python and zlib versions, so
+record the helper revision with the retained digest. `verify` also requires the
+output directory and its parent to stay owned by the current user with no group
+or other permissions; `derive` creates the output that way. A rejection exits
+nonzero with `"status": "rejected"` and a reason; a failed write can leave a
+partial output that is not a usable derivative.
+
+A successful `derive` or `verify` establishes the local integrity of the
+derived files against the pinned snapshot evidence. It does not establish that
+the snapshot was authentically issued or that the pins came from its owner. It
+establishes nothing about exposure, any account, or installation: the reported
+exposure is copied from the issuer result, not observed. The derivative is
+not an issued variant and never enters issuance history; uploading it remains
+with the delivery's own route and authorization.
+
+The helper has these limits:
+
+- The caller establishes that the output's parent hierarchy is trusted. Create
+  a fresh output below a parent owned by the current user with no group or
+  other permissions. The helper checks that parent and rejects an ancestor that
+  its group or other users can write unless it is sticky; it does not
+  establish ancestor ownership.
+- It opens every path it reads or writes, including its own file, without
+  following symlinks, and rejects a path with a symlink in any component.
+  Relative paths, including those in the request, resolve against the current
+  working directory, not the request's directory. Invoke it as
+  `scripts/member_zip.py` from the checkout root, as shown, or by another path
+  without symlinks. Give the request, evidence and output as absolute paths
+  without symlinks, outside the checkout, so the checkout stays clean.
+- It supports Agent Plugins and Claude, not Cursor, and snapshot versions only,
+  so it rejects a named release.
+- It checks only the parent archive entries its tar reader yields and does not
+  require an end-of-archive marker. Whether corruption elsewhere in the
+  compressed stream is caught depends on how the reader buffers it. The pins
+  bind the archive's bytes to the issued archive; they do not show that the
+  archive holds no entry beyond those read. The derived files are still checked
+  against the receipt's per-file digests.
+- It expects the 12-character source-commit abbreviation the projector uses in
+  the preview label, so it rejects a snapshot whose source commit needed a
+  longer abbreviation.
+- The seven-member slate and this repository's address are written into it.
+- Its tests are synthetic and were run on Linux. Real issuance, another
+  operating-system identity, very large inputs, which it holds in memory, and
+  other runtimes are not qualified.
+
+Run its tests with `python -m unittest tests.test_member_zip`; the source
+workflow's artifact-projections job runs them.
+
 ## Verify and hand off
 
 Run `python -m unittest tests.test_prepare_snapshot_issuance
@@ -243,13 +494,17 @@ examples execute the actual CLI and inspect emitted manifests and receipts.
 The clock example replaces Python's `time.time`; it does not change the host
 clock. Synthetic source identifiers test identity independence, not Git age.
 
-Before actual delivery, require current independent review, authoritative state
-custody, selected-route and named-cut participation, and recovery evidence at
-the first-exposure boundary. The installation owner then qualifies the selected
-client with useful earlier and later source selections, without runtime markers
-or unrelated edits. Provide the reviewed revision, both delivered versions,
-source commits, original complete receipts, exact projected and packed bytes,
-mode inventories and digests, ordering/retry/variant outcomes, pinned transport
-identities, and publication/readback results. Record the owner's procedure
-revision and naturally useful invocation; installed use is complete only when
-the selected client actually loads the changed copy under its new identity.
+Before actual delivery, require authoritative state custody, selected-route and
+named-cut participation, recovery evidence at the first-exposure boundary, and
+the source-standing record above. No independent review of the source commit is
+required; the record states its review or that there is none. The installation
+owner then qualifies the selected client with useful earlier and later source
+selections, without runtime markers or unrelated edits. Provide the reviewed
+implementation and procedure revision, both delivered versions, source commits,
+the source-standing record, original complete receipts, the retained
+output of each `issue` and `add-variants` operation, exact projected and
+packed bytes, mode inventories and digests, ordering/retry/variant outcomes,
+pinned transport identities, and publication/readback results. Record the
+owner's procedure revision and naturally useful invocation; installed use is
+complete only when the selected client actually loads the changed copy under
+its new identity.
