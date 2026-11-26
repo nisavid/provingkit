@@ -56,7 +56,7 @@
     "skills/choosing-agent-models/scripts/daybreak_records.py": "893cafdb119d1af556d68f21b6e135b62923e8dd1b558b256ac38539c342c187",
     "skills/delegating-cross-agent-work/SKILL.md": "d51d11a49f223ba228d0c4ba0251127dcfc46e4f7232905429b3f70299aeea2d",
     "skills/delegating-cross-agent-work/agents/openai.yaml": "02a299ec3000226ea22d472130a54bb3b6f45d8fbe28304de2359aa38c9fdc83",
-    "skills/delegating-cross-agent-work/evals/evals.json": "0bfe14ce369def29685e72e2dfd36d4d2b41c66657aa059e33adfc98b838896b",
+    "skills/delegating-cross-agent-work/evals/evals.json": "83d455dd85fa0ce6f44aa194e6874fd97de9a25f04ee02d9f53806f3b60ba6b4",
     "skills/delegating-cross-agent-work/evals/fixtures/absent-foreign-executable-native-fallback.md": "4501a205b9a25e7e9085b8f0f21e78b5a4e4bf7d3d5b9028c53e482e067f53bb",
     "skills/delegating-cross-agent-work/evals/fixtures/app-server-relationship.md": "91b53355b365b8c4bfc9c097595cdc1108369c00c668ee69c7477d5af6a36fa3",
     "skills/delegating-cross-agent-work/evals/fixtures/assurance-consumer-minima.md": "3d5d6d4553ba98f0cdf286675afdfcb2f73f2583734c884d2d4a3aa48300dd84",
