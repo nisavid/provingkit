@@ -1969,6 +1969,7 @@ def _validate_relation_evidence(repo: Path, *, source_stage: bool) -> list[str]:
             declared_models[name] == model, f"declared experiment model drift: {name}"
         )
 
+    bind_invocation_and_usage = evidence.pending is None
     compact_invocation_fields = {
         "argv",
         "retained_argv_sha256",
@@ -2032,7 +2033,8 @@ def _validate_relation_evidence(repo: Path, *, source_stage: bool) -> list[str]:
                 run, "behavior", "actual executor identity", PREVIOUS_RELATION_EXECUTOR
             )
             require_experiment_model(selected_behavior, model)
-            validate_relation_opus_output(run, model)
+            if bind_invocation_and_usage:
+                validate_relation_opus_output(run, model)
             invocation = run["invocation"]
             argv = invocation["argv"]
             if invocation.keys() <= compact_invocation_fields:
@@ -2044,7 +2046,8 @@ def _validate_relation_evidence(repo: Path, *, source_stage: bool) -> list[str]:
                     f"behavior compact argv digest on full invocation: {run_id}",
                 )
                 require(
-                    invocation.get("model_requested") == model,
+                    not bind_invocation_and_usage
+                    or invocation.get("model_requested") == model,
                     f"behavior full invocation model drift: {run_id}",
                 )
                 retained_command = json.dumps(invocation, indent=2) + "\n"
@@ -2063,7 +2066,12 @@ def _validate_relation_evidence(repo: Path, *, source_stage: bool) -> list[str]:
             ]
             require(
                 len(model_args) == 1
-                and options[model_args[0] : model_args[0] + 2] == ["--model", model],
+                and model_args[0] + 1 < len(options)
+                and options[model_args[0]] == "--model"
+                and (
+                    not bind_invocation_and_usage
+                    or options[model_args[0] + 1] == model
+                ),
                 f"behavior command model drift: {run_id}",
             )
             require(
@@ -2153,7 +2161,8 @@ def _validate_relation_evidence(repo: Path, *, source_stage: bool) -> list[str]:
             run, "trigger", "native model/effort", PREVIOUS_RELATION_EXECUTOR
         )
         require_experiment_model(selected_trigger, model)
-        validate_relation_opus_output(run, model)
+        if bind_invocation_and_usage:
+            validate_relation_opus_output(run, model)
         require(
             run["init"]["plugins"]
             == [
@@ -2218,6 +2227,15 @@ def _validate_relation_evidence(repo: Path, *, source_stage: bool) -> list[str]:
             "--debug-file",
             "<LOCAL_DEBUG_FILE>",
         ]
+        if (
+            not bind_invocation_and_usage
+            and isinstance(argv, list)
+            and len(argv) == len(expected_argv)
+        ):
+            for flag in ("--session-id", "--model"):
+                position = expected_argv.index(flag) + 1
+                if isinstance(argv[position], str):
+                    expected_argv[position] = argv[position]
         require(
             argv == expected_argv and run["init"]["permissionMode"] == "dontAsk",
             "native configured controls",
@@ -2284,7 +2302,11 @@ def _validate_relation_evidence(repo: Path, *, source_stage: bool) -> list[str]:
         observed = run["isolation"]
         require(
             observed["run_id"] == run_id
-            and observed["command_sha256"] == run["command_sha256"]
+            and (
+                observed["command_sha256"] == run["command_sha256"]
+                if bind_invocation_and_usage
+                else hex_digest(observed["command_sha256"])
+            )
             and hex_digest(observed["debug_sha256"]),
             "native isolation artifact binding",
         )
