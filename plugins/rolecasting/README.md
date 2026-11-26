@@ -142,7 +142,7 @@ From the repository root, run:
 uv run --with PyYAML python scripts/validate_rolecasting.py
 uv run --with PyYAML python -m unittest tests/test_agent_plugins_standard.py
 uv run --with PyYAML python -m unittest tests/test_validate_rolecasting.py
-python3 -m unittest tests/test_rolecasting_eval_corpus.py
+uv run --with PyYAML python -m unittest tests/test_rolecasting_eval_corpus.py
 python3 -m unittest tests/plugins/test_rolecasting_dispatch_evidence.py
 python3 -m unittest tests/plugins/test_rolecasting_native_codex.py
 python3 -m unittest tests/plugins/test_rolecasting_native_tree.py

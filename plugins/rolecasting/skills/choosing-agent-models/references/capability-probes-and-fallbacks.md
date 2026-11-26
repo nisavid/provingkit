@@ -24,6 +24,8 @@ the branch from the work and accepted assignment, not labels such as "follow-up"
 or "handoff" or the presence of a message field. Preservation never waives an
 applicable task requirement, security classification, account binding, or
 invocation authority; unresolved requirements keep their existing disposition.
+Those gates apply to the selection resolved under
+[appointment configuration and scoped overrides](appointment-and-scoped-overrides.md).
 
 ## Prove An Exact Pair
 

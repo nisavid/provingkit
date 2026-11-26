@@ -25,6 +25,14 @@ enlarge authority. When required authority cannot be verified, return
 `NEEDS_CONTEXT`. Honor actual harness refusals and use the existing escalation
 path; recovered authority does not authorize bypassing enforcement.
 
+## Scoped-override handoffs
+
+A handoff of work under a scoped override carries its
+[override record](../../choosing-agent-models/references/appointment-and-scoped-overrides.md#retain-the-override-record),
+any pending application or restoration, and the accountable owner in the
+handoff's existing task records or a referenced artifact. The frozen invocation
+plan and the selection record gain no fields for them.
+
 ## Independent dimensions
 
 Every selected execution freezes these independent dimensions:

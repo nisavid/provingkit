@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
-  "candidate_revision": "55925def00b296584f009cd3b8551d3502916815",
+  "candidate_revision": "b38f5bfb28fbce6f48e660b427c905e293abb9aa",
   "snapshot": {
-    "candidate_revision": "55925def00b296584f009cd3b8551d3502916815",
+    "candidate_revision": "b38f5bfb28fbce6f48e660b427c905e293abb9aa",
     "inputs": {
       "evals/comparative-review-lifecycle-matrix.json": {
         "mode": "100644",
@@ -14,7 +14,7 @@
       },
       "plugins/rolecasting/content-lock.json": {
         "mode": "100644",
-        "sha256": "dd53194bd0176450d50557eb79ce9426aea94afaaded1de0afd94a44fd70fed5"
+        "sha256": "b4fc40f70ffca5139023e97f714732d53910746f00e9883f0806216a6038323e"
       },
       "plugins/rolecasting/evals/delivery.json": {
         "mode": "100644",
@@ -22,15 +22,19 @@
       },
       "plugins/rolecasting/skills/choosing-agent-models/SKILL.md": {
         "mode": "100644",
-        "sha256": "ff34b3ae016fd988eff25d9375f6fb47bce9ddd636cfd1319a2d3610184599fb"
+        "sha256": "05e09289e097ece5a1c503ee354be792e4acf4622f15fea326530c1fd115cf59"
       },
       "plugins/rolecasting/skills/choosing-agent-models/agents/openai.yaml": {
         "mode": "100644",
         "sha256": "e1a582079fe7cb2026f9fcbe1963f65c8c04622e8d9d2354b2e2242ba9f2d7c8"
       },
+      "plugins/rolecasting/skills/choosing-agent-models/references/appointment-and-scoped-overrides.md": {
+        "mode": "100644",
+        "sha256": "35a59b1d6c292e358404f2a1e02c0fce6c18f92b9d1bb81c79e433f304c4548e"
+      },
       "plugins/rolecasting/skills/choosing-agent-models/references/capability-probes-and-fallbacks.md": {
         "mode": "100644",
-        "sha256": "0405a7a39f43b486dedde9027cea69c5dc7d2c0e902aa0f887baf3721947b1cb"
+        "sha256": "a46e83ac01135695c78a079f5f1ae58fb5b32dbc7bc4e5545d6dcdec3670e777"
       },
       "plugins/rolecasting/skills/choosing-agent-models/references/classifying-security-work.md": {
         "mode": "100644",
@@ -46,7 +50,7 @@
       },
       "plugins/rolecasting/skills/choosing-agent-models/references/general-tiers.md": {
         "mode": "100644",
-        "sha256": "dc5e9b1ecf7c3ecdb89ae7ddbf345669cc9433b9a785b5dc8280ec9380fdf9eb"
+        "sha256": "4c122943ccc57e35c7eb70446a7c24767c13c460d11a077b81ef0cf9cc45cd3f"
       },
       "plugins/rolecasting/skills/choosing-agent-models/references/jev-suitability.md": {
         "mode": "100644",
@@ -74,7 +78,7 @@
       },
       "plugins/rolecasting/skills/delegating-cross-agent-work/evals/evals.json": {
         "mode": "100644",
-        "sha256": "d299e652706a98e20df442e6f583db1213457c56798d4c84765e834a816e81e2"
+        "sha256": "0c9ab8825c34c16dd979ce5c48a6b1565429830f8a219dab12f358b78905b2c8"
       },
       "plugins/rolecasting/skills/delegating-cross-agent-work/evals/fixtures/absent-foreign-executable-native-fallback.md": {
         "mode": "100644",
@@ -172,6 +176,10 @@
         "mode": "100644",
         "sha256": "b724db8916b7ba20c040440d1277070ded1820abcaa972d4afc75156b00a34cf"
       },
+      "plugins/rolecasting/skills/delegating-cross-agent-work/evals/fixtures/scoped-override-handoffs.md": {
+        "mode": "100644",
+        "sha256": "2778b01b215c609a30dfac14b25d14d1196449d9cb820194c8d0362888f114f5"
+      },
       "plugins/rolecasting/skills/delegating-cross-agent-work/evals/fixtures/user-owned-peer-consent.md": {
         "mode": "100644",
         "sha256": "a2de7f24651f2f88be1114fe687326caeeacf3a107009b489fbd63c24f609eca"
@@ -182,7 +190,7 @@
       },
       "plugins/rolecasting/skills/delegating-cross-agent-work/evals/trigger-evals.json": {
         "mode": "100644",
-        "sha256": "3bfe27ce9a41b329e2983484a7d5e44d8742f8d146607f9347cf65ea174a5384"
+        "sha256": "481ee70254cda4bf52d635b363604b09eff6fc89a7ebb08ff4f65b899b1c5819"
       },
       "plugins/rolecasting/skills/delegating-cross-agent-work/references/dispatch-evidence.md": {
         "mode": "100644",
@@ -194,7 +202,7 @@
       },
       "plugins/rolecasting/skills/delegating-cross-agent-work/references/invocation-topology-receipt.md": {
         "mode": "100644",
-        "sha256": "b1f2970a61350d34684487a97fb78acfe2852c9c8ebce6241cf153870f65c2cd"
+        "sha256": "57d901964ba3a6a1c76c6cc0977201230b96453b5d3d512b5ee61af69b79fa8e"
       },
       "plugins/rolecasting/skills/delegating-cross-agent-work/references/native-codex-subagents.md": {
         "mode": "100644",
@@ -246,7 +254,7 @@
       },
       "release/provingkit/definition-v1.json": {
         "mode": "100644",
-        "sha256": "ba5dcdc95f07bbe3185116bcc006c3030ed1f627ea0f0088273af5034fa1c9ee"
+        "sha256": "ec4d9a99807b4c2aa3a25caa1689630dca946244f4b141c75cb89ecc19bc126b"
       },
       "scripts/behavior_eval_corpora.py": {
         "mode": "100644",
@@ -268,6 +276,7 @@
         "evals/control-plane-matrix.json",
         "plugins/rolecasting/skills/choosing-agent-models/SKILL.md",
         "plugins/rolecasting/skills/choosing-agent-models/agents/openai.yaml",
+        "plugins/rolecasting/skills/choosing-agent-models/references/appointment-and-scoped-overrides.md",
         "plugins/rolecasting/skills/choosing-agent-models/references/capability-probes-and-fallbacks.md",
         "plugins/rolecasting/skills/choosing-agent-models/references/classifying-security-work.md",
         "plugins/rolecasting/skills/choosing-agent-models/references/daybreak-routing.md",
@@ -303,6 +312,7 @@
         "plugins/rolecasting/skills/delegating-cross-agent-work/evals/fixtures/planned-surface-pairs.md",
         "plugins/rolecasting/skills/delegating-cross-agent-work/evals/fixtures/same-shape-batching.md",
         "plugins/rolecasting/skills/delegating-cross-agent-work/evals/fixtures/scarce-specialist-decision-handoff.md",
+        "plugins/rolecasting/skills/delegating-cross-agent-work/evals/fixtures/scoped-override-handoffs.md",
         "plugins/rolecasting/skills/delegating-cross-agent-work/evals/fixtures/user-owned-peer-consent.md",
         "plugins/rolecasting/skills/delegating-cross-agent-work/evals/fixtures/user-owned-task-authority.md",
         "plugins/rolecasting/skills/delegating-cross-agent-work/evals/trigger-evals.json",
@@ -391,6 +401,10 @@
           "source": "plugins/rolecasting/skills/delegating-cross-agent-work/evals/evals.json"
         },
         {
+          "pointer": "/evals/26",
+          "source": "plugins/rolecasting/skills/delegating-cross-agent-work/evals/evals.json"
+        },
+        {
           "pointer": "/evals/3",
           "source": "plugins/rolecasting/skills/delegating-cross-agent-work/evals/evals.json"
         },
@@ -437,6 +451,14 @@
         {
           "pointer": "/4",
           "source": "plugins/rolecasting/skills/delegating-cross-agent-work/evals/trigger-evals.json"
+        },
+        {
+          "pointer": "/5",
+          "source": "plugins/rolecasting/skills/delegating-cross-agent-work/evals/trigger-evals.json"
+        },
+        {
+          "pointer": "/6",
+          "source": "plugins/rolecasting/skills/delegating-cross-agent-work/evals/trigger-evals.json"
         }
       ],
       "closure_complete": true,
@@ -459,10 +481,10 @@
     }
   },
   "kind": "waiver",
-  "reason": "Operator-issued one-time source integration exception for PR #1120’s direct Astra/Sol 6.2 version update. The historical eval receipt is stale for the reviewed source.",
+  "reason": "On 2026-11-25, the maintainer answered \"Waive for these, refresh once\". The decision waives the stale-receipt check for rolecasting/choosing-agent-models and rolecasting/delegating-cross-agent-work on #945, #1168, the #469 Daybreak caller fix, and the first-wave casting change (positions 1 and 7). Refresh both receipts once after the last of those changes lands and before the next release.",
   "operator_decision": {
     "issued_by": "operator",
-    "decision_sha256": "26089a4b72df56c47239bfaefb0277711433cfed16aaf9e4188bc3c2fecfabc0"
+    "decision_sha256": "614d372444044d0898f2e214079648cf9661bc42dba469da206d3bd1a44a0bef"
   },
   "expiry": {
     "event": "next-release",
