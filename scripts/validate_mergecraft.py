@@ -1070,9 +1070,18 @@ def validate_markdown_authoring_projections(root: Path) -> None:
         )
 
 
-def validate_markdown_authoring_eval_corpus(root: Path) -> None:
-    prefix = "skills/writing-github-issue-and-pr-markdown/evals"
-    delivery = load_json(root, f"{prefix}/delivery.json")
+def validate_markdown_authoring_eval_corpus(
+    root: Path, *, retained: EvaluationEvidence | None = None
+) -> list[dict]:
+    skill_root = root / "skills/writing-github-issue-and-pr-markdown"
+
+    def load_input(name: str) -> Any:
+        relative = f"evals/{name}"
+        if retained is not None:
+            return retained.source_json(relative)
+        return load_json(skill_root, relative)
+
+    delivery = load_input("delivery.json")
     require(
         isinstance(delivery, dict)
         and set(delivery) == {"schema_version", "executor", "grader"}
@@ -1107,7 +1116,7 @@ def validate_markdown_authoring_eval_corpus(root: Path) -> None:
         "Markdown authoring eval grader boundary drift",
     )
 
-    policy = load_json(root, f"{prefix}/policy.json")
+    policy = load_input("policy.json")
     require(
         isinstance(policy, dict)
         and set(policy)
@@ -1130,7 +1139,7 @@ def validate_markdown_authoring_eval_corpus(root: Path) -> None:
         "Markdown authoring eval pass policy drift",
     )
 
-    document = load_json(root, f"{prefix}/evals.json")
+    document = load_input("evals.json")
     require(
         isinstance(document, dict)
         and set(document) == {"skill_name", "evals"}
@@ -1172,9 +1181,10 @@ def validate_markdown_authoring_eval_corpus(root: Path) -> None:
             item["fixture_paths"] == [fixture_relative],
             f"Markdown authoring eval fixture binding drift: {name}",
         )
-        fixture = read(
-            root,
-            f"skills/writing-github-issue-and-pr-markdown/{fixture_relative}",
+        fixture = (
+            retained.source(fixture_relative)
+            if retained is not None
+            else read(skill_root, fixture_relative)
         )
         lowered = fixture.lower()
         for marker in (
@@ -1216,7 +1226,7 @@ def validate_markdown_authoring_eval_corpus(root: Path) -> None:
         "Markdown authoring eval name coverage drift",
     )
 
-    coverage = load_json(root, f"{prefix}/coverage.json")
+    coverage = load_input("coverage.json")
     require(
         isinstance(coverage, dict)
         and set(coverage) == {"schema_version", "cases"}
@@ -1257,7 +1267,7 @@ def validate_markdown_authoring_eval_corpus(root: Path) -> None:
         "Markdown authoring seven-field or feature coverage drift",
     )
 
-    trigger_evals = load_json(root, f"{prefix}/trigger-evals.json")
+    trigger_evals = load_input("trigger-evals.json")
     require(
         isinstance(trigger_evals, list)
         and len(trigger_evals) == 11
@@ -1288,7 +1298,7 @@ def validate_markdown_authoring_eval_corpus(root: Path) -> None:
         )
         trigger_queries.add(item["query"])
 
-    fixture_root = root / prefix / "fixtures"
+    fixture_root = skill_root / "evals/fixtures"
     actual_fixtures = {
         path.name
         for path in fixture_root.iterdir()
@@ -1298,6 +1308,7 @@ def validate_markdown_authoring_eval_corpus(root: Path) -> None:
         actual_fixtures == referenced_fixtures,
         "Markdown authoring raw fixture inventory drift",
     )
+    return evals
 
 
 def evidence_text_digest(text: str) -> str:
@@ -1316,6 +1327,10 @@ class EvaluationEvidence:
         self.root = root
         self.folder = folder
         self.executor = executor
+        directory = root / folder
+        self.suite = (
+            directory.parent.name if directory.name == "evals" else directory.name
+        )
         self.pending: dict | None = None
         self.retained_inputs: dict[str, str] = {}
         self.mismatches: set[str] = set()
@@ -1352,13 +1367,13 @@ class EvaluationEvidence:
             for name in ("experiment.json", "grading.json")
         }
         if self.pending is not None:
-            require(
-                self.pending["retained_artifact_sha256"]
-                == {
+            self.check_digest_map(
+                self.pending["retained_artifact_sha256"],
+                {
                     name: hashlib.sha256(content).hexdigest()
                     for name, content in artifacts.items()
                 },
-                "release-pending retained artifact digest drift",
+                "retained artifact digest drift",
             )
         experiment, grading = (
             strict_json(content.decode("utf-8"), f"{self.folder}/{name}")
@@ -1376,6 +1391,43 @@ class EvaluationEvidence:
         if relative in self.retained_inputs:
             return self.retained_inputs[relative]
         return read_bytes(self.root, relative).decode("utf-8")
+
+    def source_json(self, relative: str) -> Any:
+        try:
+            return strict_json(self.source(relative), relative)
+        except json.JSONDecodeError as error:
+            raise ContractError(
+                f"invalid retained input JSON: {relative}: {error}"
+            ) from error
+
+    def check_digest_map(
+        self, recorded: Any, actual: dict[str, str], reason: str
+    ) -> None:
+        if recorded == actual:
+            return
+        message = f"{self.suite} release-pending {reason}"
+        require(
+            isinstance(recorded, dict), f"{message} (expected a path-to-digest object)"
+        )
+        expected_paths, recorded_paths = actual.keys(), recorded.keys()
+        differences = (
+            ("missing", expected_paths - recorded_paths),
+            ("extra", recorded_paths - expected_paths),
+            (
+                "changed",
+                {
+                    path
+                    for path in expected_paths & recorded_paths
+                    if actual[path] != recorded[path]
+                },
+            ),
+        )
+        paths = ", ".join(
+            f"{kind} [{', '.join(sorted(names))}]"
+            for kind, names in differences
+            if names
+        )
+        fail(f"{message} ({paths})")
 
     def check_sources(
         self,
@@ -1398,16 +1450,13 @@ class EvaluationEvidence:
         if self.pending is None:
             require(recorded == current, message)
             return
-        require(
-            self.pending["current_source_sha256"] == current,
-            "release-pending current input digest drift",
+        self.check_digest_map(
+            self.pending["current_source_sha256"], current, "current input digest drift"
         )
-        require(
-            recorded
-            == {
-                path: evidence_text_digest(self.source(path)) for path in retained_paths
-            },
-            f"release-pending retained {message}",
+        self.check_digest_map(
+            recorded,
+            {path: evidence_text_digest(self.source(path)) for path in retained_paths},
+            "retained input digest drift",
         )
         for path, content in self.retained_inputs.items():
             require(
@@ -1453,14 +1502,12 @@ class EvaluationEvidence:
     def pending_diagnostics(self) -> list[str]:
         if self.pending is None:
             return []
-        folder = self.root / self.folder
-        suite = folder.parent.name if folder.name == "evals" else folder.name
         require(
             bool(self.mismatches),
-            f"release-pending entry has no freshness mismatch: {suite}",
+            f"release-pending entry has no freshness mismatch: {self.suite}",
         )
         return [
-            f"{suite} release-pending: {mismatch}"
+            f"{self.suite} release-pending: {mismatch}"
             for mismatch in sorted(self.mismatches)
         ]
 
@@ -1475,14 +1522,9 @@ def validate_markdown_authoring_evidence(
     )
     experiment, grading = evidence.artifacts()
     current_corpus = load_json(root, f"{skill}/evals/evals.json")["evals"]
-    retained = strict_json(
-        evidence.source("evals/evals.json"), "retained Markdown corpus"
-    )
-    require(
-        isinstance(retained, dict) and isinstance(retained.get("evals"), list),
-        "Markdown authoring retained corpus shape drift",
-    )
-    corpus = retained["evals"]
+    corpus = current_corpus
+    if evidence.pending is not None:
+        corpus = validate_markdown_authoring_eval_corpus(root, retained=evidence)
 
     def source_paths(cases):
         return {
@@ -1498,27 +1540,11 @@ def validate_markdown_authoring_evidence(
     require(
         len(corpus) == len(current_corpus)
         and all(
-            isinstance(case, dict)
-            and all(
-                case.get(field) == current[field]
+            all(
+                case[field] == current[field]
                 for field in ("id", "name", "fixture_paths")
             )
-            and isinstance(case.get("prompt"), str)
-            and case["prompt"]
-            and isinstance(case.get("expectations"), list)
             and len(case["expectations"]) == len(current["expectations"])
-            and all(
-                isinstance(item, dict)
-                and set(item) == {"id", "text", "severity"}
-                and isinstance(item["id"], str)
-                and item["id"]
-                and isinstance(item["text"], str)
-                and item["text"]
-                and item["severity"] in ("safety", "quality")
-                for item in case["expectations"]
-            )
-            and len({item["id"] for item in case["expectations"]})
-            == len(case["expectations"])
             for case, current in zip(corpus, current_corpus)
         ),
         "Markdown authoring retained case coverage drift",
@@ -1819,12 +1845,12 @@ def _validate_relation_evidence(repo: Path, *, source_stage: bool) -> list[str]:
     current_corpus = load_repository_json(repo, folder / "evals.json")["evals"]
     current_triggers = load_repository_json(repo, folder / "trigger-evals.json")
     policy = load_repository_json(repo, folder / "policy.json")
-    corpus = strict_json(
-        evidence.source(f"{folder}/evals.json"), "retained relation corpus"
-    )["evals"]
-    triggers = strict_json(
-        evidence.source(f"{folder}/trigger-evals.json"), "retained relation triggers"
-    )
+    corpus, triggers = current_corpus, current_triggers
+    if evidence.pending is not None:
+        validate_raw_skill_eval_isolation(repo, retained_relations=evidence)
+        corpus = evidence.source_json(f"{folder}/evals.json")["evals"]
+        triggers = evidence.source_json(f"{folder}/trigger-evals.json")
+        validate_trigger_eval_cases(triggers, "maintaining-issue-pr-relations")
     cases = {c["id"]: c for c in corpus}
     require(set(cases) == set(range(17)) and len(corpus) == 17, "case coverage")
     require(
@@ -1832,14 +1858,7 @@ def _validate_relation_evidence(repo: Path, *, source_stage: bool) -> list[str]:
         "repetition/trigger coverage",
     )
     require(
-        all(
-            isinstance(case, dict) and set(case) == {"query", "should_trigger"}
-            and isinstance(case["query"], str) and case["query"]
-            and type(case["should_trigger"]) is bool
-            for case in triggers
-        )
-        and len({case["query"] for case in triggers}) == 13
-        and sum(case["should_trigger"] for case in triggers)
+        sum(case["should_trigger"] is True for case in triggers)
         == sum(case["should_trigger"] is True for case in current_triggers),
         "retained trigger coverage",
     )
@@ -1909,6 +1928,24 @@ def _validate_relation_evidence(repo: Path, *, source_stage: bool) -> list[str]:
         "behavior case selection",
     )
     selected_trigger = experiment["selection"]["trigger_experiment"]
+    selected_experiments = {*behavior_by_case.values(), selected_trigger}
+    declared_models = {}
+    for record in experiment["experiments"]:
+        name = record["id"]
+        if name in selected_experiments:
+            require(
+                name not in declared_models, f"duplicate selected experiment: {name}"
+            )
+            declared_models[name] = record.get("model")
+    require(
+        declared_models.keys() == selected_experiments, "missing selected experiment"
+    )
+
+    def require_experiment_model(name: str, model: str) -> None:
+        require(
+            declared_models[name] == model, f"declared experiment model drift: {name}"
+        )
+
     selected_ids = set()
     expected_thresholds = []
     for case_id, case in cases.items():
@@ -1962,8 +1999,34 @@ def _validate_relation_evidence(repo: Path, *, source_stage: bool) -> list[str]:
                 and not run["permission_denials"],
                 "executor failure",
             )
-            evidence.check_executor(
+            model = evidence.check_executor(
                 run, "behavior", "actual executor identity", PREVIOUS_RELATION_EXECUTOR
+            )
+            require_experiment_model(selected_behavior, model)
+            invocation = run["invocation"]
+            argv = invocation["argv"]
+            if "retained_argv_sha256" in invocation:
+                retained_command = json.dumps(argv, separators=(",", ":"))
+                retained_digest = invocation["retained_argv_sha256"]
+            else:
+                # The case refresh retained the full invocation, including argv.
+                retained_command = json.dumps(invocation, indent=2) + "\n"
+                retained_digest = run.get("command_sha256")
+            require(
+                isinstance(argv, list)
+                and all(isinstance(arg, str) for arg in argv)
+                and digest(retained_command) == retained_digest,
+                f"behavior retained argv digest drift: {run_id}",
+            )
+            model_args = [
+                index
+                for index, arg in enumerate(argv)
+                if arg == "--model" or arg.startswith("--model=")
+            ]
+            require(
+                len(model_args) == 1
+                and argv[model_args[0] : model_args[0] + 2] == ["--model", model],
+                f"behavior command model drift: {run_id}",
             )
             require(
                 all(
@@ -2051,6 +2114,7 @@ def _validate_relation_evidence(repo: Path, *, source_stage: bool) -> list[str]:
         model = evidence.check_executor(
             run, "trigger", "native model/effort", PREVIOUS_RELATION_EXECUTOR
         )
+        require_experiment_model(selected_trigger, model)
         require(
             run["init"]["plugins"]
             == [
@@ -4129,10 +4193,20 @@ def validate_merge_eval_isolation(repo_root: Path) -> None:
     )
 
 
-def validate_raw_skill_eval_isolation(repo_root: Path) -> None:
-    for skill, fixture_names in RAW_SKILL_EVAL_FIXTURES.items():
+def validate_raw_skill_eval_isolation(
+    repo_root: Path, *, retained_relations: EvaluationEvidence | None = None
+) -> None:
+    fixture_sets = RAW_SKILL_EVAL_FIXTURES
+    if retained_relations is not None:
+        skill = "maintaining-issue-pr-relations"
+        fixture_sets = {skill: fixture_sets[skill]}
+    for skill, fixture_names in fixture_sets.items():
         relative = EVAL_RELATIVE / f"skills/{skill}/evals.json"
-        document = load_repository_json(repo_root, relative)
+        document = (
+            retained_relations.source_json(relative.as_posix())
+            if retained_relations is not None
+            else load_repository_json(repo_root, relative)
+        )
         require(
             isinstance(document, dict)
             and set(document) == {"skill_name", "evals"}
@@ -4196,8 +4270,11 @@ def validate_raw_skill_eval_isolation(repo_root: Path) -> None:
                 ),
                 f"raw eval prose drift: {skill}",
             )
-            fixture_text = read_repository_file(
-                repo_root, EVAL_RELATIVE / f"skills/{fixture}"
+            fixture_path = EVAL_RELATIVE / f"skills/{fixture}"
+            fixture_text = (
+                retained_relations.source(fixture_path.as_posix())
+                if retained_relations is not None
+                else read_repository_file(repo_root, fixture_path)
             )
             fixture_body = fixture_text.lower()
             if (
@@ -4242,6 +4319,29 @@ def validate_raw_skill_eval_isolation(repo_root: Path) -> None:
                 )
 
 
+def validate_trigger_eval_cases(document: Any, skill: str) -> dict[str, bool]:
+    require(
+        isinstance(document, list) and document,
+        f"trigger eval coverage drift: {skill}",
+    )
+    observed: dict[str, bool] = {}
+    for item in document:
+        require(
+            isinstance(item, dict)
+            and set(item) == {"query", "should_trigger"}
+            and isinstance(item["query"], str)
+            and item["query"]
+            and type(item["should_trigger"]) is bool
+            and item["query"] not in observed,
+            f"trigger eval schema drift: {skill}",
+        )
+        observed[item["query"]] = item["should_trigger"]
+    require(
+        {True, False} <= set(observed.values()), f"trigger eval polarity drift: {skill}"
+    )
+    return observed
+
+
 def validate_writer_publisher_trigger_evals(repo_root: Path) -> None:
     trigger_maps: dict[str, dict[str, bool]] = {}
     for skill in (
@@ -4250,28 +4350,9 @@ def validate_writer_publisher_trigger_evals(repo_root: Path) -> None:
         "publishing-reviewable-prs",
     ):
         relative = EVAL_RELATIVE / f"skills/{skill}/trigger-evals.json"
-        document = load_repository_json(repo_root, relative)
-        require(
-            isinstance(document, list) and document,
-            f"trigger eval coverage drift: {skill}",
+        trigger_maps[skill] = validate_trigger_eval_cases(
+            load_repository_json(repo_root, relative), skill
         )
-        observed: dict[str, bool] = {}
-        for item in document:
-            require(
-                isinstance(item, dict)
-                and set(item) == {"query", "should_trigger"}
-                and isinstance(item["query"], str)
-                and item["query"]
-                and type(item["should_trigger"]) is bool
-                and item["query"] not in observed,
-                f"trigger eval schema drift: {skill}",
-            )
-            observed[item["query"]] = item["should_trigger"]
-        require(
-            {True, False} <= set(observed.values()),
-            f"trigger eval polarity drift: {skill}",
-        )
-        trigger_maps[skill] = observed
 
     writer = trigger_maps["writing-reviewable-pr-descriptions"]
     publisher = trigger_maps["publishing-reviewable-prs"]

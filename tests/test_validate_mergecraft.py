@@ -113,7 +113,7 @@ class ValidateMergecraftTests(unittest.TestCase):
         shutil.copy2(REPO_ROOT / CONTENT_LOCK, self.repo / CONTENT_LOCK)
         self.plugin = self.repo / PLUGIN
         self.retirement_ledger = self.repo / RETIREMENT_LEDGER
-        self.construct_fresh_relation_evidence()
+        self.construct_relation_evidence()
         VALIDATE_MERGECRAFT.write_content_lock(self.repo, self.plugin)
 
     def tearDown(self) -> None:
@@ -128,31 +128,48 @@ class ValidateMergecraftTests(unittest.TestCase):
             timeout=30,
         )
 
-    def construct_fresh_relation_evidence(
-        self, *, keep_old_triggers: bool = False
+    def construct_relation_evidence(
+        self,
+        *,
+        behavior_model: str = "claude-opus-5-5",
+        trigger_model: str = "claude-opus-5-5",
     ) -> None:
-        # Synthesize a passing fixture for strict-mode tests without running an executor.
+        # Construct both selections without depending on the checked-in executor pins.
         folder = self.repo / RELATION_EVIDENCE
         (folder / "release-pending.json").unlink(missing_ok=True)
         path = folder / "experiment.json"
         experiment = json.loads(path.read_bytes())
         selected = experiment["selection"]
+        models = dict.fromkeys(selected["behavior_by_case"].values(), behavior_model)
+        models[selected["trigger_experiment"]] = trigger_model
+        for record in experiment["experiments"]:
+            if record["id"] in models:
+                record["model"] = models[record["id"]]
         for run in experiment["behavior_runs"] + experiment["native_and_trigger_runs"]:
             group = run["id"].split("/")[0]
-            if group == selected["trigger_experiment"]:
-                if keep_old_triggers:
-                    continue
-                invocation = run["invocation"]
-                argv = invocation["argv"]
-                argv[argv.index("--model") + 1] = "claude-opus-5-5"
-                invocation["retained_argv_sha256"] = hashlib.sha256(
-                    json.dumps(argv, separators=(",", ":")).encode("utf-8")
-                ).hexdigest()
-            elif group != selected["behavior_by_case"].get(str(run["case_id"])):
+            if group != selected["trigger_experiment"] and group != selected[
+                "behavior_by_case"
+            ].get(str(run["case_id"])):
                 continue
-            run["model_requested"] = run["init"]["model"] = "claude-opus-5-5"
-            run["assistant_models"] = ["claude-opus-5-5"]
+            model = models[group]
+            self.set_relation_command_model(run, model)
+            run["model_requested"] = run["init"]["model"] = model
+            run["assistant_models"] = [model]
         path.write_text(json.dumps(experiment), encoding="utf-8")
+
+    @staticmethod
+    def set_relation_command_model(run: dict, model: str) -> None:
+        invocation = run["invocation"]
+        argv = invocation["argv"]
+        argv[argv.index("--model") + 1] = model
+        if "retained_argv_sha256" in invocation:
+            invocation["retained_argv_sha256"] = hashlib.sha256(
+                json.dumps(argv, separators=(",", ":")).encode("utf-8")
+            ).hexdigest()
+        else:
+            run["command_sha256"] = hashlib.sha256(
+                (json.dumps(invocation, indent=2) + "\n").encode("utf-8")
+            ).hexdigest()
 
     def run_candidate_runtime_probe(self) -> subprocess.CompletedProcess[str]:
         return subprocess.run(
@@ -673,8 +690,9 @@ class ValidateMergecraftTests(unittest.TestCase):
         self.assertIn("relation evaluation evidence", result.stderr)
 
     def test_bound_relation_evidence_is_pending_only_at_source_stage(self) -> None:
-        folder = self.repo / RELATION_EVIDENCE
-        shutil.copy2(REPO_ROOT / RELATION_EVIDENCE / "experiment.json", folder)
+        self.construct_relation_evidence(
+            behavior_model="claude-opus-5", trigger_model="claude-opus-5"
+        )
         self.write_pending_evidence(RELATION_EVIDENCE, "claude-opus-5-5")
 
         result = self.run_validator("--source-stage", "--write-content-lock")
@@ -718,13 +736,14 @@ class ValidateMergecraftTests(unittest.TestCase):
         path.write_text(json.dumps(pending), encoding="utf-8")
         return path
 
-    def assert_pending_rejected(self, expected: str) -> None:
+    def assert_pending_rejected(self, *expected: str) -> None:
         lock = self.repo / CONTENT_LOCK
         before = lock.read_bytes()
         for flags in (("--source-stage",), ("--source-stage", "--write-content-lock")):
             result = self.run_validator(*flags)
             self.assertNotEqual(result.returncode, 0, result.stdout)
-            self.assertIn(expected, result.stderr)
+            for diagnostic in expected:
+                self.assertIn(diagnostic, result.stderr)
             self.assertNotIn("Traceback", result.stderr)
         self.assertEqual(lock.read_bytes(), before)
 
@@ -738,9 +757,7 @@ class ValidateMergecraftTests(unittest.TestCase):
     def test_pending_relation_triggers_still_require_the_strict_executor_pin(
         self,
     ) -> None:
-        folder = self.repo / RELATION_EVIDENCE
-        shutil.copy2(REPO_ROOT / RELATION_EVIDENCE / "experiment.json", folder)
-        self.construct_fresh_relation_evidence(keep_old_triggers=True)
+        self.construct_relation_evidence(trigger_model="claude-opus-5")
         self.write_pending_evidence(RELATION_EVIDENCE, "claude-opus-5-5")
         source = self.run_validator("--source-stage")
         self.assertEqual(source.returncode, 0, source.stderr)
@@ -749,6 +766,84 @@ class ValidateMergecraftTests(unittest.TestCase):
         )
         self.assertNotIn("behavior executor", source.stdout)
         self.assert_rejected("native model/effort")
+
+    def test_relation_behavior_command_model_is_bound_to_the_executor(self) -> None:
+        path = self.repo / RELATION_EVIDENCE / "experiment.json"
+        for pending in (False, True):
+            self.construct_relation_evidence(
+                trigger_model="claude-opus-5" if pending else "claude-opus-5-5"
+            )
+            original = json.loads(path.read_bytes())
+            selection = original["selection"]
+            for case, diagnostic in (
+                (0, "behavior command model"),
+                (0, "behavior retained argv digest"),
+                (11, "behavior retained argv digest"),
+            ):
+                group = selection["behavior_by_case"][str(case)]
+                behavior_id = f"{group}/case-{case:02d}-with-skill-1"
+                with self.subTest(pending=pending, case=case, diagnostic=diagnostic):
+                    experiment = copy.deepcopy(original)
+                    run = next(
+                        row
+                        for row in experiment["behavior_runs"]
+                        if row["id"] == behavior_id
+                    )
+                    if diagnostic == "behavior command model":
+                        self.set_relation_command_model(run, "claude-opus-5")
+                    else:
+                        argv = run["invocation"]["argv"]
+                        argv[argv.index("--model") + 1] = "claude-opus-5"
+                    path.write_text(json.dumps(experiment), encoding="utf-8")
+                    if pending:
+                        self.write_pending_evidence(
+                            RELATION_EVIDENCE, "claude-opus-5-5"
+                        )
+                        self.assert_pending_rejected(diagnostic)
+                    else:
+                        self.assert_rejected(diagnostic)
+
+    def test_selected_relation_runs_require_the_declared_experiment_model(self) -> None:
+        path = self.repo / RELATION_EVIDENCE / "experiment.json"
+        for pending in (False, True):
+            trigger_model = "claude-opus-5" if pending else "claude-opus-5-5"
+            self.construct_relation_evidence(trigger_model=trigger_model)
+            original = json.loads(path.read_bytes())
+            selection = original["selection"]
+            for name, wrong_model in (
+                (selection["behavior_by_case"]["0"], "claude-opus-5"),
+                (
+                    selection["trigger_experiment"],
+                    "claude-opus-5-5" if pending else "claude-opus-5",
+                ),
+            ):
+                with self.subTest(pending=pending, experiment=name):
+                    experiment = copy.deepcopy(original)
+                    if pending and name != selection["trigger_experiment"]:
+                        run = next(
+                            row
+                            for row in experiment["behavior_runs"]
+                            if row["id"] == f"{name}/case-00-with-skill-1"
+                        )
+                        self.set_relation_command_model(run, wrong_model)
+                        run["model_requested"] = run["init"]["model"] = wrong_model
+                        run["assistant_models"] = [wrong_model]
+                    else:
+                        record = next(
+                            row
+                            for row in experiment["experiments"]
+                            if row["id"] == name
+                        )
+                        record["model"] = wrong_model
+                    path.write_text(json.dumps(experiment), encoding="utf-8")
+                    diagnostic = f"declared experiment model drift: {name}"
+                    if pending:
+                        self.write_pending_evidence(
+                            RELATION_EVIDENCE, "claude-opus-5-5"
+                        )
+                        self.assert_pending_rejected(diagnostic)
+                    else:
+                        self.assert_rejected(diagnostic)
 
     def test_relation_pending_binds_corpus_and_caller_inventory_changes(self) -> None:
         folder = self.repo / RELATION_EVIDENCE
@@ -776,8 +871,9 @@ class ValidateMergecraftTests(unittest.TestCase):
 
     def test_relation_pending_does_not_cover_rebound_corrupt_records(self) -> None:
         folder = self.repo / RELATION_EVIDENCE
-        for name in ("experiment.json", "grading.json"):
-            shutil.copy2(REPO_ROOT / RELATION_EVIDENCE / name, folder)
+        self.construct_relation_evidence(
+            behavior_model="claude-opus-5", trigger_model="claude-opus-5"
+        )
         original_experiment = json.loads((folder / "experiment.json").read_bytes())
         original_grading = json.loads((folder / "grading.json").read_bytes())
         for change, diagnostic in (
@@ -810,12 +906,7 @@ class ValidateMergecraftTests(unittest.TestCase):
                     if change == "altered trigger run":
                         trigger["response"] = "altered retained response"
                     else:
-                        invocation = trigger["invocation"]
-                        argv = invocation["argv"]
-                        argv[argv.index("--model") + 1] = "claude-opus-5-5"
-                        invocation["retained_argv_sha256"] = hashlib.sha256(
-                            json.dumps(argv, separators=(",", ":")).encode("utf-8")
-                        ).hexdigest()
+                        self.set_relation_command_model(trigger, "claude-opus-5-5")
                 elif change == "failed grade":
                     grade = next(
                         row for row in grading["runs"] if row["run_id"] == behavior_id
@@ -837,12 +928,15 @@ class ValidateMergecraftTests(unittest.TestCase):
                 self.assert_pending_rejected(diagnostic)
 
     def test_pending_binding_rejects_stale_fabricated_and_widened_values(self) -> None:
-        folder = self.repo / RELATION_EVIDENCE
-        shutil.copy2(REPO_ROOT / RELATION_EVIDENCE / "experiment.json", folder)
+        self.construct_relation_evidence(trigger_model="claude-opus-5")
         path = self.write_pending_evidence(RELATION_EVIDENCE, "claude-opus-5-5")
         valid = json.loads(path.read_bytes())
         for field, value, diagnostic in (
-            ("current_source_sha256", {}, "current input digest drift"),
+            (
+                "current_source_sha256",
+                {"unrelated.txt": "0" * 64},
+                "maintaining-issue-pr-relations release-pending current input digest drift (missing [",
+            ),
             ("target_executor", "unapproved-model", "target executor drift"),
             ("retained_artifact_sha256", {}, "retained artifact digest drift"),
             (
@@ -854,7 +948,39 @@ class ValidateMergecraftTests(unittest.TestCase):
         ):
             with self.subTest(field=field):
                 path.write_text(json.dumps(valid | {field: value}), encoding="utf-8")
-                self.assert_pending_rejected(diagnostic)
+                if field == "current_source_sha256":
+                    self.assert_pending_rejected(diagnostic, "extra [unrelated.txt]")
+                else:
+                    self.assert_pending_rejected(diagnostic)
+
+    def test_pending_artifact_digest_names_the_single_changed_file(self) -> None:
+        self.construct_relation_evidence(trigger_model="claude-opus-5")
+        path = self.write_pending_evidence(RELATION_EVIDENCE, "claude-opus-5-5")
+        pending = json.loads(path.read_bytes())
+        pending["retained_artifact_sha256"]["grading.json"] = "0" * 64
+        path.write_text(json.dumps(pending), encoding="utf-8")
+        self.assert_pending_rejected(
+            "maintaining-issue-pr-relations release-pending retained artifact digest drift",
+            "changed [grading.json]",
+        )
+
+    def test_pending_retained_input_digest_rejects_whitespace_tampering(self) -> None:
+        folder = self.repo / MARKDOWN_EVIDENCE
+        relative = "evals/evals.json"
+        content = (folder / "evals.json").read_text() + "\n"
+        experiment = json.loads((folder / "experiment.json").read_bytes())
+        path = self.bind_retained_test_input(
+            MARKDOWN_EVIDENCE, relative, content, experiment
+        )
+        result = self.run_validator("--source-stage")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        pending = json.loads(path.read_bytes())
+        pending["retained_inputs"][relative] += " \n"
+        path.write_text(json.dumps(pending), encoding="utf-8")
+        self.assert_pending_rejected(
+            "writing-github-issue-and-pr-markdown release-pending retained input digest drift",
+            "changed [evals/evals.json]",
+        )
 
     def test_markdown_pending_binds_changed_fixture_and_grading_contract(self) -> None:
         folder = self.repo / MARKDOWN_EVIDENCE
@@ -885,6 +1011,118 @@ class ValidateMergecraftTests(unittest.TestCase):
         self.write_pending_evidence(MARKDOWN_EVIDENCE, "claude-opus-5", retained)
         self.assert_pending_rejected("Markdown authoring eval expectation count drift")
         self.assert_rejected("Markdown authoring eval expectation count drift")
+
+    def bind_retained_test_input(
+        self, suite: Path, relative: str, content: str, experiment: dict
+    ) -> Path:
+        experiment["current_source_sha256"][relative] = hashlib.sha256(
+            content.encode()
+        ).hexdigest()
+        path = self.repo / suite / "experiment.json"
+        path.write_text(json.dumps(experiment), encoding="utf-8")
+        model = "claude-opus-5" if suite == MARKDOWN_EVIDENCE else "claude-opus-5-5"
+        return self.write_pending_evidence(suite, model, {relative: content})
+
+    def test_pending_relations_cannot_rebind_an_empty_retained_rubric(self) -> None:
+        folder = self.repo / RELATION_EVIDENCE
+        experiment = json.loads((folder / "experiment.json").read_bytes())
+        corpus_path = RELATION_EVIDENCE / "evals.json"
+        corpus = json.loads((self.repo / corpus_path).read_bytes())
+        corpus["evals"][0]["expectations"] = []
+        grading_path = folder / "grading.json"
+        grading = json.loads(grading_path.read_bytes())
+        selected = experiment["selection"]["behavior_by_case"]["0"]
+        for grade in grading["runs"]:
+            if grade["run_id"].startswith(f"{selected}/case-00-with-skill-"):
+                grade["expectations"] = []
+        grading["thresholds"] = [
+            row for row in grading["thresholds"] if row["case_id"] != 0
+        ]
+        grading_path.write_text(json.dumps(grading), encoding="utf-8")
+        self.bind_retained_test_input(
+            RELATION_EVIDENCE, str(corpus_path), json.dumps(corpus), experiment
+        )
+        self.assert_pending_rejected(
+            "raw eval prose drift: maintaining-issue-pr-relations"
+        )
+
+    def test_pending_cannot_rebind_retained_fixtures_that_expose_the_rubric(
+        self,
+    ) -> None:
+        for suite in (MARKDOWN_EVIDENCE, RELATION_EVIDENCE):
+            with self.subTest(suite=suite):
+                folder = self.repo / suite
+                experiment_path = folder / "experiment.json"
+                original = experiment_path.read_bytes()
+                experiment = json.loads(original)
+                grading = json.loads((folder / "grading.json").read_bytes())
+                case = json.loads((folder / "evals.json").read_bytes())["evals"][0]
+                if suite == MARKDOWN_EVIDENCE:
+                    fixture = case["fixture_paths"][0]
+                    relative = fixture
+                    source_root = folder.parent
+                    expectation = case["expectations"][0]["text"]
+                    groups = {
+                        row["experiment"]
+                        for row in grading["selected_thresholds"]
+                        if row["case_id"] == case["id"]
+                    }
+                else:
+                    fixture = case["files"][0]
+                    relative = f"{EVAL_ROOT}/skills/{fixture}"
+                    source_root = self.repo
+                    expectation = case["expectations"][0]
+                    groups = {
+                        experiment["selection"]["behavior_by_case"][str(case["id"])]
+                    }
+                content = (
+                    source_root / relative
+                ).read_text() + f"\nPass if: {expectation}\n"
+                for run in experiment["behavior_runs"]:
+                    if (
+                        run["case_id"] == case["id"]
+                        and run["id"].rsplit("/", 1)[0] in groups
+                    ):
+                        request = json.loads(
+                            experiment["requests_by_sha256"][run["request_sha256"]]
+                        )
+                        request["fixture"][fixture] = content
+                        raw_request = json.dumps(request)
+                        request_digest = hashlib.sha256(
+                            raw_request.encode()
+                        ).hexdigest()
+                        experiment["requests_by_sha256"][request_digest] = raw_request
+                        run["request_sha256"] = request_digest
+                        run["fixture_sha256"][fixture] = hashlib.sha256(
+                            content.encode()
+                        ).hexdigest()
+                pending = self.bind_retained_test_input(
+                    suite, relative, content, experiment
+                )
+                try:
+                    self.assert_pending_rejected("grader answer leaked into fixture")
+                finally:
+                    pending.unlink()
+                    experiment_path.write_bytes(original)
+
+    def test_pending_markdown_cannot_rebind_a_malformed_retained_corpus(self) -> None:
+        folder = self.repo / MARKDOWN_EVIDENCE
+        experiment = json.loads((folder / "experiment.json").read_bytes())
+        corpus = json.loads((folder / "evals.json").read_bytes())
+        corpus["evals"][0].pop("expected_output")
+        for relative, content, diagnostic in (
+            (
+                "evals/evals.json",
+                json.dumps(corpus),
+                "Markdown authoring eval item schema drift",
+            ),
+            ("evals/trigger-evals.json", "not JSON\n", "evals/trigger-evals.json"),
+        ):
+            with self.subTest(relative=relative):
+                self.bind_retained_test_input(
+                    MARKDOWN_EVIDENCE, relative, content, copy.deepcopy(experiment)
+                )
+                self.assert_pending_rejected(diagnostic)
 
     def test_publication_rejects_malformed_relation_evaluation_without_traceback(self) -> None:
         evidence = self.repo / EVAL_ROOT / "skills/maintaining-issue-pr-relations"
