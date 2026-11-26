@@ -571,7 +571,14 @@ class ValidateRolecastingTests(unittest.TestCase):
 
     def test_rejects_detailed_fable_record_fields_in_hot_skill(self) -> None:
         path = self.plugin / "skills" / "choosing-agent-models" / "SKILL.md"
-        path.write_text(path.read_text() + "\nRequire harness and version here.\n")
+        original = path.read_text()
+        # Swap five words to reach the lock check without exceeding the invocation budget.
+        mutated = original.replace(
+            "it cannot repair those boundaries.", "Require harness and version here.", 1
+        )
+        self.assertNotEqual(mutated, original)
+        self.assertEqual(len(mutated.split()), len(original.split()))
+        path.write_text(mutated)
         self.assert_rejected("semantic content lock mismatch")
 
     def test_rejects_contradictory_semantic_append(self) -> None:

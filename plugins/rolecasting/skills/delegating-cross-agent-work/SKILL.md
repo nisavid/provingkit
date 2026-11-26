@@ -7,7 +7,7 @@ description: Use when choosing delegation, worker topology, authority, or execut
 
 ## Scope
 
-Keep consequential judgment, ambiguity, architecture, copy, and coordination local. Delegate bounded parallel, specialist, or waiting work.
+Keep consequential judgment, ambiguity, architecture, and coordination local. Delegate bounded parallel, specialist, or waiting work.
 
 Own target, topology, authority, execution handoffs, assurance, and integration.
 Apply the [message/execution boundary](../choosing-agent-models/references/capability-probes-and-fallbacks.md#distinguish-messages-from-execution-assignments) first;
@@ -73,4 +73,4 @@ Use `surreal-intercom:communicating-with-agents` for peer communication and reco
 - Review patches, claims, captures, logs, and summaries.
 - Treat worker results as inputs, not decisions.
 - Integrate in the owning worktree; verify the contract.
-- Retain authority for architecture, root cause, user-facing wording, and external actions.
+- Retain authority for architecture, root cause, [message intent](references/published-text.md), and external actions.
