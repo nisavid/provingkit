@@ -114,8 +114,8 @@ section, note, empty-list form, title block, or pagination footer refuses the
 entire listing before any `SendMessage` call. A layout or count failure records
 `listing_incomplete`, and a heading, row, or label outside the profile records
 `unrecognized_listing`. A row reusing the caller's reference also records
-`listing_incomplete`. The caller's own name, the reserved name `main`, and a
-selection of the caller's reference record `self_destination`. A `ListAgents`
+`listing_incomplete`. The caller's own name and a selection of the caller's
+reference record `self_destination`. A `ListAgents`
 call that fails or runs out of time, errs, or returns another result shape
 records `listing_failed`, `listing_error`, or `unsupported_listing_result`,
 respectively.
@@ -166,10 +166,11 @@ only from its description.
 
 `prepare` and the sender both refuse a name the listing profile cannot read
 as `invalid_name` before publication, claim, or listing. Names must fit within
-300 UTF-16 code units and exclude control characters, line separators,
-surrounding whitespace, brackets, the field separator, and listing control
-text. A name cannot start with `(`, `<`, or `uds:`. The recipient-prepared
-route is available for a session the name path cannot address.
+300 UTF-16 code units and exclude unpaired surrogates, control characters,
+line separators, surrounding whitespace, brackets, and the field separator.
+A name cannot start with `(`, `<`, or `uds:`. The reserved name `main`
+returns `self_destination` before publication, claim, or listing. The
+recipient-prepared route is available for a session the name path cannot address.
 
 ## Capture, submit once, and inspect
 

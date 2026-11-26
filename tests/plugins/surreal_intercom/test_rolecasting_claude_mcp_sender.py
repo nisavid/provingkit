@@ -1574,16 +1574,25 @@ class ClaudeNameSendTests(unittest.TestCase):
         self.assert_listing_refuses(desktop_listing(desktop_row("alpha", "aa12bc")),
                                     selection={"ref": "ab12ef"}, reason="self_destination")
 
-    def test_main_is_refused_even_when_a_desktop_row_has_that_name(self):
-        peer = desktop_row("main", "aa12bc")
-        self.assert_listing_refuses(desktop_listing(peer), name="main", reason="self_destination")
+    def test_main_is_refused_before_claim_or_listing(self):
+        listing = desktop_listing(desktop_row("main", "aa12bc"))
+        with self.name_consumer(name="main", pages=(listing,)) as (
+                _, _, send, bookkeeping, _, trace):
+            result = send()
+            self.assertEqual(result["reason"], "self_destination")
+            self.assertFalse(result["claimed"])
+            self.assertFalse(trace.exists())
+            self.assertEqual(bookkeeping("show", "send-1")["attempts"], [])
+
+    def test_the_process_main_session_heading_is_unsupported(self):
         process_heading = (
             "This process's main session is Fixture Origin [ab12ef] — the name OTHER sessions "
             'use to message it (it is not listed below; from inside this process, address the '
             'main conversation as "main").'
         )
-        self.assert_listing_refuses(desktop_listing(peer, caller=process_heading),
-                                    name="main", reason="unrecognized_listing")
+        self.assert_listing_refuses(
+            desktop_listing(desktop_row("alpha", "aa12bc"), caller=process_heading),
+            reason="unrecognized_listing")
 
     def test_a_zero_padded_start_age_refuses_the_listing(self):
         self.assert_listing_refuses(desktop_listing(desktop_row("alpha", "aa12bc", age="000000008h")),
@@ -1891,15 +1900,26 @@ class ClaudeNameSendTests(unittest.TestCase):
 
     def test_a_name_the_profile_cannot_address_is_refused_before_any_claim(self):
         for name in ("left" + DOT + "right", "(draft) review", "No reachable agents.", "<alpha",
-                     "alpha\tpeer", "alpha\u2028peer", "alpha\0peer", "", " ", None):
+                     "alpha\tpeer", "alpha\u2028peer", "alpha\0peer", "", " ", None,
+                     "alpha\ud800", "alpha\udc00"):
             recipient = name if isinstance(name, str) and name.strip() else "fixture"
             with self.subTest(name=name), self.name_consumer(name=name, recipient_thread=recipient) as (
                     _, request, send, bookkeeping, calls, trace):
+                request["evidence_ref"] = f"claude-name:{name}"
                 result = send()
                 self.assertEqual(result["reason"], "invalid_name")
                 self.assertFalse(result["claimed"])
                 self.assertFalse(trace.exists())
-                self.assertEqual(bookkeeping("show", "send-1")["state"], "planned")
+                retained = bookkeeping("show", "send-1")
+                self.assertEqual(retained["state"], "planned")
+                self.assertEqual(retained["attempts"], [])
+
+    def test_a_supplementary_character_in_a_name_remains_addressable(self):
+        name = "alpha \U0001f680"
+        listing = desktop_listing(desktop_row(name, "aa12bc"))
+        with self.name_consumer(name=name, pages=(listing,)) as (_, _, send, _, calls, _):
+            self.assertEqual(send()["reason"], "submitted")
+            self.assertEqual(calls()[-1]["arguments"]["to"], name)
 
     def test_the_sender_reference_points_its_child_end_at_the_wake_decision(self):
         # Where the reference says no process remains for a later notice, it must not

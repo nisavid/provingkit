@@ -48,6 +48,7 @@ INPUT_CLOSE_GRACE_SECONDS = 3
 TERMINATE_GRACE_SECONDS = 2
 ROUTE_PREFIX = "uds:"
 REF_PATTERN = re.compile(r"^[A-Za-z0-9_-]{1,64}$")
+SURROGATE_PATTERN = re.compile(r"[\ud800-\udfff]")
 RECONCILIATION_FIELDS = frozenset({"after_attempt", "decision_ref"})
 
 
@@ -90,8 +91,11 @@ def validate(request):
             raise InspectionError("invalid_nomination")
     else:
         name = request["name"]
+        if name == "main":
+            raise InspectionError("self_destination")
         if (
             not supported_listing_label(name) or unreadable_listing_label(name)
+            or SURROGATE_PATTERN.search(name)
             # A name is never sent as a route: the sender does not look for one itself.
             or name.startswith(ROUTE_PREFIX)
         ):
@@ -348,7 +352,7 @@ def parse_listing(listing, name, selection):
     if unreadable_listing_label(caller_name):
         raise PathRefusal("unrecognized_listing", "The caller label is outside the profile; "
                           "no SendMessage was sent.")
-    if name in (caller_name, "main") or (selection is not None and selection["ref"] == caller["ref"]):
+    if name == caller_name or (selection is not None and selection["ref"] == caller["ref"]):
         raise PathRefusal("self_destination", "The name or selection can address the caller; "
                           "no SendMessage was sent.")
 
@@ -715,9 +719,6 @@ def main():
                     raise PathRefusal(
                         "unsupported_listagents",
                         "The catalog offers no ListAgents in the supported profile; no tools/call was sent.")
-                if path == "name" and to.startswith(ROUTE_PREFIX):
-                    raise PathRefusal("invalid_name",
-                                      "A name destination looks like a route; no tools/call was sent.")
                 # The by-name profile budgets for a reference even in a legacy catalog.
                 if path == "name" or "allOf" in nominated[0]["inputSchema"]["properties"]["to"]:
                     if violation := destination_violation(to):

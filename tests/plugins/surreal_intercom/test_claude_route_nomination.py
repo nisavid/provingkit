@@ -414,8 +414,10 @@ class ClaudeRouteNominationTests(unittest.TestCase):
 
     def test_prepare_refuses_a_name_the_listing_profile_cannot_address(self):
         route, _, mailbox_module = self.load_modules()
-        for name in ("left  ·  right", "(draft) review", "No reachable agents.", "<alpha",
-                     "alpha\tpeer", "alpha\u2028peer", "alpha\0peer", "", " ", None):
+        invalid_names = ("left  ·  right", "(draft) review", "No reachable agents.", "<alpha",
+                         "alpha\tpeer", "alpha\u2028peer", "alpha\0peer", "", " ", None,
+                         "alpha\ud800", "alpha\udc00")
+        for name in (*invalid_names, "main"):
             with self.subTest(name=name), tempfile.TemporaryDirectory(
                     prefix="claude-route-") as temporary:
                 root = Path(temporary).resolve()
@@ -434,7 +436,7 @@ class ClaudeRouteNominationTests(unittest.TestCase):
                                environment={"PATH": "/synthetic/bin"},
                                launcher_lookup=lambda _name, _path: "/synthetic/bin/claude")
                 self.assertEqual(json.loads(output.getvalue()), {
-                    "prepared": False, "reason": "invalid_name",
+                    "prepared": False, "reason": "self_destination" if name == "main" else "invalid_name",
                     "closure": "no-provider-started"})
                 self.assertFalse(Path(request["publication"]["path"]).exists())
                 mailbox = mailbox_module.Mailbox(Path(request["mailbox"]))
