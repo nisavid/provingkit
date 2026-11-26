@@ -25,7 +25,7 @@ Choose each axis independently:
 
 Keep axes independent. Use a leader-owned child for bounded work the leader creates and ends. A leader-owned peer keeps an independent leader-controlled session. User-owned peers or tasks require explicit consent to create or steer. Cross the product or control boundary only when materially helpful.
 
-Task identity and bounded purpose are route gates: model availability never makes an unrelated task valid. Read [foreign-harness-peers.md](references/foreign-harness-peers.md) before probing a non-native or separately owned surface.
+Model availability cannot override task identity or bounded purpose. Read [foreign-harness-peers.md](references/foreign-harness-peers.md) before probing non-native or separately owned surfaces. For absent or rejected selectors, invoke [choosing-agent-models](../choosing-agent-models/SKILL.md) before reprobing.
 
 ## Kickoff
 
