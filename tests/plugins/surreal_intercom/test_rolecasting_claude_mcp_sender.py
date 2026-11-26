@@ -938,6 +938,7 @@ NAME_CHILD = textwrap.dedent("""\
         elif request["params"]["name"] == "ListAgents":
             response = {"content": [{"type": "text", "text": pages.pop(0)}]}
         else:
+            record({"sendmessage_frame_bytes": len(line.encode("utf-8"))})
             response = {"content": [{"type": "text", "text":
                         "Message sent to the session; in that session's inbox, not yet read."}]}
         print(json.dumps({"jsonrpc": "2.0", "id": request["id"], "result": response}), flush=True)
@@ -1065,7 +1066,7 @@ class ClaudeNameSendTests(unittest.TestCase):
                         except OSError:
                             pass
 
-    def assert_refused_without_send(self, result, reason, calls, bookkeeping):
+    def assert_refused_without_send(self, result, reason, calls, bookkeeping, unreadable_rows=0):
         self.assertEqual(result["path"], "name")
         self.assertEqual(result["reason"], reason)
         self.assertEqual(result["peer_input"], "not_attempted")
@@ -1077,10 +1078,11 @@ class ClaudeNameSendTests(unittest.TestCase):
         self.assertIn("no sendmessage was sent", observations[1]["detail"].lower())
         # The sender's own phase record is the evidence that the attempt did not deliver.
         evidence = json.loads(observations[2]["detail"])
-        self.assertNotIn("unreadable_rows", result)
+        self.assertEqual(result["unreadable_rows"], unreadable_rows)
         self.assertEqual(evidence, {
             "evidence": "sender_phase_record", "path": "name",
-            "phase": "refused_before_possible_submission", "reason": reason})
+            "phase": "refused_before_possible_submission", "reason": reason,
+            "unreadable_rows": unreadable_rows})
         return observations[1]["detail"]
 
     def test_name_submits_with_one_call_and_closes_without_a_signal(self):
@@ -1102,7 +1104,9 @@ class ClaudeNameSendTests(unittest.TestCase):
             self.assertEqual(retained["state"], "submitted")
             bound = json.loads(retained["attempts"][0]["observations"][1]["detail"])
             # The route path records the same shape without the row.
-            self.assertEqual(set(bound), {"phase", "path", "to", "row"})
+            self.assertEqual(set(bound), {"phase", "path", "to", "row", "unreadable_rows"})
+            self.assertEqual(result["unreadable_rows"], 0)
+            self.assertEqual(bound["unreadable_rows"], 0)
             self.assertEqual(bound["phase"], "possible_submission")
             self.assertEqual(bound["path"], "name")
             self.assertEqual(bound["to"], "claude-receiver")
@@ -1242,16 +1246,17 @@ class ClaudeNameSendTests(unittest.TestCase):
             result = send()
             self.assert_refused_without_send(
                 result, "selection_not_in_listing", calls, bookkeeping)
+            self.assertEqual([call["name"] for call in calls()], ["ListAgents"])
             self.assertEqual(result["candidates"], [
                 {"name": "claude-receiver", "ref": "3fa9c1", "kind": "interactive", "local": True}])
         with self.name_consumer(selection={"ref": "3fa9c1"}) as (
                 _, request, send, bookkeeping, calls, _t):
             self.assertEqual(send()["reason"], "submitted")
-            self.assertEqual(calls()[-1]["arguments"]["to"], "claude-receiver [3fa9c1]")
+            self.assertEqual(calls()[-1]["arguments"]["to"], "claude-receiver")
             bound = json.loads(
                 bookkeeping("show", "send-1")["attempts"][0]["observations"][1]["detail"])
-            # The address is the listing row's own name and reference.
-            self.assertEqual(bound["to"], "claude-receiver [3fa9c1]")
+            # A matching singleton selection checks the ref and sends the name bare.
+            self.assertEqual(bound["to"], "claude-receiver")
             self.assertEqual((bound["row"]["name"], bound["row"]["ref"]),
                              ("claude-receiver", "3fa9c1"))
 
@@ -1313,6 +1318,35 @@ class ClaudeNameSendTests(unittest.TestCase):
             self.assertIn({
                 "name": "alpha", "ref": "bb34cd", "kind": "interactive", "local": True,
             }, result["candidates"])
+
+    def test_a_300_unit_singleton_name_sends_bare_and_refuses_selection_before_listing(self):
+        name = "x" * 300
+        listing = desktop_listing(desktop_row(name, "aa12bc"))
+        with self.name_consumer(name=name, pages=(listing,)) as (
+                _, _, send, _, calls, _):
+            self.assertEqual(send()["reason"], "submitted")
+            self.assertEqual(calls()[-1]["arguments"]["to"], name)
+        with self.name_consumer(name=name, pages=(listing,), selection={"ref": "aa12bc"}) as (
+                _, _, send, bookkeeping, calls, _):
+            result = send()
+            self.assertEqual(result["reason"], "destination_constraint_violation")
+            self.assertEqual(result["peer_input"], "not_attempted")
+            self.assertEqual(calls(), [])
+            self.assertNotIn("unreadable_rows", result)
+            observations = bookkeeping("show", "send-1")["attempts"][0]["observations"]
+            self.assertEqual([item["kind"] for item in observations],
+                             ["unknown", "refused", "not_delivered"])
+            self.assertNotIn("unreadable_rows", json.loads(observations[-1]["detail"]))
+
+    def test_a_singleton_bare_frame_sends_at_4096_bytes(self):
+        listing = desktop_listing(desktop_row("alpha", "aa12bc"))
+        with self.name_consumer(name="alpha", pages=(listing,), payload="x" * 3484) as (
+                _, _, send, _, calls, trace):
+            self.assertEqual(send()["reason"], "submitted")
+            self.assertEqual(calls()[-1]["arguments"]["to"], "alpha")
+            records = (json.loads(line) for line in trace.read_text().splitlines())
+            self.assertEqual([record["sendmessage_frame_bytes"] for record in records
+                              if "sendmessage_frame_bytes" in record], [4096])
 
     def test_a_selection_hint_requires_a_qualified_destination_that_fits(self):
         name = "x" * 300
@@ -1410,16 +1444,19 @@ class ClaudeNameSendTests(unittest.TestCase):
             self.assertEqual(made[0]["arguments"]["to"], "uds:/synthetic/prepared.sock")
 
     def test_a_short_interactive_title_cannot_supply_a_bare_destination(self):
-        listing = desktop_listing("  alpha [draft]" + DOT + "interactive" + DOT + "idle")
-        with self.name_consumer(name="alpha", pages=(listing,)) as (
-                _, _, send, bookkeeping, calls, _):
-            self.assert_refused_without_send(send(), "unrecognized_listing", calls, bookkeeping)
+        for row in (
+            "  alpha [draft]" + DOT + "interactive" + DOT + "idle",
+            desktop_row("alpha [draft]", "aa12bc").replace(" [aa12bc]", ""),
+        ):
+            with self.subTest(row=row):
+                self.assert_listing_refuses(desktop_listing(row), reason="unrecognized_listing")
 
-    def assert_listing_refuses(self, *pages, name="alpha", selection=None, reason):
+    def assert_listing_refuses(self, *pages, name="alpha", selection=None, reason,
+                               unreadable_rows=0):
         with self.name_consumer(name=name, selection=selection, pages=pages) as (
                 _, _, send, bookkeeping, calls, _):
             result = send()
-            self.assert_refused_without_send(result, reason, calls, bookkeeping)
+            self.assert_refused_without_send(result, reason, calls, bookkeeping, unreadable_rows)
             self.assertNotIn("candidates", result)
             self.assertEqual(calls(), [{"name": "ListAgents", "arguments": {}}])
 
@@ -1545,9 +1582,7 @@ class ClaudeNameSendTests(unittest.TestCase):
             desktop_row("other", "BB34CD"),
             desktop_row("other", "b2"),
             desktop_row("other", "bb34cd").replace(" [bb34cd]", ""),
-            desktop_row("other [draft]", "bb34cd"),
             desktop_row("other" + DOT + "draft", "bb34cd"),
-            desktop_row("(draft) other", "bb34cd"),
             desktop_row("other Peer sessions (9): draft", "bb34cd"),
             desktop_row("other Cloud sessions and other computers are not listed", "bb34cd"),
             desktop_row("other No reachable agents", "bb34cd"),
@@ -1559,6 +1594,51 @@ class ClaudeNameSendTests(unittest.TestCase):
             with self.subTest(row=other):
                 self.assert_listing_refuses(desktop_listing(desktop_row("alpha", "aa12bc"), other),
                                             reason="unrecognized_listing")
+
+    def test_unrelated_bracketed_and_parenthesized_titles_are_skipped_and_counted(self):
+        for title in ("other [draft]", "(draft) other", "[draft] other"):
+            with self.subTest(title=title):
+                listing = desktop_listing(desktop_row("alpha", "aa12bc"),
+                                          desktop_row(title, "bb34cd"))
+                with self.name_consumer(name="alpha", pages=(listing,)) as (
+                        _, _, send, bookkeeping, calls, _):
+                    result = send()
+                    self.assertEqual(result["reason"], "submitted")
+                    self.assertEqual(result["unreadable_rows"], 1)
+                    self.assertEqual([call["name"] for call in calls()],
+                                     ["ListAgents", "SendMessage"])
+                    self.assertEqual(calls()[-1]["arguments"]["to"], "alpha")
+                    observations = bookkeeping("show", "send-1")["attempts"][0]["observations"]
+                    self.assertEqual(json.loads(observations[1]["detail"])["unreadable_rows"], 1)
+
+    def test_an_unreadable_title_that_could_carry_the_requested_name_refuses(self):
+        for title, selection in (("alpha [draft]", None),
+                                 ("alpha [aa12bc]", {"ref": "aa12bc"})):
+            with self.subTest(title=title, selection=selection):
+                self.assert_listing_refuses(desktop_listing(
+                    desktop_row("other [draft]", "cc56de"),
+                    desktop_row("alpha", "aa12bc"),
+                    desktop_row(title, "bb34cd"),
+                ), selection=selection, reason="unrecognized_listing", unreadable_rows=1)
+
+    def test_an_unreadable_peer_cannot_reuse_the_caller_reference(self):
+        self.assert_listing_refuses(desktop_listing(
+            desktop_row("alpha", "aa12bc"), desktop_row("other [draft]", "ab12ef"),
+        ), reason="listing_incomplete")
+
+    def test_running_subagent_compaction_and_shadowed_teammate_are_refused(self):
+        for section, fields in (
+            ("Subagents", ("other [b2]", "reviewer", "running", "started 1m ago",
+                           "compacting its conversation for 1m")),
+            ("Teammates", ("other", "reviewer", "roster",
+                           "not messageable by name while a subagent in this session is "
+                           "registered under that name (the name reaches the subagent)")),
+        ):
+            with self.subTest(section=section):
+                listing = desktop_listing(desktop_row("alpha", "aa12bc")).replace(
+                    "\n\n" + FOOTER,
+                    f"\n\n{section} (1):\n  " + DOT.join(fields) + "\n\n" + FOOTER)
+                self.assert_listing_refuses(listing, reason="unrecognized_listing")
 
     def test_a_listing_with_other_sections_or_notes_is_refused(self):
         for line in (
@@ -1601,7 +1681,7 @@ class ClaudeNameSendTests(unittest.TestCase):
         with patch.object(sys, "path", [str(SCRIPTS), *sys.path]):
             import claude_mcp_sender as sender
 
-        self.assertEqual(sender.parse_listing(listing, expected[0]["name"], None), expected)
+        self.assertEqual(list(sender.parse_listing(listing, expected[0]["name"], None)), expected)
         for row in expected:
             with self.subTest(name=row["name"]), self.name_consumer(
                     name=row["name"], pages=(listing,)) as (_, _, send, bookkeeping, calls, _):
@@ -1625,7 +1705,7 @@ class ClaudeNameSendTests(unittest.TestCase):
         )
         listing = desktop_listing(*(desktop_row(name, ref, status=status, age=age)
                                     for name, ref, status, age in examples))
-        self.assertEqual(sender.parse_listing(listing, examples[0][0], None), [
+        self.assertEqual(list(sender.parse_listing(listing, examples[0][0], None)), [
             {"name": name, "ref": ref, "section": "Peer sessions", "kind": "interactive",
              "local": True}
             for name, ref, _, _ in examples
@@ -1722,13 +1802,21 @@ class ClaudeNameSendTests(unittest.TestCase):
                 index, "add foreign line")
         # Peer row order carries no meaning.
         del mutations["\n".join((*lines[:3], lines[4], lines[3], *lines[5:]))]
+        cases = [(listing, description, 0, False) for listing, description in mutations.items()]
+        skipped = desktop_row("other [draft]", "bb34cd")
+        cases.extend((
+            (desktop_listing(lines[3], skipped), "unrelated unreadable label", 1, True),
+            (desktop_listing(skipped, "Foreign line."), "unknown line after skip", 1, False),
+            (desktop_listing(skipped).replace("Peer sessions (1):", "Peer sessions (2):"),
+             "count mismatch after skip", 1, False),
+        ))
 
         with self.name_consumer(name="alpha") as (_, request, _, _, _, trace):
             store = trace.parent / "mailbox.sqlite3"
             request_path = trace.parent / "mutation.json"
             initialized_store = store.read_bytes()
             request_path.write_text(json.dumps(request), encoding="utf-8")
-            for listing, description in mutations.items():
+            for listing, description, expected_skips, submits in cases:
                 with self.subTest(case=description):
                     store.write_bytes(initialized_store)
                     child = ListingChild(listing)
@@ -1738,19 +1826,31 @@ class ClaudeNameSendTests(unittest.TestCase):
                                 "claude_mcp_sender.py", "--store", str(store),
                                 "--request", str(request_path)]):
                         self.assertEqual(sender.main(), 0)
-                    self.assertEqual(child.calls, ["ListAgents"])
                     result = json.loads(output.getvalue())
-                    self.assertEqual(result["peer_input"], "not_attempted")
-                    self.assertIn(result["reason"], {"unrecognized_listing", "listing_incomplete"})
+                    self.assertEqual(result["unreadable_rows"], expected_skips)
                     mailbox = sender.Mailbox(store)
                     try:
                         record = mailbox.get(request["message_id"])
                     finally:
                         mailbox.close()
-                    self.assertEqual(record["state"], "refused")
-                    self.assertEqual(
-                        [item["kind"] for item in record["attempts"][0]["observations"]],
-                        ["unknown", "refused", "not_delivered"])
+                    observations = record["attempts"][0]["observations"]
+                    kinds = [item["kind"] for item in observations]
+                    if submits:
+                        self.assertEqual(child.calls, ["ListAgents", "SendMessage"])
+                        self.assertEqual(result["peer_input"], "submitted")
+                        self.assertEqual(record["state"], "submitted")
+                        self.assertEqual(kinds, ["unknown", "unknown", "submitted"])
+                        evidence = json.loads(observations[1]["detail"])
+                        self.assertEqual(evidence["to"], "alpha")
+                    else:
+                        self.assertEqual(child.calls, ["ListAgents"])
+                        self.assertEqual(result["peer_input"], "not_attempted")
+                        self.assertIn(result["reason"], {"unrecognized_listing",
+                                                        "listing_incomplete"})
+                        self.assertEqual(record["state"], "refused")
+                        self.assertEqual(kinds, ["unknown", "refused", "not_delivered"])
+                        evidence = json.loads(observations[-1]["detail"])
+                    self.assertEqual(evidence["unreadable_rows"], expected_skips)
 
     def test_a_name_the_profile_cannot_address_is_refused_before_any_claim(self):
         for name in ("left" + DOT + "right", "(draft) review"):

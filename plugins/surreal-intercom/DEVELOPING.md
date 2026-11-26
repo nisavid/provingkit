@@ -114,6 +114,12 @@ documents. Cover a submission with exactly one `ListAgents` call and one
 embedded control text, pagination, caller identity conflicts, and a peer total
 that differs from its row count. Exercise no matching row, ambiguous name,
 ambiguous selection, and a selected reference absent from the listing.
+Check that a matching singleton selection sends the bare name and that
+selection qualifies an address when several rows carry the name. Cover the
+300-UTF-16-unit name and the 4,096-byte bare frame that grows to 4,105 bytes
+with a reference. Check unrelated unreadable titles, the exact skipped-row
+counts in results and durable records, and refusal when an unreadable label
+could carry the requested name.
 Check every parsed field of the example rows and restore the initialized
 mailbox before each listing mutation. Show that the sender and `prepare` refuse
 a name the profile cannot address before any claim. Show that a planned

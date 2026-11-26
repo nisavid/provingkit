@@ -127,8 +127,8 @@ For the ordinary send by name, the agent creates a
 - `name`: the recipient's name as its `ListAgents` row prints it, equal to the
   message recipient's `thread_id` (otherwise `recipient-name-mismatch`, before
   planning or publishing); and
-- optionally `selection: {"ref": ...}`, only when the caller already knows which
-  of several same-named rows it means.
+- optionally `selection: {"ref": ...}`, to check a single row's reference or
+  choose among same-named rows.
 
 For a later attempt that the caller asks for, either request may also carry
 both `after_attempt` and `decision_ref`; preparation passes them into the sender
@@ -139,9 +139,9 @@ Preparation then resolves `claude` on the caller's own `PATH`, keeps the
 resolved path and invoked name without canonicalizing a wrapper, and uses
 `[launcher, "mcp", "serve"]` as the command. Its `evidence_ref` is
 `claude-name:<name>`. It does not list agents or start Claude; the sender binds
-the name to a listing row within its own attempt. Its frame check uses the `to`
-the sender will send, built by the sender's own helper: the name, or
-`name [ref]` with a selection.
+the name to a listing row within its own attempt. Preparation measures the
+bare name without a selection and `name [ref]` with one, allowing for
+multiple rows at send time. The sender measures the address it resolves.
 
 For genuine first setup only, select the private mailbox through the existing
 caller-owned bookkeeping procedure and create it once through the create-only

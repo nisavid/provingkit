@@ -272,7 +272,7 @@ def supported_tool_result(result):
 LISTING_FIELD_SEPARATOR = "  ·  "
 LISTING_COUNT = r"[1-9][0-9]{0,8}"
 LISTING_AGE = rf"(?:0s|{LISTING_COUNT}[smhd])"
-LISTING_LABEL = r"(?P<name>[^\[\]\x00-\x1f\x7f-\x9f\u2028\u2029]{1,300}) \[(?P<ref>[0-9a-f]{6})\]"
+LISTING_LABEL = r"(?P<name>[^\x00-\x1f\x7f-\x9f\u2028\u2029]{1,300}) \[(?P<ref>[0-9a-f]{6})\]"
 LISTING_CALLER = re.compile(
     rf"This session is {LISTING_LABEL} — the name other sessions use to message it "
     r"\(it is not listed below; a message to it would be a message to yourself\)\."
@@ -314,17 +314,19 @@ LISTING_CONTROL_TEXT = re.compile(
 )
 
 
-def listing_label(match):
-    name = match["name"]
-    if (name != name.strip() or name.startswith(("(", "<")) or utf16_units(name) > 300
+def check_listing_label(name):
+    if (name != name.strip() or name.startswith("<") or utf16_units(name) > 300
             or LISTING_FIELD_SEPARATOR in name or LISTING_CONTROL_TEXT.search(name)):
         raise PathRefusal("unrecognized_listing", "A listing label is outside the profile; "
                           "no SendMessage was sent.")
-    return name
+
+
+def unreadable_listing_label(name):
+    return name.startswith("(") or "[" in name or "]" in name
 
 
 def parse_listing(listing, name, selection):
-    """Read the complete layout and reject any conflict with the caller identity."""
+    """Yield supported peers in order, with None for a provably unrelated unreadable label."""
     lines = listing.split("\n")
     if (len(lines) < 6 or lines[1] != "" or lines[-2] != ""
             or lines[-1] != LISTING_REMOTE_OFF):
@@ -336,31 +338,42 @@ def parse_listing(listing, name, selection):
         raise PathRefusal("unrecognized_listing", "A listing heading is outside the profile; "
                           "no SendMessage was sent.")
     peer_lines = lines[3:-2]
-    if int(section["total"]) != len(peer_lines):
-        raise PathRefusal("listing_incomplete", "The declared peer total differs from the row count; "
-                          "no SendMessage was sent.")
     if len(set(peer_lines)) != len(peer_lines):
         raise PathRefusal("listing_incomplete", "The listing repeats a peer row; "
                           "no SendMessage was sent.")
 
-    caller_name = listing_label(caller)
+    caller_name = caller["name"]
+    check_listing_label(caller_name)
+    if unreadable_listing_label(caller_name):
+        raise PathRefusal("unrecognized_listing", "The caller label is outside the profile; "
+                          "no SendMessage was sent.")
     if name in (caller_name, "main") or (selection is not None and selection["ref"] == caller["ref"]):
         raise PathRefusal("self_destination", "The name or selection can address the caller; "
                           "no SendMessage was sent.")
 
-    rows = []
     for line in peer_lines:
         row = LISTING_ROW.fullmatch(line)
         if row is None:
             raise PathRefusal("unrecognized_listing", "A listing row is outside the profile; "
                               "no SendMessage was sent.")
-        row_name = listing_label(row)
+        row_name = row["name"]
+        check_listing_label(row_name)
         if row["ref"] == caller["ref"]:
             raise PathRefusal("listing_incomplete", "A peer row repeats the caller's reference; "
                               "no SendMessage was sent.")
-        rows.append({"section": "Peer sessions", "name": row_name, "ref": row["ref"],
-                     "kind": "interactive", "local": True})
-    return rows
+        if unreadable_listing_label(row_name):
+            first_field, _, _ = line[2:].partition(LISTING_FIELD_SEPARATOR)
+            if first_field == name or first_field.startswith(name + " ["):
+                raise PathRefusal(
+                    "unrecognized_listing", "An unreadable peer label could carry the "
+                    "requested name; no SendMessage was sent.")
+            yield None
+        else:
+            yield {"section": "Peer sessions", "name": row_name, "ref": row["ref"],
+                   "kind": "interactive", "local": True}
+    if int(section["total"]) != len(peer_lines):
+        raise PathRefusal("listing_incomplete", "The declared peer total differs from the row count; "
+                          "no SendMessage was sent.")
 
 
 def candidate_view(row):
@@ -368,12 +381,7 @@ def candidate_view(row):
 
 
 def select_row(rows, name, selection):
-    """Bind the requested name to exactly one local row of this attempt's listing.
-
-    A selection is the caller's claim about which row it means: it must match
-    exactly one row of this listing, and that row must be local. The caller then
-    addresses the returned row by its own name and reference.
-    """
+    """Bind a local listing row and use its reference only to disambiguate."""
     named = [row for row in rows if row["name"] == name]
     candidates = [candidate_view(row) for row in named]
     if selection is not None:
@@ -400,7 +408,7 @@ def select_row(rows, name, selection):
             "selection was supplied; no SendMessage was sent.", candidates)
     else:
         row = named[0]
-    return row
+    return row, name_destination(row["name"], row["ref"] if len(named) > 1 else None)
 
 
 def has_actionable_selection(candidates, tool, message, actor, identity):
@@ -644,6 +652,8 @@ def main():
                 "phase": "refused_before_possible_submission",
                 "path": path, "reason": refusal.reason,
             }
+            if "unreadable_rows" in result:
+                evidence["unreadable_rows"] = result["unreadable_rows"]
             mailbox.observe_many(
                 request["message_id"], request["attempt_id"], request["evidence_ref"], (
                     ("refused", refusal.detail),
@@ -702,8 +712,7 @@ def main():
                 if path == "name" and to.startswith(ROUTE_PREFIX):
                     raise PathRefusal("invalid_name",
                                       "A name destination looks like a route; no tools/call was sent.")
-                # The `to` checked here is the one sent: a name path rebuilds it from the
-                # listing row, which shows the same name and selected reference.
+                # Before listing, allow for the selected name needing its reference.
                 if violation := destination_violation(nominated[0], to):
                     raise PathRefusal("destination_constraint_violation",
                                       violation + " No tools/call was sent.")
@@ -715,8 +724,15 @@ def main():
                         "no tools/call was sent.")
                 if path == "name":
                     result["stage"] = "listing"
+                    result["unreadable_rows"] = 0
+                    rows = []
                     try:
-                        rows = read_listing(child, identity, request["name"], request.get("selection"))
+                        for row in read_listing(child, identity, request["name"],
+                                                request.get("selection")):
+                            if row is None:
+                                result["unreadable_rows"] += 1
+                            else:
+                                rows.append(row)
                     except InspectionError as error:
                         # Only ListAgents was written: nothing could have been submitted.
                         raise PathRefusal(
@@ -724,18 +740,16 @@ def main():
                             f"ListAgents did not complete ({error}); no SendMessage was sent.",
                         ) from error
                     identity += 1
-                    row = select_row(rows, request["name"], request.get("selection"))
-                    # Address this listing's row, never the request's text. The row shows
-                    # the requested name and selected reference, so the checks above hold.
-                    to = name_destination(row["name"], row["ref"] if "selection" in request else None)
+                    row, to = select_row(rows, request["name"], request.get("selection"))
                     bound["to"] = to
-                    # The listing moved the call's id; check the frame that would be sent.
+                    # Check the frame with the address resolved from the listing.
                     if not frame_fits(sendmessage_call(message, request["actor"], to, identity)):
                         raise PathRefusal(
                             "control_frame_limit",
                             "SendMessage frame exceeds the 4,096-byte control-frame ceiling; "
                             "no SendMessage was sent.")
                     bound["row"] = row
+                    bound["unreadable_rows"] = result["unreadable_rows"]
             except PathRefusal as refusal:
                 refuse(refusal)
                 if refusal.candidates and has_actionable_selection(

@@ -468,7 +468,7 @@ class ClaudeRouteNominationTests(unittest.TestCase):
             finally:
                 mailbox.close()
 
-    def test_prepare_measures_a_selected_name_frame_as_the_sender_sends_it(self):
+    def test_prepare_measures_a_selected_name_with_the_reference_before_listing(self):
         route, sender, mailbox_module = self.load_modules()
         with tempfile.TemporaryDirectory(prefix="claude-route-") as temporary:
             root = Path(temporary).resolve()
@@ -498,11 +498,11 @@ class ClaudeRouteNominationTests(unittest.TestCase):
                                launcher_lookup=lambda _name, _path: "/synthetic/bin/claude")
                 return json.loads(output.getvalue())
 
-            # The bare name's frame is exactly at the ceiling; the sent `twin [cc22dd]` is over it.
+            # The bare frame fits, but another row might require the qualified form.
             request["message"]["payload"] = ""
             request["message"]["payload"] = "x" * (4096 - frame_bytes("twin"))
             self.assertEqual(frame_bytes("twin"), 4096)
-            self.assertGreater(frame_bytes("twin [cc22dd]"), 4096)
+            self.assertEqual(frame_bytes("twin [cc22dd]"), 4105)
             self.assertEqual(prepare(), {
                 "prepared": False, "reason": "sender-frame-byte-limit",
                 "closure": "no-provider-started",

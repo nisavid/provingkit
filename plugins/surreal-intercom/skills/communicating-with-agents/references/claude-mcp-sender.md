@@ -34,9 +34,9 @@ attempt also the pair described under reconciliation below:
   prints it (no brackets, CR, LF, or surrounding spaces, and no leading `uds:`,
   so a name is never sent as a route; no leading `(` and no listing field
   separator `  ·  `, which the listing profile cannot read in a row label; at
-  most 300 UTF-16 code units), optionally with `selection: {"ref": ...}` choosing one of
-  several rows that share the name; or `target`, a nonempty recipient-prepared
-  `uds:` route for `SendMessage.to`.
+  most 300 UTF-16 code units), optionally with `selection: {"ref": ...}` to check a
+  single row's reference or choose among rows sharing the name; or `target`, a
+  nonempty recipient-prepared `uds:` route for `SendMessage.to`.
 - `command`: a nonempty argument list whose executable path is absolute; the sender passes the exact argument vector with `shell=False`. An explicitly nominated launcher still has its own behavior and side effects.
 - `limits`: exactly `operation_seconds`, `stdout_bytes`, and `stderr_bytes`, within the limits below.
 
@@ -118,15 +118,26 @@ call that fails or runs out of time, errs, or returns another result shape
 records `listing_failed`, `listing_error`, or `unsupported_listing_result`,
 respectively.
 
-A name that matches no row records `no_matching_local_row`. A name that matches more than
-one row records `ambiguous_name` unless the request's `selection` names one of
-them by the reference this attempt's listing shows; the call then addresses
-`name [ref]`, built from that listing's row and never from the request's text.
-A selection is the caller's claim about which row it means and must match
-exactly one row, which must be local; a selection sent with a name that only
-one row carries is accepted only if it matches that row. A
-selected reference that this listing does not show records
-`selection_not_in_listing`, and one it shows on more than one row records
+In a row with the complete observed form and a valid reference, a title
+containing a square bracket or starting with `(` is unreadable. The sender
+skips it only when its first field, including the bracketed reference,
+neither equals the requested name nor starts with the requested name
+followed by a space and `[`. Otherwise it refuses the whole send as
+`unrecognized_listing`. A shortened row or one missing its six-digit
+reference is outside the form. Embedded control text and the caller's
+reference cause refusal even on rows whose titles are unreadable.
+Skipped rows count toward the peer total. Once listing begins,
+`unreadable_rows` records how many rows were skipped, in the sender result
+and in the possible-submission or `not_delivered` record. A refusal retains
+only the skips already counted.
+
+A name that matches no row records `no_matching_local_row`. If exactly one
+local row carries the name, the sender uses that row's bare name. A selection
+then checks the reference and leaves the address bare. With several rows
+carrying the name, the sender requires a selection and builds `name [ref]`
+from the selected row. It records `ambiguous_name` when no selection is
+given. A selected reference that matches no row for that name records
+`selection_not_in_listing`, and one that matches more than one records
 `ambiguous_selection`; a reference from an earlier attempt is
 never reused, because each attempt starts its own child and lists again. For
 `ambiguous_name`, `selection_not_in_listing`, and `ambiguous_selection`, the
@@ -134,6 +145,13 @@ result lists the matching rows in `candidates`. Each entry gives the `name`,
 `ref`, `kind`, and whether the row is `local`. The result says
 `needs: "selection"` when a local row has a reference no other matching row
 shares and its qualified address fits the destination and call-frame limits.
+
+Before listing, `prepare` and the sender check the bare frame without a
+selection and the qualified frame with a selection. This budgets for a
+second row appearing before send. The sender checks the actual frame again
+after resolution. A 300-UTF-16-unit name fits the destination limit bare
+and fails the pre-listing check with a reference. A 4,096-byte bare frame
+fits the pipe limit, and `prepare` refuses the 4,105-byte qualified frame.
 
 On the name path the planned recipient's `thread_id` is the name as the listing
 prints it. That name is a label the recipient session chose, not a session
