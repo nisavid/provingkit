@@ -135,6 +135,28 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
                     },
                 )
 
+    def test_verbatim_reply_case_delivers_both_writer_rules(self) -> None:
+        skill = "choosing-agent-models"
+        cases = {case["name"]: case for case in self.documents[skill]["evals"]}
+        self.assertIn("apply-approved-text-verbatim", cases)
+        case = cases["apply-approved-text-verbatim"]
+        fixture = (PLUGIN_ROOT / "skills" / skill / case["fixture_paths"][0]).read_text()
+        bundles = [
+            payload["candidate_bundle"]
+            for payload in validator_executor_bundles()
+            if payload["prompt"] == case["prompt"] and payload["fixture"] == fixture
+        ]
+        self.assertEqual(len(bundles), 1)
+        self.assertIn(f"skills/{skill}/SKILL.md", bundles[0])
+        instructions = " ".join(" ".join(bundles[0].values()).split())
+        for rule in (
+            "| Comments addressing or replying to a person | Fable or Astra | None | Excluded |",
+            "Any model may apply a qualified writer's text word for word under the applicable action authority.",
+            "Changing the wording is writing.",
+        ):
+            with self.subTest(rule=rule):
+                self.assertIn(rule, instructions)
+
     def test_scoped_override_evals_grade_rules_in_their_real_bundles(self) -> None:
         # Corpus delivery only; this does not execute or grade an agent.
         bundles = validator_executor_bundles()
