@@ -26,5 +26,13 @@
   {
     "query": "Send only a status acknowledgment inside the existing accepted peer assignment. An approved selection profile exists, but no execution or settings change is requested.",
     "should_trigger": false
+  },
+  {
+    "query": "Two approved reviewers reached Ready but their review turns rejected the Desktop selector. Bind their next execution handoff under the existing grant for the separate CLI and retain each attempt.",
+    "should_trigger": true
+  },
+  {
+    "query": "Summarize the recorded picker observation for a UI note. No execution handoff, worker, or new review is requested.",
+    "should_trigger": false
   }
 ]

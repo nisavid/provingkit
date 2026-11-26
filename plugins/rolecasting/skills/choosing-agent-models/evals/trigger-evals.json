@@ -50,5 +50,13 @@
   {
     "query": "Send only a status acknowledgment inside the existing accepted peer assignment. An approved selection profile exists, but no execution or settings change is requested.",
     "should_trigger": false
+  },
+  {
+    "query": "Both approved High reviews reached Ready, then the Desktop review turns rejected the legacy model. The picker has no Blue control and the owner selected a separate CLI home for these reviews. Which route can carry them?",
+    "should_trigger": true
+  },
+  {
+    "query": "Document when this desktop build renders the composer toggle. No worker assignment, route selection or review is requested.",
+    "should_trigger": false
   }
 ]
