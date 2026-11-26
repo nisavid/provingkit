@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
-  "candidate_revision": "e7b3bc6b7567684605485316e098ea06475aa917",
+  "candidate_revision": "96f7687852a499d69c9a62657e401f5c2216c164",
   "snapshot": {
-    "candidate_revision": "e7b3bc6b7567684605485316e098ea06475aa917",
+    "candidate_revision": "96f7687852a499d69c9a62657e401f5c2216c164",
     "inputs": {
       "evals/comparative-review-lifecycle-matrix.json": {
         "mode": "100644",
@@ -14,7 +14,7 @@
       },
       "plugins/rolecasting/content-lock.json": {
         "mode": "100644",
-        "sha256": "a75b57e2895123def4f27f8d46438f3765006935aef822bb090ce59db48fb5ef"
+        "sha256": "959dca1e134cc73c856bf6687dc0da6c3b4c36ec9f522df61f5d7676b8ac537f"
       },
       "plugins/rolecasting/evals/delivery.json": {
         "mode": "100644",
@@ -78,7 +78,7 @@
       },
       "plugins/rolecasting/skills/delegating-cross-agent-work/evals/evals.json": {
         "mode": "100644",
-        "sha256": "0bfe14ce369def29685e72e2dfd36d4d2b41c66657aa059e33adfc98b838896b"
+        "sha256": "83d455dd85fa0ce6f44aa194e6874fd97de9a25f04ee02d9f53806f3b60ba6b4"
       },
       "plugins/rolecasting/skills/delegating-cross-agent-work/evals/fixtures/absent-foreign-executable-native-fallback.md": {
         "mode": "100644",
@@ -266,7 +266,7 @@
       },
       "release/provingkit/definition-v1.json": {
         "mode": "100644",
-        "sha256": "7e6e5604410a56b7b30f31b113c322c0530c83dc28d9eedd0b584c9893c6b367"
+        "sha256": "5c13b1e629e54503bb46102c79e70524f37e729ea1205af82e7b2a6526eb83f1"
       },
       "scripts/behavior_eval_corpora.py": {
         "mode": "100644",
