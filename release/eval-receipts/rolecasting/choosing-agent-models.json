@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
-  "candidate_revision": "b38f5bfb28fbce6f48e660b427c905e293abb9aa",
+  "candidate_revision": "f9d5d1d63a52d74a6ca0215e47f7ec474ac18779",
   "snapshot": {
-    "candidate_revision": "b38f5bfb28fbce6f48e660b427c905e293abb9aa",
+    "candidate_revision": "f9d5d1d63a52d74a6ca0215e47f7ec474ac18779",
     "inputs": {
       "evals/comparative-review-lifecycle-matrix.json": {
         "mode": "100644",
@@ -14,7 +14,7 @@
       },
       "plugins/rolecasting/content-lock.json": {
         "mode": "100644",
-        "sha256": "b4fc40f70ffca5139023e97f714732d53910746f00e9883f0806216a6038323e"
+        "sha256": "75438bfee6dcb0211303e965caf97aa25df82ee51998deab00c58e64e9661c10"
       },
       "plugins/rolecasting/evals/delivery.json": {
         "mode": "100644",
@@ -22,7 +22,7 @@
       },
       "plugins/rolecasting/skills/choosing-agent-models/SKILL.md": {
         "mode": "100644",
-        "sha256": "05e09289e097ece5a1c503ee354be792e4acf4622f15fea326530c1fd115cf59"
+        "sha256": "b203039a20d3d481c558e1eddfe9279aab5650080493b66b6cf34d1f32dcb779"
       },
       "plugins/rolecasting/skills/choosing-agent-models/agents/openai.yaml": {
         "mode": "100644",
@@ -30,7 +30,11 @@
       },
       "plugins/rolecasting/skills/choosing-agent-models/evals/evals.json": {
         "mode": "100644",
-        "sha256": "f16e857674579bb350799e21a7543f3d46e988d01ffbece7b52366060738bc4e"
+        "sha256": "bf9a550d741ac4ed49cc862c9874d5f3754b3f58b886ab9091844e38cb4b842e"
+      },
+      "plugins/rolecasting/skills/choosing-agent-models/evals/fixtures/apply-approved-text-verbatim.md": {
+        "mode": "100644",
+        "sha256": "52417a4964870821840396e1dfba6c53d648ccbd304a529d54af6294959d2990"
       },
       "plugins/rolecasting/skills/choosing-agent-models/evals/fixtures/appointment-and-scoped-overrides.md": {
         "mode": "100644",
@@ -132,6 +136,14 @@
         "mode": "100644",
         "sha256": "b5b642b0220b8d2a03b8dc88a8d0882d02b0b25bcfa95abcb793e1aacf1a6a52"
       },
+      "plugins/rolecasting/skills/choosing-agent-models/evals/fixtures/select-writer-for-human-reply.md": {
+        "mode": "100644",
+        "sha256": "f2e6d88125f2cf6dbf08b7620bbad805b7969ec3570d59ba50e5c70efe6d1897"
+      },
+      "plugins/rolecasting/skills/choosing-agent-models/evals/fixtures/select-writer-for-routine-commit.md": {
+        "mode": "100644",
+        "sha256": "9c3d1f6e86a2210e02fe15137c46f30c66029b99b3d612defd2de2ac0316f35e"
+      },
       "plugins/rolecasting/skills/choosing-agent-models/evals/fixtures/sonnet-middle-tier.md": {
         "mode": "100644",
         "sha256": "29fd36ddd5449f9d9e71e587022ecfc4dfc2964e3e94f30169998197a1202426"
@@ -182,7 +194,7 @@
       },
       "plugins/rolecasting/skills/choosing-agent-models/references/general-tiers.md": {
         "mode": "100644",
-        "sha256": "4c122943ccc57e35c7eb70446a7c24767c13c460d11a077b81ef0cf9cc45cd3f"
+        "sha256": "fac3c4cb1d746162285862acac5861c1d9a36144b23d25547c51cf40071983a5"
       },
       "plugins/rolecasting/skills/choosing-agent-models/references/jev-suitability.md": {
         "mode": "100644",
@@ -202,7 +214,7 @@
       },
       "plugins/rolecasting/skills/delegating-cross-agent-work/SKILL.md": {
         "mode": "100644",
-        "sha256": "105d2e23090bb895e2671c0d1e2acc1fcbc2210b1fd2c08c7cdd9ee58396cee5"
+        "sha256": "8c389f42d375f9b22440f9f93b7060c6cf86ad66a3aa895b78f3b753185b622c"
       },
       "plugins/rolecasting/skills/delegating-cross-agent-work/references/dispatch-evidence.md": {
         "mode": "100644",
@@ -223,6 +235,10 @@
       "plugins/rolecasting/skills/delegating-cross-agent-work/references/native-tree-driver.md": {
         "mode": "100644",
         "sha256": "67e0de10599c54091fb276a18b0c0ba81fef1cec536f5b40afe7dadace745ea7"
+      },
+      "plugins/rolecasting/skills/delegating-cross-agent-work/references/published-text.md": {
+        "mode": "100644",
+        "sha256": "389157477438be12a7e100cfc385fbc7df59a4bf39b4bb8c5715c26ad9199b67"
       },
       "plugins/rolecasting/skills/delegating-cross-agent-work/references/scarce-specialist-handoffs.md": {
         "mode": "100644",
@@ -250,7 +266,7 @@
       },
       "release/provingkit/definition-v1.json": {
         "mode": "100644",
-        "sha256": "ec4d9a99807b4c2aa3a25caa1689630dca946244f4b141c75cb89ecc19bc126b"
+        "sha256": "fc0293703484b8a9c42fc999fe75e5de1bc7686b8417140fdffcce0ad1eec844"
       },
       "scripts/behavior_eval_corpora.py": {
         "mode": "100644",
@@ -272,6 +288,7 @@
         "evals/control-plane-matrix.json",
         "plugins/rolecasting/skills/choosing-agent-models/SKILL.md",
         "plugins/rolecasting/skills/choosing-agent-models/evals/evals.json",
+        "plugins/rolecasting/skills/choosing-agent-models/evals/fixtures/apply-approved-text-verbatim.md",
         "plugins/rolecasting/skills/choosing-agent-models/evals/fixtures/appointment-and-scoped-overrides.md",
         "plugins/rolecasting/skills/choosing-agent-models/evals/fixtures/cursor-grok-bounded-review.md",
         "plugins/rolecasting/skills/choosing-agent-models/evals/fixtures/cursor-grok-consequential-review.md",
@@ -297,6 +314,8 @@
         "plugins/rolecasting/skills/choosing-agent-models/evals/fixtures/provider-preference-target-reconsideration.md",
         "plugins/rolecasting/skills/choosing-agent-models/evals/fixtures/routing-block-diagnosis.md",
         "plugins/rolecasting/skills/choosing-agent-models/evals/fixtures/security-classes-and-fallbacks.md",
+        "plugins/rolecasting/skills/choosing-agent-models/evals/fixtures/select-writer-for-human-reply.md",
+        "plugins/rolecasting/skills/choosing-agent-models/evals/fixtures/select-writer-for-routine-commit.md",
         "plugins/rolecasting/skills/choosing-agent-models/evals/fixtures/sonnet-middle-tier.md",
         "plugins/rolecasting/skills/choosing-agent-models/evals/fixtures/thread-consent-state.md",
         "plugins/rolecasting/skills/choosing-agent-models/evals/fixtures/ultra-panel-applicability.md",
@@ -317,6 +336,7 @@
         "plugins/rolecasting/skills/delegating-cross-agent-work/references/invocation-topology-receipt.md",
         "plugins/rolecasting/skills/delegating-cross-agent-work/references/native-codex-subagents.md",
         "plugins/rolecasting/skills/delegating-cross-agent-work/references/native-tree-driver.md",
+        "plugins/rolecasting/skills/delegating-cross-agent-work/references/published-text.md",
         "plugins/rolecasting/skills/delegating-cross-agent-work/references/scarce-specialist-handoffs.md"
       ],
       "case_selection": [
@@ -418,6 +438,18 @@
         },
         {
           "pointer": "/evals/30",
+          "source": "plugins/rolecasting/skills/choosing-agent-models/evals/evals.json"
+        },
+        {
+          "pointer": "/evals/31",
+          "source": "plugins/rolecasting/skills/choosing-agent-models/evals/evals.json"
+        },
+        {
+          "pointer": "/evals/32",
+          "source": "plugins/rolecasting/skills/choosing-agent-models/evals/evals.json"
+        },
+        {
+          "pointer": "/evals/33",
           "source": "plugins/rolecasting/skills/choosing-agent-models/evals/evals.json"
         },
         {

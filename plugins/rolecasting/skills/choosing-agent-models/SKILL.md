@@ -13,6 +13,8 @@ Apply [appointment configuration and scoped overrides](references/appointment-an
 
 ## Selection Order
 
+[Published-text rules](references/general-tiers.md#published-text) supersede conflicting tiers.
+
 Apply [effort eligibility](references/effort-policy.md) to every route: Astra/Fable and Sol/Opus require `medium` or higher, including inherited or fixed selection; OpenAI and Anthropic `max` requires every model, problem, workflow, and capability gate. Terra Low/Medium/High follow their task and role boundaries; exclude Luna XHigh/Max and Sol Light.
 
 1. Select Jev first only when the **complete narrow operation** is a suitable System One typed text judgment and current availability, capability, effort eligibility, and authority pass; then stop selection. [Check all gates](references/jev-suitability.md).
