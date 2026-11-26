@@ -629,8 +629,9 @@ def main():
         if len(request_bytes) > 32768:
             raise InspectionError("request_limit")
         request = json.loads(request_bytes.decode("utf-8"))
+        if isinstance(request, dict) and "name" in request and "target" not in request:
+            result["path"] = "name"
         validate(request)
-        # A supplied route fixes the path before anything can be refused.
         path = "route" if "target" in request else "name"
         result["path"] = path
         deadline = time.monotonic() + request["limits"]["operation_seconds"]
@@ -791,8 +792,6 @@ def main():
                     result["reason"] = "tool_error" if supported else "unsupported_tool_result"
     except InspectionError as error:
         result["reason"] = str(error)
-        if result["reason"] == "self_destination":
-            result["path"] = "name"
     except (ValueError, RecursionError, OSError, sqlite3.Error, MailboxError):
         result["reason"] = "local_or_protocol_failure"
     finally:

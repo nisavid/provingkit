@@ -1276,6 +1276,26 @@ class ClaudeNameSendTests(unittest.TestCase):
             self.assertFalse(trace.exists())
             self.assertEqual(bookkeeping("show", "send-1")["state"], "planned")
 
+    def test_invalid_selection_reports_name_path_before_claim_or_child_start(self):
+        with self.name_consumer(selection={"ref": "bad ref"}) as (
+                _, request, send, bookkeeping, _, trace):
+            result = send()
+            self.assertEqual(result["reason"], "invalid_selection")
+            self.assertEqual(result["path"], "name")
+            self.assertFalse(result["claimed"])
+            self.assertFalse(result["owned_child"]["started"])
+            self.assertFalse(trace.exists())
+            self.assertEqual(bookkeeping("show", "send-1")["attempts"], [])
+
+            request["target"] = "uds:/synthetic/route.sock"
+            ambiguous = send()
+            self.assertEqual(ambiguous["reason"], "invalid_request")
+            self.assertNotIn("path", ambiguous)
+            self.assertFalse(ambiguous["claimed"])
+            self.assertFalse(ambiguous["owned_child"]["started"])
+            self.assertFalse(trace.exists())
+            self.assertEqual(bookkeeping("show", "send-1")["attempts"], [])
+
     def test_a_selection_must_match_exactly_one_row(self):
         for statuses in (("idle", "busy"), ("busy", "idle")):
             listing = desktop_listing(
@@ -1909,7 +1929,9 @@ class ClaudeNameSendTests(unittest.TestCase):
                 request["evidence_ref"] = f"claude-name:{name}"
                 result = send()
                 self.assertEqual(result["reason"], "invalid_name")
+                self.assertEqual(result["path"], "name")
                 self.assertFalse(result["claimed"])
+                self.assertFalse(result["owned_child"]["started"])
                 self.assertFalse(trace.exists())
                 retained = bookkeeping("show", "send-1")
                 self.assertEqual(retained["state"], "planned")

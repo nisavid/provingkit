@@ -16,8 +16,9 @@ The source supports two distinct directions between existing conversations:
   the ordinary first send addresses a local Claude agent by name, through the
   sender's own `claude mcp serve` child, one `ListAgents` listing, and one
   `SendMessage` call, with no step by the recipient. A recipient-prepared route
-  remains the fallback when the caller supplies one. The listing profile comes
-  from reading the installed program's source, not from an observed listing.
+  remains the fallback when the caller supplies one. The layout comes from an
+  observed Claude Desktop `ListAgents` response. The supported duration units
+  come from the Claude Code 2.1.331 formatter.
 - [Claude to Codex](skills/communicating-with-agents/references/codex-owner-admission.md)
   through exact-recipient owner discovery and inherited-settings admission.
 

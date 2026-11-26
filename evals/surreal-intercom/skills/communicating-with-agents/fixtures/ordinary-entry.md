@@ -91,11 +91,20 @@ installed-command observation resolves the invoked name `claude` to an absolute
 credential wrapper whose basename remains `claude`. A disposable owned mode-0700
 root, unused request path, ordinary message, immutable attempt, actor, limits,
 and private mailbox path are available. The sender's synthetic MCP child serves
-a catalog with `SendMessage` and `ListAgents`; its one-page listing shows
-`claude-receiver [3fa9c1]` once as a local `interactive` session, beside a
-Remote Control row with another name. The synthetic `SendMessage` result says
-the message is in that session's inbox, not yet read, and the child exits when
-its input closes.
+a catalog with `SendMessage` and `ListAgents`. It returns this complete synthetic
+listing.
+
+```text
+This session is Fixture Origin [ab12ef] — the name other sessions use to message it (it is not listed below; a message to it would be a message to yourself).
+
+Peer sessions (1):
+  claude-receiver [3fa9c1]  ·  interactive  ·  idle  ·  Claude Desktop session  ·  started 8h ago
+
+[Cloud sessions and other computers are not listed because Remote Control is off in this session. The user can turn it on with the Remote Control switch in the app; then list again.]
+```
+
+The synthetic `SendMessage` result says the message is in that session's inbox
+and remains unread. The child exits when its input closes.
 
 Use the installed communication procedure. Prepare the request by name and
 describe the single sender invocation and strongest possible handoff. Use only
