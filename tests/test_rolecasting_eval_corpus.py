@@ -135,27 +135,49 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
                     },
                 )
 
-    def test_verbatim_reply_case_delivers_both_writer_rules(self) -> None:
-        skill = "choosing-agent-models"
-        cases = {case["name"]: case for case in self.documents[skill]["evals"]}
-        self.assertIn("apply-approved-text-verbatim", cases)
-        case = cases["apply-approved-text-verbatim"]
-        fixture = (PLUGIN_ROOT / "skills" / skill / case["fixture_paths"][0]).read_text()
-        bundles = [
-            payload["candidate_bundle"]
-            for payload in validator_executor_bundles()
-            if payload["prompt"] == case["prompt"] and payload["fixture"] == fixture
-        ]
-        self.assertEqual(len(bundles), 1)
-        self.assertIn(f"skills/{skill}/SKILL.md", bundles[0])
-        instructions = " ".join(" ".join(bundles[0].values()).split())
-        for rule in (
-            "| Comments addressing or replying to a person | Fable or Astra | None | Excluded |",
-            "Any model may apply a qualified writer's text word for word under the applicable action authority.",
-            "Changing the wording is writing.",
-        ):
-            with self.subTest(rule=rule):
-                self.assertIn(rule, instructions)
+    def test_published_text_cases_deliver_the_rules_they_grade(self) -> None:
+        human_reply = "| Comments addressing or replying to a person | Fable or Astra | None | Excluded |"
+        case_rules = {
+            ("delegating-cross-agent-work", "delegate-pull-request-description"): (
+                "A coordinator assigns, tracks, and verifies the work.",
+                "Workers do the work, including writing and revising published text, whatever model the coordinator runs on.",
+                "what the text must say",
+                "check the returned wording against those facts",
+                "keep writing local only when you qualify as a writer for that kind of text",
+                "Applying a qualified writer's text word for word is not writing.",
+            ),
+            ("choosing-agent-models", "select-writer-for-human-reply"): (
+                human_reply,
+                "If neither is available, there is no eligible writer.",
+            ),
+            ("choosing-agent-models", "select-writer-for-routine-commit"): (
+                "such as source code comments and commit messages | Opus or Sol | Fable or Astra | Excluded |",
+                "Treat the current Sol as Opus's equal in every row.",
+                "Choose a preferred writer if available.",
+            ),
+            ("choosing-agent-models", "apply-approved-text-verbatim"): (
+                human_reply,
+                "Any model may apply a qualified writer's text word for word under the applicable action authority.",
+                "Changing the wording is writing.",
+            ),
+        }
+        payloads = validator_executor_bundles()
+        for (skill, name), rules in case_rules.items():
+            with self.subTest(skill=skill, case=name):
+                registered = {case["name"]: case for case in self.documents[skill]["evals"]}
+                self.assertIn(name, registered)
+                case = registered[name]
+                fixture = (PLUGIN_ROOT / "skills" / skill / case["fixture_paths"][0]).read_text()
+                bundles = [
+                    payload["candidate_bundle"]
+                    for payload in payloads
+                    if payload["prompt"] == case["prompt"] and payload["fixture"] == fixture
+                ]
+                self.assertEqual(len(bundles), 1)
+                self.assertIn(f"skills/{skill}/SKILL.md", bundles[0])
+                instructions = " ".join(" ".join(bundles[0].values()).split())
+                for rule in rules:
+                    self.assertTrue(rule in instructions, f"Executor did not receive: {rule}")
 
     def test_scoped_override_evals_grade_rules_in_their_real_bundles(self) -> None:
         # Corpus delivery only; this does not execute or grade an agent.
