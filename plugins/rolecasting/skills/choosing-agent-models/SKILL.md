@@ -7,25 +7,29 @@ description: Use when selecting model and effort for new workers or execution co
 
 ## Scope
 
-Own model and effort selection after [delegating-cross-agent-work](../delegating-cross-agent-work/SKILL.md) settles target, ownership, transport, authority, and assurance. Model choice is a separate decision; it cannot repair those boundaries. First distinguish [ordinary peer messages from execution assignments](references/capability-probes-and-fallbacks.md#distinguish-messages-from-execution-assignments). Classify complete bounded execution before each assignment, continuation, and review; read [scope classification and refusal diagnosis](references/classifying-security-work.md). Classify afresh.
+Own model and effort selection after [delegating-cross-agent-work](../delegating-cross-agent-work/SKILL.md) settles target, ownership, transport, authority, and assurance. Model choice is a separate decision; it cannot repair those boundaries. First distinguish [ordinary peer messages from execution assignments](references/capability-probes-and-fallbacks.md#distinguish-messages-from-execution-assignments). Classify complete bounded execution before each assignment, continuation, and review; read [scope classification and refusal diagnosis](references/classifying-security-work.md). Previous assignments do not carry classification forward.
 
 Apply [appointment configuration and scoped overrides](references/appointment-and-scoped-overrides.md).
 
 ## Selection Order
 
-Every route requires [eligible writers for published text](references/general-tiers.md#published-text) and [eligible effort](references/effort-policy.md): Astra/Fable and Sol/Opus require `medium` or higher, including inherited or fixed selection; OpenAI and Anthropic `max` requires every model, problem, workflow, and capability gate. Respect Terra Low/Medium/High task and role boundaries; exclude Luna XHigh/Max and Sol Light.
+[Published-text rules](references/general-tiers.md#published-text) supersede conflicting tiers.
+
+Apply [effort eligibility](references/effort-policy.md) to every route: Astra/Fable and Sol/Opus require `medium` or higher, including inherited or fixed selection; OpenAI and Anthropic `max` requires every model, problem, workflow, and capability gate. Terra Low/Medium/High follow their task and role boundaries; exclude Luna XHigh/Max and Sol Light.
 
 1. Select Jev first only when the **complete narrow operation** is a suitable System One typed text judgment and current availability, capability, effort eligibility, and authority pass; then stop selection. [Check all gates](references/jev-suitability.md).
 2. For actual cybersecurity work, obviously cybersecurity-related work with another primary domain, and cybersecurity-adjacent work, apply [Daybreak Blue routing and fallbacks](references/daybreak-routing.md).
-3. Otherwise use [general tiers and preferences](references/general-tiers.md): Sol/Opus serve ordinary demanding roles; Terra bridges economical tiers; Haiku/Luna/proven Grok serve bounded work; outside published writing and named roles, Astra/proven Fable require the exceptional-tier conjunction.
+3. Otherwise use [general tiers and preferences](references/general-tiers.md): Sol/Opus serve ordinary demanding roles; Terra bridges economical tiers; Haiku/Luna/proven Grok serve bounded work; Astra/proven Fable require the exceptional-tier conjunction.
 
 ## Prove Target Capability
 
-For every new thread, task, session, or subagent, deliberately select model and effort in this order and pass both supported fields. Global, desktop, and
+Every new agent thread, task, session, or subagent must deliberately select
+model and effort under the selection order and pass both supported creation
+fields. Global, desktop, and
 parent defaults never substitute for an exposed selection field. Set the model
 on a model-only surface and record the missing effort control. Inherit model
 only without a model field; record the proven binding and reason. Apply the
 [field and continuation rules](references/capability-probes-and-fallbacks.md#pass-every-supported-selection-field)
 including native Codex subagents and Claude Code's Agent tool.
 
-Use the newest proven same-name GPT or Claude successor, preserving role and gates. GPT-6.2 Sol supersedes earlier Sol versions. Read [capability and fallbacks](references/capability-probes-and-fallbacks.md) for successor identity, exact catalog/schema intersection, fixed selection, Fable proof, and unavailable routes. Never invent a slug, infer support from another surface, or treat selection as invocation authority. Return `adapter:model-selection-record` for ordinary same-leader selection. It proves the selected request and observed capability, not actual execution or authority.
+Use the newest proven version of the same named GPT or Claude model, preserving its role and gates. Earlier Sol versions are superseded by GPT-6.2 Sol. Read [capability and fallbacks](references/capability-probes-and-fallbacks.md) for successor identity, exact catalog/schema intersection, fixed selection, Fable proof, and unavailable routes. Never invent a slug, infer support from another surface, or treat selection as invocation authority. Return `adapter:model-selection-record` for ordinary same-leader selection. It proves the selected request and observed capability, not actual execution or authority.
