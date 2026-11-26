@@ -132,31 +132,27 @@ In [Claude on the web](https://claude.ai/) or the **Claude desktop app**:
 3. Enable the plugin. To find its skills, start a new chat and type `/`, or
    start a new Cowork task.
 
-   If you updated a plugin used in a Desktop Code session, check what that
-   session loaded.
-
-   - Run `/reload-plugins` in the affected Code session.
-   - Compare the loaded version or a changed file from the loaded plugin with
-     the reviewed release. Keep the check read-only. Inspect the version or
-     file directly, or use a skill that sends nothing and changes nothing.
-   - If the loaded copy matches, continue. If the check identifies the previous
-     release, [refresh Claude Desktop](#refresh-claude-desktop-after-an-update).
-   - If you cannot identify the loaded release, stop. Report the expected
-     release, the observed difference, and any reload error to the installation
-     owner. Do not restart on that basis alone.
+   If you updated a plugin used in a Desktop Code session,
+   [check what the session loaded](#refresh-claude-desktop-after-an-update).
 
 ### Refresh Claude Desktop after an update
 
-If the check still shows the previous release, checkpoint active work.
-Fully quit Claude Desktop and reopen it. Return to the affected Code session
-and run `/reload-plugins` again.
+Run `/reload-plugins` in the affected Code session. Compare the loaded version
+or a changed file from the loaded plugin with the reviewed release. Customize
+and the CLI can show a newer copy than Desktop loads.
 
-Repeat the same read-only check. Customize and the CLI can show a newer copy
-than Desktop loads. If the loaded copy matches, continue. If the check still
-identifies the previous release, report both versions and any reload error to
-the installation owner. If you cannot identify the loaded release, stop.
-Report the expected release, the observed difference, and any reload error to
-the installation owner. Do not restart on that basis alone.
+- If the loaded copy matches the reviewed release, choose a plugin skill that
+  sends nothing and changes nothing. Invoke it in the affected session, then continue.
+  If the plugin has no such skill, record that no read-only skill was available
+  and continue on the inspection alone.
+- If the check identifies the previous release before a restart, checkpoint
+  active work. Fully quit Claude Desktop and reopen it. Return to the affected
+  Code session. Verify that each peer route tied to the old connection reaches
+  its intended recipient before sending anything on it. Send any report only on
+  a route whose recipient you confirmed or one that does not use the old
+  connection. Run `/reload-plugins` again and repeat the check.
+- For any other result, stop. Do not restart. Report the expected release,
+  what you observed, and any reload error to the installation owner.
 
 See [Claude's plugin guide](https://claude.com/docs/plugins/overview#find-and-add-a-plugin).
 
