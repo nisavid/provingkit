@@ -1,6 +1,6 @@
 # Delegating published text
 
-Assign the wording to a qualified writer under the [published-text rule in choosing-agent-models](../../choosing-agent-models/references/general-tiers.md#published-text).
+Keep the message’s intent and assign published text, as [choosing-agent-models](../../choosing-agent-models/references/general-tiers.md#published-text) defines it, to a qualified writer.
 
 A coordinator assigns, tracks, and verifies the work. Workers do the work, including writing and revising published text, whatever model the coordinator runs on. Tell the writer what the text must say, including the facts the reader needs, and check the returned wording against those facts.
 

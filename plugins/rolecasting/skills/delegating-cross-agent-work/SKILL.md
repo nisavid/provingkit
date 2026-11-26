@@ -73,4 +73,4 @@ Use `surreal-intercom:communicating-with-agents` for peer communication and reco
 - Review patches, claims, captures, logs, and summaries.
 - Treat worker results as inputs, not decisions.
 - Integrate in the owning worktree; verify the contract.
-- Retain authority for architecture, root cause, [published text’s intent](references/published-text.md), and external actions.
+- Retain authority for architecture, root cause, [message intent](references/published-text.md), and external actions.
