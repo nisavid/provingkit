@@ -152,6 +152,7 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
                 "If neither is available, there is no eligible writer.",
             ),
             ("choosing-agent-models", "select-writer-for-routine-commit"): (
+                "| Kind of published text | Preferred writer | Also allowed | Everyone else |",
                 "such as source code comments and commit messages | Opus or Sol | Fable or Astra | Excluded |",
                 "Treat the current Sol as Opus's equal in every row.",
                 "Choose a preferred writer if available.",
@@ -169,6 +170,7 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
                 registered = {case["name"]: case for case in self.documents[skill]["evals"]}
                 self.assertIn(name, registered)
                 case = registered[name]
+                self.assertEqual(case["fixture_paths"], [f"evals/fixtures/{name}.md"])
                 fixture = (PLUGIN_ROOT / "skills" / skill / case["fixture_paths"][0]).read_text()
                 bundles = [
                     payload["candidate_bundle"]
