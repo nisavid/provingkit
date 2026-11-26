@@ -1579,6 +1579,7 @@ class ClaudeNameSendTests(unittest.TestCase):
         with self.name_consumer(name="main", pages=(listing,)) as (
                 _, _, send, bookkeeping, _, trace):
             result = send()
+            self.assertEqual(result["path"], "name")
             self.assertEqual(result["reason"], "self_destination")
             self.assertFalse(result["claimed"])
             self.assertFalse(trace.exists())

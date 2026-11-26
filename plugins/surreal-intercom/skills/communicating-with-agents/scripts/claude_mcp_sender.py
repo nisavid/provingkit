@@ -791,6 +791,8 @@ def main():
                     result["reason"] = "tool_error" if supported else "unsupported_tool_result"
     except InspectionError as error:
         result["reason"] = str(error)
+        if result["reason"] == "self_destination":
+            result["path"] = "name"
     except (ValueError, RecursionError, OSError, sqlite3.Error, MailboxError):
         result["reason"] = "local_or_protocol_failure"
     finally:
