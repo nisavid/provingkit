@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
-  "candidate_revision": "55925def00b296584f009cd3b8551d3502916815",
+  "candidate_revision": "b38f5bfb28fbce6f48e660b427c905e293abb9aa",
   "snapshot": {
-    "candidate_revision": "55925def00b296584f009cd3b8551d3502916815",
+    "candidate_revision": "b38f5bfb28fbce6f48e660b427c905e293abb9aa",
     "inputs": {
       "evals/comparative-review-lifecycle-matrix.json": {
         "mode": "100644",
@@ -14,7 +14,7 @@
       },
       "plugins/rolecasting/content-lock.json": {
         "mode": "100644",
-        "sha256": "dd53194bd0176450d50557eb79ce9426aea94afaaded1de0afd94a44fd70fed5"
+        "sha256": "b4fc40f70ffca5139023e97f714732d53910746f00e9883f0806216a6038323e"
       },
       "plugins/rolecasting/evals/delivery.json": {
         "mode": "100644",
@@ -22,7 +22,7 @@
       },
       "plugins/rolecasting/skills/choosing-agent-models/SKILL.md": {
         "mode": "100644",
-        "sha256": "ff34b3ae016fd988eff25d9375f6fb47bce9ddd636cfd1319a2d3610184599fb"
+        "sha256": "05e09289e097ece5a1c503ee354be792e4acf4622f15fea326530c1fd115cf59"
       },
       "plugins/rolecasting/skills/choosing-agent-models/agents/openai.yaml": {
         "mode": "100644",
@@ -30,7 +30,11 @@
       },
       "plugins/rolecasting/skills/choosing-agent-models/evals/evals.json": {
         "mode": "100644",
-        "sha256": "8b92101ff201e2545084c69ea051093afd6d2c1cf92332ba6ee6e3f396ac9f50"
+        "sha256": "f16e857674579bb350799e21a7543f3d46e988d01ffbece7b52366060738bc4e"
+      },
+      "plugins/rolecasting/skills/choosing-agent-models/evals/fixtures/appointment-and-scoped-overrides.md": {
+        "mode": "100644",
+        "sha256": "26cab1cb7a8a1b28a1ad3b7050e4dfa06d88340b559e409023f128c2fa6f3566"
       },
       "plugins/rolecasting/skills/choosing-agent-models/evals/fixtures/cursor-grok-bounded-review.md": {
         "mode": "100644",
@@ -154,11 +158,15 @@
       },
       "plugins/rolecasting/skills/choosing-agent-models/evals/trigger-evals.json": {
         "mode": "100644",
-        "sha256": "ba3658f080c78e27f0704fb5e1d177c94df013f91881d5033ff6629eedd49d2a"
+        "sha256": "aedef4698605cc97fd959917b73e95df85cee9d9d2273197a040bf97bc17b442"
+      },
+      "plugins/rolecasting/skills/choosing-agent-models/references/appointment-and-scoped-overrides.md": {
+        "mode": "100644",
+        "sha256": "35a59b1d6c292e358404f2a1e02c0fce6c18f92b9d1bb81c79e433f304c4548e"
       },
       "plugins/rolecasting/skills/choosing-agent-models/references/capability-probes-and-fallbacks.md": {
         "mode": "100644",
-        "sha256": "0405a7a39f43b486dedde9027cea69c5dc7d2c0e902aa0f887baf3721947b1cb"
+        "sha256": "a46e83ac01135695c78a079f5f1ae58fb5b32dbc7bc4e5545d6dcdec3670e777"
       },
       "plugins/rolecasting/skills/choosing-agent-models/references/classifying-security-work.md": {
         "mode": "100644",
@@ -174,7 +182,7 @@
       },
       "plugins/rolecasting/skills/choosing-agent-models/references/general-tiers.md": {
         "mode": "100644",
-        "sha256": "dc5e9b1ecf7c3ecdb89ae7ddbf345669cc9433b9a785b5dc8280ec9380fdf9eb"
+        "sha256": "4c122943ccc57e35c7eb70446a7c24767c13c460d11a077b81ef0cf9cc45cd3f"
       },
       "plugins/rolecasting/skills/choosing-agent-models/references/jev-suitability.md": {
         "mode": "100644",
@@ -206,7 +214,7 @@
       },
       "plugins/rolecasting/skills/delegating-cross-agent-work/references/invocation-topology-receipt.md": {
         "mode": "100644",
-        "sha256": "b1f2970a61350d34684487a97fb78acfe2852c9c8ebce6241cf153870f65c2cd"
+        "sha256": "57d901964ba3a6a1c76c6cc0977201230b96453b5d3d512b5ee61af69b79fa8e"
       },
       "plugins/rolecasting/skills/delegating-cross-agent-work/references/native-codex-subagents.md": {
         "mode": "100644",
@@ -242,7 +250,7 @@
       },
       "release/provingkit/definition-v1.json": {
         "mode": "100644",
-        "sha256": "ba5dcdc95f07bbe3185116bcc006c3030ed1f627ea0f0088273af5034fa1c9ee"
+        "sha256": "ec4d9a99807b4c2aa3a25caa1689630dca946244f4b141c75cb89ecc19bc126b"
       },
       "scripts/behavior_eval_corpora.py": {
         "mode": "100644",
@@ -264,6 +272,7 @@
         "evals/control-plane-matrix.json",
         "plugins/rolecasting/skills/choosing-agent-models/SKILL.md",
         "plugins/rolecasting/skills/choosing-agent-models/evals/evals.json",
+        "plugins/rolecasting/skills/choosing-agent-models/evals/fixtures/appointment-and-scoped-overrides.md",
         "plugins/rolecasting/skills/choosing-agent-models/evals/fixtures/cursor-grok-bounded-review.md",
         "plugins/rolecasting/skills/choosing-agent-models/evals/fixtures/cursor-grok-consequential-review.md",
         "plugins/rolecasting/skills/choosing-agent-models/evals/fixtures/daybreak-route-evidence.md",
@@ -295,6 +304,7 @@
         "plugins/rolecasting/skills/choosing-agent-models/evals/fixtures/unrelated-task-model-route.md",
         "plugins/rolecasting/skills/choosing-agent-models/evals/fixtures/unsupported-luna-surface.md",
         "plugins/rolecasting/skills/choosing-agent-models/evals/trigger-evals.json",
+        "plugins/rolecasting/skills/choosing-agent-models/references/appointment-and-scoped-overrides.md",
         "plugins/rolecasting/skills/choosing-agent-models/references/capability-probes-and-fallbacks.md",
         "plugins/rolecasting/skills/choosing-agent-models/references/classifying-security-work.md",
         "plugins/rolecasting/skills/choosing-agent-models/references/daybreak-routing.md",
@@ -407,6 +417,10 @@
           "source": "plugins/rolecasting/skills/choosing-agent-models/evals/evals.json"
         },
         {
+          "pointer": "/evals/30",
+          "source": "plugins/rolecasting/skills/choosing-agent-models/evals/evals.json"
+        },
+        {
           "pointer": "/evals/4",
           "source": "plugins/rolecasting/skills/choosing-agent-models/evals/evals.json"
         },
@@ -440,6 +454,14 @@
         },
         {
           "pointer": "/10",
+          "source": "plugins/rolecasting/skills/choosing-agent-models/evals/trigger-evals.json"
+        },
+        {
+          "pointer": "/11",
+          "source": "plugins/rolecasting/skills/choosing-agent-models/evals/trigger-evals.json"
+        },
+        {
+          "pointer": "/12",
           "source": "plugins/rolecasting/skills/choosing-agent-models/evals/trigger-evals.json"
         },
         {
@@ -495,10 +517,10 @@
     }
   },
   "kind": "waiver",
-  "reason": "Operator-issued one-time source integration exception for PR #1120’s direct Astra/Sol 6.2 version update. The historical eval receipt is stale for the reviewed source.",
+  "reason": "On 2026-11-25, the maintainer answered \"Waive for these, refresh once\". The decision waives the stale-receipt check for rolecasting/choosing-agent-models and rolecasting/delegating-cross-agent-work on #945, #1168, the #469 Daybreak caller fix, and the first-wave casting change (positions 1 and 7). Refresh both receipts once after the last of those changes lands and before the next release.",
   "operator_decision": {
     "issued_by": "operator",
-    "decision_sha256": "26089a4b72df56c47239bfaefb0277711433cfed16aaf9e4188bc3c2fecfabc0"
+    "decision_sha256": "614d372444044d0898f2e214079648cf9661bc42dba469da206d3bd1a44a0bef"
   },
   "expiry": {
     "event": "next-release",

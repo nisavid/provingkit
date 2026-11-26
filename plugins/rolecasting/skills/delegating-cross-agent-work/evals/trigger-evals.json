@@ -18,5 +18,13 @@
   {
     "query": "A message called a quick update assigns new execution to an existing worker. Bind the new assignment scope, authority and handoff before selecting its model.",
     "should_trigger": true
+  },
+  {
+    "query": "Bind the actual task handover and accepted restoration owner for overlapping scoped overrides; keep the queued future assignment from changing current work.",
+    "should_trigger": true
+  },
+  {
+    "query": "Send only a status acknowledgment inside the existing accepted peer assignment. An approved selection profile exists, but no execution or settings change is requested.",
+    "should_trigger": false
   }
 ]
