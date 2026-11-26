@@ -23,6 +23,13 @@ release. A missing account, unsupported route, or conflicting installed version
 is an owned gap, not evidence that the other accounts failed. Continue the
 independent eligible account and surface rows while that gap is resolved.
 
+After saving and enabling a plugin update used in a Desktop Code session,
+follow the [Claude Desktop refresh procedure](../install-and-update.md#refresh-claude-desktop-after-an-update).
+Record the saved identity and the result of each loaded identity check separately.
+Reconcile an uncertain send with its original attempt before retrying it or
+switching its route. Verify fresh-session discovery and useful use separately
+from the recovery of a session whose transcript survived the restart.
+
 After installation or update, complete any required restart or sync for that
 surface and record its result. Then open a genuine fresh session on each intended
 surface. Verify that the intended plugin and its components load and that an

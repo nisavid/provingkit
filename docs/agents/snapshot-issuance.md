@@ -138,6 +138,116 @@ Complete the owning projection checks, mode checks, and packing procedure before
 constructing a publication commit. Use the versioned generation
 `ad-hoc/<source-commit>/<delivered-version>/<target>/`; retain older paths.
 
+## Record where the source stands before first exposure
+
+Ivan selected this rule on 2026-11-19; the record is the "Source standing,
+settled on 2026-11-19" section of
+[the versioning contract decision](https://github.com/nisavid/provingkit/issues/1075).
+It governs first exposures made after those selections were recorded. This
+guidance calls no earlier delivery compliant or not.
+
+Before a snapshot's first exposure, its delivery record holds three things:
+
+- The review of its source commit, or a statement that there is none.
+- Whether the commit is on the release line, with the `main` commit it was
+  tested against.
+- When it is not, the ticket that lands the commit or withdraws the copy, and
+  the named remote ref, which is kept, that holds the commit.
+
+A record that states no review also names the channels it permits. After a
+landing, the record gains the landing note described below.
+
+Delivery from source that is not on the release line needs this record and no
+approval of its own. A snapshot whose record states no review goes only to the
+channels its record names and carries the same landing or withdrawal ticket.
+Client probes of draft work do not wait for a review. Each installation still
+needs Ivan's authorization, and the request to him states the review status.
+
+The issuer does not yet hold or check any of this: its `prepare` request takes
+a request name and a source commit, and its state has no place for the record.
+Until it does, whoever issues the snapshot writes the record, retains it with
+the preparation response, and provides it at handoff. Complete it before the
+`issue` request below; that transaction does not check it.
+
+**What counts as a review to name.** For a source commit on the release line,
+name the reviews of the pull requests that changed what is delivered since the
+preceding named release. For a source commit off the release line, name each
+review of the difference between that commit and its merge base with the
+release line, by the commit the review covered. A review of one part of that
+difference is recorded as a review of that part. Where the parts were reviewed
+and the combination was not, say exactly that; the snapshot is then treated as
+having no review. The cases differ on purpose: on the release line every change
+has passed that line's own review and merge, and off it the combination has
+passed neither.
+
+**How landing is recorded.** After a landing, the delivery record gains the
+commit that landed the source and says whether the delivered source equals it.
+The note changes no delivered identity. It is what lets "landed" survive a
+squash merge, where the source commit itself never joins the release line.
+
+**Release-line status by hand.** The release line is `main` on the canonical
+remote, the GitHub repository `nisavid/provingkit`. A local `main` is not the
+release line, and the projector's `--channel` argument is not evidence of the
+status. The status comes from Git, not from an argument. Until the issuer
+computes it, whoever issues the snapshot works in the checkout that holds the
+source commit. First confirm that `origin` is the canonical repository itself,
+not a fork or a similarly named repository: `git remote get-url origin` prints
+exactly `https://github.com/nisavid/provingkit` or
+`git@github.com:nisavid/provingkit`, with or without a final `.git`. Also
+confirm that `git rev-parse --is-shallow-repository` prints `false`. Then fetch
+`main` into `refs/remotes/origin/main`, test the source commit against that one
+fetched commit, and record that commit:
+
+```sh
+git fetch origin +refs/heads/main:refs/remotes/origin/main &&
+  main=$(git rev-parse --verify 'refs/remotes/origin/main^{commit}') && {
+  if git merge-base --is-ancestor <source commit> "$main"; then
+    rc=0
+  else
+    rc=$?
+  fi
+  echo "status=$rc main=$main"
+}
+```
+
+Record the exit status together with that `main` commit:
+
+| Exit status | Meaning to record |
+| --- | --- |
+| 0 | The source commit is on the release line. |
+| 1 | The source commit is not on the release line. |
+| Any other | The answer could not be established. |
+
+Record "could not be established", never "not on the release line", for any
+other status, when the commands print no status, when the fetch fails, when the
+checkout is shallow, and when `origin` is not the canonical repository. Such a
+record does not yet say whether the commit is on the release line, so the
+snapshot's first exposure waits until a later check establishes it.
+
+**What makes a remote ref kept.** [Ivan answered on 2026-11-19](https://github.com/nisavid/provingkit/issues/1075#issuecomment-7016813642):
+a protected place. A named remote ref is kept when it sits under the name that
+a repository rule protects from deletion, where delivered sources that are not
+on the release line are pushed. A branch that can be deleted does not meet the
+rule, and a written commitment on the landing ticket does not either. A commit
+that is not on the release line meets the rule only when such a ref holds it,
+and until then its first exposure waits. Each push to that place needs its own
+authority.
+
+In this repository that place is `refs/heads/retained/delivered/<version>`,
+where `<version>` is the delivered version: one ref per delivered version,
+pushed once, under a name the repository's rules protect from update and
+deletion.
+
+The push that puts a delivered source into the protected place goes through the
+Versionkeeping planner, as a create-only push. When the source is not at or
+above the tip of some branch on the remote, for example a merged pull request's
+head whose branch is gone, the plan is blocked. Such a blocked plan is not
+restated as a plain push: the push stops, and Ivan decides on a one-time
+exception for that exact push. This
+paragraph grants no push and no exception. The [ticket that tracks the planner
+change](https://github.com/nisavid/provingkit/issues/531#issuecomment-7018079892)
+says why, and holds the change that would let the planner plan such a push.
+
 ## Commit issuance before the first exposure
 
 Prepare and review the normal Versionkeeping publication plan for the immutable
@@ -243,13 +353,16 @@ examples execute the actual CLI and inspect emitted manifests and receipts.
 The clock example replaces Python's `time.time`; it does not change the host
 clock. Synthetic source identifiers test identity independence, not Git age.
 
-Before actual delivery, require current independent review, authoritative state
-custody, selected-route and named-cut participation, and recovery evidence at
-the first-exposure boundary. The installation owner then qualifies the selected
-client with useful earlier and later source selections, without runtime markers
-or unrelated edits. Provide the reviewed revision, both delivered versions,
-source commits, original complete receipts, exact projected and packed bytes,
-mode inventories and digests, ordering/retry/variant outcomes, pinned transport
-identities, and publication/readback results. Record the owner's procedure
-revision and naturally useful invocation; installed use is complete only when
-the selected client actually loads the changed copy under its new identity.
+Before actual delivery, require authoritative state custody, selected-route and
+named-cut participation, recovery evidence at the first-exposure boundary, and
+the source-standing record above. No independent review of the source commit is
+required; the record states its review or that there is none. The installation
+owner then qualifies the selected client with useful earlier and later source
+selections, without runtime markers or unrelated edits. Provide the reviewed
+implementation and procedure revision, both delivered versions, source commits,
+the source-standing record, original complete receipts, exact projected and
+packed bytes, mode inventories and digests, ordering/retry/variant outcomes,
+pinned transport identities, and publication/readback results. Record the
+owner's procedure revision and naturally useful invocation; installed use is
+complete only when the selected client actually loads the changed copy under
+its new identity.
