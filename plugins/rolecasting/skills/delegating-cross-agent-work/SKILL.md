@@ -15,7 +15,7 @@ Apply the [message/execution boundary](../choosing-agent-models/references/capab
 
 ## Choose the Worker Contract
 
-Choose independently:
+Choose each axis independently:
 
 - target: exact family, surface, version, and executor;
 - relationship: `child`, `peer`, or `external`;
@@ -23,9 +23,9 @@ Choose independently:
 - transport: `native-tool`, `task-api`, `cli`, `app-server`, or `remote-api`; and
 - required assurance: `product-attested`, `controller-observed`, or `self-reported`.
 
-Choose leader-owned children for bounded work you create and end, leader-owned peers for independent sessions you control. Create or steer user-owned peers/tasks only with explicit consent. Cross product/control boundaries only when materially helpful.
+Keep axes independent. Use a leader-owned child for bounded work the leader creates and ends. A leader-owned peer keeps an independent leader-controlled session. User-owned peers or tasks require explicit consent to create or steer. Cross the product or control boundary only when materially helpful.
 
-Task identity and bounded purpose govern routing. Model availability never validates an unrelated task. Before non-native or separately owned probes, read [foreign-harness-peers.md](references/foreign-harness-peers.md).
+Task identity and bounded purpose are route gates: model availability never makes an unrelated task valid. Read [foreign-harness-peers.md](references/foreign-harness-peers.md) before probing a non-native or separately owned surface.
 
 ## Kickoff
 
@@ -40,28 +40,29 @@ global, desktop, and parent defaults never replace supported fields.
 
 ## Bounded Handoff
 
-Bind each handoff's goal, success criteria, worktree, immutable base, facts, target behavior, scope, read/write and subdelegation authority, external-action authority, verification, output, and stop conditions. Recover and apply verified operator grants through [handoff authority](references/invocation-topology-receipt.md#handoff-authority). Preserve edits.
+Every execution handoff binds goal, success criteria, worktree, immutable base, facts, target behavior, scope, read/write and subdelegation authority, external-action authority, verification, output, and stop conditions. Recover and apply verified operator grants through [handoff authority](references/invocation-topology-receipt.md#handoff-authority). Preserve edits.
 
 Read [scarce-specialist handoffs](references/scarce-specialist-handoffs.md) before assigning one.
 
-For native Codex, select [Cloud or strict](references/native-codex-subagents.md).
+For native Codex, select Cloud or strict profiles in
+[native-codex-subagents.md](references/native-codex-subagents.md).
 
 Freeze ordinary review handoffs as `adapter:rolecasting-invocation-plan` under [invocation-topology-receipt.md](references/invocation-topology-receipt.md). Witnessed consumers also require `adapter:rolecasting-invocation-topology-receipt`. Model selection never supplies dispatch authority. Use [dispatch-evidence.md](references/dispatch-evidence.md) for witnessed execution and assurance.
 
-Workers return one:
+Workers return one status:
 
 - `DONE`: complete and verified
 - `DONE_WITH_CONCERNS`: complete with concrete concerns
-- `NEEDS_CONTEXT`: name missing fact or decision
+- `NEEDS_CONTEXT`: a named fact or decision is missing
 - `BLOCKED`: impossible within current scope, authority, or environment
 
-Retry `NEEDS_CONTEXT` or `BLOCKED` only after input, authority, boundary, or capability changes.
+On `NEEDS_CONTEXT` or `BLOCKED`, change the input, authority, boundary, or capability before retrying.
 
 ## Batch and Wait
 
 Batch small independent same-shape work into one dispatch and review its diff as one unit. Separate work needing its own judgment, own tests, or review surface.
 
-Do local work before waiting, coordination only for coordinators. Avoid short polling; after bounded idle waits, reconcile live children and recover missed terminal results.
+Do local work before waiting; avoid short polling, use a bounded wait when idle, then reconcile live children and recover missed terminal results.
 
 Use `surreal-intercom:communicating-with-agents` for peer communication and reconciliation.
 
@@ -72,4 +73,4 @@ Use `surreal-intercom:communicating-with-agents` for peer communication and reco
 - Review patches, claims, captures, logs, and summaries.
 - Treat worker results as inputs, not decisions.
 - Integrate in the owning worktree; verify the contract.
-- Retain authority for architecture, root cause, message intent, and external actions. Coordinators assign, track, and verify. Delegate [published text, as choosing-agent-models defines it](../choosing-agent-models/references/general-tiers.md#published-text), unless writing as its qualified worker. Any authorized model may apply it verbatim.
+- Keep message intent local and assign [published text](references/published-text.md) to a qualified writer.
