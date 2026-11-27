@@ -454,7 +454,7 @@
       "expectations": [
         {
           "id": "claude-visual-owner-reconsideration",
-          "text": "For A, recognizes Sol and Opus as equally preferred writers for routine published UI copy, recommends that the owner reconsider the GPT target in favor of Claude, and waits for the owner's revised plan. Selecting a pair or dispatching before that revision fails this criterion.",
+          "text": "For A, recommends that the owner reconsider the GPT target in favor of Claude and waits for the owner's revised plan before selecting a pair or dispatching. Selecting a pair or dispatching before that revision fails this criterion.",
           "severity": "quality"
         },
         {
