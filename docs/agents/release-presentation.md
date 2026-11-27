@@ -32,7 +32,7 @@ Start from the [release body template](../releases/release-body-template.md),
 adapting its sections to the actual release rather than preserving empty
 headings. Keep the accepted downloads-first presentation: a concise statement
 of the release's value and status, useful downloads, and a discoverable complete
-upload/update guide precede the detailed changes.
+installation and update guide precede the detailed changes.
 
 Organize the changes around what users can now do, what became more reliable,
 and what they need to change. Group related work into coherent capabilities;
@@ -50,12 +50,15 @@ Describe the supported product and its boundaries without implying that every
 unfinished development task is a limitation of the released capability.
 
 Build the download rows from the frozen Slate and verified assets, using
-the archive naming rule below. Label targets in terms readers can choose and
-pair each archive with its checksum file. When the frozen inventory establishes
-that no checksum file exists, provide an inline archive hash verified against the
-frozen inputs. An unavailable download does not establish absence; resolve
-missing or conflicting checksum evidence before publication. Distinguish
-installable artifacts from forge-generated source archives.
+the archive naming rule below. Apply the naming rule before checking filenames
+against the inventory; a recorded filename does not override the rule. Label
+targets in terms readers can choose and pair each archive with its checksum
+file. When the frozen inventory establishes that no checksum file exists,
+provide an inline archive hash verified against the frozen inputs. An
+unavailable download does not establish absence; resolve missing or
+conflicting checksum evidence before publication. Distinguish installable
+artifacts from forge-generated source archives.
+
 Maintain one [installation and update guide](../install-and-update.md) for the
 current release. Link its stable published path from release notes and the
 repository's human entrypoint. Update the method when it changes; do not create
@@ -72,8 +75,7 @@ documentation and applicable observations; neither source alone establishes a
 successful installation.
 
 Use `proseweaving:writing-for-people` to write and edit the release notes and
-installation guide. Apply the naming rule before checking filenames against
-the inventory; a recorded filename does not override the rule.
+installation guide.
 
 For GitHub and Linear, use the same verified semantic inputs and retain one
 maintained authoring source for the release. Adapt presentation to each
