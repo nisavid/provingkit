@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
-  "candidate_revision": "96f7687852a499d69c9a62657e401f5c2216c164",
+  "candidate_revision": "103c8a5cc9d16c4f44658db35c557b97f2fd629a",
   "snapshot": {
-    "candidate_revision": "96f7687852a499d69c9a62657e401f5c2216c164",
+    "candidate_revision": "103c8a5cc9d16c4f44658db35c557b97f2fd629a",
     "inputs": {
       "evals/comparative-review-lifecycle-matrix.json": {
         "mode": "100644",
@@ -14,7 +14,7 @@
       },
       "plugins/rolecasting/content-lock.json": {
         "mode": "100644",
-        "sha256": "959dca1e134cc73c856bf6687dc0da6c3b4c36ec9f522df61f5d7676b8ac537f"
+        "sha256": "e048ab216b9c71ee21ebf8b3519d5d40d94fd4b5d65f9f634a115868b65e6c9d"
       },
       "plugins/rolecasting/evals/delivery.json": {
         "mode": "100644",
@@ -22,7 +22,7 @@
       },
       "plugins/rolecasting/skills/choosing-agent-models/SKILL.md": {
         "mode": "100644",
-        "sha256": "b203039a20d3d481c558e1eddfe9279aab5650080493b66b6cf34d1f32dcb779"
+        "sha256": "bdbfe911b6e723d2dcf57c86d015b31631d2a3bc8118aa9be7c9ecfd24afb8a7"
       },
       "plugins/rolecasting/skills/choosing-agent-models/agents/openai.yaml": {
         "mode": "100644",
@@ -50,7 +50,7 @@
       },
       "plugins/rolecasting/skills/choosing-agent-models/references/general-tiers.md": {
         "mode": "100644",
-        "sha256": "fac3c4cb1d746162285862acac5861c1d9a36144b23d25547c51cf40071983a5"
+        "sha256": "720e2eb7a67f66a2fc090802b8d44a9bb281017891649f85b473069f6e5fd945"
       },
       "plugins/rolecasting/skills/choosing-agent-models/references/jev-suitability.md": {
         "mode": "100644",
@@ -266,7 +266,7 @@
       },
       "release/provingkit/definition-v1.json": {
         "mode": "100644",
-        "sha256": "5c13b1e629e54503bb46102c79e70524f37e729ea1205af82e7b2a6526eb83f1"
+        "sha256": "70619168f9e92d06ff449d09002375ffda2e2cad8cf38d5ace9804257a9f1a54"
       },
       "scripts/behavior_eval_corpora.py": {
         "mode": "100644",
