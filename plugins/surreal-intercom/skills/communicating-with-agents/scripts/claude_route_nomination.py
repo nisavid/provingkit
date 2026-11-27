@@ -17,7 +17,9 @@ import sqlite3
 import stat
 import sys
 
-from claude_mcp_sender import RECONCILIATION_FIELDS, frame_fits, request_destination, sendmessage_call
+from claude_mcp_sender import (
+    RECONCILIATION_FIELDS, destination_violation, frame_fits, request_destination, sendmessage_call,
+)
 from claude_mcp_sender import validate as validate_sender_request
 from codex_capture import CaptureWriter
 from native_codex_mailbox import Mailbox
@@ -361,7 +363,10 @@ def _prepared_request(request, effective_uid, environment, launcher_lookup):
         raise RouteRefusal("sender-request-byte-limit")
     # Check before planning, using the qualified frame when a selection is present.
     # Only the sender's listing can determine whether it will send the bare name.
-    if not frame_fits(sendmessage_call(message, actor, request_destination(sender_request))):
+    destination = request_destination(sender_request)
+    if "name" in sender_request and destination_violation(destination):
+        raise RouteRefusal("destination_constraint_violation")
+    if not frame_fits(sendmessage_call(message, actor, destination)):
         raise RouteRefusal("sender-frame-byte-limit")
     return output, capture, mailbox_path, message, sender_request, encoded
 

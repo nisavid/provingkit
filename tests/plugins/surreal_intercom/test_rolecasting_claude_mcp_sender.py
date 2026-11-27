@@ -151,6 +151,10 @@ class ClaudeMcpSenderTests(unittest.TestCase):
                                     "content": [{"type": "text", "text": "Private unvalidated tool text."}],
                                     "isError": sys.argv[3] == "tool_error",
                                 }
+                            elif sys.argv[3] in ("refusal_without_flag", "refusal_with_false_flag"):
+                                response = {"content": [{"type": "text", "text": "Not sent: peer left."}]}
+                                if sys.argv[3] == "refusal_with_false_flag":
+                                    response["isError"] = False
                             else:
                                 raise SystemExit(90)
                         else:
@@ -584,6 +588,30 @@ class ClaudeMcpSenderTests(unittest.TestCase):
                     })
                     self.assert_no_replay(request, send, bookkeeping, trace, retained)
 
+    def test_explicit_not_sent_reply_stays_unknown_with_an_absent_or_false_error_flag(self):
+        for flag, mode in (({}, "refusal_without_flag"), ({"isError": False}, "refusal_with_false_flag")):
+            with self.subTest(mode=mode), self.consumer(mode=mode) as (
+                    original, request, send, bookkeeping, trace, _):
+                result = send()
+                self.assertEqual(result["stage"], "call")
+                self.assertEqual(result["reason"], "tool_error")
+                self.assertEqual(result["peer_input"], "possible_submission")
+                self.assertTrue(result["claimed"])
+                self.assertNotIn("Not sent: peer left.", json.dumps(result))
+                retained = bookkeeping("show", original["message_id"])
+                self.assert_no_receipt(retained, original)
+                self.assertEqual(retained["state"], "unknown")
+                attempt, = retained["attempts"]
+                self.assertEqual(attempt["submission"], "unknown")
+                self.assertEqual([o["kind"] for o in attempt["observations"]], ["unknown"] * 3)
+                self.assertEqual(attempt["observations"][-1]["evidence_ref"], request["evidence_ref"])
+                self.assertEqual(json.loads(attempt["observations"][-1]["detail"]), {
+                    "target": request["target"],
+                    "tool_result": {"content": [{"type": "text", "text": "Not sent: peer left."}],
+                                    **flag},
+                })
+                self.assert_no_replay(request, send, bookkeeping, trace, retained)
+
     def test_stdout_overflow_after_call_preserves_first_failure_and_uncertainty(self):
         with self.consumer(mode="stdout_overflow") as (original, request, send, bookkeeping, trace, source):
             result = send()
@@ -914,10 +942,12 @@ NAME_CHILD = textwrap.dedent("""\
             trace.write(json.dumps(value) + "\\n")
 
     record({"started_pid": os.getpid()})
-    if config.get("mode") == "writes_while_stopping":
+    if config.get("mode") in ("writes_while_stopping", "stderr_overflow_while_stopping"):
         import signal
 
         def stop(*_):
+            if config["mode"] == "stderr_overflow_while_stopping":
+                os.write(2, b"overflow")
             os.write(1, b"x" * 262144)
             os._exit(0)
 
@@ -943,7 +973,8 @@ NAME_CHILD = textwrap.dedent("""\
                         "Message sent to the session; in that session's inbox, not yet read."}]}
         print(json.dumps({"jsonrpc": "2.0", "id": request["id"], "result": response}), flush=True)
     record({"stdin_eof": True})
-    if config.get("mode") in ("lingers_after_input_closes", "writes_while_stopping"):
+    if config.get("mode") in ("lingers_after_input_closes", "writes_while_stopping",
+                              "stderr_overflow_while_stopping"):
         time.sleep(30)
     raise SystemExit(0)
     """)
@@ -1067,7 +1098,8 @@ class ClaudeNameSendTests(unittest.TestCase):
                     if holder:
                         try:
                             os.kill(holder, signal.SIGKILL)
-                        except OSError:
+                        except ProcessLookupError:
+                            # The fixture's pipe holder already exited.
                             pass
 
     def assert_refused_without_send(self, result, reason, calls, bookkeeping, unreadable_rows=0):
@@ -1154,6 +1186,18 @@ class ClaudeNameSendTests(unittest.TestCase):
                 "started": True, "reaped": True, "exit_code": 0,
                 "closed_by": "terminate"})
             self.assertLess(result["elapsed"], 10)
+
+    def test_closure_drains_stdout_after_stderr_overflows(self):
+        with self.name_consumer(mode="stderr_overflow_while_stopping", seconds=20,
+                                stdout_bytes=1048576) as (_, request, send, bookkeeping, _, _):
+            request["limits"]["stderr_bytes"] = 1
+            result = send()
+            self.assertEqual(result["reason"], "submitted")
+            self.assertEqual(bookkeeping("show", "send-1")["state"], "submitted")
+            self.assertEqual(result["owned_child"], {
+                "started": True, "reaped": True, "exit_code": 0,
+                "closed_by": "terminate", "closure_error": "stderr_limit",
+            })
 
     def test_a_descendant_holding_the_pipes_does_not_extend_the_close(self):
         with self.name_consumer(mode="descendant_holds_pipes", seconds=20) as (

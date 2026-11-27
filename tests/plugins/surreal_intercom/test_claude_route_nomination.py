@@ -477,6 +477,58 @@ class ClaudeRouteNominationTests(unittest.TestCase):
             finally:
                 mailbox.close()
 
+    def test_prepare_accepts_a_300_unit_bare_name_but_refuses_the_qualified_address(self):
+        _, _, mailbox_module = self.load_modules()
+        with tempfile.TemporaryDirectory(prefix="claude-route-") as temporary:
+            root = Path(temporary).resolve()
+            launcher = root / "claude"
+            started = root / "launcher-started"
+            launcher.write_text('#!/bin/sh\n: > "${0%/*}/launcher-started"\n', encoding="utf-8")
+            launcher.chmod(0o700)
+            name = "x" * 300
+            request = self.prepare_input(root, None, {"thread_id": name, "host_id": "local"})
+            del request["nomination"]
+            request.update({"schema": "claude-name-request-preparation-v1", "name": name,
+                            "selection": {"ref": "aa12bc"}})
+            mailbox_path = Path(request["mailbox"])
+            self.initialize_mailbox(mailbox_module, mailbox_path)
+            request_path = root / "prepare-input.json"
+            published = Path(request["publication"]["path"])
+
+            def prepare():
+                self.write(request_path, request)
+                completed = subprocess.run(
+                    [sys.executable, "-B", str(HELPER), "prepare", "--request", str(request_path)],
+                    env={**os.environ, "PATH": str(root)}, capture_output=True, text=True,
+                    check=True, timeout=10)
+                self.assertFalse(started.exists())
+                return json.loads(completed.stdout)
+
+            self.assertEqual(prepare(), {
+                "prepared": False, "reason": "destination_constraint_violation",
+                "closure": "no-provider-started",
+            })
+            self.assertFalse(published.exists())
+            mailbox = mailbox_module.Mailbox(mailbox_path)
+            try:
+                self.assertEqual(mailbox.pending(), [])
+            finally:
+                mailbox.close()
+
+            del request["selection"]
+            result = prepare()
+            self.assertTrue(result["prepared"], result)
+            prepared = json.loads(published.read_text(encoding="utf-8"))
+            self.assertEqual(prepared["name"], name)
+            self.assertNotIn("selection", prepared)
+            mailbox = mailbox_module.Mailbox(mailbox_path)
+            try:
+                retained = mailbox.get(request["message"]["message_id"])
+                self.assertEqual(retained["state"], "planned")
+                self.assertEqual(retained["attempts"], [])
+            finally:
+                mailbox.close()
+
     def test_prepare_checks_the_qualified_frame_before_a_selected_singleton_sends_bare(self):
         route, sender, mailbox_module = self.load_modules()
         with tempfile.TemporaryDirectory(prefix="claude-route-") as temporary:

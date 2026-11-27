@@ -141,7 +141,9 @@ resolved path and invoked name without canonicalizing a wrapper, and uses
 `claude-name:<name>`. It does not list agents or start Claude; the sender binds
 the name to a listing row within its own attempt. Preparation measures the
 bare name without a selection and `name [ref]` with one, allowing for
-multiple rows at send time. The sender measures the address it resolves.
+multiple rows at send time. If that address exceeds 300 UTF-16 code units,
+preparation returns `destination_constraint_violation` before planning or
+publishing. The sender measures the address it resolves.
 
 For genuine first setup only, select the private mailbox through the existing
 caller-owned bookkeeping procedure and create it once through the create-only
@@ -178,9 +180,10 @@ content. An absent or unavailable mailbox returns the fixed
 creating a store, or publishing a sender request. It builds the sender request
 from the ordinary inputs and validates that request with the actual
 `claude_mcp_sender.validate` parser before create-only publication. The request's
-`evidence_ref` is `sha256:<nomination digest>`; that reference identifies the
-record and creates no permission. Preparation returns the request locator, size,
-digest, mailbox locator, `sender: not-invoked`, the preserved-uncertainty
+`evidence_ref` is `sha256:<nomination digest>` for a supplied route and
+`claude-name:<name>` for a by-name request. These references identify the
+nomination or the requested name and create no permission. Preparation returns
+the request locator, size, digest, mailbox locator, `sender: not-invoked`, the preserved-uncertainty
 handoff, and `no-provider-started` closure. Raw route data stays out of stdout.
 
 After preparation, recheck the original grant, actual submitting actor, current

@@ -444,6 +444,7 @@ class StdioMcpChild:
         self.buffer = bytearray()
         self.selector = selectors.DefaultSelector()
         self.process = None
+        self.closure_error = None
 
     def start(self, command):
         if time.monotonic() >= self.deadline:
@@ -469,7 +470,7 @@ class StdioMcpChild:
         if count != len(data):
             raise InspectionError("control_write_failed")
 
-    def read_ready(self, timeout):
+    def read_ready(self, timeout, *, closing=False):
         events = self.selector.select(timeout)
         for key, _ in events:
             name = key.data
@@ -480,7 +481,12 @@ class StdioMcpChild:
                 continue
             self.counts[name] += len(data)
             if self.counts[name] > self.limits[name + "_bytes"]:
-                raise InspectionError(name + "_limit")
+                self.selector.unregister(key.fileobj)
+                failure = name + "_limit"
+                self.closure_error = self.closure_error or failure
+                if not closing:
+                    raise InspectionError(failure)
+                continue
             if not data:
                 self.selector.unregister(key.fileobj)
             elif name == "stdout":
@@ -522,7 +528,7 @@ class StdioMcpChild:
             if remaining <= 0:
                 return
             if self.selector.get_map():
-                self.read_ready(min(remaining, 0.05))
+                self.read_ready(min(remaining, 0.05), closing=True)
             else:
                 try:
                     process.wait(timeout=remaining)
@@ -535,17 +541,16 @@ class StdioMcpChild:
         if process is None:
             self.selector.close()
             return {"started": False, "reaped": False, "exit_code": None}
-        closure_error = None
         closed_by = None
         try:
             process.stdin.close()
         except (OSError, ValueError):
-            closure_error = "closure_failed"
+            self.closure_error = self.closure_error or "closure_failed"
         try:
             self.await_exit(time.monotonic() + max(0, min(
                 INPUT_CLOSE_GRACE_SECONDS, self.deadline - time.monotonic())))
-        except (InspectionError, OSError, ValueError) as error:
-            closure_error = str(error) if isinstance(error, InspectionError) else "closure_failed"
+        except (OSError, ValueError):
+            self.closure_error = self.closure_error or "closure_failed"
         if process.poll() is None:
             # The child outlived its closed input: stop it without waiting out the deadline.
             process.terminate()
@@ -554,13 +559,12 @@ class StdioMcpChild:
             until = time.monotonic() + TERMINATE_GRACE_SECONDS
             try:
                 self.await_exit(until)
-            except (InspectionError, OSError, ValueError) as error:
-                if closure_error is None:
-                    closure_error = (
-                        str(error) if isinstance(error, InspectionError) else "closure_failed")
+            except (OSError, ValueError):
+                self.closure_error = self.closure_error or "closure_failed"
                 try:
                     process.wait(timeout=max(0, until - time.monotonic()))
                 except subprocess.TimeoutExpired:
+                    # The final poll below decides whether SIGKILL is still needed.
                     pass
         if process.poll() is None:
             process.kill()
@@ -574,8 +578,8 @@ class StdioMcpChild:
         closure = {"started": True, "reaped": True, "exit_code": process.returncode}
         if closed_by is not None:
             closure["closed_by"] = closed_by
-        if closure_error is not None:
-            closure["closure_error"] = closure_error
+        if self.closure_error is not None:
+            closure["closure_error"] = self.closure_error
         return closure
 
 
@@ -777,7 +781,9 @@ def main():
                 child.send(call)
                 tool_result = child.reply(identity)
                 supported = supported_tool_result(tool_result)
-                submitted = supported and not tool_result.get("isError", False)
+                submitted = supported and not tool_result.get("isError", False) and not any(
+                    re.match(r"Not sent\b", item["text"]) for item in tool_result["content"]
+                )
                 mailbox.observe(
                     request["message_id"], request["attempt_id"],
                     "submitted" if submitted else "unknown",
