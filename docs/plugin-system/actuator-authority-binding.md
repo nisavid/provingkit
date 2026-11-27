@@ -42,7 +42,7 @@ decision, keep the hold until a verified later operator instruction changes it.
 Finishing a prerequisite alone does not lift that reservation. Higher-priority
 restrictions still apply.
 
-## Bind the operation and respect enforcement
+## Bind the operation
 
 Before actuation, bind the covered work to the concrete operation and its
 current inputs. For publication, match the reviewed source, remote endpoint,
