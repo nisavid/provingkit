@@ -23,10 +23,20 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
-      - name: Conventional commit check
+      - name: Install Cocogitto
         uses: cocogitto/cocogitto-action@52d0023b4396897f1815648e553db2ab8d782f3a # v4.2.0
         with:
-          command: check
+          install-only: true
+
+      - name: Conventional commit check
+        shell: bash
+        run: |
+          root="$(git rev-list --first-parent --max-parents=0 HEAD)"
+          # Cog's range can exclude its starting commit, including a tagged root.
+          root_status=0
+          cog check "$root..$root" || root_status=$?
+          cog check "$root..HEAD"
+          exit "$root_status"
 
   required:
     name: Conventional commits gate
