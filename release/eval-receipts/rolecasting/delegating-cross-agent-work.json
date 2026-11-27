@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
-  "candidate_revision": "103c8a5cc9d16c4f44658db35c557b97f2fd629a",
+  "candidate_revision": "174ce3a53b180597d22787375b03e5d5f01af0c4",
   "snapshot": {
-    "candidate_revision": "103c8a5cc9d16c4f44658db35c557b97f2fd629a",
+    "candidate_revision": "174ce3a53b180597d22787375b03e5d5f01af0c4",
     "inputs": {
       "evals/comparative-review-lifecycle-matrix.json": {
         "mode": "100644",
@@ -14,7 +14,7 @@
       },
       "plugins/rolecasting/content-lock.json": {
         "mode": "100644",
-        "sha256": "e048ab216b9c71ee21ebf8b3519d5d40d94fd4b5d65f9f634a115868b65e6c9d"
+        "sha256": "a7861e6bd3bfa357efa723d0fc1c5336fcd4d1100ddd442b08d3c335da6ae9fe"
       },
       "plugins/rolecasting/evals/delivery.json": {
         "mode": "100644",
@@ -50,7 +50,7 @@
       },
       "plugins/rolecasting/skills/choosing-agent-models/references/general-tiers.md": {
         "mode": "100644",
-        "sha256": "720e2eb7a67f66a2fc090802b8d44a9bb281017891649f85b473069f6e5fd945"
+        "sha256": "7c8a42b2a7a1af74a579b1fe7f81d3fa1aabf9bcd984058a3b29291a1aa764d8"
       },
       "plugins/rolecasting/skills/choosing-agent-models/references/jev-suitability.md": {
         "mode": "100644",
@@ -266,7 +266,7 @@
       },
       "release/provingkit/definition-v1.json": {
         "mode": "100644",
-        "sha256": "70619168f9e92d06ff449d09002375ffda2e2cad8cf38d5ace9804257a9f1a54"
+        "sha256": "c5f697a3802eb5375d92f61653e4d6db0fc18687eaf16692513429fd9b0c7bc5"
       },
       "scripts/behavior_eval_corpora.py": {
         "mode": "100644",

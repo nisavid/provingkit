@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
-  "candidate_revision": "103c8a5cc9d16c4f44658db35c557b97f2fd629a",
+  "candidate_revision": "174ce3a53b180597d22787375b03e5d5f01af0c4",
   "snapshot": {
-    "candidate_revision": "103c8a5cc9d16c4f44658db35c557b97f2fd629a",
+    "candidate_revision": "174ce3a53b180597d22787375b03e5d5f01af0c4",
     "inputs": {
       "evals/comparative-review-lifecycle-matrix.json": {
         "mode": "100644",
@@ -14,7 +14,7 @@
       },
       "plugins/rolecasting/content-lock.json": {
         "mode": "100644",
-        "sha256": "e048ab216b9c71ee21ebf8b3519d5d40d94fd4b5d65f9f634a115868b65e6c9d"
+        "sha256": "a7861e6bd3bfa357efa723d0fc1c5336fcd4d1100ddd442b08d3c335da6ae9fe"
       },
       "plugins/rolecasting/evals/delivery.json": {
         "mode": "100644",
@@ -30,7 +30,7 @@
       },
       "plugins/rolecasting/skills/choosing-agent-models/evals/evals.json": {
         "mode": "100644",
-        "sha256": "07b8c655b1f0f9c820cff0e91b53ea5d05c6553a0659306132cef5a8f3feb30a"
+        "sha256": "69330f2606a3e2affe95bc73291a3444270cbd6dbf5ac54cb2c84ee60457df9f"
       },
       "plugins/rolecasting/skills/choosing-agent-models/evals/fixtures/apply-approved-text-verbatim.md": {
         "mode": "100644",
@@ -90,7 +90,7 @@
       },
       "plugins/rolecasting/skills/choosing-agent-models/evals/fixtures/general-tiers-and-preferences.md": {
         "mode": "100644",
-        "sha256": "283d3ccd8b1786ab44257dc1650a0bf1179647ec2e5c778bbdcd2255c25062b2"
+        "sha256": "5fb7ab2b089db1fecbdb69441673ccc36238d408d9c73db01cd849c1e02c1ddf"
       },
       "plugins/rolecasting/skills/choosing-agent-models/evals/fixtures/high-risk-independent-review.md": {
         "mode": "100644",
@@ -110,7 +110,7 @@
       },
       "plugins/rolecasting/skills/choosing-agent-models/evals/fixtures/named-model-successors.md": {
         "mode": "100644",
-        "sha256": "ee7d44b9440281f876a3a0e3edf3b9b6d2f31579cdb378af837d361193c4a56b"
+        "sha256": "68ec9b63e066457c6636d2039c3c3c21826670ec0ae8eaa5c78b78c5dc176daf"
       },
       "plugins/rolecasting/skills/choosing-agent-models/evals/fixtures/native-cloud-continuation.md": {
         "mode": "100644",
@@ -126,7 +126,7 @@
       },
       "plugins/rolecasting/skills/choosing-agent-models/evals/fixtures/provider-preference-target-reconsideration.md": {
         "mode": "100644",
-        "sha256": "78dce5927ce4b6b0ec71deecd7ad0416aae2147f6a46f0cc1864b25d72be4668"
+        "sha256": "4fbd4a7d3b16f76571ab7dd74ab1e6734e06b454b5d7445792b4942dac1e13a6"
       },
       "plugins/rolecasting/skills/choosing-agent-models/evals/fixtures/routing-block-diagnosis.md": {
         "mode": "100644",
@@ -194,7 +194,7 @@
       },
       "plugins/rolecasting/skills/choosing-agent-models/references/general-tiers.md": {
         "mode": "100644",
-        "sha256": "720e2eb7a67f66a2fc090802b8d44a9bb281017891649f85b473069f6e5fd945"
+        "sha256": "7c8a42b2a7a1af74a579b1fe7f81d3fa1aabf9bcd984058a3b29291a1aa764d8"
       },
       "plugins/rolecasting/skills/choosing-agent-models/references/jev-suitability.md": {
         "mode": "100644",
@@ -266,7 +266,7 @@
       },
       "release/provingkit/definition-v1.json": {
         "mode": "100644",
-        "sha256": "70619168f9e92d06ff449d09002375ffda2e2cad8cf38d5ace9804257a9f1a54"
+        "sha256": "c5f697a3802eb5375d92f61653e4d6db0fc18687eaf16692513429fd9b0c7bc5"
       },
       "scripts/behavior_eval_corpora.py": {
         "mode": "100644",
