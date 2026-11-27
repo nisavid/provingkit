@@ -2044,6 +2044,7 @@ def _validate_relation_evidence(repo: Path, *, source_stage: bool) -> list[str]:
             )
             invocation = run["invocation"]
             argv = invocation["argv"]
+            invocation_model = None
             if invocation.keys() <= compact_invocation_fields:
                 retained_command = json.dumps(argv, separators=(",", ":"))
                 retained_digest = invocation.get("retained_argv_sha256")
@@ -2081,8 +2082,14 @@ def _validate_relation_evidence(repo: Path, *, source_stage: bool) -> list[str]:
                 and is_model_operand(options[model_args[0] + 1]),
                 command_model_error,
             )
+            command_model = options[model_args[0] + 1]
+            if invocation_model is not None:
+                require(
+                    invocation_model == command_model,
+                    f"behavior full invocation model disagrees with argv: {run_id}",
+                )
             if bind_invocation_and_usage:
-                require(options[model_args[0] + 1] == model, command_model_error)
+                require(command_model == model, command_model_error)
             require(
                 all(
                     run["init"][k] == []

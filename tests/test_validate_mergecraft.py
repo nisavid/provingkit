@@ -855,6 +855,29 @@ class ValidateMergecraftTests(unittest.TestCase):
                 self.write_pending_evidence(RELATION_EVIDENCE, "claude-opus-5-5")
                 self.assert_pending_rejected("full invocation model drift")
 
+    def test_full_relation_invocation_model_must_match_its_argv(self) -> None:
+        path = self.repo / RELATION_EVIDENCE / "experiment.json"
+        for pending in (False, True):
+            with self.subTest(pending=pending):
+                self.construct_relation_evidence(
+                    trigger_model="claude-opus-5" if pending else "claude-opus-5-5"
+                )
+                experiment = json.loads(path.read_bytes())
+                group = experiment["selection"]["behavior_by_case"]["11"]
+                run = next(
+                    row for row in experiment["behavior_runs"]
+                    if row["id"] == f"{group}/case-11-with-skill-1"
+                )
+                self.set_relation_command_model(run, "claude-opus-5")
+                path.write_text(json.dumps(experiment), encoding="utf-8")
+                diagnostic = "full invocation model disagrees with argv"
+                if pending:
+                    self.write_pending_evidence(RELATION_EVIDENCE, "claude-opus-5-5")
+                    self.assert_pending_rejected(diagnostic)
+                else:
+                    self.assert_rejected(diagnostic)
+                    self.assert_rejected(diagnostic, "--write-content-lock")
+
     def test_relation_opus_output_must_match_each_selected_executor(self) -> None:
         path = self.repo / RELATION_EVIDENCE / "experiment.json"
         original = json.loads(path.read_bytes())

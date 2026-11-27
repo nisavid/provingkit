@@ -283,8 +283,15 @@ The validator checks the live corpus, coverage, fixtures, projections, and
 runtime contracts. It also checks the retained requests, runs, and grades
 against their original inputs and reports each observed freshness mismatch.
 For a release-pending suite, the source stage verifies the recorded artifact
-digests and leaves each retained invocation and usage record's association
-with an individual run unverified.
+digests. A full behavior invocation's `model_requested` must match its own
+`--model` operand. The relations validator defers these comparisons with the
+selected run until the evidence is current.
+
+- Positive Opus usage name, the full invocation's `model_requested`, and the
+  behavior and trigger `--model` operands against the run's executor model.
+- The trigger `--session-id` operand against the run's session ID.
+- The trigger isolation command digest against the run's command digest.
+
 An entry must describe an actual mismatch. Remove it when current evidence
 passes. Run `python scripts/validate_mergecraft.py .` for strict mode. Strict
 mode ignores pending status and requires fresh passing evidence for current
