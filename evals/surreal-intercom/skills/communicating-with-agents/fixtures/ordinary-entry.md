@@ -103,8 +103,14 @@ Peer sessions (1):
 [Cloud sessions and other computers are not listed because Remote Control is off in this session. The user can turn it on with the Remote Control switch in the app; then list again.]
 ```
 
-The synthetic `SendMessage` result says the message is in that session's inbox
-and remains unread. The child exits when its input closes.
+The synthetic `SendMessage` result is:
+
+```json
+{"content": [{"type": "text", "text": "Message sent to the session; in that session's inbox, not yet read."}]}
+```
+
+The inbox wording is only text from the child. No matching recipient transcript
+entry is supplied. The child exits when its input closes.
 
 Use the installed communication procedure. Prepare the request by name and
 describe the single sender invocation and strongest possible handoff. Use only
