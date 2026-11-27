@@ -23,8 +23,8 @@ D. Transcribe exact labels from a small supplied table. GPT-6 Luna `high` and
 Sol `high` are available; errors are cheap to spot.
 
 E. Apply the approved sidebar width of 240 pixels at the desktop breakpoint.
-The layout test measures the rendered width. Claude Opus 5.5 `high` and
-GPT-6.2 Sol `high` both fit and are available.
+The layout test measures the rendered width. The catalog and executor
+schema support Claude Opus 5.5 `high` and GPT-6.2 Sol `high`.
 
 F. An authorized Cursor worker has Grok 4.7 `high` and Grok 4.6 `high`
 advertised, but only Grok 4.7 `high` is in the current executor-schema and

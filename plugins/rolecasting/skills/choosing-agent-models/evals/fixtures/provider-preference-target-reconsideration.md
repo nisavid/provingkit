@@ -7,11 +7,11 @@ dispatch. Every named pair is currently proven by that target's catalog and
 executor schema. A recommendation does not itself revise the target plan or
 grant dispatch authority.
 
-A. Set the dialog's corner radius to the approved 6 pixels in both themes.
-The visual test measures each radius. The initial GPT target offers GPT-6.2 Sol `high`.
-The same owning workflow can authorize an eligible Claude target with Opus 5.5
-`high`; the operator did not fix the provider. State the next model-selection
-step given the Claude visual preference.
+A. Write a routine tooltip for the published settings screen explaining that
+the list is sorted alphabetically. The initial GPT target offers GPT-6.2 Sol
+`high`. An eligible, authorized Claude target offers Opus 5.5 `high`. The
+operator left the provider choice open. What should the caster recommend
+under the UI preference, and when can selection and dispatch proceed?
 
 B. A second opinion on Sol's code has an initial Claude target with Opus 5.5
 `high`. The same owning workflow can authorize an eligible GPT target with
