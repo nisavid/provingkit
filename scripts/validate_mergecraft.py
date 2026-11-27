@@ -1227,7 +1227,8 @@ def validate_markdown_authoring_eval_corpus(
         "Markdown authoring eval name coverage drift",
     )
 
-    coverage = load_input("coverage.json")
+    # Coverage is not a retained evidence input, so a pending record cannot override it.
+    coverage = load_json(skill_root, "evals/coverage.json")
     require(
         isinstance(coverage, dict)
         and set(coverage) == {"schema_version", "cases"}
@@ -1247,10 +1248,12 @@ def validate_markdown_authoring_eval_corpus(
             and case["name"]
             and isinstance(case["fields"], list)
             and case["fields"]
+            and all(isinstance(field, str) for field in case["fields"])
             and len(case["fields"]) == len(set(case["fields"]))
             and all(field in MARKDOWN_AUTHORING_FIELDS for field in case["fields"])
             and isinstance(case["features"], list)
             and case["features"]
+            and all(isinstance(feature, str) for feature in case["features"])
             and len(case["features"]) == len(set(case["features"]))
             and all(
                 feature in MARKDOWN_AUTHORING_FEATURES

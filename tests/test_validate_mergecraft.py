@@ -1368,6 +1368,32 @@ class ValidateMergecraftTests(unittest.TestCase):
                 )
                 self.assert_pending_rejected(diagnostic)
 
+    def test_markdown_coverage_is_live_and_rejects_unhashable_items(self) -> None:
+        folder = self.repo / MARKDOWN_EVIDENCE
+        coverage_path = folder / "coverage.json"
+        original = coverage_path.read_bytes()
+        coverage = json.loads(original)
+        coverage["cases"][0]["fields"] = [[]]
+        pending = self.write_pending_evidence(
+            MARKDOWN_EVIDENCE,
+            "claude-opus-5",
+            {"evals/coverage.json": json.dumps(coverage)},
+        )
+        self.assert_pending_rejected(
+            "release-pending unexpected retained input: evals/coverage.json"
+        )
+        pending.unlink()
+        for field in ("fields", "features"):
+            with self.subTest(field=field):
+                live = json.loads(original)
+                live["cases"][0][field] = [[]]
+                coverage_path.write_text(json.dumps(live), encoding="utf-8")
+                self.assert_rejected("Markdown authoring eval coverage case drift")
+                self.assert_rejected(
+                    "Markdown authoring eval coverage case drift", "--source-stage"
+                )
+        coverage_path.write_bytes(original)
+
     def test_pending_markdown_non_string_severity_identifies_the_case(self) -> None:
         folder = self.repo / MARKDOWN_EVIDENCE
         experiment = json.loads((folder / "experiment.json").read_bytes())
