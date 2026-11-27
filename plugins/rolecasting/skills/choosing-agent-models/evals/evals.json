@@ -17,7 +17,7 @@
         },
         {
           "id": "role-fit",
-          "text": "Selects GPT-6.2 Sol high for settled, recoverable implementation; the high-stakes exceptional gate for Astra is absent.",
+          "text": "Selects GPT-6.2 Sol high because the leader can test completion against the expected parser output.",
           "severity": "quality"
         },
         {
@@ -424,16 +424,16 @@
       "fixture_paths": [
         "evals/fixtures/general-tiers-and-preferences.md"
       ],
-      "expected_output": "A uses Sol; B may use Astra because high stakes and substantial unknown unknowns coincide; C stays on Sol or Opus; D uses Luna high; E prefers Claude; F uses Grok 4.7. G uses Opus high with Ultracode on for bounded cognitive synthesis, not the operational orchestrator role. H uses xhigh; I/J reject max; K high; L medium. M excludes Luna xhigh and Opus low and permits adequate Terra low or Grok high. N retains Luna high, Terra low/medium/high and Sol medium as useful frontier points and also permits adequate Grok low; excludes Luna max/xhigh and Sol Light, prefers Terra medium over Sol Light and Sol medium over Terra xhigh without claiming Terra xhigh unsupported or a universal ranking. O permits narrowly suitable Terra medium/high code authoring, never low; Sol remains the ordinary default. P uses Sol high. Q strongly considers adequate Terra medium for browser use. R uses Terra for the accurate animated prototype, validates it, then hands refinement/polish to Sol or Opus. S selects Terra medium/Sonnet medium orchestrators but effective selection and persistence remain unverified. T permits low only for demonstrably settled simple coordination and high only for difficult coordination itself. U routes finite demanding analysis to a capable Sol worker and continuing arbitration to Sage while retaining the orchestrator's effort. V selects Terra low/Haiku high Dispatch and Terra medium/Haiku xhigh Concierge without activation or transfer. W keeps Sol high/Opus high Reception. X distinguishes operational Codex Foreman from operator-owned decision-facing Sage Foremen, preserves Astra ultra/target Fable 5.2 ultracode bindings and accepted interim, and waits for accepted cutover without proof-only invocations. Y keeps the #804 serial/delegation/native-controls/cache study and #740 outcome/authority/hold/cost evaluation distinct from current cutover; no new experiment or proof gate. Z reports the selected Haiku xhigh route unavailable and does not silently substitute high. Comparisons are operator guidance, not benchmarks, live settings, or execution attestations.",
+      "expected_output": "A uses Sol high for the specified parse tree; B uses Astra xhigh for review; C uses Astra xhigh to judge what evidence settles the private synthesis; D uses Luna high; E prefers Claude; F uses Grok 4.7. G uses Opus high with Ultracode on for bounded cognitive synthesis, not the operational orchestrator role. H uses xhigh; I/J reject max; K high; L medium. M excludes Luna xhigh and Opus low and permits adequate Terra low or Grok high. N retains Luna high, Terra low/medium/high and Sol medium as useful frontier points and also permits adequate Grok low; excludes Luna max/xhigh and Sol Light, prefers Terra medium over Sol Light and Sol medium over Terra xhigh without claiming Terra xhigh unsupported or a universal ranking. O permits narrowly suitable Terra medium/high code authoring, never low; Sol fits the testable parser change. P uses Sol high for the specified table. Q strongly considers adequate Terra medium for browser use. R uses Terra for the accurate animated prototype, validates it, then hands creative refinement to Astra high. S selects Terra medium/Sonnet medium orchestrators but effective selection and persistence remain unverified. T permits low only for demonstrably settled simple coordination and high only for difficult coordination itself. U routes finite demanding analysis to a capable Sol worker and continuing arbitration to Sage while retaining the orchestrator's effort. V selects Terra low/Haiku high Dispatch and Terra medium/Haiku xhigh Concierge without activation or transfer. W keeps Sol high/Opus high Reception. X distinguishes operational Codex Foreman from operator-owned decision-facing Sage Foremen, preserves Astra ultra/target Fable 5.2 ultracode bindings and accepted interim, and waits for accepted cutover without proof-only invocations. Y keeps the #804 serial/delegation/native-controls/cache study and #740 outcome/authority/hold/cost evaluation distinct from current cutover; no new experiment or proof gate. Z reports the selected Haiku xhigh route unavailable and does not silently substitute high. Comparisons are operator guidance, not benchmarks, live settings, or execution attestations.",
       "expectations": [
         {
           "id": "exception-is-conjunctive",
-          "text": "Applies the high-stakes AND named-cognitive-need exception to B but not A or C; selects Astra or Sol as the task permits without broadening scope. O/P permit only clear predictable contained easy committed code at Terra medium/high, never low or ordinary default; Q preserves browser correctness; R validates animated low-poly prototype before Sol/Opus refinement and polish.",
+          "text": "Selects Sol for A's testable outcome, Astra for B's review and Astra for C's judgment about the evidence, within each assignment's scope. O/P permit only clear predictable contained easy committed code at Terra medium/high, never low or ordinary default; Q preserves browser correctness; R validates the animated low-poly prototype before Astra handles creative refinement and polish.",
           "severity": "quality"
         },
         {
           "id": "updated-tiers-and-preferences",
-          "text": "Applies H xhigh, K high, L medium and task-fit M/N frontier choices; excludes Luna XHigh/Max and Sol Light, retains Luna High and Terra Low/Medium/High, prefers Sol Medium over supported Terra XHigh, and treats comparisons as guidance rather than universal task ranking or measured equivalence. S/T/U use Terra medium/Sonnet medium orchestrators, bounded low/high coordination exceptions, and finite Sol/Opus analysis versus continuing Sage/Advisor arbitration; V uses Terra low/Haiku high Dispatch and Terra medium/Haiku xhigh Concierge; W keeps Sol high/Opus high scoped Reception.",
+          "text": "Applies H xhigh, K high, L medium and task-fit M/N frontier choices; excludes Luna XHigh/Max and Sol Light, retains Luna High and Terra Low/Medium/High, prefers Sol Medium over supported Terra XHigh, and treats comparisons as guidance rather than universal task ranking or measured equivalence. S/T/U use Terra medium/Sonnet medium orchestrators, bounded low/high coordination exceptions, and a Sol worker for the finite tolerance checks and a Sage or Advisor for continuing arbitration; V uses Terra low/Haiku high Dispatch and Terra medium/Haiku xhigh Concierge; W keeps Sol high/Opus high scoped Reception.",
           "severity": "quality"
         },
         {
@@ -450,7 +450,7 @@
       "fixture_paths": [
         "evals/fixtures/provider-preference-target-reconsideration.md"
       ],
-      "expected_output": "A recommends Claude target reconsideration for visual design and B recommends GPT target reconsideration for review; neither silently changes the initial target or dispatches before the owner revises its plan. C selects fixed GPT-6.2 Sol high and D selects sole eligible Claude Opus 5.5 high, each disclosing the preference limit.",
+      "expected_output": "A recommends Claude target reconsideration for visual design and B recommends the GPT target with Astra high for the second opinion on Sol's code; neither silently changes the initial target or dispatches before the owner revises its plan. C selects fixed GPT-6.2 Sol high and D selects sole eligible Claude Opus 5.5 high, each disclosing the preference limit.",
       "expectations": [
         {
           "id": "claude-visual-owner-reconsideration",
@@ -459,7 +459,7 @@
         },
         {
           "id": "gpt-review-owner-reconsideration",
-          "text": "For B, recommends that the owning delegation workflow reconsider the Claude target in favor of the eligible authorized GPT review route; does not self-change or dispatch before a revised owner plan.",
+          "text": "For B, recommends that the owning delegation workflow reconsider the Claude target in favor of the eligible authorized Astra second opinion on Sol's code; does not self-change or dispatch before a revised owner plan.",
           "severity": "quality"
         },
         {
@@ -580,7 +580,7 @@
       "fixture_paths": [
         "evals/fixtures/sonnet-middle-tier.md"
       ],
-      "expected_output": "A/J select Sonnet 5.5 low with adequate judgment proof; B selects Sonnet medium. C/D use sufficient Sol/Opus high for deeper cognition or quality sensitivity. E is unavailable because Haiku/Luna underfit; no Terra pair is proven on this target. F selects sonnet-next-exact medium under the same middle role. G uses authorized adequate Opus medium fallback; H uses Sonnet medium because Terra target capability and native labels are unproven. I rejects Anthropic Sonnet max despite capability and problem/workflow claims. K needs context without dispatch.",
+      "expected_output": "A/J select Sonnet 5.5 low with adequate judgment proof; B selects Sonnet medium. C/D use Sol high because the requester can check the reconciled totals or the expected field values and Sonnet underfits. E is unavailable because Haiku/Luna underfit; no Terra pair is proven on this target. F selects sonnet-next-exact medium under the same middle role. G uses authorized adequate Opus medium fallback; H uses Sonnet medium because Terra target capability and native labels are unproven. I rejects Anthropic Sonnet max despite capability and problem/workflow claims. K needs context without dispatch.",
       "expectations": [
         {
           "id": "sonnet-role-and-shallow-quality",

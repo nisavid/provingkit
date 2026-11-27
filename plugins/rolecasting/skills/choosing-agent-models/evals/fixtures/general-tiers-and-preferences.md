@@ -6,7 +6,7 @@ the named models and efforts. Fable 5.2 is proven by a current successful
 target invocation where offered. Choose a model and supported effort without
 claiming the selected request attests actual execution.
 
-A. Implement a well-specified, recoverable parser change. GPT-6.2 Sol `high`,
+A. Fix a recoverable parser error. The caller supplied the failing input and expected parse tree. GPT-6.2 Sol `high`,
 GPT-6.2 Astra `high`, and Claude Opus 5.5 `high` are available. The mistake cost
 is ordinary, and no exceptional cognitive need is present.
 
@@ -15,8 +15,8 @@ unknown unknowns. GPT-6.2 Astra `xhigh`, GPT-6.2 Sol `xhigh`, Claude Fable 5.2
 `xhigh`, and Claude Opus 5.5 `xhigh` are available. The owner asks for a GPT
 reviewer.
 
-C. Write a thoughtful synthesis of a complex but recoverable research topic.
-It needs intuitive analysis, but is not high-stakes. Opus 5.5 `xhigh`, Astra
+C. Write a private synthesis of a complex but recoverable research topic.
+The sources disagree and the caster needs the worker to decide what evidence would settle the question. Opus 5.5 `xhigh`, Astra
 `xhigh`, Fable 5.2 `xhigh`, and Sol `xhigh` are available.
 
 D. Transcribe exact labels from a small supplied table. GPT-6 Luna `high` and
@@ -61,12 +61,12 @@ N. A simple, well-understood, non-quality-sensitive classification has proven
 GPT-6 Luna `high`, Luna `max`, Sol Light (proven as Sol `low`), Terra 6.1 `low`/`medium`/`high`/`xhigh`, Sol 6.2 `medium`, and Grok 4.7 `low`. All eligible alternatives have adequate judgment margin. Name the useful frontier and excluded pairs; distinguish operating comparisons from benchmarks and Terra XHigh preference from executor support.
 
 O. Author a committed parser change that is clearly predictable, contained, and easy. Terra low, medium, and high and Sol medium are proven; medium preserves judgment margin. Identify Terra's narrow exception and ordinary code default.
-P. Author committed code with substantial unknowns. Terra high and Sol high are proven; only Sol has adequate judgment margin.
+P. Author committed code with substantial implementation unknowns. The caller can check the result against a specified input/output table. Terra high and Sol high are proven; only Sol has adequate judgment margin.
 Q. Perform a browser interaction with correctness and interaction requirements that Terra medium meets. Terra low underfits this particular interaction; Sol medium is also proven. Choose a suitable economical candidate without claiming measured superiority.
-R. Produce a spatially coherent low-poly 3D animated prototype, then refine and polish it. Terra high is proven adequate for the prototype; Sol high and Opus high are proven for refinement. State the validation and handoff boundary.
+R. Produce a spatially coherent low-poly 3D animated prototype, then refine and polish it. Terra high is proven adequate for the prototype; Astra high is available for the creative execution needed to refine it. State the validation and handoff boundary.
 S. Configure a Codex operational orchestrator and Claude operational orchestrator with Sage support. Terra medium and Sonnet medium are proven adequate defaults. Configuration requests succeed, but no effective-selection or persistence readback exists. State what is selected and unverified.
 T. The same orchestrator roles have demonstrably settled, simple coordination with sufficient low pairs. A second assignment has difficult coordination itself with sufficient high pairs. State the bounded effort choices.
-U. An orchestrator needs a finite demanding analysis with Sol high proven suitable for a worker. The project also needs continuing specialty arbitration and has an accepted Sage. Allocate the two responsibilities and state what happens to the orchestrator's effort.
+U. An orchestrator needs a finite demanding analysis comparing measured results with specified tolerances. Sol high is proven suitable for a worker. The project also needs continuing specialty arbitration and has an accepted Sage. Allocate the two responsibilities and state what happens to the orchestrator's effort.
 V. Select Codex and Claude Dispatch and Concierge pairs. Terra low and medium and Haiku 5.5 high and xhigh are proven suitable for their respective roles. Luna max is also supported. No operational transfer has been accepted.
 W. Select scoped operator-owned Codex and Claude Reception pairs. Sol high and Opus high are proven suitable. Intake authority is unchanged.
 X. The current operational Codex Foreman coordinates with Sage support. Target decision-facing harness-wide Foremen are operator-owned Sages with adopted Astra 6.2 ultra and target Fable 5.2 ultracode policy bindings. Their exact native pairs are unsupported; an accepted interim exists and cutover has not been accepted. Distinguish selected policy, actual configuration, and operational duty transfer. No proof-only invocation is authorized.
