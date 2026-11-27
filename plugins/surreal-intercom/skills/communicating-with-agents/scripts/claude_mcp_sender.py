@@ -29,6 +29,12 @@ class InspectionError(ValueError):
     pass
 
 
+class JsonRpcErrorReply(InspectionError):
+    def __init__(self, response):
+        super().__init__("invalid_jsonrpc")
+        self.response = response
+
+
 class PathRefusal(Exception):
     """A definite refusal before any SendMessage call, with its reason.
 
@@ -261,6 +267,34 @@ def supported_tool_result(result):
             for item in result["content"]
         )
     )
+
+
+def parse_error_reply(line):
+    def unique_object(fields):
+        value = dict(fields)
+        if len(value) != len(fields):
+            raise ValueError("duplicate JSON member")
+        return value
+
+    def finite_number(value):
+        number = float(value)
+        if not math.isfinite(number):
+            raise ValueError("non-finite JSON number")
+        return number
+
+    try:
+        response = json.loads(line, object_pairs_hook=unique_object,
+                              parse_constant=finite_number, parse_float=finite_number)
+    except (ValueError, RecursionError) as error:
+        raise InspectionError("invalid_jsonrpc") from error
+    error = response["error"]
+    if (
+        response.keys() != {"jsonrpc", "id", "error"}
+        or not isinstance(error, dict) or not error.keys() <= {"code", "message", "data"}
+        or type(error.get("code")) is not int or not isinstance(error.get("message"), str)
+    ):
+        raise InspectionError("invalid_jsonrpc")
+    return response
 
 
 # Observed Claude Desktop ListAgents layout. The 2.1.331 duration formatter's
@@ -517,8 +551,11 @@ class StdioMcpChild:
                 if (
                     not isinstance(value, dict) or value.get("jsonrpc") != "2.0"
                     or type(value.get("id")) is not int or value["id"] != identity
-                    or "error" in value or not isinstance(value.get("result"), dict)
                 ):
+                    raise InspectionError("invalid_jsonrpc")
+                if "error" in value:
+                    raise JsonRpcErrorReply(parse_error_reply(line))
+                if not isinstance(value.get("result"), dict):
                     raise InspectionError("invalid_jsonrpc")
                 return value["result"]
             if not any(key.data == "stdout" for key in self.selector.get_map().values()):
@@ -787,23 +824,28 @@ def main():
                 # Once writing may begin, every uncertainty remains non-replayable.
                 result["peer_input"] = "possible_submission"
                 child.send(call)
-                tool_result = child.reply(identity)
+                evidence = {"target": to}
+                try:
+                    tool_result = child.reply(identity)
+                except JsonRpcErrorReply as error:
+                    evidence["rpc_error"] = error.response
+                    result["reason"] = "jsonrpc_error"
+                else:
+                    evidence["tool_result"] = tool_result
+                    supported = supported_tool_result(tool_result)
+                    if supported and (tool_result.get("isError", False) or any(
+                        re.match(r"Not sent\b", item["text"]) for item in tool_result["content"]
+                    )):
+                        result["reason"] = "tool_error"
+                    elif supported and tool_result["content"]:
+                        result["reason"] = "unverified_tool_result"
+                    else:
+                        result["reason"] = "unsupported_tool_result"
                 # No verified success form exists. Retain the reply as evidence of uncertainty.
                 mailbox.observe(
                     request["message_id"], request["attempt_id"], "unknown",
-                    request["evidence_ref"], json.dumps({
-                        "target": to, "tool_result": tool_result,
-                    }, ensure_ascii=True, sort_keys=True),
+                    request["evidence_ref"], json.dumps(evidence, ensure_ascii=True, sort_keys=True),
                 )
-                supported = supported_tool_result(tool_result)
-                if supported and (tool_result.get("isError", False) or any(
-                    re.match(r"Not sent\b", item["text"]) for item in tool_result["content"]
-                )):
-                    result["reason"] = "tool_error"
-                elif supported and tool_result["content"]:
-                    result["reason"] = "unverified_tool_result"
-                else:
-                    result["reason"] = "unsupported_tool_result"
     except InspectionError as error:
         result["reason"] = str(error)
     except (ValueError, RecursionError, OSError, sqlite3.Error, MailboxError):

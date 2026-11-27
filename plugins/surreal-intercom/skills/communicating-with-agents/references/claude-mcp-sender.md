@@ -77,7 +77,17 @@ A name request also requires exactly one `ListAgents` entry whose object schema 
 
 Unknown dialects, altered or partial pattern pairs, extra constraints on supplied arguments, and unknown root constraints remain unsupported before the call. The sender compares literal constraint forms; it does not evaluate arbitrary patterns, resolve schemas, or validate a general schema. A recognized profile with an unmet destination constraint records `destination_constraint_violation`, a constraint diagnosis, and refusal before `tools/call` or possible submission. An unsupported profile retains `unsupported_sendmessage_schema`. Inspect those outcomes separately from submission.
 
-Replies must be newline-delimited JSON-RPC objects with the expected integer ID and an object result, without an error member. Notification interleaving and other protocol variants are outside this parser's scope. Tool results support only text content items with exactly `type` and `text`, an optional Boolean `isError`, and optional object `_meta`. Other content shapes are unsupported. The JSON parsers do not provide strict duplicate-key or general non-finite-value rejection. These are compatibility gaps, not evidence that a receiver is incompatible. Broader support requires a reviewed source change and new evidence before use.
+Replies must be newline-delimited JSON-RPC objects with the expected integer ID.
+The ordinary reply has an object `result`. After `SendMessage`, the sender also
+retains a reply containing only `jsonrpc`, `id`, and an `error` object with an
+integer `code`, a string `message`, and optional `data`. It rejects duplicate
+members and non-finite numbers in these error replies. Notification
+interleaving and other protocol variants are outside this parser's scope. Tool
+results support only text content items with exactly `type` and `text`, an
+optional Boolean `isError`, and optional object `_meta`. Other content shapes
+are unsupported. General result parsing still allows duplicate members and
+non-finite values. Broader support requires a reviewed source change and new
+evidence before use.
 
 ## Find the named recipient
 
@@ -204,8 +214,12 @@ and the mailbox remains `unknown`. The sender retains any tool result as an
 reports `tool_error`. An empty result content list or an unsupported result shape
 reports `unsupported_tool_result` unless a supported result reports an error.
 Other supported replies report `unverified_tool_result`. A reply read failure
-after the send write also leaves the attempt `unknown`. The process exit code
-only reports how the child exited.
+after the send write also leaves the attempt `unknown`. A matching JSON-RPC
+error within the read limits reports `jsonrpc_error` and is retained as
+`rpc_error` in an `unknown` observation. A malformed or wrong-ID error adds no
+reply observation. Read `owned_child.exit_code` for the child's exit status and
+`peer_input` and `reason` for the send outcome. The sender CLI returns zero when
+it prints its result, including on refusal or uncertainty.
 
 Until a verified success form exists, confirm delivery through an authorized
 read of the intended receiver's transcript. Match the original message and

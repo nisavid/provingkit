@@ -124,6 +124,14 @@ class ClaudeMcpSenderTests(unittest.TestCase):
                         elif method == "tools/call":
                             trace.write(json.dumps({"before_call": retained()}) + "\\n")
                             trace.flush()
+                            if sys.argv[3] == "raw_rpc_reply":
+                                reply_path = os.path.join(os.path.dirname(sys.argv[1]), "rpc-reply.json")
+                                with open(reply_path, encoding="utf-8") as reply:
+                                    try:
+                                        print(reply.read(), flush=True)
+                                    except BrokenPipeError:
+                                        os._exit(23)
+                                continue
                             if sys.argv[3] == "lost_reply":
                                 os.close(sys.stdout.fileno())
                                 continue
@@ -621,6 +629,61 @@ class ClaudeMcpSenderTests(unittest.TestCase):
                     "tool_result": {"content": [{"type": "text", "text": "Not sent: peer left."}],
                                     **flag},
                 })
+                self.assert_no_replay(request, send, bookkeeping, trace, retained)
+
+    def test_matching_jsonrpc_error_is_retained_without_allowing_replay(self):
+        with self.consumer(mode="raw_rpc_reply") as (original, request, send, bookkeeping, trace, _):
+            response = {"jsonrpc": "2.0", "id": 3, "error": {
+                "code": -32000, "message": "Private RPC failure.", "data": {"detail": ["test", 1]},
+            }}
+            (trace.parent / "rpc-reply.json").write_text(json.dumps(response), encoding="utf-8")
+            result = send()
+            self.assertEqual(result["stage"], "call")
+            self.assertEqual(result["reason"], "jsonrpc_error")
+            self.assertEqual(result["peer_input"], "possible_submission")
+            self.assertTrue(result["claimed"])
+            self.assertEqual(result["owned_child"]["exit_code"], 23)
+            self.assertNotIn("Private RPC failure.", json.dumps(result))
+            retained = bookkeeping("show", original["message_id"])
+            self.assert_no_receipt(retained, original)
+            self.assertEqual(retained["state"], "unknown")
+            attempt, = retained["attempts"]
+            self.assertEqual(attempt["submission"], "unknown")
+            self.assertEqual([o["kind"] for o in attempt["observations"]], ["unknown"] * 3)
+            observation = attempt["observations"][-1]
+            self.assertEqual(observation["evidence_ref"], request["evidence_ref"])
+            self.assertEqual(json.loads(observation["detail"]), {
+                "target": request["target"], "rpc_error": response,
+            })
+            self.assert_no_replay(request, send, bookkeeping, trace, retained)
+
+    def test_unmatched_malformed_or_oversized_jsonrpc_errors_are_unassociated(self):
+        error = {"code": -32000, "message": "Synthetic failure."}
+        matching = {"jsonrpc": "2.0", "id": 3, "error": error}
+        for case, response, reason in (
+            ("wrong ID", json.dumps({**matching, "id": 4}), "invalid_jsonrpc"),
+            ("incomplete JSON", json.dumps(matching)[:-1], "invalid_jsonrpc"),
+            ("result and error", json.dumps({**matching, "result": {}}), "invalid_jsonrpc"),
+            ("invalid code", json.dumps({**matching, "error": {**error, "code": True}}), "invalid_jsonrpc"),
+            ("missing message", json.dumps({**matching, "error": {"code": 1}}), "invalid_jsonrpc"),
+            ("duplicate ID", json.dumps(matching).replace('"id": 3', '"id": 4, "id": 3'), "invalid_jsonrpc"),
+            ("nonfinite data", json.dumps({**matching, "error": {**error, "data": float("nan")}}),
+             "invalid_jsonrpc"),
+            ("over stdout limit", json.dumps({**matching, "error": {**error, "data": "x" * 16384}}),
+             "stdout_limit"),
+        ):
+            with self.subTest(case=case), self.consumer(mode="raw_rpc_reply") as (
+                    original, request, send, bookkeeping, trace, _):
+                (trace.parent / "rpc-reply.json").write_text(response, encoding="utf-8")
+                result = send()
+                self.assertEqual(result["stage"], "call")
+                self.assertEqual(result["reason"], reason)
+                self.assertEqual(result["peer_input"], "possible_submission")
+                retained = bookkeeping("show", original["message_id"])
+                self.assertEqual(retained["state"], "unknown")
+                attempt, = retained["attempts"]
+                self.assertEqual(attempt["submission"], "unknown")
+                self.assertEqual([o["kind"] for o in attempt["observations"]], ["unknown"] * 2)
                 self.assert_no_replay(request, send, bookkeeping, trace, retained)
 
     def test_empty_content_stays_unknown_with_an_absent_or_false_error_flag(self):
