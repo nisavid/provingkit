@@ -4,13 +4,17 @@
 
 - Align the source and Claude adapter versions with the Kit's synchronized
   `0.1.0-trunk` development identity.
-
+- Add `editing-finished-drafts` to check an existing draft against its
+  evidence and intended reader. Its evaluation bundle includes the writing
+  skill it calls. Twelve behavior cases cover revisions, and 22 discovery
+  inputs distinguish editing a finished draft from related requests.
 - Choose prose register and organization for the medium, purpose, and audience,
   with subject-led publication openings and useful first-person evidence.
 - Apply conversational reply and status guidance through a conditional reference;
   leave PR change phrasing and review-specific ask forms with their surface owners.
-- Expand the writing corpus from seven to twelve cases covering publications,
-  documentation, personal accounts, and source and runtime evidence.
+- Expand the writing corpus from seven to 28 cases covering publications,
+  documentation, personal accounts, source and runtime evidence, workflow
+  names, support requests, and links readers can follow.
 
 ## Historical source changes (mistakenly labeled 1.0.0)
 

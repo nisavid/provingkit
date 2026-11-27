@@ -32,6 +32,7 @@ not load this Claude-native agent definition.
 <!-- BEGIN GENERATED SKILL ROSTER -->
 | Skill | Owns | Calls |
 | --- | --- | --- |
+| `editing-finished-drafts` | finished-draft-verification | writing-for-people |
 | `writing-for-people` | human-facing-register, evidence-in-prose, post-draft-edit-pass | - |
 <!-- END GENERATED SKILL ROSTER -->
 
@@ -53,6 +54,18 @@ repository root: manifest identity and projection, topology, skill contracts,
 the generated roster projection, inventory, portability, and the semantic content lock.
 `--write-content-lock` regenerates the roster projection and the lock after an
 authored change. `evals/delivery.json` governs plugin delivery, while
-`skills/writing-for-people/evals/evals.json` carries the skill behavior corpus.
+`skills/writing-for-people/evals/evals.json` and
+`skills/editing-finished-drafts/evals/evals.json` carry the behavior corpora.
+The finished-draft skill also carries `evals/trigger-evals.json` for positive and
+nearby-negative discovery cases. The validator checks those inputs; executing a
+discovery test requires a separately available harness route. Executor bundles
+include the selected skill, its declared skill dependencies, and their runtime
+references, with fixtures and grading criteria delivered separately.
+
+From the repository root, `python scripts/prepare_proseweaving_eval.py prepare --help`
+shows which inputs the writer cases need. In the checkout for your selected revision,
+follow `docs/proseweaving-evaluation-preparation.md` to prepare and verify a batch
+before running the cases.
+
 The plugin declares no Task Witness provider yet; publication eligibility and
 inclusion in a release slate is decided outside this plugin.
