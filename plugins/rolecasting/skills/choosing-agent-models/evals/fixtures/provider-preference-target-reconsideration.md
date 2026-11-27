@@ -21,7 +21,8 @@ model-selection step given the GPT review preference.
 C. Apply the approved toolbar spacing change. The layout test checks that
 the gap between adjacent buttons is exactly 8 pixels. The operator fixed the
 GPT target, which offers GPT-6.2 Sol `high`. Claude Opus 5.5 `high` is
-available elsewhere. State the model selection and preference limitation.
+available elsewhere. Which model and effort fit the fixed target, and what
+about this edit makes the pair suitable?
 
 D. A second opinion on Sol's code has a sole eligible Claude target with Opus
 5.5 `high`; no eligible GPT route exists. State the model selection and
