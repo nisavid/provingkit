@@ -523,8 +523,8 @@ class ValidateRolecastingTests(unittest.TestCase):
         path = self.plugin / "skills" / "choosing-agent-models" / "SKILL.md"
         original = path.read_text()
         mutated = original.replace(
-            "Sol/Opus serve ordinary demanding roles",
-            "Astra/Fable serve ordinary demanding roles",
+            "cast by the next decision",
+            "default to Sol for demanding work",
         )
         self.assertNotEqual(mutated, original)
         path.write_text(mutated)
