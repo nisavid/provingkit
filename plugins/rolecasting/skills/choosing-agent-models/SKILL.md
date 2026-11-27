@@ -19,7 +19,7 @@ Apply [effort eligibility](references/effort-policy.md) to every route: Astra/Fa
 
 1. Select Jev first only when the **complete narrow operation** is a suitable System One typed text judgment and current availability, capability, effort eligibility, and authority pass; then stop selection. [Check all gates](references/jev-suitability.md).
 2. For actual cybersecurity work, obviously cybersecurity-related work with another primary domain, and cybersecurity-adjacent work, apply [Daybreak Blue routing and fallbacks](references/daybreak-routing.md).
-3. Otherwise use [general tiers and preferences](references/general-tiers.md): Sol/Opus serve ordinary demanding roles; Terra bridges economical tiers; Haiku/Luna/proven Grok serve bounded work; Astra/proven Fable require the exceptional-tier conjunction.
+3. Otherwise [cast by the next decision](references/general-tiers.md) and apply the task-specific tiers and role bindings there.
 
 ## Prove Target Capability
 
