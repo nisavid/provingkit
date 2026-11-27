@@ -100,10 +100,10 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
                 / "trigger-evals.json"
             ).read_text()
         )
-        self.assertEqual(len(probes), 7)
+        self.assertEqual(len(probes), 9)
         self.assertEqual(
             [probe["should_trigger"] for probe in probes],
-            [True, False, False, False, True, True, False],
+            [True, False, False, False, True, True, False, True, False],
         )
         self.assertIn("user-owned task", probes[0]["query"])
         self.assertIn("authority", probes[0]["query"])
@@ -335,6 +335,7 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
                 "bounded-wait-and-live-child-reconciliation",
                 "isolated-task-companion-boundary",
                 "dedicated-daybreak-resume-rebinds-account-route",
+                "high-reviews-after-desktop-rejection",
                 "scarce-specialist-decision-handoff",
                 "native-tree-canonical-target-optional-metadata",
                 "native-tree-observation-boundaries",
@@ -473,6 +474,36 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
         ):
             with self.subTest(source="eval", phrase=phrase):
                 self.assertIn(phrase, expected_output)
+
+    def test_desktop_selector_failure_routes_the_caller_before_reprobing(self) -> None:
+        skill = "delegating-cross-agent-work"
+        case = next(
+            item for item in self.documents[skill]["evals"]
+            if item["name"] == "high-reviews-after-desktop-rejection"
+        )
+        fixture = (PLUGIN_ROOT / "skills" / skill / case["fixture_paths"][0]).read_text()
+        (bundle,) = (
+            payload["candidate_bundle"] for payload in validator_executor_bundles()
+            if payload["prompt"] == case["prompt"] and payload["fixture"] == fixture
+        )
+        caller = bundle[f"skills/{skill}/SKILL.md"]
+        probing = next(p for p in caller.split("\n\n") if "references/foreign-harness-peers.md" in p)
+        self.assertIn(
+            "For absent or rejected selectors, invoke "
+            "[choosing-agent-models](../choosing-agent-models/SKILL.md) before reprobing.",
+            " ".join(probing.split()),
+        )
+        for phrase in (
+            "invoke choosing-agent-models before reprobing",
+            "both native review-turn rejections",
+            "both cli requests are pending",
+            "only intent has a usable review",
+            "runtime failed at its input mount",
+            "unobserved backend identity as unknown",
+            "infer no grant to change account, destination, or effort",
+        ):
+            with self.subTest(phrase=phrase):
+                self.assertIn(phrase, case["expected_output"].lower())
 
     def test_daybreak_routing_exposes_separate_effect_bounded_clis(self) -> None:
         choosing_root = PLUGIN_ROOT / "skills" / "choosing-agent-models"
@@ -879,6 +910,15 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
             for item in document["evals"]
         }
         expected_fragments = {
+            "high-reviews-after-desktop-rejection": (
+                "| a | lacks daybreak | agent-created |",
+                "| b | lacks daybreak | user-origin |",
+                "| c | has daybreak | agent-created |",
+                "| d | has daybreak | user-origin |",
+                "provider identity differs from the selected binding",
+                "denied transfer of the frozen input packet",
+                "rejects the requested high selection",
+            ),
             "inherited-fixed-model-selection": ("no model", "environment\nis fixed"),
             "unavailable-non-codex-capability": ("exits nonzero", "cannot be parsed"),
             "absent-foreign-executable-native-fallback": (
