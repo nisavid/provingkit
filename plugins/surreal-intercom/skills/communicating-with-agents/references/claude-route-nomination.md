@@ -139,11 +139,12 @@ Preparation then resolves `claude` on the caller's own `PATH`, keeps the
 resolved path and invoked name without canonicalizing a wrapper, and uses
 `[launcher, "mcp", "serve"]` as the command. Its `evidence_ref` is
 `claude-name:<name>`. It does not list agents or start Claude; the sender binds
-the name to a listing row within its own attempt. Preparation measures the
-bare name without a selection and `name [ref]` with one, allowing for
-multiple rows at send time. If that address exceeds 300 UTF-16 code units,
-preparation returns `destination_constraint_violation` before planning or
-publishing. The sender measures the address it resolves.
+the name to a listing row within its own attempt. A bare name over 300 UTF-16
+code units returns `invalid_name`. With a selection, preparation also measures
+`name [ref]` to allow for multiple rows at send time. If the name passes
+validation and the selected address exceeds 300 UTF-16 code units, preparation
+returns `destination_constraint_violation`. Both refusals happen before planning
+or publication. The sender measures the address it resolves.
 
 For genuine first setup only, select the private mailbox through the existing
 caller-owned bookkeeping procedure and create it once through the create-only
@@ -183,8 +184,9 @@ from the ordinary inputs and validates that request with the actual
 `evidence_ref` is `sha256:<nomination digest>` for a supplied route and
 `claude-name:<name>` for a by-name request. These references identify the
 nomination or the requested name and create no permission. Preparation returns
-the request locator, size, digest, mailbox locator, `sender: not-invoked`, the preserved-uncertainty
-handoff, and `no-provider-started` closure. Raw route data stays out of stdout.
+the request locator, size, digest, mailbox locator, `sender: not-invoked`, the
+preserved-uncertainty handoff, and `no-provider-started` closure. Raw route data
+stays out of stdout.
 
 After preparation, recheck the original grant, actual submitting actor, current
 holds, intended receiver, and any live receiver or account evidence owned by the
