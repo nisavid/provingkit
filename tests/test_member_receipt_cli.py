@@ -11,6 +11,10 @@ import unittest
 from pathlib import Path
 
 REPOSITORY = Path(__file__).resolve().parents[1]
+MERGECRAFT_RELATION_PENDING = Path(
+    "evals/mergecraft/skills/maintaining-issue-pr-relations/release-pending.json"
+)
+MERGECRAFT_CONTENT_LOCK = Path("release/plugin-content-locks/mergecraft.json")
 MEMBERS = (
     "rolecasting",
     "tricritical",
@@ -121,12 +125,20 @@ class MemberReceiptCliTests(unittest.TestCase):
             )
             writers = [(member, "--write-content-lock") for member in MEMBERS]
             writers.append(("mergecraft", "--write-markdown-projections"))
+            pending_relations = (repository / MERGECRAFT_RELATION_PENDING).exists()
+            lock = repository / MERGECRAFT_CONTENT_LOCK
             for member, writing in writers:
                 with self.subTest(member=member, writing=writing):
                     flags = [writing]
-                    if member == "mergecraft" and writing == "--write-content-lock":
-                        # The source-stage writer accepts bound release-pending evidence.
+                    expected_lock = None
+                    if (
+                        member == "mergecraft"
+                        and writing == "--write-content-lock"
+                        and pending_relations
+                    ):
                         flags.append("--source-stage")
+                        expected_lock = lock.read_bytes()
+                        lock.write_bytes(b"{}")
                     result = subprocess.run(
                         [
                             sys.executable,
@@ -143,6 +155,8 @@ class MemberReceiptCliTests(unittest.TestCase):
                     )
                     self.assertEqual(result.returncode, 0, result.stderr)
                     self.assertIn("updated", result.stdout)
+                    if expected_lock is not None:
+                        self.assertEqual(lock.read_bytes(), expected_lock)
 
     def test_explicit_route_preserves_member_result_and_output_channels(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -358,6 +372,7 @@ class MemberReceiptCliTests(unittest.TestCase):
             )
             environment = os.environ.copy()
             environment.pop("PYTHONPATH", None)
+            pending_relations = (REPOSITORY / MERGECRAFT_RELATION_PENDING).exists()
             for member in MEMBERS:
                 with self.subTest(member=member):
                     command = [
@@ -375,7 +390,7 @@ class MemberReceiptCliTests(unittest.TestCase):
                         check=False,
                     )
                     self.assertEqual(source.returncode, 0, source.stderr)
-                    if member == "mergecraft":
+                    if member == "mergecraft" and pending_relations:
                         # Strict validation requires fresh evidence at the executor pin.
                         self.assertIn(
                             "Mergecraft contract validation passed", source.stdout
