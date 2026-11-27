@@ -293,7 +293,10 @@ selected run until the evidence is current.
 - The trigger isolation command digest against the run's command digest.
 
 An entry must describe an actual mismatch. Remove it when current evidence
-passes. Run `python scripts/validate_mergecraft.py .` for strict mode. Strict
+passes. After refreshing the evidence and removing the pending record, run
+`python scripts/validate_mergecraft.py . --write-content-lock` to rewrite the
+ordinary content lock, then run `python scripts/validate_mergecraft.py .` for
+strict mode. Strict
 mode ignores pending status and requires fresh passing evidence for current
 inputs and the pinned executor. For relations, it checks the selected run
 and experiment executor identities, the model in the command and full
