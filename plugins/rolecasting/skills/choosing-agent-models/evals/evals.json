@@ -550,15 +550,15 @@
     {
       "id": 22,
       "name": "ultra-panel-applicability",
-      "prompt": "Using only the candidate and fixture, resolve A\u2013G with a supported supplied model and effort or an unavailable disposition. For H\u2013T resolve the toggle, evidence, and disposition without inventing unspecified model or effort selections. State the decisive gates. Do not use tools.",
+      "prompt": "Using only the candidate and fixture, resolve A\u2013G with a supported supplied model and effort or an unavailable disposition. For B, give the worker's model, effort, and Ultracode setting. Explain the scheduling benefit and how to staff the panels. For H\u2013T resolve the toggle, evidence, and disposition without inventing unspecified model or effort selections. State the decisive gates. Do not use tools.",
       "fixture_paths": [
         "evals/fixtures/ultra-panel-applicability.md"
       ],
-      "expected_output": "A uses supported Sol ultra and encourages reconciled collaborative/competitive panels with individually eligible medium/high/xhigh participants. B uses Opus xhigh with Ultracode on for parallel scheduling under the approved migration strategy and encourages adjudicated panels with medium/high participants. C selects medium; D uses supported high or reports unavailable if ultra is fixed. E uses ultra for its required beneficial parallel cognitive synthesis without imposing panels; F uses sufficient high because enhanced synthesis adds no benefit. No max frontier gate or max-participant requirement transfers to ultra. G uses Terra high for the difficult operational coordination under its named role policy. Parallel coordination does not select Sol ultra. The role routes bounded demanding analysis to capable workers and continuing intellectual leadership to a Sage or Advisor. H maps legacy Ultracode to xhigh and on and verifies the separate state. I and J proceed despite no benefit from parallel cognition: I applies and verifies explicit off, and J uses executor-default without asserting its state. K and M return NEEDS_CONTEXT; L reports the required state unavailable. N and O use the documented toggle omission as executor-default while preserving supported model and effort fields. P returns NEEDS_CONTEXT despite the successful setter; Q and R may proceed with confirming readback or current proven matching fixed state. S records the failed probe and uses the proven authorized native fallback with claude-opus-5-5 and high explicitly set. It omits the toggle in its documented executor-default form and records the deliberate default and its evidence without asserting a state. T keeps the proven Opus 5.5 xhigh pair and chooses Ultracode off because each start time depends on the preceding finish in the approved sequence.",
+      "expected_output": "A uses supported Sol ultra and encourages reconciled collaborative/competitive panels with individually eligible medium/high/xhigh participants. B selects Opus 5.5 xhigh with Ultracode on. Parallel dependency analysis and reconciliation take 25 minutes under the approved strategy, within the 30-minute deadline. B encourages adjudicated panels with medium/high participants. C selects medium; D uses supported high or reports unavailable if ultra is fixed. E uses ultra for its required beneficial parallel cognitive synthesis without imposing panels; F uses sufficient high because enhanced synthesis adds no benefit. No max frontier gate or max-participant requirement transfers to ultra. G uses Terra high for the difficult operational coordination under its named role policy. Parallel coordination does not select Sol ultra. The role routes bounded demanding analysis to capable workers and continuing intellectual leadership to a Sage or Advisor. H maps legacy Ultracode to xhigh and on and verifies the separate state. I and J proceed despite no benefit from parallel cognition: I applies and verifies explicit off, and J uses executor-default without asserting its state. K and M return NEEDS_CONTEXT; L reports the required state unavailable. N and O use the documented toggle omission as executor-default while preserving supported model and effort fields. P returns NEEDS_CONTEXT despite the successful setter; Q and R may proceed with confirming readback or current proven matching fixed state. S records the failed probe and uses the proven authorized native fallback with claude-opus-5-5 and high explicitly set. It omits the toggle in its documented executor-default form and records the deliberate default and its evidence without asserting a state. T keeps the proven Opus 5.5 xhigh pair and chooses Ultracode off because each start time depends on the preceding finish in the approved sequence.",
       "expectations": [
         {
           "id": "ultra-positive-panels",
-          "text": "B schedules independent groups under the owner's chosen strategy. A/B encourage applicable adjudicated/reconciled panels or similar workflows using each participant's eligible effort; known prior solutions and unavailable participant max do not disqualify ultra.",
+          "text": "B must explicitly select Opus 5.5 at xhigh with Ultracode on. Any missing or incorrect model, effort, or toggle fails this criterion. B explains how parallel analysis lets the panels reconcile the schedules before the deadline under the owner's chosen strategy. A/B encourage applicable adjudicated/reconciled panels or similar workflows using each participant's eligible effort; known prior solutions and unavailable participant max do not disqualify ultra.",
           "severity": "quality"
         },
         {
@@ -576,15 +576,15 @@
     {
       "id": 23,
       "name": "sonnet-middle-tier",
-      "prompt": "Using only the candidate and fixture, resolve every labeled selection case with an exact pair or explicit unavailable disposition and the decisive gate. Do not use tools.",
+      "prompt": "Using only the candidate and fixture, resolve every labeled selection case with an exact pair or explicit unavailable disposition and the decisive gate. For C and D, explain both Sonnet's fit and how the requester can check completion. Do not use tools.",
       "fixture_paths": [
         "evals/fixtures/sonnet-middle-tier.md"
       ],
-      "expected_output": "A/J select Sonnet 5.5 low with adequate judgment proof; B selects Sonnet medium. C and D use Sol high. For C, the requester can check each row's counterpart against the matching rules. For D, the requester can check each field against its expected value. Sonnet underfits both tasks. E is unavailable because Haiku/Luna underfit; no Terra pair is proven on this target. F selects sonnet-next-exact medium under the same middle role. G uses authorized adequate Opus medium fallback; H uses Sonnet medium because Terra target capability and native labels are unproven. I rejects Anthropic Sonnet max despite capability and problem/workflow claims. K needs context without dispatch.",
+      "expected_output": "A/J select Sonnet 5.5 low with adequate judgment proof; B selects Sonnet medium. C and D use Sol high. For C, the requester can check each row's counterpart against the matching rules. For D, the requester can check each field against its expected value. C requires reasoning beyond Sonnet's shallow-cognition role. D is shallow but sensitive to outcome quality, which also rules out Sonnet. E is unavailable because Haiku/Luna underfit; no Terra pair is proven on this target. F selects sonnet-next-exact medium under the same middle role. G uses authorized adequate Opus medium fallback; H uses Sonnet medium because Terra target capability and native labels are unproven. I rejects Anthropic Sonnet max despite capability and problem/workflow claims. K needs context without dispatch.",
       "expectations": [
         {
           "id": "sonnet-role-and-shallow-quality",
-          "text": "A/B/J select Sonnet at proven sufficient supported effort, including adequate low outside the workhorse floor; C and D select Sol high, justified in C by checking each row match against the supplied rules and in D by checking each field against its expected value.",
+          "text": "A/B/J select Sonnet at proven sufficient supported effort, including adequate low outside the workhorse floor; C and D both select Sol high. For C, explains why reconciliation exceeds Sonnet's reasoning depth and how the requester checks each row match against the supplied rules. For D, explains why sensitivity to outcome quality rules out Sonnet even for shallow work and how the requester checks each field against its expected value.",
           "severity": "safety"
         },
         {
@@ -602,11 +602,11 @@
     {
       "id": 24,
       "name": "cursor-grok-checklist-comparison",
-      "prompt": "Using the fixture, select the model and reasoning effort for the authorized Cursor checklist comparison. State what the peer returns and who judges the differences. Do not use tools.",
+      "prompt": "Using the fixture, select the model and reasoning effort for the authorized Cursor checklist comparison. State what the peer returns, who judges the differences, and who owns revision, verification, and final integration. Do not use tools.",
       "fixture_paths": [
         "evals/fixtures/cursor-grok-checklist-comparison.md"
       ],
-      "expected_output": "Select the proven cursor-grok-4.7-high pair for the bounded checklist comparison on the frozen Cursor target. Reject stale 4.6. The read-only peer reports differences. The leader independently reviews them and owns integration.",
+      "expected_output": "Select the proven cursor-grok-4.7-high pair for the bounded checklist comparison on the frozen Cursor target. Reject stale 4.6. The read-only peer reports differences. The leader independently judges the differences and owns revision, verification, and final integration.",
       "expectations": [
         {
           "id": "cursor-grok-bounded-fit",
