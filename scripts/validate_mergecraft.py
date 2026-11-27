@@ -1817,6 +1817,10 @@ def load_repository_json(repo_root: Path, relative: Path) -> Any:
     return strict_json(read_repository_file(repo_root, relative), relative.as_posix())
 
 
+def is_model_operand(value: Any) -> bool:
+    return isinstance(value, str) and bool(value) and not value.startswith("-")
+
+
 def validate_relation_opus_output(run: dict, model: str | None) -> None:
     message = f"Opus output attribution drift: {run['id']}"
     usage = run.get("model_usage")
@@ -1834,7 +1838,9 @@ def validate_relation_opus_output(run: dict, model: str | None) -> None:
         output = record.get("outputTokens") if isinstance(record, dict) else None
         require(type(output) is int and output >= 0, message)
         if output > 0:
-            require(name == canonical and (model is None or name == model), message)
+            require(name == canonical and not has_output, message)
+            if model is not None:
+                require(name == model, message)
             has_output = True
     require(has_output, message)
 
@@ -2047,11 +2053,12 @@ def _validate_relation_evidence(repo: Path, *, source_stage: bool) -> list[str]:
                     f"behavior compact argv digest on full invocation: {run_id}",
                 )
                 invocation_model = invocation.get("model_requested")
-                require(
-                    isinstance(invocation_model, str)
-                    and (not bind_invocation_and_usage or invocation_model == model),
-                    f"behavior full invocation model drift: {run_id}",
+                invocation_model_error = (
+                    f"behavior full invocation model drift: {run_id}"
                 )
+                require(isinstance(invocation_model, str), invocation_model_error)
+                if bind_invocation_and_usage:
+                    require(invocation_model == model, invocation_model_error)
                 retained_command = json.dumps(invocation, indent=2) + "\n"
                 retained_digest = run.get("command_sha256")
             require(
@@ -2066,16 +2073,16 @@ def _validate_relation_evidence(repo: Path, *, source_stage: bool) -> list[str]:
                 for index, arg in enumerate(options)
                 if arg == "--model" or arg.startswith("--model=")
             ]
+            command_model_error = f"behavior command model drift: {run_id}"
             require(
                 len(model_args) == 1
                 and model_args[0] + 1 < len(options)
                 and options[model_args[0]] == "--model"
-                and (
-                    not bind_invocation_and_usage
-                    or options[model_args[0] + 1] == model
-                ),
-                f"behavior command model drift: {run_id}",
+                and is_model_operand(options[model_args[0] + 1]),
+                command_model_error,
             )
+            if bind_invocation_and_usage:
+                require(options[model_args[0] + 1] == model, command_model_error)
             require(
                 all(
                     run["init"][k] == []
@@ -2195,9 +2202,9 @@ def _validate_relation_evidence(repo: Path, *, source_stage: bool) -> list[str]:
             "stream-json",
             "--no-session-persistence",
             "--session-id",
-            run["session_id"],
+            None,
             "--model",
-            model,
+            None,
             "--effort",
             "high",
             "--permission-mode",
@@ -2228,19 +2235,26 @@ def _validate_relation_evidence(repo: Path, *, source_stage: bool) -> list[str]:
             "--debug-file",
             "<LOCAL_DEBUG_FILE>",
         ]
-        if (
-            not bind_invocation_and_usage
-            and isinstance(argv, list)
-            and len(argv) == len(expected_argv)
-        ):
-            for flag in ("--session-id", "--model"):
-                position = expected_argv.index(flag) + 1
-                if isinstance(argv[position], str):
-                    expected_argv[position] = argv[position]
+        session_position = expected_argv.index("--session-id") + 1
+        model_position = expected_argv.index("--model") + 1
+        controls_error = "native configured controls"
         require(
-            argv == expected_argv and run["init"]["permissionMode"] == "dontAsk",
-            "native configured controls",
+            isinstance(argv, list)
+            and len(argv) == len(expected_argv)
+            and all(
+                actual == expected
+                for actual, expected in zip(argv, expected_argv)
+                if expected is not None
+            )
+            and is_model_operand(argv[model_position])
+            and run["init"]["permissionMode"] == "dontAsk",
+            controls_error,
         )
+        if bind_invocation_and_usage:
+            require(argv[session_position] == run["session_id"], controls_error)
+            require(argv[model_position] == model, controls_error)
+        else:
+            require(isinstance(argv[session_position], str), controls_error)
         require(
             all(
                 hex_digest(run[key])
@@ -2301,16 +2315,17 @@ def _validate_relation_evidence(repo: Path, *, source_stage: bool) -> list[str]:
                 "native source injection text",
             )
         observed = run["isolation"]
+        isolation_error = "native isolation artifact binding"
         require(
             observed["run_id"] == run_id
-            and (
-                observed["command_sha256"] == run["command_sha256"]
-                if bind_invocation_and_usage
-                else hex_digest(observed["command_sha256"])
-            )
+            and hex_digest(observed["command_sha256"])
             and hex_digest(observed["debug_sha256"]),
-            "native isolation artifact binding",
+            isolation_error,
         )
+        if bind_invocation_and_usage:
+            require(
+                observed["command_sha256"] == run["command_sha256"], isolation_error
+            )
         require(
             observed["claudeMdExcludes"] == ["**"]
             and observed["skill_directory_commands"] == 0

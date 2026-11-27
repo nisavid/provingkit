@@ -921,6 +921,68 @@ class ValidateMergecraftTests(unittest.TestCase):
             result = self.run_validator(*flags)
             self.assertEqual(result.returncode, 0, result.stderr)
 
+    def test_pending_relation_records_keep_command_and_usage_constraints(self) -> None:
+        self.construct_relation_evidence(trigger_model="claude-opus-5")
+        path = self.repo / RELATION_EVIDENCE / "experiment.json"
+        original = json.loads(path.read_bytes())
+        selection = original["selection"]
+        behavior_id = f"{selection['behavior_by_case']['0']}/case-00-with-skill-1"
+        trigger_id = f"{selection['trigger_experiment']}/case-00"
+        for case, collection, run_id, diagnostic in (
+            (
+                "behavior option operand",
+                "behavior_runs",
+                behavior_id,
+                "behavior command model drift",
+            ),
+            (
+                "trigger option operand",
+                "native_and_trigger_runs",
+                trigger_id,
+                "native configured controls",
+            ),
+            (
+                "trigger hidden flag",
+                "native_and_trigger_runs",
+                trigger_id,
+                "native configured controls",
+            ),
+            (
+                "multiple behavior models",
+                "behavior_runs",
+                behavior_id,
+                "Opus output attribution drift",
+            ),
+            (
+                "multiple trigger models",
+                "native_and_trigger_runs",
+                trigger_id,
+                "Opus output attribution drift",
+            ),
+        ):
+            with self.subTest(case=case):
+                experiment = copy.deepcopy(original)
+                run = next(row for row in experiment[collection] if row["id"] == run_id)
+                argv = run["invocation"]["argv"]
+                if case == "behavior option operand":
+                    del argv[argv.index("--model") + 1]
+                elif case == "trigger option operand":
+                    argv[argv.index("--model") + 1] = "--"
+                elif case == "trigger hidden flag":
+                    position = argv.index("--session-id")
+                    argv[position + 1 : position + 3] = ["--model", "--verbose"]
+                else:
+                    other_model = (
+                        "claude-opus-5"
+                        if collection == "behavior_runs"
+                        else "claude-opus-5-5"
+                    )
+                    run["model_usage"][other_model] = {"outputTokens": 1}
+                self.hash_relation_command(run)
+                path.write_text(json.dumps(experiment), encoding="utf-8")
+                self.write_pending_evidence(RELATION_EVIDENCE, "claude-opus-5-5")
+                self.assert_pending_rejected(diagnostic)
+
     def test_relation_behavior_model_pair_must_precede_the_argv_delimiter(self) -> None:
         path = self.repo / RELATION_EVIDENCE / "experiment.json"
         experiment = json.loads(path.read_bytes())
