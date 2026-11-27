@@ -63,19 +63,6 @@ decline, deferral, or hold. Interpret a response against its verified context;
 neither a particular approval phrase nor an agent's description supplies missing
 authority.
 
-An actual harness refusal is a separate execution boundary. Preserve the exact
-action, stated reason, and observed outcome, reconcile existing authority, and
-follow the current harness's clarification or escalation path. Stop the refused
-operation and any dependent work; continue independent work only within its own
-authority and the harness's restrictions. A recovered grant does not authorize
-bypassing enforcement. Do not move the denied effect to another tool, account,
-or harness, disguise the command, weaken approval controls, or fabricate operator
-words. Retry only through the current harness's permitted recovery procedure;
-the historical trials below supply no current retry permission.
-If a write outcome is unknown, observe and reconcile it before considering
-another attempt. Neither renewed authority nor a fresh plan makes blind replay
-safe.
-
 ## Consumer use and evidence
 
 Callers use this contract to assess authority and their operation-specific
