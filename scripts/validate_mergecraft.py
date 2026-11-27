@@ -2264,7 +2264,7 @@ def _validate_relation_evidence(repo: Path, *, source_stage: bool) -> list[str]:
             require(argv[session_position] == run["session_id"], controls_error)
             require(argv[model_position] == model, controls_error)
         else:
-            require(isinstance(argv[session_position], str), controls_error)
+            require(is_model_operand(argv[session_position]), controls_error)
         require(
             all(
                 hex_digest(run[key])

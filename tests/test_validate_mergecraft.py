@@ -971,6 +971,18 @@ class ValidateMergecraftTests(unittest.TestCase):
                 "native configured controls",
             ),
             (
+                "trigger option session operand",
+                "native_and_trigger_runs",
+                trigger_id,
+                "native configured controls",
+            ),
+            (
+                "trigger empty session operand",
+                "native_and_trigger_runs",
+                trigger_id,
+                "native configured controls",
+            ),
+            (
                 "multiple behavior models",
                 "behavior_runs",
                 behavior_id,
@@ -994,6 +1006,10 @@ class ValidateMergecraftTests(unittest.TestCase):
                 elif case == "trigger hidden flag":
                     position = argv.index("--session-id")
                     argv[position + 1 : position + 3] = ["--model", "--verbose"]
+                elif case == "trigger option session operand":
+                    argv[argv.index("--session-id") + 1] = "--"
+                elif case == "trigger empty session operand":
+                    argv[argv.index("--session-id") + 1] = ""
                 else:
                     other_model = (
                         "claude-opus-5"
