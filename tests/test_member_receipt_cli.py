@@ -123,12 +123,16 @@ class MemberReceiptCliTests(unittest.TestCase):
             writers.append(("mergecraft", "--write-markdown-projections"))
             for member, writing in writers:
                 with self.subTest(member=member, writing=writing):
+                    flags = [writing]
+                    if member == "mergecraft" and writing == "--write-content-lock":
+                        # The source-stage writer accepts bound release-pending evidence.
+                        flags.append("--source-stage")
                     result = subprocess.run(
                         [
                             sys.executable,
                             "-B",
                             str(repository / "scripts" / f"validate_{member}.py"),
-                            writing,
+                            *flags,
                             str(repository),
                         ],
                         cwd=repository,
@@ -362,14 +366,6 @@ class MemberReceiptCliTests(unittest.TestCase):
                         str(scripts / f"validate_{member}.py"),
                         str(REPOSITORY),
                     ]
-                    ordinary = subprocess.run(
-                        command,
-                        cwd=temporary,
-                        env=environment,
-                        capture_output=True,
-                        text=True,
-                        check=False,
-                    )
                     source = subprocess.run(
                         [*command, "--source-stage"],
                         cwd=temporary,
@@ -378,8 +374,22 @@ class MemberReceiptCliTests(unittest.TestCase):
                         text=True,
                         check=False,
                     )
-                    self.assertEqual(ordinary.returncode, 0, ordinary.stderr)
                     self.assertEqual(source.returncode, 0, source.stderr)
+                    if member == "mergecraft":
+                        # Strict validation requires fresh evidence at the executor pin.
+                        self.assertIn(
+                            "Mergecraft contract validation passed", source.stdout
+                        )
+                        continue
+                    ordinary = subprocess.run(
+                        command,
+                        cwd=temporary,
+                        env=environment,
+                        capture_output=True,
+                        text=True,
+                        check=False,
+                    )
+                    self.assertEqual(ordinary.returncode, 0, ordinary.stderr)
                     expected = ordinary.stdout
                     if member == "artifact_customs":
                         expected = expected.replace("release-stage", "source-stage")
