@@ -57,7 +57,9 @@ class SourceSkillDispositionWorkflowTests(unittest.TestCase):
         self.assertEqual(
             events,
             {
-                "pull_request": None,
+                "pull_request": {
+                    "types": ["opened", "synchronize", "reopened", "edited"],
+                },
                 "push": {"branches": ["main"]},
             },
         )
