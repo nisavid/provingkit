@@ -7,6 +7,7 @@ import io
 import json
 import os
 from pathlib import Path
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -18,6 +19,7 @@ SCRIPTS = (
     / "communicating-with-agents" / "scripts"
 )
 HELPER = SCRIPTS / "claude_route_nomination.py"
+PLUGIN = ROOT / "plugins" / "surreal-intercom"
 
 
 class ClaudeRouteNominationTests(unittest.TestCase):
@@ -269,6 +271,332 @@ class ClaudeRouteNominationTests(unittest.TestCase):
             self.assertFalse(Path(request["publication"]["path"]).exists())
             self.assertEqual(retained.read_bytes(), retained_bytes)
 
+    def test_prepare_by_name_uses_the_senders_own_launcher_and_no_nomination(self):
+        route, sender, mailbox_module = self.load_modules()
+        with tempfile.TemporaryDirectory(prefix="claude-route-") as temporary:
+            root = Path(temporary).resolve()
+            root.chmod(0o700)
+            recipient = {"thread_id": "claude-receiver", "host_id": "local"}
+            request = self.prepare_input(root, None, recipient)
+            del request["nomination"]
+            request["schema"] = "claude-name-request-preparation-v1"
+            request["name"] = "claude-receiver"
+            mailbox_path = Path(request["mailbox"])
+            self.initialize_mailbox(mailbox_module, mailbox_path)
+            request_path = root / "prepare-input.json"
+            self.write(request_path, request)
+            lookups = []
+
+            def lookup(name, path):
+                lookups.append((name, path))
+                return "/synthetic/credential-wrapper/bin/claude"
+
+            output = io.StringIO()
+            with contextlib.redirect_stdout(output):
+                route.main(["prepare", "--request", str(request_path)],
+                           effective_uid=os.geteuid(),
+                           environment={"PATH": "/synthetic/credential-wrapper/bin:/usr/bin"},
+                           launcher_lookup=lookup)
+            result = json.loads(output.getvalue())
+            self.assertTrue(result["prepared"], result)
+            self.assertEqual(lookups, [("claude", "/synthetic/credential-wrapper/bin:/usr/bin")])
+            prepared = json.loads(Path(result["path"]).read_text(encoding="utf-8"))
+            sender.validate(prepared)
+            self.assertEqual(prepared["name"], "claude-receiver")
+            self.assertNotIn("target", prepared)
+            self.assertEqual(prepared["command"],
+                             ["/synthetic/credential-wrapper/bin/claude", "mcp", "serve"])
+            self.assertEqual(prepared["recipient"], recipient)
+
+    def test_prepare_passes_a_later_attempts_fields_through_both_or_neither(self):
+        route, sender, mailbox_module = self.load_modules()
+        reconciliation = {"after_attempt": "message-1/attempt/1",
+                          "decision_ref": "synthetic://decision/select"}
+        for fields in (("after_attempt", "decision_ref"), ("after_attempt",), ("decision_ref",)):
+            with self.subTest(fields=fields), tempfile.TemporaryDirectory(
+                    prefix="claude-route-") as temporary:
+                root = Path(temporary).resolve()
+                root.chmod(0o700)
+                recipient = {"thread_id": "twin", "host_id": "local"}
+                request = self.prepare_input(root, None, recipient)
+                del request["nomination"]
+                request.update({"schema": "claude-name-request-preparation-v1", "name": "twin",
+                                "selection": {"ref": "cc22dd"}, "attempt_id": "message-1/attempt/2"})
+                request.update({key: reconciliation[key] for key in fields})
+                self.initialize_mailbox(mailbox_module, Path(request["mailbox"]))
+                request_path = root / "prepare-input.json"
+                self.write(request_path, request)
+                output = io.StringIO()
+                with contextlib.redirect_stdout(output):
+                    route.main(["prepare", "--request", str(request_path)],
+                               effective_uid=os.geteuid(),
+                               environment={"PATH": "/synthetic/bin"},
+                               launcher_lookup=lambda _name, _path: "/synthetic/bin/claude")
+                result = json.loads(output.getvalue())
+                if len(fields) == 2:
+                    self.assertTrue(result["prepared"], result)
+                    prepared = json.loads(Path(result["path"]).read_text(encoding="utf-8"))
+                    sender.validate(prepared)
+                    self.assertEqual(
+                        {key: prepared[key] for key in reconciliation}, reconciliation)
+                else:
+                    self.assertEqual(result, {
+                        "prepared": False, "reason": "invalid_reconciliation",
+                        "closure": "no-provider-started"})
+                    self.assertFalse(Path(request["publication"]["path"]).exists())
+
+    def test_prepare_refuses_an_oversized_frame_before_planning_or_publishing(self):
+        route, _, mailbox_module = self.load_modules()
+        with tempfile.TemporaryDirectory(prefix="claude-route-") as temporary:
+            root = Path(temporary).resolve()
+            root.chmod(0o700)
+            _, publication, recipient = self.produce(route, root)
+            nomination = {key: publication[key] for key in ("path", "bytes", "sha256")}
+            request = self.prepare_input(root, nomination, recipient)
+            mailbox_path = Path(request["mailbox"])
+            self.initialize_mailbox(mailbox_module, mailbox_path)
+            # Fits the 32,768-byte request file but not the 4,096-byte call frame.
+            request["message"]["payload"] = "x" * 4096
+            request_path = root / "prepare-input.json"
+            self.write(request_path, request)
+
+            output = io.StringIO()
+            with contextlib.redirect_stdout(output):
+                exit_code = route.main(
+                    ["prepare", "--request", str(request_path)],
+                    effective_uid=os.geteuid(),
+                )
+
+            self.assertEqual(exit_code, 0)
+            self.assertEqual(json.loads(output.getvalue()), {
+                "prepared": False, "reason": "sender-frame-byte-limit",
+                "closure": "no-provider-started",
+            })
+            self.assertFalse(Path(request["publication"]["path"]).exists())
+            mailbox = mailbox_module.Mailbox(mailbox_path)
+            try:
+                self.assertEqual(mailbox.pending(), [])
+            finally:
+                mailbox.close()
+
+            request["message"]["payload"] = "Fits."
+            self.write(request_path, request)
+            output = io.StringIO()
+            with contextlib.redirect_stdout(output):
+                route.main(["prepare", "--request", str(request_path)],
+                           effective_uid=os.geteuid())
+            self.assertTrue(json.loads(output.getvalue())["prepared"])
+
+    def test_prepare_refuses_a_name_that_looks_like_a_route(self):
+        route, _, mailbox_module = self.load_modules()
+        with tempfile.TemporaryDirectory(prefix="claude-route-") as temporary:
+            root = Path(temporary).resolve()
+            root.chmod(0o700)
+            recipient = {"thread_id": "claude-receiver", "host_id": "local"}
+            request = self.prepare_input(root, None, recipient)
+            del request["nomination"]
+            request["schema"] = "claude-name-request-preparation-v1"
+            request["name"] = "uds:/synthetic/outside.sock"
+            mailbox_path = Path(request["mailbox"])
+            self.initialize_mailbox(mailbox_module, mailbox_path)
+            request_path = root / "prepare-input.json"
+            self.write(request_path, request)
+            output = io.StringIO()
+            with contextlib.redirect_stdout(output):
+                route.main(["prepare", "--request", str(request_path)],
+                           effective_uid=os.geteuid(),
+                           environment={"PATH": "/synthetic/bin"},
+                           launcher_lookup=lambda _name, _path: "/synthetic/bin/claude")
+            self.assertEqual(json.loads(output.getvalue()), {
+                "prepared": False, "reason": "invalid_name", "closure": "no-provider-started",
+            })
+            self.assertFalse(Path(request["publication"]["path"]).exists())
+
+    def test_prepare_refuses_a_name_the_listing_profile_cannot_address(self):
+        route, _, mailbox_module = self.load_modules()
+        invalid_names = ("left  ·  right", "(draft) review", "No reachable agents.", "<alpha",
+                         "alpha\tpeer", "alpha\u2028peer", "alpha\0peer", "", " ", None,
+                         "alpha\ud800", "alpha\udc00")
+        for name in (*invalid_names, "main"):
+            with self.subTest(name=name), tempfile.TemporaryDirectory(
+                    prefix="claude-route-") as temporary:
+                root = Path(temporary).resolve()
+                root.chmod(0o700)
+                recipient_name = name if isinstance(name, str) and name.strip() else "fixture"
+                request = self.prepare_input(root, None, {"thread_id": recipient_name, "host_id": "local"})
+                del request["nomination"]
+                request.update({"schema": "claude-name-request-preparation-v1", "name": name})
+                self.initialize_mailbox(mailbox_module, Path(request["mailbox"]))
+                request_path = root / "prepare-input.json"
+                self.write(request_path, request)
+                output = io.StringIO()
+                with contextlib.redirect_stdout(output):
+                    route.main(["prepare", "--request", str(request_path)],
+                               effective_uid=os.geteuid(),
+                               environment={"PATH": "/synthetic/bin"},
+                               launcher_lookup=lambda _name, _path: "/synthetic/bin/claude")
+                self.assertEqual(json.loads(output.getvalue()), {
+                    "prepared": False, "reason": "self_destination" if name == "main" else "invalid_name",
+                    "closure": "no-provider-started"})
+                self.assertFalse(Path(request["publication"]["path"]).exists())
+                mailbox = mailbox_module.Mailbox(Path(request["mailbox"]))
+                try:
+                    self.assertEqual(mailbox.pending(), [])
+                finally:
+                    mailbox.close()
+
+    def test_prepare_refuses_a_recipient_that_does_not_carry_the_name(self):
+        route, _, mailbox_module = self.load_modules()
+        with tempfile.TemporaryDirectory(prefix="claude-route-") as temporary:
+            root = Path(temporary).resolve()
+            root.chmod(0o700)
+            # A session id is not the name the listing prints.
+            recipient = {"thread_id": "3fa9c1-session-id", "host_id": "local"}
+            request = self.prepare_input(root, None, recipient)
+            del request["nomination"]
+            request["schema"] = "claude-name-request-preparation-v1"
+            request["name"] = "claude-receiver"
+            mailbox_path = Path(request["mailbox"])
+            self.initialize_mailbox(mailbox_module, mailbox_path)
+            request_path = root / "prepare-input.json"
+            self.write(request_path, request)
+            output = io.StringIO()
+            with contextlib.redirect_stdout(output):
+                route.main(["prepare", "--request", str(request_path)],
+                           effective_uid=os.geteuid(),
+                           environment={"PATH": "/synthetic/bin"},
+                           launcher_lookup=lambda _name, _path: "/synthetic/bin/claude")
+            self.assertEqual(json.loads(output.getvalue()), {
+                "prepared": False, "reason": "recipient-name-mismatch",
+                "closure": "no-provider-started",
+            })
+            self.assertFalse(Path(request["publication"]["path"]).exists())
+            mailbox = mailbox_module.Mailbox(mailbox_path)
+            try:
+                self.assertEqual(mailbox.pending(), [])
+            finally:
+                mailbox.close()
+
+    def test_prepare_accepts_a_300_unit_bare_name_but_refuses_the_qualified_address(self):
+        _, _, mailbox_module = self.load_modules()
+        with tempfile.TemporaryDirectory(prefix="claude-route-") as temporary:
+            root = Path(temporary).resolve()
+            launcher = root / "claude"
+            started = root / "launcher-started"
+            launcher.write_text('#!/bin/sh\n: > "${0%/*}/launcher-started"\n', encoding="utf-8")
+            launcher.chmod(0o700)
+            name = "x" * 300
+            request = self.prepare_input(root, None, {"thread_id": name, "host_id": "local"})
+            del request["nomination"]
+            request.update({"schema": "claude-name-request-preparation-v1", "name": name,
+                            "selection": {"ref": "aa12bc"}})
+            mailbox_path = Path(request["mailbox"])
+            self.initialize_mailbox(mailbox_module, mailbox_path)
+            request_path = root / "prepare-input.json"
+            published = Path(request["publication"]["path"])
+
+            def prepare():
+                self.write(request_path, request)
+                completed = subprocess.run(
+                    [sys.executable, "-B", str(HELPER), "prepare", "--request", str(request_path)],
+                    env={**os.environ, "PATH": str(root)}, capture_output=True, text=True,
+                    check=True, timeout=10)
+                self.assertFalse(started.exists())
+                return json.loads(completed.stdout)
+
+            self.assertEqual(prepare(), {
+                "prepared": False, "reason": "destination_constraint_violation",
+                "closure": "no-provider-started",
+            })
+            self.assertFalse(published.exists())
+            mailbox = mailbox_module.Mailbox(mailbox_path)
+            try:
+                self.assertEqual(mailbox.pending(), [])
+            finally:
+                mailbox.close()
+
+            del request["selection"]
+            result = prepare()
+            self.assertTrue(result["prepared"], result)
+            prepared = json.loads(published.read_text(encoding="utf-8"))
+            self.assertEqual(prepared["name"], name)
+            self.assertNotIn("selection", prepared)
+            mailbox = mailbox_module.Mailbox(mailbox_path)
+            try:
+                retained = mailbox.get(request["message"]["message_id"])
+                self.assertEqual(retained["state"], "planned")
+                self.assertEqual(retained["attempts"], [])
+            finally:
+                mailbox.close()
+
+    def test_prepare_checks_the_qualified_frame_before_a_selected_singleton_sends_bare(self):
+        route, sender, mailbox_module = self.load_modules()
+        with tempfile.TemporaryDirectory(prefix="claude-route-") as temporary:
+            root = Path(temporary).resolve()
+            root.chmod(0o700)
+            name, ref = "claude-receiver", "3fa9c1"
+            qualified = f"{name} [{ref}]"
+            recipient = {"thread_id": name, "host_id": "local"}
+            request = self.prepare_input(root, None, recipient)
+            del request["nomination"]
+            request["schema"] = "claude-name-request-preparation-v1"
+            request["name"] = name
+            request["selection"] = {"ref": ref}
+            mailbox_path = Path(request["mailbox"])
+            self.initialize_mailbox(mailbox_module, mailbox_path)
+            request_path = root / "prepare-input.json"
+            launcher = root / "claude"
+            launcher.write_text(f"#!{sys.executable}\n" + BY_NAME_CHILD, encoding="utf-8")
+            launcher.chmod(0o700)
+            trace = root / "name-child.jsonl"
+
+            def frame_bytes(to):
+                return len(json.dumps(
+                    sender.sendmessage_call(request["message"], request["actor"], to),
+                    ensure_ascii=True, separators=(",", ":")).encode()) + 1
+
+            def prepare():
+                self.write(request_path, request)
+                output = io.StringIO()
+                with contextlib.redirect_stdout(output):
+                    route.main(["prepare", "--request", str(request_path)],
+                               effective_uid=os.geteuid(),
+                               environment={"PATH": str(root)},
+                               launcher_lookup=lambda _name, _path: str(launcher))
+                return json.loads(output.getvalue())
+
+            # The bare frame fits, but another row might require the qualified form.
+            request["message"]["payload"] = ""
+            request["message"]["payload"] = "x" * (4096 - frame_bytes(name))
+            self.assertEqual(frame_bytes(name), 4096)
+            self.assertEqual(frame_bytes(qualified), 4105)
+            self.assertEqual(prepare(), {
+                "prepared": False, "reason": "sender-frame-byte-limit",
+                "closure": "no-provider-started",
+            })
+            self.assertFalse(Path(request["publication"]["path"]).exists())
+
+            # At the ceiling with the selected `to`, the request is prepared.
+            request["message"]["payload"] = ""
+            request["message"]["payload"] = "x" * (4096 - frame_bytes(qualified))
+            self.assertEqual(frame_bytes(qualified), 4096)
+            result = prepare()
+            self.assertTrue(result["prepared"], result)
+            prepared = json.loads(Path(result["path"]).read_text(encoding="utf-8"))
+            self.assertEqual(sender.request_destination(prepared), qualified)
+            self.assertFalse(trace.exists())
+
+            sent = subprocess.run([
+                sys.executable, "-B", str(SCRIPTS / "claude_mcp_sender.py"),
+                "--store", str(mailbox_path), "--request", result["path"],
+            ], capture_output=True, text=True, timeout=12)
+            self.assertEqual(sent.returncode, 0, sent.stderr)
+            self.assertEqual(json.loads(sent.stdout)["reason"], "unverified_tool_result")
+            requests = (json.loads(line) for line in trace.read_text(encoding="utf-8").splitlines())
+            calls = [item["params"] for item in requests if item.get("method") == "tools/call"]
+            self.assertEqual([call["name"] for call in calls], ["ListAgents", "SendMessage"])
+            self.assertEqual(calls[-1]["arguments"]["to"], name)
+
     def test_prepare_returns_safe_refusal_for_existing_corrupt_mailbox(self):
         route, _, _ = self.load_modules()
         with tempfile.TemporaryDirectory(prefix="claude-route-") as temporary:
@@ -485,6 +813,298 @@ class ClaudeRouteNominationTests(unittest.TestCase):
             self.assertEqual(result["reason"], "private-output-already-exists")
             self.assertEqual(existing.read_bytes(), b"existing private bytes")
             self.assertEqual(result["closure"], "no-provider-started")
+
+    def test_reply_through_an_unchanged_received_claude_route_reaches_the_original_sender(self):
+        from tests.plugins.surreal_intercom import projected_ordinary_flow as flow
+
+        route, _sender, mailbox_module = self.load_modules()
+        peer_message = importlib.import_module("peer_message")
+        with tempfile.TemporaryDirectory(prefix="claude-return-") as temporary:
+            root = Path(temporary).resolve()
+            root.chmod(0o700)
+            launcher = root / "claude"
+            launcher.write_text(f"#!{sys.executable}\n" + flow.MCP_CHILD, encoding="utf-8")
+            launcher.chmod(0o700)
+            origin = {"thread_id": "claude-origin", "host_id": "local"}
+            replier = {"thread_id": "codex-replier", "host_id": "local"}
+            publication = flow.invoke(route.main, ["nominate", "--request", str(flow.write(
+                root / "produce.json", {
+                    "schema": "claude-route-nomination-request-v1", "recipient": origin,
+                    "producer": origin, "publication": {
+                        "path": str(root / "nomination.json"), "ownerUid": os.geteuid(),
+                        "capture": self.capture(root)},
+                }))], environment={
+                    "CLAUDE_CODE_HOST_SESSION_ID": origin["thread_id"],
+                    "CLAUDE_CODE_MESSAGING_SOCKET": "/synthetic/origin/messaging.sock",
+                    "PATH": str(root)}, launcher_lookup=lambda _name, _path: str(launcher))
+            self.assertTrue(publication["published"], publication)
+            outbound = flow.message("outbound", replier, sender=origin)
+            outbound["reply_route"] = flow.procedure_reply_route(PLUGIN, "claude-mcp", {
+                "$REPLY_RECIPIENT_THREAD_ID": origin["thread_id"],
+                "$REPLY_RECIPIENT_HOST_ID": origin["host_id"],
+                "$REPLY_SUBMITTER_THREAD_ID": replier["thread_id"],
+                "$REPLY_SUBMITTER_HOST_ID": replier["host_id"],
+                "$CORRELATION_ID": outbound["correlation_id"],
+                "$NOMINATION_PATH": publication["path"],
+                "$NOMINATION_SHA256": publication["sha256"],
+                "$NOMINATION_SIZE": publication["bytes"],
+            })
+            # The replier sees only the delivered envelope and takes its route as it arrived.
+            received = json.loads(
+                peer_message.serialize_peer_message(outbound, origin).split("\n", 1)[1])
+            received_route = received["reply_route"]
+            reply = {
+                "message_id": "reply-1", "correlation_id": received_route["correlation_id"],
+                "sender": received["recipient"], "recipient": received_route["recipient"],
+                "owner": received["recipient"], "payload": "The comparison is complete.\n",
+                "authority_ref": "synthetic://authority/reply", "holds": received["holds"],
+            }
+            store = root / "mailbox.sqlite3"
+            self.initialize_mailbox(mailbox_module, store)
+            prepared = flow.invoke(route.main, ["prepare", "--request", str(flow.write(
+                root / "prepare.json", {
+                    "schema": "claude-sender-request-preparation-v1",
+                    "nomination": received_route["nomination"], "message": reply,
+                    "attempt_id": "reply-1/attempt/1", "actor": received_route["submitter"],
+                    "limits": {"operation_seconds": 8, "stdout_bytes": 65536,
+                               "stderr_bytes": 65536},
+                    "mailbox": str(store), "publication": {
+                        "path": str(root / "sender-request.json"), "ownerUid": os.geteuid(),
+                        "capture": self.capture(root)},
+                }))])
+            self.assertTrue(prepared["prepared"], prepared)
+            completed = subprocess.run([
+                sys.executable, "-B", str(SCRIPTS / "claude_mcp_sender.py"),
+                "--store", str(store), "--request", prepared["path"],
+            ], capture_output=True, text=True, timeout=12)
+            self.assertEqual(completed.returncode, 0, completed.stderr)
+            result = json.loads(completed.stdout)
+            self.assertEqual(result["reason"], "unverified_tool_result", result)
+            records = [json.loads(line) for line in
+                       (root / "child.jsonl").read_text(encoding="utf-8").splitlines()]
+            call = records[-2]["params"]
+            self.assertEqual(call["name"], "SendMessage")
+            self.assertEqual(call["arguments"]["to"], "uds:/synthetic/origin/messaging.sock")
+            envelope = json.loads(call["arguments"]["message"].split("\n", 1)[1])
+            self.assertEqual(envelope["recipient"], outbound["sender"])
+            self.assertEqual(envelope["correlation_id"], outbound["correlation_id"])
+            self.assertEqual(envelope["sender"], replier)
+            self.assertEqual(envelope["actor"], replier)
+            self.assertNotIn("reply_route", envelope)
+
+    def test_a_reply_through_an_unchanged_route_binds_when_the_outbound_went_by_name(self):
+        from unittest import mock
+        from tests.plugins.surreal_intercom import projected_ordinary_flow as flow
+
+        names = ("claude_route_nomination", "native_codex_mailbox", "peer_message",
+                 "codex_route_nomination", "owner_admission_sender", "codex_ipc_transport")
+        sys.path.insert(0, str(SCRIPTS))
+        try:
+            modules = {name: importlib.import_module(name) for name in names}
+        finally:
+            sys.path.remove(str(SCRIPTS))
+        route, mailbox_module, peer_message = (modules[name] for name in names[:3])
+        admission, transport = modules["owner_admission_sender"], modules["codex_ipc_transport"]
+        limits = {"operation_seconds": 8, "stdout_bytes": 65536, "stderr_bytes": 65536}
+        for kind in ("claude-mcp", "codex-owner-admission"):
+            with self.subTest(kind=kind), tempfile.TemporaryDirectory(
+                    prefix="by-name-return-") as temporary:
+                root = Path(temporary).resolve()
+                root.chmod(0o700)
+                # The outbound recipient is planned under the name its listing row prints.
+                receiver = {"thread_id": "claude-receiver", "host_id": "local"}
+                if kind == "claude-mcp":
+                    origin = {"thread_id": "claude-origin", "host_id": "local"}
+                    return_launcher = root / "claude"
+                    return_launcher.write_text(
+                        f"#!{sys.executable}\n" + flow.MCP_CHILD, encoding="utf-8")
+                    return_launcher.chmod(0o700)
+                    publication = flow.invoke(route.main, ["nominate", "--request", str(flow.write(
+                        root / "produce.json", {
+                            "schema": "claude-route-nomination-request-v1", "recipient": origin,
+                            "producer": origin, "publication": {
+                                "path": str(root / "nomination.json"), "ownerUid": os.geteuid(),
+                                "capture": self.capture(root)},
+                        }))], environment={
+                            "CLAUDE_CODE_HOST_SESSION_ID": origin["thread_id"],
+                            "CLAUDE_CODE_MESSAGING_SOCKET": "/synthetic/origin/messaging.sock",
+                            "PATH": str(root)},
+                        launcher_lookup=lambda _name, _path: str(return_launcher))
+                    self.assertTrue(publication["published"], publication)
+                    outbound = flow.message("outbound", receiver, sender=origin)
+                    outbound["reply_route"] = flow.procedure_reply_route(PLUGIN, kind, {
+                        "$REPLY_RECIPIENT_THREAD_ID": origin["thread_id"],
+                        "$REPLY_RECIPIENT_HOST_ID": origin["host_id"],
+                        "$REPLY_SUBMITTER_THREAD_ID": receiver["thread_id"],
+                        "$REPLY_SUBMITTER_HOST_ID": receiver["host_id"],
+                        "$CORRELATION_ID": outbound["correlation_id"],
+                        "$NOMINATION_PATH": publication["path"],
+                        "$NOMINATION_SHA256": publication["sha256"],
+                        "$NOMINATION_SIZE": publication["bytes"],
+                    })
+                else:
+                    origin = {"thread_id": "codex-origin", "host_id": "local"}
+                    outbound = flow.message("outbound", receiver, sender=origin)
+                    outbound["reply_route"] = flow.codex_return_route(
+                        root / "return", modules, PLUGIN, origin, receiver,
+                        outbound["correlation_id"])
+
+                # Send the outbound by name through the sender's own child.
+                name_root = root / "name"
+                name_root.mkdir(mode=0o700)
+                name_launcher = name_root / "claude"
+                name_launcher.write_text(f"#!{sys.executable}\n" + BY_NAME_CHILD, encoding="utf-8")
+                name_launcher.chmod(0o700)
+                outbound_store = root / "outbound.sqlite3"
+                self.initialize_mailbox(mailbox_module, outbound_store)
+                prepared = flow.invoke(route.main, ["prepare", "--request", str(flow.write(
+                    root / "prepare-outbound.json", {
+                        "schema": "claude-name-request-preparation-v1", "name": "claude-receiver",
+                        "message": outbound, "attempt_id": "outbound/attempt/1",
+                        "actor": origin, "limits": limits, "mailbox": str(outbound_store),
+                        "publication": {
+                            "path": str(root / "outbound-request.json"), "ownerUid": os.geteuid(),
+                            "capture": self.capture(root)},
+                    }))], environment={"PATH": str(name_root)},
+                    launcher_lookup=lambda _name, _path: str(name_launcher))
+                self.assertTrue(prepared["prepared"], prepared)
+                sent = subprocess.run([
+                    sys.executable, "-B", str(SCRIPTS / "claude_mcp_sender.py"),
+                    "--store", str(outbound_store), "--request", prepared["path"],
+                ], capture_output=True, text=True, timeout=12)
+                self.assertEqual(sent.returncode, 0, sent.stderr)
+                sent_result = json.loads(sent.stdout)
+                self.assertEqual((sent_result["path"], sent_result["reason"]), ("name", "unverified_tool_result"))
+                outbound_call = [
+                    json.loads(line)["params"] for line in
+                    (name_root / "name-child.jsonl").read_text(encoding="utf-8").splitlines()
+                    if json.loads(line).get("method") == "tools/call"][-1]
+                self.assertEqual(outbound_call["arguments"]["to"], "claude-receiver")
+
+                # The recipient replies through the route exactly as it arrived.
+                received = json.loads(outbound_call["arguments"]["message"].split("\n", 1)[1])
+                received_route = received["reply_route"]
+                self.assertEqual(received_route, outbound["reply_route"])
+                reply = {
+                    "message_id": "reply-1", "correlation_id": received_route["correlation_id"],
+                    "sender": received["recipient"], "recipient": received_route["recipient"],
+                    "owner": received["recipient"], "payload": "The comparison is complete.\n",
+                    "authority_ref": "synthetic://authority/reply", "holds": received["holds"],
+                }
+                reply_store = root / "reply.sqlite3"
+                self.initialize_mailbox(mailbox_module, reply_store)
+                if kind == "claude-mcp":
+                    reply_prepared = flow.invoke(route.main, ["prepare", "--request", str(
+                        flow.write(root / "prepare-reply.json", {
+                            "schema": "claude-sender-request-preparation-v1",
+                            "nomination": received_route["nomination"], "message": reply,
+                            "attempt_id": "reply-1/attempt/1",
+                            "actor": received_route["submitter"], "limits": limits,
+                            "mailbox": str(reply_store), "publication": {
+                                "path": str(root / "reply-request.json"),
+                                "ownerUid": os.geteuid(), "capture": self.capture(root)},
+                        }))])
+                    self.assertTrue(reply_prepared["prepared"], reply_prepared)
+                    replied = subprocess.run([
+                        sys.executable, "-B", str(SCRIPTS / "claude_mcp_sender.py"),
+                        "--store", str(reply_store), "--request", reply_prepared["path"],
+                    ], capture_output=True, text=True, timeout=12)
+                    self.assertEqual(replied.returncode, 0, replied.stderr)
+                    self.assertEqual(json.loads(replied.stdout)["reason"], "unverified_tool_result")
+                    records = [json.loads(line) for line in
+                               (root / "child.jsonl").read_text(encoding="utf-8").splitlines()]
+                    call = records[-2]["params"]
+                    self.assertEqual(call["arguments"]["to"], "uds:/synthetic/origin/messaging.sock")
+                    text = call["arguments"]["message"]
+                else:
+                    flow.invoke(mailbox_module.main, [
+                        "--store", str(reply_store), "plan", "--input",
+                        str(flow.write(root / "reply.json", reply))])
+                    run = root / "send"
+                    run.mkdir(mode=0o700)
+                    nomination = json.loads(Path(received_route["nomination"]["path"]).read_bytes())
+                    peer = flow.Peer(nomination["acceptor"], "reply-1/attempt/1")
+
+                    def connect(endpoint, connection_limits, wait):
+                        self.assertEqual(endpoint, nomination["route"]["endpoint"])
+                        return transport.CliTransport(
+                            endpoint, connection_limits, wait,
+                            connector=lambda _endpoint, _wait: peer)
+
+                    with mock.patch.object(admission, "CliTransport", connect):
+                        result = flow.invoke(admission.main, [
+                            "--store", str(reply_store), "--request", str(flow.write(
+                                root / "send.json", {
+                                    "message_id": reply["message_id"],
+                                    "attempt_id": "reply-1/attempt/1",
+                                    "actor": received_route["submitter"],
+                                    "recipient": reply["recipient"],
+                                    "evidence_ref": "synthetic://reply-send",
+                                    "native": {
+                                        "nomination": received_route["nomination"],
+                                        "purpose": "Return the requested reply",
+                                        "authorityRefs": [reply["authority_ref"]],
+                                        "holdRefs": reply["holds"],
+                                        "scope": {"send": True, "ownerAdmissionIntent": True,
+                                                  "holdsSatisfied": True},
+                                        "profile": {}, "observationSeconds": 0.1,
+                                    },
+                                    "capture": flow.capture(run),
+                                }))], clock=lambda: 7005)
+                    self.assertTrue(result["claimed"], result)
+                    self.assertEqual(result["peer_input"], "possible_submission", result)
+                    self.assertEqual(peer.frames[1]["params"]["conversationId"], origin["thread_id"])
+                    text = peer.frames[-1]["params"]["turnStart"]["request"]["input"][0]["text"]
+                envelope = json.loads(text.split("\n", 1)[1])
+                self.assertEqual(envelope["recipient"], outbound["sender"])
+                self.assertEqual(envelope["correlation_id"], outbound["correlation_id"])
+                self.assertEqual(envelope["sender"], receiver)
+                self.assertEqual(envelope["actor"], receiver)
+                self.assertNotIn("reply_route", envelope)
+
+
+# A `claude mcp serve` stand-in that lists one local session and accepts one send by name.
+BY_NAME_CHILD = '''import json
+import sys
+from pathlib import Path
+
+assert sys.argv[1:] == ["mcp", "serve"], sys.argv
+LISTING = (
+    "This session is Fixture Origin [ab12ef] — the name other sessions use to message it "
+    "(it is not listed below; a message to it would be a message to yourself).\\n\\n"
+    "Peer sessions (1):\\n"
+    "  claude-receiver [3fa9c1]  ·  interactive  ·  idle  ·  Claude Desktop session  ·  "
+    "started 8h ago\\n\\n"
+    "[Cloud sessions and other computers are not listed because Remote Control is off "
+    "in this session. The user can turn it on with the Remote Control switch in the app; "
+    "then list again.]"
+)
+CURSOR = {"type": "string"}
+CATALOG = {"tools": [
+    {"name": "SendMessage", "inputSchema": {
+        "type": "object", "properties": {"to": {"type": "string"}, "message": {"type": "string"}},
+        "required": ["to", "message"], "additionalProperties": False}},
+    {"name": "ListAgents", "inputSchema": {
+        "type": "object", "properties": {"cursor": CURSOR}, "additionalProperties": False}},
+]}
+with Path(__file__).with_name("name-child.jsonl").open("w", encoding="utf-8") as trace:
+    for line in sys.stdin:
+        request = json.loads(line)
+        trace.write(json.dumps(request) + "\\n")
+        trace.flush()
+        method = request["method"]
+        if method == "notifications/initialized":
+            continue
+        if method == "initialize":
+            result = {"protocolVersion": "2024-11-05", "capabilities": {"tools": {}}}
+        elif method == "tools/list":
+            result = CATALOG
+        elif request["params"]["name"] == "ListAgents":
+            result = {"content": [{"type": "text", "text": LISTING}]}
+        else:
+            result = {"content": [{"type": "text", "text": "In the inbox, not yet read."}]}
+        print(json.dumps({"jsonrpc": "2.0", "id": request["id"], "result": result}), flush=True)
+'''
 
 
 if __name__ == "__main__":

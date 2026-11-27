@@ -561,8 +561,8 @@ def claude_flow(root, modules, scripts, plugin):
         ], capture_output=True, text=True, timeout=12)
         assert completed.returncode == 0, completed.stderr
         result = json.loads(completed.stdout)
-        assert result["claimed"] is True and result["reason"] == "submitted", result
-        assert result["stage"] == "call" and result["peer_input"] == "submitted"
+        assert result["claimed"] is True and result["reason"] == "unverified_tool_result", result
+        assert result["stage"] == "call" and result["peer_input"] == "possible_submission"
         assert result["owned_child"] == {"started": True, "reaped": True, "exit_code": 23}
         records = [json.loads(line) for line in (root / "child.jsonl").read_text().splitlines()]
         assert [record["method"] for record in records[:-1]] == [
@@ -579,7 +579,7 @@ def claude_flow(root, modules, scripts, plugin):
         assert ("reply_route" in original) is nomination_used
         retained = invoke(mailbox.main, ["--store", str(store), "show", original["message_id"]])
         assert {key: retained[key] for key in original} == original
-        assert retained["state"] == "submitted" and len(retained["attempts"]) == 1
+        assert retained["state"] == "unknown" and len(retained["attempts"]) == 1
         attempt = retained["attempts"][0]
         assert attempt["attempt_id"] == attempt_id and attempt["actor"] == actor
         assert not any(attempt[stage] for stage in ("received", "handled", "completed"))
