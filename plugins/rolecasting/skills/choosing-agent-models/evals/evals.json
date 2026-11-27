@@ -580,11 +580,11 @@
       "fixture_paths": [
         "evals/fixtures/sonnet-middle-tier.md"
       ],
-      "expected_output": "A/J select Sonnet 5.5 low with adequate judgment proof; B selects Sonnet medium. C/D use Sol high because the requester can check the reconciled totals or the expected field values and Sonnet underfits. E is unavailable because Haiku/Luna underfit; no Terra pair is proven on this target. F selects sonnet-next-exact medium under the same middle role. G uses authorized adequate Opus medium fallback; H uses Sonnet medium because Terra target capability and native labels are unproven. I rejects Anthropic Sonnet max despite capability and problem/workflow claims. K needs context without dispatch.",
+      "expected_output": "A/J select Sonnet 5.5 low with adequate judgment proof; B selects Sonnet medium. C and D use Sol high. For C, the requester can check each row's counterpart against the matching rules. For D, the requester can check each field against its expected value. Sonnet underfits both tasks. E is unavailable because Haiku/Luna underfit; no Terra pair is proven on this target. F selects sonnet-next-exact medium under the same middle role. G uses authorized adequate Opus medium fallback; H uses Sonnet medium because Terra target capability and native labels are unproven. I rejects Anthropic Sonnet max despite capability and problem/workflow claims. K needs context without dispatch.",
       "expectations": [
         {
           "id": "sonnet-role-and-shallow-quality",
-          "text": "A/B/J select Sonnet at proven sufficient supported effort, including adequate low outside the workhorse floor; C/D route deeper or quality-sensitive work onward.",
+          "text": "A/B/J select Sonnet at proven sufficient supported effort, including adequate low outside the workhorse floor; C and D select Sol high, justified in C by checking each row match against the supplied rules and in D by checking each field against its expected value.",
           "severity": "safety"
         },
         {

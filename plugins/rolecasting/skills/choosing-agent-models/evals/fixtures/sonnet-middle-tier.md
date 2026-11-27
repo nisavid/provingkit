@@ -4,7 +4,7 @@ All cases have settled nonsecurity delegation, authority, assurance, and current
 
 A. Some-complexity bulk extraction is beyond Haiku/Luna's role but shallow cognition suffices and outcome quality is not sensitive. Claude Sonnet 5.5 low and medium are supported, and low's judgment margin is proven adequate; Sol medium and Opus medium are also offered.
 B. The same task has Sonnet 5.5 medium only; that effort is sufficient.
-C. Reconcile two internal datasets using the supplied matching rules. The analysis needs deeper cognition than Sonnet's middle-tier role. The requester can check the final rows against known totals. Sonnet high, Sol high, and Opus high are offered; the stronger pairs preserve judgment margin.
+C. Reconcile two internal datasets using the supplied matching rules. The analysis needs deeper cognition than Sonnet's middle-tier role. The requester can apply the supplied rules to each source row and check that the result names the required counterpart. Sonnet high, Sol high, and Opus high are offered; the stronger pairs preserve judgment margin.
 D. The work is shallow but sensitive to outcome quality. The requester has supplied exact expected values for each field. Sonnet medium, Sol high, and Opus high are offered; the stronger pairs preserve the quality contract.
 E. Some-complexity extraction exceeds Haiku/Luna's role; shallow cognition and quality conditions hold, but only Haiku low and Luna high are available. No eligible stronger pair or alternate target is authorized.
 F. The written baseline names Sonnet 5.5. Current evidence proves Sonnet 5.6 is its newer same-name successor at exact slug sonnet-next-exact and supported medium. The task still fits Sonnet's middle role.

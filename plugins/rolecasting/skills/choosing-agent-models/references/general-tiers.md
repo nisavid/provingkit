@@ -4,10 +4,10 @@ The published-text rule applies to authorship on every route. Use these tiers on
 
 ## Cast by the next decision
 
-For demanding work, cast the worker by the judgment the next decision needs.
+Cast the worker by the judgment the next decision needs. Use the economical tiers for tasks that fit them and the specific role bindings for the roles they cover.
 
 - Select GPT-6.2 Sol when the caster can name an observation that shows the current increment is complete and a test can check it. Start precise, recoverable work at a supported `medium` when sufficient. Never default to Sol on an uncertain match.
-- Name GPT-6.2 Astra when identifying that observation takes judgment, and for strategy, hard technical problems, creative execution, or review. For a second opinion on Sol's work, default to Astra. Use Claude Opus 5.5 for that second opinion only when Codex routing or quota is unavailable. Opus is not a technical default and must not interpret intent.
+- Name GPT-6.2 Astra when identifying that observation takes judgment. Name Astra for strategy, hard technical problems, creative execution, or review even when a test can verify the result. On Impeccable briefs that use the lead-and-executor split, follow the [creative role bindings](#creative-roles). For a second opinion on Sol's work, default to Astra. Use Claude Opus 5.5 for that second opinion only when Codex routing or quota is unavailable. Opus is not a technical default and must not interpret intent.
 - Start Claude Fable 5.2 at `high` for unforeseen judgment, direction, policy, intake and framing, or creative leadership. State why the assignment needs `xhigh` before selecting it. Apply the existing [Max effort policy](effort-policy.md#max-effort) and require a current successful [Fable target proof](capability-probes-and-fallbacks.md#prove-fable).
 
 GPT models take long, low-judgment web flows and exploratory testing. The delegating agent that hands such a flow off still reads for itself any page it needs as evidence.
