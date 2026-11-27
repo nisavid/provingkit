@@ -301,7 +301,7 @@ class RolecastingEvalCorpusTests(unittest.TestCase):
                 "unavailable-non-codex-capability",
                 "high-risk-independent-review",
                 "cursor-grok-consequential-review",
-                "cursor-grok-bounded-review",
+                "cursor-grok-checklist-comparison",
                 "unrelated-task-model-is-not-a-route",
                 "daybreak-routing-matrix",
                 "daybreak-route-evidence",

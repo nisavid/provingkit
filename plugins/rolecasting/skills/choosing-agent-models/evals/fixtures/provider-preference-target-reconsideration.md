@@ -7,7 +7,8 @@ dispatch. Every named pair is currently proven by that target's catalog and
 executor schema. A recommendation does not itself revise the target plan or
 grant dispatch authority.
 
-A. A visual UI design worker has an initial GPT target with GPT-6.2 Sol `high`.
+A. Set the dialog's corner radius to the approved 6 pixels in both themes.
+The visual test measures each radius. The initial GPT target offers GPT-6.2 Sol `high`.
 The same owning workflow can authorize an eligible Claude target with Opus 5.5
 `high`; the operator did not fix the provider. State the next model-selection
 step given the Claude visual preference.

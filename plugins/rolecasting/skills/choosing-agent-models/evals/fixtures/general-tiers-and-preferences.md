@@ -22,9 +22,9 @@ The sources disagree and the caster needs the worker to decide what evidence wou
 D. Transcribe exact labels from a small supplied table. GPT-6 Luna `high` and
 Sol `high` are available; errors are cheap to spot.
 
-E. Design a visual interface under a settled brief. Claude Opus 5.5 `high`
-and GPT-6.2 Sol `high` are available. This is not an exceptional high-stakes
-cognitive task.
+E. Apply the approved sidebar width of 240 pixels at the desktop breakpoint.
+The layout test measures the rendered width. Claude Opus 5.5 `high` and
+GPT-6.2 Sol `high` both fit and are available.
 
 F. An authorized Cursor worker has Grok 4.7 `high` and Grok 4.6 `high`
 advertised, but only Grok 4.7 `high` is in the current executor-schema and
@@ -36,8 +36,9 @@ G. Opus 5.5 supports `xhigh` and `high` and a separate Ultracode toggle on this 
 well-defined, highly parallel cognitive synthesis request (not an operational orchestrator role) benefits from `ultracode`.
 The selector also advertises `max`. This request is a settled cognitive problem with known solutions; `high` provides an adequate judgment margin independently of the toggle.
 
-H. A hard, complex but recoverable analysis has substantial unknowns. Sol
-`xhigh` and `high` are both proven. Choose the effort.
+H. Rebuild a private index using the supplied mapping. The caller checks each
+entry against its source record. A mapping error would force a week-long
+rerun. Sol `xhigh` and `high` are both proven. Choose the effort.
 
 I. A high-stakes task has deep cognition and is extremely challenging, but its
 output is an easily reversible private draft and mistakes are cheap to repair.
@@ -60,8 +61,8 @@ alternatives without imposing a fixed preference.
 N. A simple, well-understood, non-quality-sensitive classification has proven
 GPT-6 Luna `high`, Luna `max`, Sol Light (proven as Sol `low`), Terra 6.1 `low`/`medium`/`high`/`xhigh`, Sol 6.2 `medium`, and Grok 4.7 `low`. All eligible alternatives have adequate judgment margin. Name the useful frontier and excluded pairs; distinguish operating comparisons from benchmarks and Terra XHigh preference from executor support.
 
-O. Commit a contained, predictable change to the integer parser so it accepts a leading plus sign. The input `+17` must return the integer `17`. The edit is easy. Terra low, medium, and high and Sol medium are proven, and medium preserves judgment margin. Which offered pairs fit this change under Terra's narrow committed-code exception and the Sol selection rule?
-P. Author committed code with substantial implementation unknowns. The caller can check the result against a specified input/output table. Terra high and Sol high are proven; only Sol has adequate judgment margin.
+O. Implement only the integer parser edit for a later commit. It is contained and predictable: accept a leading plus sign. The input `+17` must return the integer `17`. The edit is easy. Terra low, medium, and high and Sol medium are proven, and medium preserves judgment margin. Which offered pairs fit this change under Terra's narrow committed-code exception and the Sol selection rule?
+P. Implement the approved conversion across three existing import paths. The caller tests each path against the same input/output table. The conversion is well understood, but coordinating the three edits exceeds the narrow, easy code-authoring exception. Terra high and Sol high are proven; only Sol has adequate judgment margin.
 Q. Perform a browser interaction with correctness and interaction requirements that Terra medium meets. Terra low underfits this particular interaction; Sol medium is also proven. Choose a suitable economical candidate without claiming measured superiority.
 R. Produce a spatially coherent low-poly 3D animated prototype, then refine and polish it. Terra high is proven adequate for the prototype; Astra high is available for the creative execution needed to refine it. State the validation and handoff boundary.
 S. Configure a Codex operational orchestrator and Claude operational orchestrator with Sage support. Terra medium and Sonnet medium are proven adequate defaults. Configuration requests succeed, but no effective-selection or persistence readback exists. State what is selected and unverified.

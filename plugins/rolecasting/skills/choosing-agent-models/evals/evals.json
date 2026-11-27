@@ -420,20 +420,20 @@
     {
       "id": 17,
       "name": "general-tiers-and-preferences",
-      "prompt": "Using the fixture, choose an exact proven model and effort for each nonsecurity operation and state the reason for exceptional tiers and preferences. Do not use tools.",
+      "prompt": "Using the fixture, choose a proven pair for each nonsecurity operation or name the eligible pairs where requested and state the reason for exceptional tiers and preferences. Do not use tools.",
       "fixture_paths": [
         "evals/fixtures/general-tiers-and-preferences.md"
       ],
-      "expected_output": "A uses Sol high for the specified parse tree; B uses Astra xhigh for review; C uses Astra xhigh to judge what evidence settles the private synthesis; D uses Luna high; E prefers Claude; F uses Grok 4.7. G uses Opus high with Ultracode on for bounded cognitive synthesis, not the operational orchestrator role. H uses xhigh; I/J reject max; K high; L medium. M excludes Luna xhigh and Opus low and permits adequate Terra low or Grok high. N retains Luna high, Terra low/medium/high and Sol medium as useful frontier points and also permits adequate Grok low; excludes Luna max/xhigh and Sol Light, prefers Terra medium over Sol Light and Sol medium over Terra xhigh without claiming Terra xhigh unsupported or a universal ranking. O permits narrowly suitable Terra medium/high code authoring, never low; Sol fits the testable parser change. P uses Sol high for the specified table. Q strongly considers adequate Terra medium for browser use. R uses Terra for the accurate animated prototype, validates it, then hands creative refinement to Astra high. S selects Terra medium/Sonnet medium orchestrators but effective selection and persistence remain unverified. T permits low only for demonstrably settled simple coordination and high only for difficult coordination itself. U routes finite demanding analysis to a capable Sol worker and continuing arbitration to Sage while retaining the orchestrator's effort. V selects Terra low/Haiku high Dispatch and Terra medium/Haiku xhigh Concierge without activation or transfer. W keeps Sol high/Opus high Reception. X distinguishes operational Codex Foreman from operator-owned decision-facing Sage Foremen, preserves Astra ultra/target Fable 5.2 ultracode bindings and accepted interim, and waits for accepted cutover without proof-only invocations. Y keeps the #804 serial/delegation/native-controls/cache study and #740 outcome/authority/hold/cost evaluation distinct from current cutover; no new experiment or proof gate. Z reports the selected Haiku xhigh route unavailable and does not silently substitute high. Comparisons are operator guidance, not benchmarks, live settings, or execution attestations.",
+      "expected_output": "A uses Sol high for the specified parse tree; B uses Astra xhigh for review; C uses Astra xhigh to judge what evidence settles the private synthesis; D uses Luna high; E prefers Opus 5.5 high for the specified sidebar edit; F uses Grok 4.7. G uses Opus high with Ultracode on for bounded cognitive synthesis, not the operational orchestrator role. H uses Sol xhigh because an index error costs a week to repair; I/J reject max; K high; L medium. M excludes Luna xhigh and Opus low and permits adequate Terra low or Grok high. N retains Luna high, Terra low/medium/high and Sol medium as useful frontier points and also permits adequate Grok low; excludes Luna max/xhigh and Sol Light, prefers Terra medium over Sol Light and Sol medium over Terra xhigh without claiming Terra xhigh unsupported or a universal ranking. O accepts Sol medium for parsing +17 as 17 and Terra medium or high under the narrow code-authoring exception. It excludes Terra low. P uses Sol high for the specified table. Q strongly considers adequate Terra medium for browser use. R uses Terra for the accurate animated prototype, validates it, then hands creative refinement to Astra high. S selects Terra medium/Sonnet medium orchestrators but effective selection and persistence remain unverified. T permits low only for demonstrably settled simple coordination and high only for difficult coordination itself. U routes finite demanding analysis to a capable Sol worker and continuing arbitration to Sage while retaining the orchestrator's effort. V selects Terra low/Haiku high Dispatch and Terra medium/Haiku xhigh Concierge without activation or transfer. W keeps Sol high/Opus high Reception. X distinguishes operational Codex Foreman from operator-owned decision-facing Sage Foremen, preserves Astra ultra/target Fable 5.2 ultracode bindings and accepted interim, and waits for accepted cutover without proof-only invocations. Y keeps the #804 serial/delegation/native-controls/cache study and #740 outcome/authority/hold/cost evaluation distinct from current cutover; no new experiment or proof gate. Z reports the selected Haiku xhigh route unavailable and does not silently substitute high. Comparisons are operator guidance, not benchmarks, live settings, or execution attestations.",
       "expectations": [
         {
           "id": "exception-is-conjunctive",
-          "text": "Selects Sol for A's testable outcome, Astra for B's review and Astra for C's judgment about the evidence, within each assignment's scope. O/P permit only clear predictable contained easy committed code at Terra medium/high, never low or ordinary default; Q preserves browser correctness; R validates the animated low-poly prototype before Astra handles creative refinement and polish.",
+          "text": "Selects Sol for A's testable outcome, Astra for B's review and Astra for C's judgment about the evidence, within each assignment's scope. E chooses Opus high under the Claude visual preference. O recognizes Sol medium for parsing +17 as 17, allows both Terra medium and high for the predictable edit, and excludes Terra low. P selects Sol high for the three import paths and excludes Terra because this edit exceeds its narrow exception; Q preserves browser correctness; R validates the animated low-poly prototype before Astra handles creative refinement and polish.",
           "severity": "quality"
         },
         {
           "id": "updated-tiers-and-preferences",
-          "text": "Applies H xhigh, K high, L medium and task-fit M/N frontier choices; excludes Luna XHigh/Max and Sol Light, retains Luna High and Terra Low/Medium/High, prefers Sol Medium over supported Terra XHigh, and treats comparisons as guidance rather than universal task ranking or measured equivalence. S/T/U use Terra medium/Sonnet medium orchestrators, bounded low/high coordination exceptions, and a Sol worker for the finite tolerance checks and a Sage or Advisor for continuing arbitration; V uses Terra low/Haiku high Dispatch and Terra medium/Haiku xhigh Concierge; W keeps Sol high/Opus high scoped Reception.",
+          "text": "Chooses Sol xhigh in H for the cost of repeating the index rebuild, K high, L medium and task-fit M/N frontier choices; excludes Luna XHigh/Max and Sol Light, retains Luna High and Terra Low/Medium/High, prefers Sol Medium over supported Terra XHigh, and treats comparisons as guidance rather than universal task ranking or measured equivalence. S/T/U use Terra medium/Sonnet medium orchestrators, bounded low/high coordination exceptions, and a Sol worker for the finite tolerance checks and a Sage or Advisor for continuing arbitration; V uses Terra low/Haiku high Dispatch and Terra medium/Haiku xhigh Concierge; W keeps Sol high/Opus high scoped Reception.",
           "severity": "quality"
         },
         {
@@ -450,11 +450,11 @@
       "fixture_paths": [
         "evals/fixtures/provider-preference-target-reconsideration.md"
       ],
-      "expected_output": "A recommends Claude target reconsideration for visual design and B recommends the GPT target with Astra high for the second opinion on Sol's code; neither silently changes the initial target or dispatches before the owner revises its plan. C selects fixed GPT-6.2 Sol high and D selects sole eligible Claude Opus 5.5 high, each disclosing the preference limit.",
+      "expected_output": "A recommends that the owner reconsider the initial GPT target in favor of Claude for the specified corner radius and B recommends the GPT target with Astra high for the second opinion on Sol's code; neither silently changes the initial target or dispatches before the owner revises its plan. C selects fixed GPT-6.2 Sol high and D selects sole eligible Claude Opus 5.5 high, each disclosing the preference limit.",
       "expectations": [
         {
           "id": "claude-visual-owner-reconsideration",
-          "text": "For A, recommends that the owning delegation workflow reconsider the GPT target in favor of the eligible authorized Claude visual route; does not self-change or dispatch before a revised owner plan.",
+          "text": "For A, recommends that the owning delegation workflow reconsider the GPT target in favor of the eligible authorized Claude route for the specified dialog edit; does not self-change or dispatch before a revised owner plan.",
           "severity": "quality"
         },
         {
@@ -476,11 +476,11 @@
       "fixture_paths": [
         "evals/fixtures/named-model-successors.md"
       ],
-      "expected_output": "A selects gpt-6.1-sol high. B selects sol-successor-public high. C selects opus-successor-public high. D and G report unavailable or blocked rather than choose older Sol; E reports unproven successor identity without guessing or silently downgrading. F selects Sol 6.2 high because Astra is another family, not a Sol successor. H treats Fable 5.2 as unavailable and does not inherit 5.1 proof or make an unauthorized proof invocation.",
+      "expected_output": "A selects gpt-6.1-sol high. B selects sol-successor-public high. C selects opus-successor-public high for the specified icon height on Claude. D and G report unavailable or blocked rather than choose older Sol; E reports unproven successor identity without guessing or silently downgrading. F selects Sol 6.2 high because Astra is another family, not a Sol successor. H treats Fable 5.2 as unavailable and does not inherit 5.1 proof or make an unauthorized proof invocation.",
       "expectations": [
         {
           "id": "same-name-newest",
-          "text": "Selects the exact proven newest same-name pair in A/B/C, retaining the role and provider preference; no guessed slug.",
+          "text": "Selects the exact proven newest same-name pair in A/B/C, retaining the role and provider preference, including the Opus successor for C's specified visual edit; no guessed slug.",
           "severity": "safety"
         },
         {
@@ -524,11 +524,11 @@
     {
       "id": 21,
       "name": "max-effort-conjunction",
-      "prompt": "Using only the candidate and fixture, resolve every labeled selection case with an exact pair or explicit unavailable disposition and the decisive gate. Do not use tools.",
+      "prompt": "Using only the candidate and fixture, assess max eligibility for each selected worker in the stated problem and workflow. Give the exact pair or unavailable disposition and the decisive gate. Do not use tools.",
       "fixture_paths": [
         "evals/fixtures/max-effort-conjunction.md"
       ],
-      "expected_output": "A/L/M/O/P qualify for OpenAI/Anthropic max; all other OpenAI/Anthropic cases reject it, including Luna, Daybreak, Sonnet X, Terra Y, and Haiku 5.5 Z. U permits Grok max under its own affirmative policy, suitability, authority, and exact capability; V rejects unavailable support and W does not infer max suitability from absence of the OpenAI/Anthropic restriction. All three problem predicates, a qualifying named-model role, an adjudicated/reconciled panel loop, and both catalog and executor support remain independent conjunctive gates for OpenAI/Anthropic max. Fable proof and existing exceptional/security rules still apply.",
+      "expected_output": "A and M qualify for max as implementers of specified candidate formulas within the frontier panel. L qualifies as the implementer in the adjudicated review loop. O/P also qualify for OpenAI/Anthropic max; all other OpenAI/Anthropic cases reject it, including Luna, Daybreak, Sonnet X, Terra Y, and Haiku 5.5 Z. U permits Grok max under its own affirmative policy, suitability, authority, and exact capability; V rejects unavailable support and W does not infer max suitability from absence of the OpenAI/Anthropic restriction. All three problem predicates, a qualifying named-model role, an adjudicated/reconciled panel loop, and both catalog and executor support remain independent conjunctive gates for OpenAI/Anthropic max. Fable proof and existing exceptional/security rules still apply.",
       "expectations": [
         {
           "id": "max-problem-conjunction",
@@ -537,12 +537,12 @@
         },
         {
           "id": "max-workflow-conjunction",
-          "text": "Accepts A/L and rejects F/G/H lone worker, unlooped panel, and unreconciled loop.",
+          "text": "Accepts Sol max for A's bounded implementation in the reconciled panel and for L's implementer in the adjudicated loop. Assigns independent review in L to the separate reviewer panels. Rejects F/G/H lone worker, unlooped panel, and unreconciled loop.",
           "severity": "safety"
         },
         {
           "id": "max-model-and-capability",
-          "text": "Accepts M/O/P only in qualifying roles with proof and exact max capability; rejects B/I/J/N/Q/R/T/X/Y/Z while distinguishing policy from runtime support. U applies Grok's affirmative provider policy without importing frontier/loop requirements; V lacks exact support and W lacks suitability/policy proof. Neither blanket bans other-provider max nor recommends it solely from the restriction's scope.",
+          "text": "Accepts M for the Opus implementer working to A's supplied cases and O/P for their exceptional roles, only with proof and exact max capability; rejects B/I/J/N/Q/R/T/X/Y/Z while distinguishing policy from runtime support. U applies Grok's affirmative provider policy without importing frontier/loop requirements; V lacks exact support and W lacks suitability/policy proof. Neither blanket bans other-provider max nor recommends it solely from the restriction's scope.",
           "severity": "safety"
         }
       ]
@@ -554,16 +554,16 @@
       "fixture_paths": [
         "evals/fixtures/ultra-panel-applicability.md"
       ],
-      "expected_output": "A uses supported Sol ultra and encourages reconciled collaborative/competitive panels with individually eligible medium/high/xhigh participants. B uses Opus xhigh with Ultracode on and encourages adjudicated panels with medium/high participants. C selects medium; D uses supported high or reports unavailable if ultra is fixed. E uses ultra for its required beneficial parallel cognitive synthesis without imposing panels; F uses sufficient high because enhanced synthesis adds no benefit. No max frontier gate or max-participant requirement transfers to ultra. G uses Terra high for the difficult operational coordination under its named role policy. Parallel coordination does not select Sol ultra. The role routes bounded demanding analysis to capable workers and continuing intellectual leadership to a Sage or Advisor. H maps legacy Ultracode to xhigh and on and verifies the separate state. I and J proceed despite no benefit from parallel cognition: I applies and verifies explicit off, and J uses executor-default without asserting its state. K and M return NEEDS_CONTEXT; L reports the required state unavailable. N and O use the documented toggle omission as executor-default while preserving supported model and effort fields. P returns NEEDS_CONTEXT despite the successful setter; Q and R may proceed with confirming readback or current proven matching fixed state. S records the failed probe and uses the proven authorized native fallback with claude-opus-5-5 and high explicitly set. It omits the toggle in its documented executor-default form and records the deliberate default and its evidence without asserting a state. T keeps the proven Opus 5.5 xhigh pair and chooses Ultracode off because parallel reasoning offers no material benefit.",
+      "expected_output": "A uses supported Sol ultra and encourages reconciled collaborative/competitive panels with individually eligible medium/high/xhigh participants. B uses Opus xhigh with Ultracode on for parallel scheduling under the approved migration strategy and encourages adjudicated panels with medium/high participants. C selects medium; D uses supported high or reports unavailable if ultra is fixed. E uses ultra for its required beneficial parallel cognitive synthesis without imposing panels; F uses sufficient high because enhanced synthesis adds no benefit. No max frontier gate or max-participant requirement transfers to ultra. G uses Terra high for the difficult operational coordination under its named role policy. Parallel coordination does not select Sol ultra. The role routes bounded demanding analysis to capable workers and continuing intellectual leadership to a Sage or Advisor. H maps legacy Ultracode to xhigh and on and verifies the separate state. I and J proceed despite no benefit from parallel cognition: I applies and verifies explicit off, and J uses executor-default without asserting its state. K and M return NEEDS_CONTEXT; L reports the required state unavailable. N and O use the documented toggle omission as executor-default while preserving supported model and effort fields. P returns NEEDS_CONTEXT despite the successful setter; Q and R may proceed with confirming readback or current proven matching fixed state. S records the failed probe and uses the proven authorized native fallback with claude-opus-5-5 and high explicitly set. It omits the toggle in its documented executor-default form and records the deliberate default and its evidence without asserting a state. T keeps the proven Opus 5.5 xhigh pair and chooses Ultracode off because each start time depends on the preceding finish in the approved sequence.",
       "expectations": [
         {
           "id": "ultra-positive-panels",
-          "text": "A/B encourage applicable adjudicated/reconciled panels or similar workflows using each participant's eligible effort; known prior solutions and unavailable participant max do not disqualify ultra.",
+          "text": "B schedules independent groups under the owner's chosen strategy. A/B encourage applicable adjudicated/reconciled panels or similar workflows using each participant's eligible effort; known prior solutions and unavailable participant max do not disqualify ultra.",
           "severity": "quality"
         },
         {
           "id": "ultra-negative-applicability",
-          "text": "C avoids ultra for serial work. D requires schema support as well as catalog availability. E uses supported ultra for its established cognitive synthesis requirement without a needless panel. F uses sufficient high when enhanced synthesis adds no benefit. G keeps the operational orchestrator on Terra high under the role policy despite parallel work and Sol ultra capability. T preserves the proven Opus 5.5 xhigh pair and selects off because the serial work gains no material benefit from parallel reasoning.",
+          "text": "C avoids ultra for serial work. D requires schema support as well as catalog availability. E uses supported ultra for its established cognitive synthesis requirement without a needless panel. F uses sufficient high when enhanced synthesis adds no benefit. G keeps the operational orchestrator on Terra high under the role policy despite parallel work and Sol ultra capability. T preserves the proven Opus 5.5 xhigh pair and selects off because the approved sequence fixes a serial timing calculation with no gain from parallel reasoning.",
           "severity": "safety"
         },
         {
@@ -601,16 +601,16 @@
     },
     {
       "id": 24,
-      "name": "cursor-grok-bounded-review",
-      "prompt": "Using the fixture, select the model and reasoning effort for the authorized Cursor reviewer and state its findings and integration boundaries. Do not use tools.",
+      "name": "cursor-grok-checklist-comparison",
+      "prompt": "Using the fixture, select the model and reasoning effort for the authorized Cursor checklist comparison. State what the peer returns and who judges the differences. Do not use tools.",
       "fixture_paths": [
-        "evals/fixtures/cursor-grok-bounded-review.md"
+        "evals/fixtures/cursor-grok-checklist-comparison.md"
       ],
-      "expected_output": "Select the proven cursor-grok-4.7-high pair for this suitable bounded review on the frozen Cursor target; reject stale 4.6 and preserve findings-only non-mutation and leader integration.",
+      "expected_output": "Select the proven cursor-grok-4.7-high pair for the bounded checklist comparison on the frozen Cursor target. Reject stale 4.6. The read-only peer reports differences. The leader independently reviews them and owns integration.",
       "expectations": [
         {
           "id": "cursor-grok-bounded-fit",
-          "text": "Selects cursor-grok-4.7-high for the moderately complex, well-understood, outcome-quality-insensitive review with adequate judgment margin; no GPT pair is available on the frozen target.",
+          "text": "Selects cursor-grok-4.7-high for the moderately complex, well-understood checklist comparison with adequate judgment margin; no GPT pair is available on the frozen target.",
           "severity": "quality"
         },
         {
@@ -620,7 +620,7 @@
         },
         {
           "id": "cursor-bounded-authority",
-          "text": "Keeps the reviewer findings-only and non-mutating and leaves adjudication, verification, and final integration with the leader.",
+          "text": "Keeps the peer read-only and limits its output to checklist differences and locations. The leader independently judges those differences and retains revision, verification, and final integration.",
           "severity": "safety"
         }
       ]
