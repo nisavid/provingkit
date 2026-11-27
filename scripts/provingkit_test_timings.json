@@ -67,6 +67,7 @@
   "tests.test_validate_provingkit.ProvingkitRepositoryContractTests.test_retained_history_import_ref_rejects_a_descendant_tip": 25.69,
   "tests.test_validate_provingkit.ProvingkitRepositoryContractTests.test_rolecasting_source_job_installs_its_validation_dependency": 0.012,
   "tests.test_validate_provingkit.ProvingkitRepositoryContractTests.test_separate_url_is_not_hidden_by_prior_authority": 119.578,
+  "tests.test_validate_provingkit.ProvingkitRepositoryContractTests.test_source_boundary_runs_complete_methods_with_the_other_owning_checks": 0.013,
   "tests.test_validate_provingkit.ProvingkitRepositoryContractTests.test_source_stage_validator_accepts_a_repository_without_tags": 25.232,
   "tests.test_validate_provingkit.ProvingkitRepositoryContractTests.test_source_stage_validator_accepts_the_cutover_candidate": 25.089,
   "tests.test_validate_provingkit.ProvingkitRepositoryContractTests.test_source_stage_validator_accepts_the_published_preview_tag": 25.189,
