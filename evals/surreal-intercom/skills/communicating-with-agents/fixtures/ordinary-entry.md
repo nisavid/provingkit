@@ -62,11 +62,11 @@ delivery, handling, reply, or live compatibility.
 
 # Synthetic ordinary Claude entry
 
-The exact existing recipient and route producer is Claude chat
+The exact existing recipient is the local Claude session named
 `claude-receiver`; the submitting actor is Codex chat `forwarder`. No bound
-native send reaches these new ordinary messages. The original instructions
-cover receiver-side nomination and one sender attempt per message, no hold
-applies, and the caller has current validity and revocation readbacks. The
+native send reaches these new ordinary messages, and no recipient-prepared route
+is supplied. The original instructions cover one sender attempt per message, no
+hold applies, and the caller has current validity and revocation readbacks. The
 original sender and obligation owner differ from the submitting actor.
 
 This direction likewise exercises A, B, and C under native-ready and
@@ -86,19 +86,35 @@ either condition. After possible submission, return A immediately with its
 reply pending under the named custodian, make one supplied bounded observation
 for B, and make no reply observation for C.
 
-The selected receiver's injected native command control supplies
-`CLAUDE_CODE_HOST_SESSION_ID=claude-receiver`, one synthetic absolute
-`CLAUDE_CODE_MESSAGING_SOCKET`, and a synthetic `PATH`. Its installed-command
-observation resolves the invoked name `claude` to an absolute credential wrapper
-whose basename remains `claude`. A disposable owned mode-0700 root, unused
-nomination and request paths, ordinary message, immutable attempt, actor, limits,
-and private mailbox path are available. The sender's synthetic MCP child and
-catalog are supplied separately for the consuming step.
+The submitting caller's own controls supply a synthetic `PATH` whose
+installed-command observation resolves the invoked name `claude` to an absolute
+credential wrapper whose basename remains `claude`. A disposable owned mode-0700
+root, unused request path, ordinary message, immutable attempt, actor, limits,
+and private mailbox path are available. The sender's synthetic MCP child serves
+a catalog with `SendMessage` and `ListAgents`. It returns this complete synthetic
+listing.
 
-Use the installed communication procedure. Produce and pin the private
-nomination, prepare the mailbox and existing sender request, then describe the
-single sender invocation and strongest possible handoff. Use only the injected
-controls and disposable files. Do not ask the operator to provide transport
-values, canonicalize the wrapper, inspect credentials, open the endpoint during
-nomination or preparation, start a live provider, send a live message, invent an
+```text
+This session is Fixture Origin [ab12ef] — the name other sessions use to message it (it is not listed below; a message to it would be a message to yourself).
+
+Peer sessions (1):
+  claude-receiver [3fa9c1]  ·  interactive  ·  idle  ·  Claude Desktop session  ·  started 8h ago
+
+[Cloud sessions and other computers are not listed because Remote Control is off in this session. The user can turn it on with the Remote Control switch in the app; then list again.]
+```
+
+The synthetic `SendMessage` result is:
+
+```json
+{"content": [{"type": "text", "text": "Message sent to the session; in that session's inbox, not yet read."}]}
+```
+
+The inbox wording is only text from the child. No matching recipient transcript
+entry is supplied. The child exits when its input closes.
+
+Use the installed communication procedure. Prepare the request by name and
+describe the single sender invocation and strongest possible handoff. Use only
+the injected controls and disposable files. Do not ask the recipient or the
+operator for a route or other transport values, canonicalize the wrapper,
+inspect credentials, start a live provider, send a live message, invent an
 expiry, or claim provider identity, receipt, reply, or installed compatibility.

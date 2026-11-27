@@ -1375,5 +1375,82 @@ class CodexRouteNominationTests(unittest.TestCase):
         )
         self.assertTrue(stream.closed)
 
+    def test_reply_through_an_unchanged_received_codex_route_reaches_the_original_sender(self):
+        from tests.plugins.surreal_intercom import projected_ordinary_flow as flow
+
+        names = ("codex_route_nomination", "owner_admission_sender", "codex_ipc_transport",
+                 "native_codex_mailbox", "peer_message")
+        sys.path.insert(0, str(SCRIPTS))
+        try:
+            modules = {name: importlib.import_module(name) for name in names}
+        finally:
+            sys.path.remove(str(SCRIPTS))
+        sender, transport, mailbox, peer_message = (
+            modules[name] for name in names[1:])
+        with tempfile.TemporaryDirectory(prefix="codex-return-") as temporary:
+            root = Path(temporary).resolve()
+            root.chmod(0o700)
+            origin = {"thread_id": "codex-origin", "host_id": "local"}
+            replier = {"thread_id": "claude-replier", "host_id": "local"}
+            outbound = flow.message("outbound", replier, sender=origin)
+            outbound["reply_route"] = flow.codex_return_route(
+                root / "return", modules, ROOT / "plugins" / "surreal-intercom",
+                origin, replier, outbound["correlation_id"])
+            # The replier sees only the delivered envelope and takes its route as it arrived.
+            received = json.loads(
+                peer_message.serialize_peer_message(outbound, origin).split("\n", 1)[1])
+            received_route = received["reply_route"]
+            reply = {
+                "message_id": "reply-1", "correlation_id": received_route["correlation_id"],
+                "sender": received["recipient"], "recipient": received_route["recipient"],
+                "owner": received["recipient"], "payload": "The comparison is complete.\n",
+                "authority_ref": "synthetic://authority/reply", "holds": received["holds"],
+            }
+            store = root / "mailbox.sqlite3"
+            flow.invoke(mailbox.main, ["--store", str(store), "init"])
+            flow.invoke(mailbox.main, ["--store", str(store), "plan", "--input",
+                                       str(flow.write(root / "reply.json", reply))])
+            run = root / "send"
+            run.mkdir(mode=0o700)
+            nomination_path = Path(received_route["nomination"]["path"])
+            nomination = json.loads(nomination_path.read_bytes())
+            peer = flow.Peer(nomination["acceptor"], "reply-1/attempt/1")
+
+            def connect(endpoint, limits, wait):
+                self.assertEqual(endpoint, nomination["route"]["endpoint"])
+                return transport.CliTransport(endpoint, limits, wait,
+                                              connector=lambda _endpoint, _wait: peer)
+
+            with mock.patch.object(sender, "CliTransport", connect):
+                result = flow.invoke(sender.main, ["--store", str(store), "--request", str(
+                    flow.write(root / "send.json", {
+                        "message_id": reply["message_id"], "attempt_id": "reply-1/attempt/1",
+                        "actor": received_route["submitter"], "recipient": reply["recipient"],
+                        "evidence_ref": "synthetic://reply-send",
+                        "native": {
+                            "nomination": received_route["nomination"],
+                            "purpose": "Return the requested reply",
+                            "authorityRefs": [reply["authority_ref"]],
+                            "holdRefs": reply["holds"],
+                            "scope": {"send": True, "ownerAdmissionIntent": True,
+                                      "holdsSatisfied": True},
+                            "profile": {}, "observationSeconds": 0.1,
+                        },
+                        "capture": flow.capture(run),
+                    }))], clock=lambda: 7005)
+            self.assertTrue(result["claimed"], result)
+            self.assertEqual(result["peer_input"], "possible_submission", result)
+            self.assertEqual([frame["method"] for frame in peer.frames], [
+                "initialize", "thread-owner-discovery", "thread-follower-start-turn"])
+            self.assertEqual(peer.frames[1]["params"]["conversationId"], origin["thread_id"])
+            text = peer.frames[-1]["params"]["turnStart"]["request"]["input"][0]["text"]
+            envelope = json.loads(text.split("\n", 1)[1])
+            self.assertEqual(envelope["recipient"], outbound["sender"])
+            self.assertEqual(envelope["correlation_id"], outbound["correlation_id"])
+            self.assertEqual(envelope["sender"], replier)
+            self.assertEqual(envelope["actor"], replier)
+            self.assertNotIn("reply_route", envelope)
+
+
 if __name__ == "__main__":
     unittest.main()

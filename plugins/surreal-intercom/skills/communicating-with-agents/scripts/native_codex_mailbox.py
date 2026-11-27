@@ -252,11 +252,18 @@ class Mailbox:
         return result
 
     def observe(self, message_id, attempt_id, kind, evidence_ref, detail):
-        if kind not in KINDS:
-            raise MailboxError("unsupported observation kind")
-        text(evidence_ref, "evidence_ref")
-        if not isinstance(detail, str):
-            raise MailboxError("detail must be a string")
+        return self.observe_many(message_id, attempt_id, evidence_ref, ((kind, detail),))
+
+    def observe_many(self, message_id, attempt_id, evidence_ref, observations):
+        """Append an ordered batch of observations in one transaction."""
+        entries = []
+        for kind, detail in observations:
+            if kind not in KINDS:
+                raise MailboxError("unsupported observation kind")
+            text(evidence_ref, "evidence_ref")
+            if not isinstance(detail, str):
+                raise MailboxError("detail must be a string")
+            entries.append((attempt_id, kind, evidence_ref, detail))
         with self.db:
             self.db.execute("BEGIN IMMEDIATE")
             binding = self.db.execute(
@@ -264,9 +271,9 @@ class Mailbox:
             ).fetchone()
             if binding is None or binding[0] != message_id:
                 raise MailboxError("observation does not match a claimed message and attempt")
-            self.db.execute(
+            self.db.executemany(
                 "INSERT INTO observations (attempt_id, kind, evidence_ref, detail) VALUES (?, ?, ?, ?)",
-                (attempt_id, kind, evidence_ref, detail),
+                entries,
             )
             result = self.get(message_id)
         return result

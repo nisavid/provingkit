@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Publish a receiver-owned Claude route or prepare its existing sender request."""
+"""Publish a receiver-owned Claude route, or prepare a Claude sender request.
+
+`prepare` builds the request for the ordinary by-name send from the caller's
+own `claude` launcher, or for the fallback route from a pinned nomination.
+"""
 
 import argparse
 import hashlib
@@ -13,6 +17,9 @@ import sqlite3
 import stat
 import sys
 
+from claude_mcp_sender import (
+    RECONCILIATION_FIELDS, destination_violation, frame_fits, request_destination, sendmessage_call,
+)
 from claude_mcp_sender import validate as validate_sender_request
 from codex_capture import CaptureWriter
 from native_codex_mailbox import Mailbox
@@ -172,12 +179,22 @@ def _stat_identity(value):
     )
 
 
+def _nomination_pin(reference):
+    """Accept the `nominate` result's keys or a received reply route's, unchanged."""
+    if not isinstance(reference, dict):
+        raise RouteRefusal("invalid-nomination-pin")
+    if reference.keys() == {"path", "bytes", "sha256"}:
+        return reference["bytes"]
+    if reference.keys() == {"path", "sha256", "size"}:
+        return reference["size"]
+    raise RouteRefusal("invalid-nomination-pin")
+
+
 def _read_private_nomination(reference, effective_uid):
+    size = _nomination_pin(reference)
     if (
-        not isinstance(reference, dict)
-        or reference.keys() != {"path", "bytes", "sha256"}
-        or type(reference["bytes"]) is not int
-        or not 1 <= reference["bytes"] <= 4096
+        type(size) is not int
+        or not 1 <= size <= 4096
         or not isinstance(reference["sha256"], str)
         or re.fullmatch(r"[0-9a-f]{64}", reference["sha256"]) is None
     ):
@@ -198,18 +215,18 @@ def _read_private_nomination(reference, effective_uid):
             or before.st_uid != effective_uid
             or stat.S_IMODE(before.st_mode) != 0o600
             or before.st_nlink != 1
-            or before.st_size != reference["bytes"]
+            or before.st_size != size
             or _stat_identity(before) != _stat_identity(named_before)
         ):
             raise RouteRefusal("unqualified-private-nomination")
-        raw = source.read(reference["bytes"] + 1)
+        raw = source.read(size + 1)
         after = os.fstat(source.fileno())
     try:
         named_after = path.lstat()
     except OSError as error:
         raise RouteRefusal("changed-private-nomination") from error
     if (
-        len(raw) != reference["bytes"]
+        len(raw) != size
         or _stat_identity(before) != _stat_identity(after)
         or _stat_identity(before) != _stat_identity(named_after)
         or hashlib.sha256(raw).hexdigest() != reference["sha256"]
@@ -287,19 +304,36 @@ def _mailbox_path(value, effective_uid):
     return path
 
 
-def _prepared_request(request, effective_uid):
-    required = {
-        "schema", "nomination", "message", "attempt_id", "actor", "limits",
-        "mailbox", "publication",
-    }
-    if (
-        not isinstance(request, dict)
-        or request.keys() != required
-        or request["schema"] != "claude-sender-request-preparation-v1"
+ROUTE_PREPARATION = "claude-sender-request-preparation-v1"
+NAME_PREPARATION = "claude-name-request-preparation-v1"
+
+
+def _prepared_request(request, effective_uid, environment, launcher_lookup):
+    common = {"schema", "message", "attempt_id", "actor", "limits", "mailbox", "publication"}
+    schema = request.get("schema") if isinstance(request, dict) else None
+    # A later attempt's fields pass through unchanged; the sender's parser checks the pair.
+    reconciliation = (
+        {key: request[key] for key in RECONCILIATION_FIELDS if key in request}
+        if isinstance(request, dict) else {}
+    )
+    keys = request.keys() - reconciliation.keys() if isinstance(request, dict) else set()
+    if schema == ROUTE_PREPARATION and keys == common | {"nomination"}:
+        record = _read_private_nomination(request["nomination"], effective_uid)
+        recipient, command, target = _validated_nomination(record)
+        address = {"target": target}
+        evidence_ref = "sha256:" + request["nomination"]["sha256"]
+    elif schema == NAME_PREPARATION and keys in (
+        common | {"name"}, common | {"name", "selection"},
     ):
+        # The ordinary first send: the sender's own launcher and the recipient's name.
+        recipient = _identity(
+            request["message"].get("recipient") if isinstance(request["message"], dict)
+            else None, "invalid-recipient")
+        command = [_launcher(environment, launcher_lookup), "mcp", "serve"]
+        address = {key: request[key] for key in ("name", "selection") if key in request}
+        evidence_ref = f"claude-name:{request['name']}"
+    else:
         raise RouteRefusal("invalid-preparation-request")
-    record = _read_private_nomination(request["nomination"], effective_uid)
-    recipient, command, target = _validated_nomination(record)
     message = request["message"]
     if not isinstance(message, dict) or message.get("recipient") != recipient:
         raise RouteRefusal("recipient-nomination-mismatch")
@@ -314,15 +348,26 @@ def _prepared_request(request, effective_uid):
         "attempt_id": attempt_id,
         "actor": actor,
         "recipient": recipient,
-        "target": target,
+        **address,
         "command": command,
-        "evidence_ref": "sha256:" + request["nomination"]["sha256"],
+        "evidence_ref": evidence_ref,
         "limits": request["limits"],
+        **reconciliation,
     }
     validate_sender_request(sender_request)
+    # The record's recipient is named by the address the sender will send to.
+    if "name" in sender_request and recipient["thread_id"] != sender_request["name"]:
+        raise RouteRefusal("recipient-name-mismatch")
     encoded = json.dumps(sender_request, sort_keys=True, separators=(",", ":")).encode()
     if len(encoded) > 32768:
         raise RouteRefusal("sender-request-byte-limit")
+    # Check before planning, using the qualified frame when a selection is present.
+    # Only the sender's listing can determine whether it will send the bare name.
+    destination = request_destination(sender_request)
+    if "name" in sender_request and destination_violation(destination):
+        raise RouteRefusal("destination_constraint_violation")
+    if not frame_fits(sendmessage_call(message, actor, destination)):
+        raise RouteRefusal("sender-frame-byte-limit")
     return output, capture, mailbox_path, message, sender_request, encoded
 
 
@@ -373,6 +418,8 @@ def main(argv=None, *, effective_uid=None, environment=None, launcher_lookup=Non
         else:
             output, capture, mailbox_path, message, sender_request, expected = _prepared_request(
                 request, uid,
+                os.environ if environment is None else environment,
+                _default_lookup if launcher_lookup is None else launcher_lookup,
             )
             mailbox = Mailbox(mailbox_path)
             try:

@@ -98,5 +98,47 @@ and a Codex origin constructs `codex-owner-admission` from its safe Codex result
 and corroborated invocation. Pass both through actual planning and serialization;
 keep no-reply messages byte-identical without `reply_route`. Reject identity or
 correlation mismatch, malformed nomination specifications, unknown route kinds,
-and raw endpoint fields before planning. These cases establish source
-addressability, not current installation, permission, delivery, or reply handling.
+and raw endpoint fields before planning. Send a reply back through each route
+kind with the route taken unchanged from the received envelope, and require the
+original sender as destination and the original exchange correlation. These
+cases establish source addressability, not current installation, permission,
+delivery, or reply handling.
+
+By-name Claude sends use a disposable stdio child that serves a catalog with
+`SendMessage` and `ListAgents` and a synthetic listing in the one observed
+Claude Desktop layout the
+[Claude MCP sender](skills/communicating-with-agents/references/claude-mcp-sender.md)
+documents. Cover exactly one `ListAgents` call and one `SendMessage` call,
+with the send reply retained as `unknown`. Check that every invalid listing refuses before
+`SendMessage`, including unsupported rows beside a valid destination,
+embedded control text, pagination, caller identity conflicts, and a peer total
+that differs from its row count. Exercise no matching row, ambiguous name,
+ambiguous selection, and a selected reference absent from the listing.
+Check that a matching singleton selection sends the bare name and that
+selection qualifies an address when several rows carry the name. Cover the
+300-UTF-16-unit name and the 4,096-byte bare frame that grows to 4,105 bytes
+with a reference. Check unrelated unreadable titles, the exact skipped-row
+counts in results and durable records, and refusal when an unreadable label
+could carry the requested name.
+Check every parsed field of the example rows and restore the initialized
+mailbox before each listing mutation. Show that the sender and `prepare` refuse
+a name the profile cannot address before any claim. Show that a planned
+recipient whose `thread_id` is not the
+requested name is refused by the sender and by `prepare` before any listing,
+and that a reply through an unchanged route of either kind still reaches the
+original sender when the outbound message went by name. Show that a refusal
+before possible submission records `not_delivered` on both paths, including the
+frame-size refusal, that an ambiguous name's refusal lists only the rows that
+carry the name, and that a later attempt with the selection and both
+`after_attempt` and `decision_ref` writes one send call and the mailbox keeps
+its reconciliation. Show that one of those fields without the other is refused before
+any claim, in the sender and in `prepare`, and that an attempt that recorded
+possible submission is not followed by another. Show that a
+supplied route is sent by that route with no listing, and that a refused name
+request tries no second path. Cover the close: a child that exits on closed
+input takes no signal, one that outlives it is terminated rather than killed,
+one that writes while it stops is drained within the quotas, and a descendant
+that holds the pipes does not extend the close. On overflow, confirm the first
+error is retained and the other pipe keeps draining. Keep the listing profile and
+its synthetic fixtures tied to the observed layout. The duration units come
+from the Claude Code 2.1.331 formatter.
