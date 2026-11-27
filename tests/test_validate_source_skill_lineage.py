@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import ast
 import contextlib
+import fcntl
 import hashlib
 import importlib.util
 import io
@@ -26,6 +28,7 @@ LINEAGE_ROOT = Path("release/source-skill-lineage")
 RESEARCH_REPORT = Path(
     "docs/superpowers/research/2026-08-18-source-skill-lineage-and-drift.md"
 )
+SOURCE_LINEAGE_PROCEDURE = Path("docs/agents/source-skill-lineage.md")
 SOURCE_MANIFEST = LINEAGE_ROOT / "source-manifest.json"
 CONTRIBUTION_LEDGER = LINEAGE_ROOT / "contribution-ledger.json"
 HOST_MANIFESTS = (
@@ -132,6 +135,36 @@ def load_refresher():
 
 
 class CutoverSourceSkillLineageBoundaryTests(unittest.TestCase):
+    def clone_refresh_fixture(self, temporary_directory: str) -> Path:
+        clone = Path(temporary_directory) / "repository"
+        subprocess.run(
+            [
+                "/usr/bin/git",
+                "clone",
+                "--quiet",
+                "--no-local",
+                str(REPOSITORY),
+                str(clone),
+            ],
+            check=True,
+            stdin=subprocess.DEVNULL,
+            timeout=30,
+        )
+        for relative in (
+            LINEAGE_ROOT,
+            RESEARCH_REPORT,
+            Path("scripts/validate_source_skill_lineage.py"),
+            Path("scripts/refresh_source_skill_lineage.py"),
+        ):
+            source = REPOSITORY / relative
+            target = clone / relative
+            if source.is_dir():
+                shutil.copytree(source, target, dirs_exist_ok=True)
+            else:
+                target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(source, target)
+        return clone
+
     def test_retained_manifest_is_historical_and_rescout_is_provingkit_bound(
         self,
     ) -> None:
@@ -139,6 +172,57 @@ class CutoverSourceSkillLineageBoundaryTests(unittest.TestCase):
             (REPOSITORY / SOURCE_MANIFEST).read_text(encoding="utf-8")
         )
         self.assertEqual(manifest["candidate"]["repository_id"], "nisavid/agents")
+        retained_distributions = (
+            "artifact-customs",
+            "mergecraft",
+            "rolecasting",
+            "tricritical",
+            "versionkeeping",
+        )
+        self.assertEqual(
+            tuple(manifest["scope"]["distribution_ids"]), retained_distributions
+        )
+        self.assertEqual(
+            tuple(package["id"] for package in manifest["candidate"]["packages"]),
+            retained_distributions,
+        )
+        self.assertEqual(
+            load_validator().RETAINED_DISTRIBUTIONS,
+            retained_distributions,
+        )
+
+        definition = json.loads(
+            (
+                REPOSITORY / "release/provingkit/definition-v1.json"
+            ).read_text(encoding="utf-8")
+        )
+        current_plugin_members = tuple(
+            member["id"] for member in definition["membership"]["members"]
+        )
+        self.assertEqual(
+            current_plugin_members,
+            (
+                "rolecasting",
+                "tricritical",
+                "versionkeeping",
+                "mergecraft",
+                "artifact-customs",
+                "proseweaving",
+            ),
+        )
+        self.assertNotEqual(
+            set(current_plugin_members), set(retained_distributions)
+        )
+
+        task_witness = next(
+            source
+            for source in manifest["sources"]
+            if source["id"] == "ivan-task-witness"
+        )
+        self.assertNotIn("skill_root", task_witness["authority"])
+        for relative in HOST_MANIFESTS:
+            host = json.loads((REPOSITORY / relative).read_text(encoding="utf-8"))
+            self.assertNotIn("manager_registry", host)
 
         provenance = json.loads(
             (REPOSITORY / "release/provingkit/cutover-provenance-v1.json").read_text(
@@ -178,7 +262,7 @@ class CutoverSourceSkillLineageBoundaryTests(unittest.TestCase):
                 )
                 self.assertNotEqual(completed.returncode, 0)
                 self.assertIn(
-                    "candidate plugin manifest identity drift", completed.stderr
+                    "candidate package aggregate drift", completed.stderr
                 )
                 self.assertEqual(completed.stdout, "")
                 self.assertEqual(
@@ -189,6 +273,703 @@ class CutoverSourceSkillLineageBoundaryTests(unittest.TestCase):
                         if path.is_file()
                     },
                 )
+
+    def test_public_readers_bound_shared_lock_admission(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            temporary = Path(temporary_directory)
+            clone = temporary / "repository"
+            subprocess.run(
+                ["git", "clone", "--quiet", "--no-local", str(REPOSITORY), str(clone)],
+                check=True,
+                stdin=subprocess.DEVNULL,
+                timeout=30,
+            )
+            before = {
+                path.relative_to(clone): path.read_bytes()
+                for path in sorted((clone / LINEAGE_ROOT).rglob("*"))
+                if path.is_file()
+            }
+            environment = {
+                "HOME": str(temporary / "home"),
+                "LANG": "C.UTF-8",
+                "LC_ALL": "C.UTF-8",
+                "PATH": "/usr/bin:/bin",
+                "PYTHONDONTWRITEBYTECODE": "1",
+            }
+            commands = (
+                [sys.executable, str(VALIDATOR), str(clone)],
+                [sys.executable, str(REFRESHER), "check", str(clone)],
+            )
+            release_descriptor = os.open(
+                clone / "release", os.O_RDONLY | os.O_DIRECTORY
+            )
+            processes = []
+            try:
+                fcntl.flock(release_descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                for command in commands:
+                    processes.append(
+                        subprocess.Popen(
+                            command,
+                            env=environment,
+                            stdin=subprocess.DEVNULL,
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE,
+                            text=True,
+                        )
+                    )
+                deadline = time.monotonic() + 35
+                while any(process.poll() is None for process in processes):
+                    if time.monotonic() >= deadline:
+                        self.fail("public source-lineage reader exceeded lock deadline")
+                    time.sleep(0.05)
+            finally:
+                for process in processes:
+                    if process.poll() is None:
+                        process.kill()
+                    process.wait()
+                fcntl.flock(release_descriptor, fcntl.LOCK_UN)
+                os.close(release_descriptor)
+
+            for command, process in zip(commands, processes):
+                with self.subTest(command=Path(command[1]).name):
+                    stdout, stderr = process.communicate()
+                    prefix = (
+                        "source-skill-lineage"
+                        if Path(command[1]) == VALIDATOR
+                        else "source-skill-lineage-refresh"
+                    )
+                    self.assertEqual(process.returncode, 1)
+                    self.assertEqual(stdout, "")
+                    self.assertEqual(
+                        stderr,
+                        f"{prefix}: {load_validator().LOCK_LIMIT_DIAGNOSTIC}\n",
+                    )
+            after = {
+                path.relative_to(clone): path.read_bytes()
+                for path in sorted((clone / LINEAGE_ROOT).rglob("*"))
+                if path.is_file()
+            }
+            self.assertEqual(after, before)
+
+    def test_public_readers_reject_lock_admission_after_deadline(self) -> None:
+        cases = (
+            (
+                "validator",
+                load_validator(),
+                [str(VALIDATOR), str(REPOSITORY)],
+                "source-skill-lineage",
+            ),
+            (
+                "validator-explicit-root",
+                load_validator(),
+                [
+                    str(VALIDATOR),
+                    str(REPOSITORY),
+                    "--artifacts-root",
+                    str(REPOSITORY),
+                ],
+                "source-skill-lineage",
+            ),
+            (
+                "receipt-summary-live-root",
+                load_validator(),
+                [str(VALIDATOR), str(REPOSITORY), "--receipt-summary"],
+                "source-skill-lineage",
+            ),
+            (
+                "receipt-summary-explicit-root",
+                load_validator(),
+                [
+                    str(VALIDATOR),
+                    str(REPOSITORY),
+                    "--artifacts-root",
+                    str(REPOSITORY),
+                    "--receipt-summary",
+                ],
+                "source-skill-lineage",
+            ),
+            (
+                "refresh-check",
+                load_refresher(),
+                [str(REFRESHER), "check", str(REPOSITORY)],
+                "source-skill-lineage-refresh",
+            ),
+        )
+        for case_name, entrypoint, arguments, prefix in cases:
+            with self.subTest(case=case_name):
+                lock_module = getattr(entrypoint, "lineage", entrypoint)
+                clock = {"value": 0.0}
+                acquire_attempts = 0
+                competitor_locked = True
+                release_descriptor = os.open(
+                    REPOSITORY / "release", os.O_RDONLY | os.O_DIRECTORY
+                )
+                real_flock = fcntl.flock
+                real_flock(release_descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
+
+                def release_after_deadline(
+                    descriptor,
+                    operation,
+                    *,
+                    _real_flock=real_flock,
+                    _release_descriptor=release_descriptor,
+                ):
+                    nonlocal acquire_attempts, competitor_locked
+                    if operation == fcntl.LOCK_UN:
+                        return _real_flock(descriptor, operation)
+                    acquire_attempts += 1
+                    if acquire_attempts == 2:
+                        _real_flock(_release_descriptor, fcntl.LOCK_UN)
+                        competitor_locked = False
+                    return _real_flock(descriptor, operation)
+
+                def cross_deadline(
+                    _delay: float, *, _clock=clock, _lock_module=lock_module
+                ) -> None:
+                    _clock["value"] = (
+                        _lock_module.MATERIALIZE_TIMEOUT_SECONDS + 1.0
+                    )
+
+                stdout = io.StringIO()
+                stderr = io.StringIO()
+                try:
+                    with (
+                        mock.patch.object(sys, "argv", arguments),
+                        mock.patch.object(
+                            lock_module.time,
+                            "monotonic",
+                            side_effect=lambda _clock=clock: _clock["value"],
+                        ),
+                        mock.patch.object(
+                            lock_module.time, "sleep", side_effect=cross_deadline
+                        ),
+                        mock.patch.object(
+                            lock_module.fcntl,
+                            "flock",
+                            side_effect=release_after_deadline,
+                        ),
+                        contextlib.redirect_stdout(stdout),
+                        contextlib.redirect_stderr(stderr),
+                    ):
+                        result = entrypoint.main()
+                finally:
+                    if competitor_locked:
+                        real_flock(release_descriptor, fcntl.LOCK_UN)
+                    os.close(release_descriptor)
+
+                self.assertEqual(result, 1)
+                self.assertEqual(acquire_attempts, 1)
+                self.assertEqual(stdout.getvalue(), "")
+                self.assertEqual(
+                    stderr.getvalue(),
+                    f"{prefix}: {lock_module.LOCK_LIMIT_DIAGNOSTIC}\n",
+                )
+
+    def test_late_lock_success_is_rejected_released_and_reacquirable(self) -> None:
+        lineage = load_validator()
+        real_flock = fcntl.flock
+        operations = []
+        reacquired = False
+
+        def record_and_probe(descriptor, operation):
+            nonlocal reacquired
+            operations.append(operation)
+            real_flock(descriptor, operation)
+            if operation == fcntl.LOCK_UN:
+                independent = os.open(
+                    REPOSITORY / "release", os.O_RDONLY | os.O_DIRECTORY
+                )
+                try:
+                    real_flock(independent, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                    reacquired = True
+                    real_flock(independent, fcntl.LOCK_UN)
+                finally:
+                    os.close(independent)
+
+        body_entered = False
+        with (
+            mock.patch.object(
+                lineage.time,
+                "monotonic",
+                side_effect=(
+                    0.0,
+                    0.0,
+                    lineage.MATERIALIZE_TIMEOUT_SECONDS + 1.0,
+                ),
+            ),
+            mock.patch.object(
+                lineage.fcntl, "flock", side_effect=record_and_probe
+            ),
+            self.assertRaises(lineage.LineageError) as captured,
+            lineage._lineage_lock(REPOSITORY, exclusive=False),
+        ):
+            body_entered = True
+
+        self.assertEqual(str(captured.exception), lineage.LOCK_LIMIT_DIAGNOSTIC)
+        self.assertIsNone(captured.exception.__cause__)
+        self.assertNotIn(str(REPOSITORY), str(captured.exception))
+        self.assertFalse(body_entered)
+        self.assertEqual(
+            operations,
+            [fcntl.LOCK_SH | fcntl.LOCK_NB, fcntl.LOCK_UN],
+        )
+        self.assertTrue(reacquired)
+
+    def test_shared_noreplace_machine_preserves_directory_and_file_destinations(
+        self,
+    ) -> None:
+        refresher = load_refresher()
+        diagnostic = "source-lineage recovery state is ambiguous"
+        for kind in ("directory", "file"):
+            for case in ("success", "collision", "applied-failure"):
+                with (
+                    self.subTest(kind=kind, case=case),
+                    tempfile.TemporaryDirectory() as temporary_directory,
+                ):
+                    temporary = Path(temporary_directory)
+                    source_parent = temporary / "source-parent"
+                    destination_parent = temporary / "destination-parent"
+                    source_parent.mkdir()
+                    destination_parent.mkdir()
+                    source = source_parent / "source"
+                    destination = destination_parent / "destination"
+                    if kind == "directory":
+                        source.mkdir()
+                        (source / "source-canary").write_text(
+                            "source\n", encoding="utf-8"
+                        )
+                    else:
+                        source.write_text("source\n", encoding="utf-8")
+                    source_identity = source.lstat().st_dev, source.lstat().st_ino
+                    source_parent_descriptor = os.open(
+                        source_parent, os.O_RDONLY | os.O_DIRECTORY
+                    )
+                    destination_parent_descriptor = os.open(
+                        destination_parent, os.O_RDONLY | os.O_DIRECTORY
+                    )
+                    handle = (
+                        refresher._open_directory_at(
+                            source_parent_descriptor, "source", diagnostic
+                        )
+                        if kind == "directory"
+                        else refresher._open_non_directory_at(
+                            source_parent_descriptor, "source", diagnostic
+                        )
+                    )
+                    authority_calls = 0
+                    applied_calls = 0
+
+                    def authority(_case=case):
+                        nonlocal authority_calls
+                        authority_calls += 1
+                        if _case == "applied-failure" and authority_calls == 2:
+                            raise refresher.lineage.LineageError(
+                                "later authority failure"
+                            )
+
+                    def applied():
+                        nonlocal applied_calls
+                        applied_calls += 1
+
+                    real_rename = refresher._rename_noreplace_at
+
+                    def race_destination(
+                        *arguments,
+                        _kind=kind,
+                        _destination=destination,
+                        _real_rename=real_rename,
+                        **keywords,
+                    ):
+                        if _kind == "directory":
+                            _destination.mkdir()
+                            (_destination / "occupant-canary").write_text(
+                                "occupant\n", encoding="utf-8"
+                            )
+                        else:
+                            _destination.write_text("occupant\n", encoding="utf-8")
+                        return _real_rename(*arguments, **keywords)
+
+                    def fail_after_applied(
+                        *arguments, _real_rename=real_rename, **keywords
+                    ):
+                        _real_rename(*arguments, **keywords)
+                        raise refresher.lineage.LineageError(
+                            "first applied failure"
+                        )
+
+                    try:
+                        move = (
+                            refresher._move_bound_directory_noreplace
+                            if kind == "directory"
+                            else refresher._move_bound_non_directory_noreplace
+                        )
+                        if case == "collision":
+                            move_context = mock.patch.object(
+                                refresher,
+                                "_rename_noreplace_at",
+                                side_effect=race_destination,
+                            )
+                        elif case == "applied-failure":
+                            move_context = mock.patch.object(
+                                refresher,
+                                "_rename_noreplace_at",
+                                side_effect=fail_after_applied,
+                            )
+                        else:
+                            move_context = contextlib.nullcontext()
+                        with move_context:
+                            if case == "collision":
+                                with self.assertRaises(refresher._NoReplaceCollision):
+                                    move(
+                                        source_parent_descriptor,
+                                        "source",
+                                        handle,
+                                        destination_parent_descriptor,
+                                        "destination",
+                                        authority=authority,
+                                        applied=applied,
+                                    )
+                            elif case == "applied-failure":
+                                with self.assertRaises(
+                                    refresher.lineage.LineageError
+                                ) as captured:
+                                    move(
+                                        source_parent_descriptor,
+                                        "source",
+                                        handle,
+                                        destination_parent_descriptor,
+                                        "destination",
+                                        authority=authority,
+                                        applied=applied,
+                                    )
+                            else:
+                                move(
+                                    source_parent_descriptor,
+                                    "source",
+                                    handle,
+                                    destination_parent_descriptor,
+                                    "destination",
+                                    authority=authority,
+                                    applied=applied,
+                                )
+                    finally:
+                        if kind == "directory":
+                            refresher._close_directory(handle, diagnostic)
+                        else:
+                            refresher._close_non_directory(handle, diagnostic)
+                        os.close(source_parent_descriptor)
+                        os.close(destination_parent_descriptor)
+
+                    if case == "collision":
+                        self.assertEqual(authority_calls, 2)
+                        self.assertEqual(applied_calls, 0)
+                        self.assertEqual(
+                            (source.lstat().st_dev, source.lstat().st_ino),
+                            source_identity,
+                        )
+                        occupant = (
+                            destination / "occupant-canary"
+                            if kind == "directory"
+                            else destination
+                        )
+                        self.assertEqual(
+                            occupant.read_text(encoding="utf-8"), "occupant\n"
+                        )
+                    else:
+                        self.assertEqual(authority_calls, 2)
+                        self.assertEqual(applied_calls, 1)
+                        self.assertFalse(source.exists())
+                        self.assertEqual(
+                            (destination.lstat().st_dev, destination.lstat().st_ino),
+                            source_identity,
+                        )
+                        if case == "applied-failure":
+                            self.assertEqual(
+                                str(captured.exception), "first applied failure"
+                            )
+
+    def test_noreplace_wrappers_share_one_transition_implementation(self) -> None:
+        tree = ast.parse(REFRESHER.read_text(encoding="utf-8"))
+        functions = {
+            node.name: node
+            for node in tree.body
+            if isinstance(node, (ast.AsyncFunctionDef, ast.FunctionDef))
+        }
+
+        def direct_calls(function_name: str) -> list[str]:
+            return [
+                call.func.id
+                for call in ast.walk(functions[function_name])
+                if isinstance(call, ast.Call) and isinstance(call.func, ast.Name)
+            ]
+
+        shared_calls = direct_calls("_move_bound_noreplace")
+        self.assertEqual(shared_calls.count("_rename_noreplace_at"), 1)
+        shared_parameters = {
+            parameter.arg: parameter.annotation
+            for parameter in functions["_move_bound_noreplace"].args.args
+            + functions["_move_bound_noreplace"].args.kwonlyargs
+        }
+        for parameter in (
+            "source",
+            "authority",
+            "require_source",
+            "bind_destination_after_move",
+            "require_destination",
+            "source_exists",
+            "applied",
+        ):
+            with self.subTest(parameter=parameter):
+                self.assertIsNotNone(shared_parameters[parameter])
+        for wrapper in (
+            "_move_bound_directory_noreplace",
+            "_move_bound_non_directory_noreplace",
+        ):
+            with self.subTest(wrapper=wrapper):
+                calls = direct_calls(wrapper)
+                self.assertEqual(calls.count("_move_bound_noreplace"), 1)
+                self.assertNotIn("_rename_noreplace_at", calls)
+
+    def test_source_lineage_procedure_has_a_maintained_docs_source(self) -> None:
+        agents = (REPOSITORY / "AGENTS.md").read_text(encoding="utf-8")
+        procedure = (REPOSITORY / SOURCE_LINEAGE_PROCEDURE).read_text(
+            encoding="utf-8"
+        )
+        self.assertIn(SOURCE_LINEAGE_PROCEDURE.as_posix(), agents)
+        self.assertNotIn(
+            "8ec465ea915c6759a3693ac8515f0ee3901b8a4f", agents
+        )
+        self.assertNotIn("candidate package aggregate drift", agents)
+        for expected in (
+            "python scripts/validate_source_skill_lineage.py .",
+            "python scripts/refresh_source_skill_lineage.py check .",
+            "candidate package aggregate drift",
+            "Record the reviewed source revision",
+        ):
+            with self.subTest(expected=expected):
+                self.assertIn(expected, procedure)
+
+    def test_public_write_recovery_preserves_destination_races_and_substitutions(
+        self,
+    ) -> None:
+        cases = (
+            "directory-destination-appearance",
+            "staged-non-directory-substitution",
+            "recovery-root-non-directory-destination-appearance",
+        )
+        for case in cases:
+            with (
+                self.subTest(case=case),
+                tempfile.TemporaryDirectory() as temporary_directory,
+            ):
+                clone = self.clone_refresh_fixture(temporary_directory)
+                refresher = load_refresher()
+                target = clone / LINEAGE_ROOT
+                target_name = target.name
+                transaction = (
+                    clone / "release" / ".source-lineage-transaction-canary"
+                )
+                previous = transaction / "previous"
+                transaction.mkdir(mode=0o700)
+                refresher._atomic_write(
+                    transaction / refresher.TRANSACTION_MARKER,
+                    refresher._transaction_marker(transaction),
+                )
+                shutil.copytree(target, previous)
+                original_tree = load_validator().tree_identity(previous)
+                real_rename = refresher._rename_noreplace_at
+                directory_race_injected = False
+                non_directory_moves = 0
+
+                def inject_race(
+                    source_parent,
+                    source_name,
+                    destination_parent,
+                    destination_name,
+                    _case=case,
+                    _real_rename=real_rename,
+                    _target=target,
+                    _target_name=target_name,
+                    _transaction=transaction,
+                    **keywords,
+                ):
+                    nonlocal directory_race_injected, non_directory_moves
+                    if (
+                        source_name == "previous"
+                        and destination_name == _target_name
+                    ):
+                        self.assertFalse(directory_race_injected)
+                        directory_race_injected = True
+                        if _case == "directory-destination-appearance":
+                            _target.mkdir()
+                            (_target / "occupant-canary").write_text(
+                                "occupant\n", encoding="utf-8"
+                            )
+                            return _real_rename(
+                                source_parent,
+                                source_name,
+                                destination_parent,
+                                destination_name,
+                                **keywords,
+                            )
+                        result = _real_rename(
+                            source_parent,
+                            source_name,
+                            destination_parent,
+                            destination_name,
+                            **keywords,
+                        )
+                        _target.rename(_transaction / "displaced-generation")
+                        _target.write_text("substitute\n", encoding="utf-8")
+                        if _case.startswith("recovery-root"):
+                            (_transaction / "staged").write_text(
+                                "occupied staged name\n", encoding="utf-8"
+                            )
+                        return result
+                    if source_name == _target_name:
+                        non_directory_moves += 1
+                        if (
+                            _case.startswith("recovery-root")
+                            and non_directory_moves == 1
+                        ):
+                            descriptor = os.open(
+                                destination_name,
+                                os.O_WRONLY
+                                | os.O_CREAT
+                                | os.O_EXCL
+                                | os.O_CLOEXEC,
+                                0o600,
+                                dir_fd=destination_parent,
+                            )
+                            try:
+                                os.write(descriptor, b"occupant\n")
+                            finally:
+                                os.close(descriptor)
+                    return _real_rename(
+                        source_parent,
+                        source_name,
+                        destination_parent,
+                        destination_name,
+                        **keywords,
+                    )
+
+                with (
+                    mock.patch.object(
+                        refresher, "_require_destination_rescout", return_value=None
+                    ),
+                    mock.patch.object(
+                        refresher,
+                        "_rename_noreplace_at",
+                        side_effect=inject_race,
+                    ),
+                    self.assertRaises(refresher.lineage.LineageError) as captured,
+                ):
+                    refresher.write(clone)
+
+                self.assertTrue(directory_race_injected)
+                self.assertIn(
+                    str(captured.exception),
+                    {
+                        "source-lineage recovery state is ambiguous",
+                        "source-lineage recovery retention failed",
+                    },
+                )
+                retention = clone / ".git" / "source-lineage-recovery"
+                if case == "directory-destination-appearance":
+                    self.assertTrue(retention.is_dir())
+                    self.assertEqual(
+                        (target / "occupant-canary").read_text(encoding="utf-8"),
+                        "occupant\n",
+                    )
+                    retained_previous = next(
+                        path
+                        for path in retention.rglob("previous")
+                        if path.is_dir()
+                    )
+                    self.assertEqual(
+                        load_validator().tree_identity(retained_previous),
+                        original_tree,
+                    )
+                    self.assertEqual(non_directory_moves, 0)
+                    continue
+
+                self.assertFalse(target.exists())
+                retained_state = retention if retention.is_dir() else transaction
+                self.assertTrue(retained_state.is_dir())
+                displaced = next(
+                    path
+                    for path in retained_state.rglob("displaced-generation")
+                    if path.is_dir()
+                )
+                self.assertEqual(
+                    load_validator().tree_identity(displaced), original_tree
+                )
+                retained_files = sorted(
+                    path.read_text(encoding="utf-8")
+                    for path in retained_state.rglob(target_name)
+                    if path.is_file()
+                )
+                expected_files = (
+                    ["substitute\n"]
+                    if case.startswith("staged")
+                    else ["occupant\n", "substitute\n"]
+                )
+                self.assertEqual(retained_files, expected_files)
+                self.assertEqual(
+                    non_directory_moves,
+                    1 if case.startswith("staged") else 2,
+                )
+
+    def test_constructed_public_write_recovery_preserves_ambiguous_targets(
+        self,
+    ) -> None:
+        for kind in ("directory", "file"):
+            with (
+                self.subTest(kind=kind),
+                tempfile.TemporaryDirectory() as temporary_directory,
+            ):
+                clone = self.clone_refresh_fixture(temporary_directory)
+                refresher = load_refresher()
+                target = clone / LINEAGE_ROOT
+                transaction = (
+                    clone / "release" / ".source-lineage-transaction-canary"
+                )
+                previous = transaction / "previous"
+                transaction.mkdir(mode=0o700)
+                refresher._atomic_write(
+                    transaction / refresher.TRANSACTION_MARKER,
+                    refresher._transaction_marker(transaction),
+                )
+                shutil.copytree(target, previous)
+                original_tree = load_validator().tree_identity(target)
+                if kind == "directory":
+                    (target / "invalid-canary").write_text(
+                        "invalid\n", encoding="utf-8"
+                    )
+                    expected = "source-lineage rejected generation was retained"
+                else:
+                    shutil.rmtree(target)
+                    target.write_text("occupant\n", encoding="utf-8")
+                    expected = "source-lineage recovery state is ambiguous"
+
+                with (
+                    mock.patch.object(
+                        refresher, "_require_destination_rescout", return_value=None
+                    ),
+                    self.assertRaises(refresher.lineage.LineageError) as captured,
+                ):
+                    refresher.write(clone)
+
+                self.assertEqual(str(captured.exception), expected)
+                if kind == "directory":
+                    self.assertTrue(target.is_dir())
+                    self.assertFalse((target / "invalid-canary").exists())
+                    self.assertEqual(
+                        load_validator().tree_identity(target), original_tree
+                    )
+                else:
+                    self.assertEqual(target.read_text(encoding="utf-8"), "occupant\n")
+                    self.assertTrue(previous.is_dir())
 
     def test_mutating_and_capture_entrypoints_are_disabled_pending_rescout(
         self,
