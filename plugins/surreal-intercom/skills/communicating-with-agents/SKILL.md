@@ -105,6 +105,9 @@ partial outcomes and actual owned closure.
 Distinguish submission, receipt, handling, reply, completed work, and resource
 closure. Only matching receiver evidence advances the corresponding claim.
 Reconcile an uncertain attempt without redispatch or operation substitution.
+The Claude MCP sender records every reply after `SendMessage` as `unknown`.
+Confirm delivery through an authorized read of the intended receiver's transcript
+that matches the original message and attempt.
 
 Apply the same selected reply/wait case after submission. Only the reply-expected,
 wait-now case observes: consume a matching actual native observation already

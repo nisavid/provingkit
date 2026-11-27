@@ -189,26 +189,63 @@ Use `init` only for authorized initial setup. The request's `message_id` must ma
 
 The sender acquires the claim itself. Do not preclaim through the mailbox CLI: an existing claim prevents the sender from proceeding. Before launching its child, it commits the attempt and an `unknown` observation containing the request. A crash can leave uncertainty before or after any external effect. Repeated invocation of that attempt cannot acquire another claim; a fresh attempt ID alone cannot reopen the message.
 
-After initialization and catalog inspection, the sender makes at most one `SendMessage` call, after the `ListAgents` reads of a name request. A missing tool, an unsupported schema, or a call frame over the 4,096-byte ceiling (`control_frame_limit`) records refusal without that call. Every refusal the sender records before possible submission is definite, on both paths: no `SendMessage` call was written in that attempt. It records `refused` with its reason and then `not_delivered`, whose evidence is the sender's own record of the phase. Before writing a supported call, it records possible submission on both paths as `phase`, `path`, and the `to` value, and for a name also the bound listing `row`. A supported tool result records `submitted` unless it reports an error or a text block begins with `Not sent`. An explicit refusal keeps the attempt `unknown` and the CLI at `possible_submission` with reason `tool_error`. Errors, malformed replies, unsupported results, interrupted writes, and other uncertain outcomes do not establish nondelivery. Inspect the returned JSON and retained observations; the process exit code alone does not establish successful submission.
+After initialization and catalog inspection, the sender makes at most one
+`SendMessage` call. A name request lists agents first. A missing tool, an
+unsupported schema, a listing reply read failure (`listing_failed`), or a call
+frame over the 4,096-byte ceiling (`control_frame_limit`) can cause refusal
+before that call. Each recorded pre-call refusal gets a reason and a
+`not_delivered` observation based on the sender's phase record.
 
-`submitted` reports the tool result, not receiver receipt, ACK, handling, or fulfillment. The tool's own description says a successful call puts the message in the recipient's inbox, not read yet; report it as submission. The child ends after the call, so a later cross-session delivery notice has no process to reach. That limits this sender, not what is intended: the [skill entry](../SKILL.md) states the operator's 2026-11-19 decision that Claude's requested reply starts a turn in a Codex sender's chat while its app is running, with the mechanism still to be chosen. An ACK needs correlated receiver evidence and its meaning must be stated. Record receipt, handling, and completion only from separately acquired authorized evidence tied to the intended receiver, message, and attempt. Preserve contradictions and uncertainty; do not infer fulfillment from envelope serialization or sender success.
+Before writing a supported call, the sender records possible submission on both
+paths with `phase`, `path`, and `to`. The name path also records the bound
+listing `row`. Once writing may begin, the CLI reports `possible_submission`
+and the mailbox remains `unknown`. The sender retains any tool result as an
+`unknown` observation. An error flag or a text block beginning with `Not sent`
+reports `tool_error`. An empty result content list or an unsupported result shape
+reports `unsupported_tool_result` unless a supported result reports an error.
+Other supported replies report `unverified_tool_result`. A reply read failure
+after the send write also leaves the attempt `unknown`. The process exit code
+only reports how the child exited.
+
+Until a verified success form exists, confirm delivery through an authorized
+read of the intended receiver's transcript. Match the original message and
+attempt using native identifiers or the retained payload. State what a
+correlated ACK establishes. Report handling or completion only when the
+receiver evidence establishes it. The child ends
+after the call, so a later cross-session delivery notice has no process to reach.
+The [skill entry](../SKILL.md) states the operator's 2026-11-19 decision that
+Claude's requested reply starts a turn in a Codex sender's chat while its app
+is running, with the mechanism still to be chosen. Preserve uncertainty if the
+read is unavailable or does not establish delivery.
 
 The sender counts stderr but discards its bytes. It buffers stdout for protocol parsing and stores selected request/result details, not a complete transcript. Retain the returned result and actual evidence behind `evidence_ref`; a pointer alone proves nothing. Bound and protect any separately authorized capture. Even a complete capture within its limits cannot prove absence outside those limits, on other channels, or in the receiver.
 
 ## Closure and reconciliation
 
-The sender shuts its child down as the MCP 2024-11-05 stdio lifecycle describes. It closes the child's input and drains the pipes for up to three seconds within the remaining deadline. If the child has not exited, it sends `SIGTERM` and drains the pipes for two more seconds, so a child that writes while it stops is not blocked on a full pipe, then sends `SIGKILL`; these signal waits and reaping can pass the deadline. It waits for the child's own exit, not for its pipes to close, so a descendant that holds them does not extend the close. It reaps only the child it created. During closure, the sender stops reading an overflowing pipe and continues draining the other one. In `owned_child`, `closed_by` records the last escalation the sender requested (`terminate` or `kill`). Read `exit_code` for how the child exited and `closure_error` for the first pipe or closure failure.
+The sender follows the MCP 2024-11-05 stdio shutdown sequence. It closes the
+child's input and drains for up to three seconds within the remaining deadline.
+If the child stays alive, the sender requests `SIGTERM` and drains for up to
+two more seconds before requesting `SIGKILL` if needed. The signal waits and
+reaping can pass the operation deadline. The sender waits for its own child's
+exit, so a descendant holding a pipe does not extend the close.
 
-The fixed sender's close against a real session is not yet observed. Child closure does not establish receiver shutdown, descendant closure, or total process-tree control. A closure failure does not erase an earlier submission observation.
+When a pipe exceeds its read quota, the sender records the error, unregisters
+the pipe, and closes its read end. The other pipe can still drain during the
+grace period. A writer to the closed pipe, including a descendant sharing it,
+can receive `EPIPE` or `SIGPIPE`. In `owned_child`, `closed_by` records the last
+escalation the sender requested (`terminate` or `kill`). Read `exit_code` for
+how the child exited and `closure_error` for the first pipe or closure failure.
+These fields describe the owned child and its pipes. Receiver delivery requires
+separate evidence. Closure against the installed app remains unverified.
 
 After uncertainty or interruption, inspect the same mailbox and reconcile through separately authorized receiver observations. A bounded history with no match is not conclusive nondelivery. Preserve claims, evidence, original sender, actual actor, owner, and holds across replacement intake. Do not automatically resend, start a fallback, change settings, or release a hold.
 
-Mailbox bookkeeping permits a later claim only when it names the latest attempt, every earlier attempt ended `not_delivered`, and none shows receipt, handling, or completion. A later attempt is a new attempt ID under the same message identity, made only when the caller asks for it: the request then carries both `after_attempt` (the latest attempt) and `decision_ref` (the owning task's decision for this attempt), and the sender passes them to the claim unchanged. One without the other returns `invalid_reconciliation` before any claim. After a refused name send, for example, the caller supplies the missing `selection` from the refusal's `candidates` with both fields; the new attempt lists again and checks the selection against its own listing. The sender never starts a later attempt itself. An attempt that recorded possible submission ends in the sender's own record as `submitted` or `unknown`, never `not_delivered`, so no later attempt follows it through the sender; that needs nondelivery reconciled from the receiver's side, as [mailbox bookkeeping](native-codex-mailbox.md) says. Preclaiming does not bridge the gap, and a new message identity for the same obligation is not a later attempt.
+Mailbox bookkeeping permits a later claim only when it names the latest attempt, every earlier attempt ended `not_delivered`, and none shows receipt, handling, or completion. A later attempt is a new attempt ID under the same message identity, made only when the caller asks for it: the request then carries both `after_attempt` (the latest attempt) and `decision_ref` (the owning task's decision for this attempt), and the sender passes them to the claim unchanged. One without the other returns `invalid_reconciliation` before any claim. After a refused name send, for example, the caller supplies the missing `selection` from the refusal's `candidates` with both fields; the new attempt lists again and checks the selection against its own listing. The sender never starts a later attempt itself. An attempt that recorded possible submission stays `unknown` in the sender's record. A later claim requires receiver-side evidence of nondelivery, as [mailbox bookkeeping](native-codex-mailbox.md) describes. Preclaiming does not bridge the gap, and a new message identity for the same obligation is not a later attempt.
 
 ## Consumer completion and compatibility
 
 Keep compatibility claims graduated: reviewed source and parser checks; synthetic consumers at the real sender CLI with replaced external effects; separately authorized exact-surface negotiation; correlated receiver receipt; handling and fulfillment; installation and operational adoption. Passing one stage does not establish the next. Claude product surfaces require separate qualification.
 
-Before completing source delivery, obtain current owning validation, independent review, and consumer evidence on the final revision and relevant dependencies. Exercise discovery separately from procedure application. Consumer cases should distinguish legacy and explicit correlation, original sender and forwarding actor, retained authority and holds, claimed-attempt refusal, supported submission, relevant protocol failures, limits, and owned-child closure. Synthetic evidence must identify the actual module exercised, replacements, source revision, commands, results, and assurance limits; it cannot qualify a live receiver.
+Before completing source delivery, obtain current owning validation, independent review, and consumer evidence on the final revision and relevant dependencies. Exercise discovery separately from procedure application. Consumer cases should distinguish legacy and explicit correlation, original sender and forwarding actor, retained authority and holds, claimed-attempt refusal, unverified tool replies, relevant protocol failures, limits, and owned-child closure. Synthetic evidence must identify the actual module exercised, replacements, source revision, commands, results, and assurance limits; it cannot qualify a live receiver.
 
 A dependent consumer loads this procedure before execution and returns the reviewed revision, permitted route-binding evidence, mailbox/message/attempt bindings, actual actor, retained holds, bounded acquisition and observation limits, submission outcome, child closure, separately observed receiver stages, and unresolved gaps. Keep private evidence in its owning protected records. Changed source or evidence dependencies invalidate affected passes. Installation, adoption, and live acceptance remain with their existing owners.

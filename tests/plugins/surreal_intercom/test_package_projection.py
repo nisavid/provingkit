@@ -150,7 +150,7 @@ class IntercomProjectionTests(unittest.TestCase):
                     }
                     for direction, kind, state in (
                         ("codex", "claude-mcp", "unknown"),
-                        ("claude", "codex-owner-admission", "submitted"),
+                        ("claude", "codex-owner-admission", "unknown"),
                     ):
                         self.assertEqual(set(flow[direction]), set(matrix))
                         for name, preference in matrix.items():

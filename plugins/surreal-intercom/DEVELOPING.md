@@ -108,8 +108,8 @@ By-name Claude sends use a disposable stdio child that serves a catalog with
 `SendMessage` and `ListAgents` and a synthetic listing in the one observed
 Claude Desktop layout the
 [Claude MCP sender](skills/communicating-with-agents/references/claude-mcp-sender.md)
-documents. Cover a submission with exactly one `ListAgents` call and one
-`SendMessage` call. Check that every invalid listing refuses before
+documents. Cover exactly one `ListAgents` call and one `SendMessage` call,
+with the send reply retained as `unknown`. Check that every invalid listing refuses before
 `SendMessage`, including unsupported rows beside a valid destination,
 embedded control text, pagination, caller identity conflicts, and a peer total
 that differs from its row count. Exercise no matching row, ambiguous name,
@@ -130,14 +130,15 @@ original sender when the outbound message went by name. Show that a refusal
 before possible submission records `not_delivered` on both paths, including the
 frame-size refusal, that an ambiguous name's refusal lists only the rows that
 carry the name, and that a later attempt with the selection and both
-`after_attempt` and `decision_ref` submits one message whose reconciliation the
-mailbox keeps. Show that one of those fields without the other is refused before
+`after_attempt` and `decision_ref` writes one send call and the mailbox keeps
+its reconciliation. Show that one of those fields without the other is refused before
 any claim, in the sender and in `prepare`, and that an attempt that recorded
 possible submission is not followed by another. Show that a
 supplied route is sent by that route with no listing, and that a refused name
 request tries no second path. Cover the close: a child that exits on closed
 input takes no signal, one that outlives it is terminated rather than killed,
-one that writes while it stops is drained rather than killed, and a descendant
-that holds the pipes does not extend the close. Keep the listing profile and
+one that writes while it stops is drained within the quotas, and a descendant
+that holds the pipes does not extend the close. On overflow, confirm the first
+error is retained and the other pipe keeps draining. Keep the listing profile and
 its synthetic fixtures tied to the observed layout. The duration units come
 from the Claude Code 2.1.331 formatter.

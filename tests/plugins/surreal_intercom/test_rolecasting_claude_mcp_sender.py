@@ -128,12 +128,19 @@ class ClaudeMcpSenderTests(unittest.TestCase):
                                 os.close(sys.stdout.fileno())
                                 continue
                             if sys.argv[3] == "stdout_overflow":
-                                os.write(sys.stdout.fileno(), b"X" * 16385)
+                                try:
+                                    os.write(sys.stdout.fileno(), b"X" * 16385)
+                                except BrokenPipeError:
+                                    # The sender may close this pipe at its limit.
+                                    pass
                                 continue
                             if sys.argv[3] == "stderr_overflow":
                                 remaining = memoryview(b"E" * (2 * 1048576))
                                 while remaining:
-                                    written = os.write(sys.stderr.fileno(), remaining)
+                                    try:
+                                        written = os.write(sys.stderr.fileno(), remaining)
+                                    except BrokenPipeError:
+                                        break
                                     remaining = remaining[written:]
                                 continue
                             if sys.argv[3] == "call_deadline":
@@ -154,6 +161,10 @@ class ClaudeMcpSenderTests(unittest.TestCase):
                             elif sys.argv[3] in ("refusal_without_flag", "refusal_with_false_flag"):
                                 response = {"content": [{"type": "text", "text": "Not sent: peer left."}]}
                                 if sys.argv[3] == "refusal_with_false_flag":
+                                    response["isError"] = False
+                            elif sys.argv[3] in ("empty_without_flag", "empty_with_false_flag"):
+                                response = {"content": []}
+                                if sys.argv[3] == "empty_with_false_flag":
                                     response["isError"] = False
                             else:
                                 raise SystemExit(90)
@@ -349,7 +360,7 @@ class ClaudeMcpSenderTests(unittest.TestCase):
                             )
                             self.assert_no_receipt(retained, original)
 
-    def test_request_at_32768_bytes_is_admitted_and_submits(self):
+    def test_request_at_32768_bytes_reaches_the_send_call(self):
         with self.consumer(mode="tool_success") as (
             original, request, send, bookkeeping, trace, source,
         ):
@@ -359,8 +370,8 @@ class ClaudeMcpSenderTests(unittest.TestCase):
             self.assertEqual(len(boundary), 32768)
             result = send(raw=boundary)
             self.assertEqual(result["stage"], "call")
-            self.assertEqual(result["reason"], "submitted")
-            self.assertEqual(result["peer_input"], "submitted")
+            self.assertEqual(result["reason"], "unverified_tool_result")
+            self.assertEqual(result["peer_input"], "possible_submission")
             self.assertTrue(result["claimed"])
             self.assertEqual(result["owned_child"], {
                 "started": True, "reaped": True, "exit_code": 23,
@@ -373,11 +384,11 @@ class ClaudeMcpSenderTests(unittest.TestCase):
             self.assertEqual(records[-1], {"stdin_eof": True})
             retained = bookkeeping("show", "failure-1")
             self.assert_no_receipt(retained, original)
-            self.assertEqual(retained["state"], "submitted")
+            self.assertEqual(retained["state"], "unknown")
             self.assertEqual(len(retained["attempts"]), 1)
             self.assertEqual(
                 [o["kind"] for o in retained["attempts"][0]["observations"]],
-                ["unknown", "unknown", "submitted"],
+                ["unknown", "unknown", "unknown"],
             )
             self.assert_no_replay(request, send, bookkeeping, trace, retained)
 
@@ -547,9 +558,9 @@ class ClaudeMcpSenderTests(unittest.TestCase):
             self.assertEqual(retained["attempts"], [])
             self.assert_no_receipt(retained, original)
 
-    def test_tool_error_stays_unknown_while_non_error_marks_only_submission(self):
+    def test_non_error_and_tool_error_replies_both_stay_unknown(self):
         for mode, reason, state, peer_input in (
-            ("tool_success", "submitted", "submitted", "submitted"),
+            ("tool_success", "unverified_tool_result", "unknown", "possible_submission"),
             ("tool_error", "tool_error", "unknown", "possible_submission"),
         ):
             with self.subTest(mode=mode):
@@ -609,6 +620,24 @@ class ClaudeMcpSenderTests(unittest.TestCase):
                     "target": request["target"],
                     "tool_result": {"content": [{"type": "text", "text": "Not sent: peer left."}],
                                     **flag},
+                })
+                self.assert_no_replay(request, send, bookkeeping, trace, retained)
+
+    def test_empty_content_stays_unknown_with_an_absent_or_false_error_flag(self):
+        for mode, flag in (("empty_without_flag", {}), ("empty_with_false_flag", {"isError": False})):
+            with self.subTest(mode=mode), self.consumer(mode=mode) as (
+                    original, request, send, bookkeeping, trace, _):
+                result = send()
+                self.assertEqual(result["stage"], "call")
+                self.assertEqual(result["reason"], "unsupported_tool_result")
+                self.assertEqual(result["peer_input"], "possible_submission")
+                retained = bookkeeping("show", original["message_id"])
+                self.assertEqual(retained["state"], "unknown")
+                attempt, = retained["attempts"]
+                self.assertEqual(attempt["submission"], "unknown")
+                self.assertEqual([o["kind"] for o in attempt["observations"]], ["unknown"] * 3)
+                self.assertEqual(json.loads(attempt["observations"][-1]["detail"]), {
+                    "target": request["target"], "tool_result": {"content": [], **flag},
                 })
                 self.assert_no_replay(request, send, bookkeeping, trace, retained)
 
@@ -691,7 +720,7 @@ class ClaudeMcpSenderTests(unittest.TestCase):
             self.assertFalse(attempt["handled"])
             self.assertFalse(attempt["completed"])
 
-    def test_peer_envelope_submission_preserves_content_and_does_not_imply_receipt(self):
+    def test_peer_envelope_preserves_content_and_the_reply_stays_unknown(self):
         catalogs = (
             ("minimal", {"tools": [{
                 "name": "SendMessage",
@@ -834,7 +863,7 @@ class ClaudeMcpSenderTests(unittest.TestCase):
             "destination_constraint_violation", "CR/LF",
         )
 
-    def test_retained_destination_profile_submits_the_exact_peer_envelope(self):
+    def test_retained_destination_profile_writes_the_exact_peer_envelope(self):
         self._assert_peer_envelope_submission(retained_destination_catalog())
 
     def _assert_peer_envelope_submission(self, catalog, target="uds:/synthetic/selected-peer.sock"):
@@ -846,8 +875,8 @@ class ClaudeMcpSenderTests(unittest.TestCase):
             actor = request["actor"]
             result = send()
             self.assertEqual(result["stage"], "call")
-            self.assertEqual(result["reason"], "submitted")
-            self.assertEqual(result["peer_input"], "submitted")
+            self.assertEqual(result["reason"], "unverified_tool_result")
+            self.assertEqual(result["peer_input"], "possible_submission")
             self.assertTrue(result["claimed"])
             self.assertEqual(result["owned_child"], {
                 "started": True, "reaped": True, "exit_code": 23,
@@ -892,14 +921,14 @@ class ClaudeMcpSenderTests(unittest.TestCase):
             self.assertEqual(records[-1], {"stdin_eof": True})
             retained = bookkeeping("show", "send-1")
             self.assertEqual({key: retained[key] for key in original}, original)
-            self.assertEqual(retained["state"], "submitted")
+            self.assertEqual(retained["state"], "unknown")
             self.assertEqual(len(retained["attempts"]), 1)
             attempt = retained["attempts"][0]
             self.assertEqual(attempt["attempt_id"], "attempt-send")
             self.assertEqual(attempt["actor"], actor)
-            self.assertEqual(attempt["submission"], "submitted")
+            self.assertEqual(attempt["submission"], "unknown")
             self.assertEqual([item["kind"] for item in attempt["observations"]], [
-                "unknown", "unknown", "submitted",
+                "unknown", "unknown", "unknown",
             ])
             observation = attempt["observations"][-1]
             self.assertEqual(observation["evidence_ref"], "synthetic://evidence/send")
@@ -947,7 +976,15 @@ NAME_CHILD = textwrap.dedent("""\
 
         def stop(*_):
             if config["mode"] == "stderr_overflow_while_stopping":
-                os.write(2, b"overflow")
+                remaining = memoryview(b"x" * 262144)
+                try:
+                    while remaining:
+                        written = os.write(2, remaining)
+                        remaining = remaining[written:]
+                except BrokenPipeError:
+                    record({"stderr_read_end_closed": True})
+                else:
+                    os._exit(89)
             os.write(1, b"x" * 262144)
             os._exit(0)
 
@@ -1121,11 +1158,11 @@ class ClaudeNameSendTests(unittest.TestCase):
             "unreadable_rows": unreadable_rows})
         return observations[1]["detail"]
 
-    def test_name_submits_with_one_call_and_closes_without_a_signal(self):
+    def test_name_writes_one_send_call_and_closes_without_a_signal(self):
         with self.name_consumer() as (original, request, send, bookkeeping, calls, trace):
             result = send()
             self.assertEqual(result["path"], "name")
-            self.assertEqual(result["reason"], "submitted")
+            self.assertEqual(result["reason"], "unverified_tool_result")
             self.assertEqual(result["owned_child"], {
                 "started": True, "reaped": True, "exit_code": 0})
             made = calls()
@@ -1137,7 +1174,7 @@ class ClaudeNameSendTests(unittest.TestCase):
             self.assertEqual(envelope["actor"], request["actor"])
             self.assertEqual(envelope["correlation_id"], "exchange-9")
             retained = bookkeeping("show", "send-1")
-            self.assertEqual(retained["state"], "submitted")
+            self.assertEqual(retained["state"], "unknown")
             bound = json.loads(retained["attempts"][0]["observations"][1]["detail"])
             # The route path records the same shape without the row.
             self.assertEqual(set(bound), {"phase", "path", "to", "row", "unreadable_rows"})
@@ -1168,7 +1205,7 @@ class ClaudeNameSendTests(unittest.TestCase):
         with self.name_consumer(mode="lingers_after_input_closes", seconds=20) as (
                 original, request, send, bookkeeping, calls, trace):
             result = send()
-            self.assertEqual(result["reason"], "submitted")
+            self.assertEqual(result["reason"], "unverified_tool_result")
             self.assertEqual(result["owned_child"], {
                 "started": True, "reaped": True, "exit_code": -15,
                 "closed_by": "terminate"})
@@ -1180,7 +1217,7 @@ class ClaudeNameSendTests(unittest.TestCase):
                                 stdout_bytes=1048576) as (
                 original, request, send, bookkeeping, calls, trace):
             result = send()
-            self.assertEqual(result["reason"], "submitted")
+            self.assertEqual(result["reason"], "unverified_tool_result")
             # It exits by itself once its 256 KiB reach the drained pipe.
             self.assertEqual(result["owned_child"], {
                 "started": True, "reaped": True, "exit_code": 0,
@@ -1189,21 +1226,24 @@ class ClaudeNameSendTests(unittest.TestCase):
 
     def test_closure_drains_stdout_after_stderr_overflows(self):
         with self.name_consumer(mode="stderr_overflow_while_stopping", seconds=20,
-                                stdout_bytes=1048576) as (_, request, send, bookkeeping, _, _):
+                                stdout_bytes=1048576) as (_, request, send, bookkeeping, _, trace):
             request["limits"]["stderr_bytes"] = 1
             result = send()
-            self.assertEqual(result["reason"], "submitted")
-            self.assertEqual(bookkeeping("show", "send-1")["state"], "submitted")
+            self.assertEqual(result["reason"], "unverified_tool_result")
+            self.assertEqual(bookkeeping("show", "send-1")["state"], "unknown")
             self.assertEqual(result["owned_child"], {
                 "started": True, "reaped": True, "exit_code": 0,
                 "closed_by": "terminate", "closure_error": "stderr_limit",
+            })
+            self.assertEqual(json.loads(trace.read_text().splitlines()[-1]), {
+                "stderr_read_end_closed": True,
             })
 
     def test_a_descendant_holding_the_pipes_does_not_extend_the_close(self):
         with self.name_consumer(mode="descendant_holds_pipes", seconds=20) as (
                 original, request, send, bookkeeping, calls, trace):
             result = send()
-            self.assertEqual(result["reason"], "submitted")
+            self.assertEqual(result["reason"], "unverified_tool_result")
             self.assertEqual(result["owned_child"], {
                 "started": True, "reaped": True, "exit_code": 0})
             self.assertLess(result["elapsed"], 10)
@@ -1239,13 +1279,13 @@ class ClaudeNameSendTests(unittest.TestCase):
             })
             second = send()
             self.assertTrue(second["claimed"])
-            self.assertEqual(second["reason"], "submitted")
+            self.assertEqual(second["reason"], "unverified_tool_result")
             made = calls()
             self.assertEqual([call["name"] for call in made],
                              ["ListAgents", "ListAgents", "SendMessage"])
             self.assertEqual(made[-1]["arguments"]["to"], "twin [cc22dd]")
             retained = bookkeeping("show", "send-1")
-            self.assertEqual(retained["state"], "submitted")
+            self.assertEqual(retained["state"], "unknown")
             first_attempt, second_attempt = retained["attempts"]
             self.assertEqual([o["kind"] for o in first_attempt["observations"]],
                              ["unknown", "refused", "not_delivered"])
@@ -1256,7 +1296,7 @@ class ClaudeNameSendTests(unittest.TestCase):
                 "decision_ref": "synthetic://decision/select-cc22dd",
             })
             self.assertEqual([o["kind"] for o in second_attempt["observations"]],
-                             ["unknown", "unknown", "submitted"])
+                             ["unknown", "unknown", "unknown"])
 
     def test_one_reconciliation_field_without_the_other_is_refused_before_any_claim(self):
         for field in ("after_attempt", "decision_ref"):
@@ -1269,9 +1309,9 @@ class ClaudeNameSendTests(unittest.TestCase):
                 self.assertFalse(trace.exists())
                 self.assertEqual(bookkeeping("show", "send-1")["state"], "planned")
 
-    def test_a_submitted_attempt_is_not_followed_by_another_through_the_senders_record(self):
+    def test_an_unverified_reply_does_not_allow_another_attempt(self):
         with self.name_consumer() as (_, request, send, bookkeeping, calls, trace):
-            self.assertEqual(send()["reason"], "submitted")
+            self.assertEqual(send()["reason"], "unverified_tool_result")
             retained = bookkeeping("show", "send-1")
             request.update({"attempt_id": "send-1/attempt/2", "after_attempt": "send-1/attempt/1",
                             "decision_ref": "synthetic://decision/again"})
@@ -1285,7 +1325,7 @@ class ClaudeNameSendTests(unittest.TestCase):
         with self.name_consumer(name="twin", selection={"ref": "cc22dd"}) as (
                 _, request, send, bookkeeping, calls, _t):
             result = send()
-            self.assertEqual(result["reason"], "submitted")
+            self.assertEqual(result["reason"], "unverified_tool_result")
             self.assertEqual(calls()[-1]["arguments"]["to"], "twin [cc22dd]")
 
     def test_a_selection_with_a_unique_name_must_match_that_row(self):
@@ -1299,7 +1339,7 @@ class ClaudeNameSendTests(unittest.TestCase):
                 {"name": "claude-receiver", "ref": "3fa9c1", "kind": "interactive", "local": True}])
         with self.name_consumer(selection={"ref": "3fa9c1"}) as (
                 _, request, send, bookkeeping, calls, _t):
-            self.assertEqual(send()["reason"], "submitted")
+            self.assertEqual(send()["reason"], "unverified_tool_result")
             self.assertEqual(calls()[-1]["arguments"]["to"], "claude-receiver")
             bound = json.loads(
                 bookkeeping("show", "send-1")["attempts"][0]["observations"][1]["detail"])
@@ -1392,7 +1432,7 @@ class ClaudeNameSendTests(unittest.TestCase):
         listing = desktop_listing(desktop_row(name, "aa12bc"))
         with self.name_consumer(name=name, pages=(listing,)) as (
                 _, _, send, _, calls, _):
-            self.assertEqual(send()["reason"], "submitted")
+            self.assertEqual(send()["reason"], "unverified_tool_result")
             self.assertEqual(calls()[-1]["arguments"]["to"], name)
         with self.name_consumer(name=name, pages=(listing,), selection={"ref": "aa12bc"}) as (
                 _, _, send, bookkeeping, calls, _):
@@ -1425,7 +1465,7 @@ class ClaudeNameSendTests(unittest.TestCase):
         listing = desktop_listing(desktop_row("alpha", "aa12bc"))
         with self.name_consumer(name="alpha", pages=(listing,), payload="x" * 3484) as (
                 _, _, send, _, calls, trace):
-            self.assertEqual(send()["reason"], "submitted")
+            self.assertEqual(send()["reason"], "unverified_tool_result")
             self.assertEqual(calls()[-1]["arguments"]["to"], "alpha")
             records = (json.loads(line) for line in trace.read_text().splitlines())
             self.assertEqual([record["sendmessage_frame_bytes"] for record in records
@@ -1452,7 +1492,7 @@ class ClaudeNameSendTests(unittest.TestCase):
         # A qualified reference adds nine bytes. At 3,475 payload bytes it
         # fits exactly, while a bare address can carry 3,484.
         for length, needs, continuation in (
-            (3484, None, "control_frame_limit"), (3475, "selection", "submitted"),
+            (3484, None, "control_frame_limit"), (3475, "selection", "unverified_tool_result"),
         ):
             with self.subTest(length=length), self.name_consumer(
                     name="alpha", pages=(listing,), payload="x" * length) as (
@@ -1466,7 +1506,7 @@ class ClaudeNameSendTests(unittest.TestCase):
                     "decision_ref": "synthetic://decision/select-aa12bc",
                 })
                 self.assertEqual(send()["reason"], continuation)
-                if continuation == "submitted":
+                if continuation == "unverified_tool_result":
                     self.assertEqual(calls()[-1]["arguments"]["to"], "alpha [aa12bc]")
                 else:
                     self.assertEqual([call["name"] for call in calls()], ["ListAgents"])
@@ -1523,7 +1563,7 @@ class ClaudeNameSendTests(unittest.TestCase):
                 _, request, send, bookkeeping, calls, _t):
             result = send()
             self.assertEqual(result["path"], "route")
-            self.assertEqual(result["reason"], "submitted")
+            self.assertEqual(result["reason"], "unverified_tool_result")
             made = calls()
             self.assertEqual([call["name"] for call in made], ["SendMessage"])
             self.assertEqual(made[0]["arguments"]["to"], "uds:/synthetic/prepared.sock")
@@ -1703,7 +1743,7 @@ class ClaudeNameSendTests(unittest.TestCase):
                 with self.name_consumer(name="alpha", pages=(listing,)) as (
                         _, _, send, bookkeeping, calls, _):
                     result = send()
-                    self.assertEqual(result["reason"], "submitted")
+                    self.assertEqual(result["reason"], "unverified_tool_result")
                     self.assertEqual(result["unreadable_rows"], 1)
                     self.assertEqual([call["name"] for call in calls()],
                                      ["ListAgents", "SendMessage"])
@@ -1796,10 +1836,10 @@ class ClaudeNameSendTests(unittest.TestCase):
         for row in expected:
             with self.subTest(name=row["name"]), self.name_consumer(
                     name=row["name"], pages=(listing,)) as (_, _, send, bookkeeping, calls, _):
-                self.assertEqual(send()["reason"], "submitted")
+                self.assertEqual(send()["reason"], "unverified_tool_result")
                 self.assertEqual(calls()[-1]["arguments"]["to"], row["name"])
                 record = bookkeeping("show", "send-1")
-                self.assertEqual(record["state"], "submitted")
+                self.assertEqual(record["state"], "unknown")
                 bound = json.loads(record["attempts"][0]["observations"][1]["detail"])
                 self.assertEqual(bound["row"], row)
                 self.assertEqual(bound["to"], row["name"])
@@ -1848,7 +1888,7 @@ class ClaudeNameSendTests(unittest.TestCase):
                     return {"tools": [retained_destination_catalog()["tools"][0], LISTAGENTS_TOOL]}
                 if self.calls[-1] == "ListAgents":
                     return {"content": [{"type": "text", "text": self.listing}]}
-                return {"content": [{"type": "text", "text": "Synthetic submission."}]}
+                return {"content": [{"type": "text", "text": "Synthetic tool reply."}]}
 
             def close(self):
                 return {"started": True, "reaped": True, "exit_code": 0}
@@ -1927,7 +1967,7 @@ class ClaudeNameSendTests(unittest.TestCase):
             request_path = trace.parent / "mutation.json"
             initialized_store = store.read_bytes()
             request_path.write_text(json.dumps(request), encoding="utf-8")
-            for listing, description, expected_skips, submits in cases:
+            for listing, description, expected_skips, sends in cases:
                 with self.subTest(case=description):
                     store.write_bytes(initialized_store)
                     child = ListingChild(listing)
@@ -1946,11 +1986,11 @@ class ClaudeNameSendTests(unittest.TestCase):
                         mailbox.close()
                     observations = record["attempts"][0]["observations"]
                     kinds = [item["kind"] for item in observations]
-                    if submits:
+                    if sends:
                         self.assertEqual(child.calls, ["ListAgents", "SendMessage"])
-                        self.assertEqual(result["peer_input"], "submitted")
-                        self.assertEqual(record["state"], "submitted")
-                        self.assertEqual(kinds, ["unknown", "unknown", "submitted"])
+                        self.assertEqual(result["peer_input"], "possible_submission")
+                        self.assertEqual(record["state"], "unknown")
+                        self.assertEqual(kinds, ["unknown", "unknown", "unknown"])
                         evidence = json.loads(observations[1]["detail"])
                         self.assertEqual(evidence["to"], "alpha")
                     else:
@@ -1985,7 +2025,7 @@ class ClaudeNameSendTests(unittest.TestCase):
         name = "alpha \U0001f680"
         listing = desktop_listing(desktop_row(name, "aa12bc"))
         with self.name_consumer(name=name, pages=(listing,)) as (_, _, send, _, calls, _):
-            self.assertEqual(send()["reason"], "submitted")
+            self.assertEqual(send()["reason"], "unverified_tool_result")
             self.assertEqual(calls()[-1]["arguments"]["to"], name)
 
     def test_the_sender_reference_points_its_child_end_at_the_wake_decision(self):
@@ -2003,3 +2043,46 @@ class ClaudeNameSendTests(unittest.TestCase):
         with self.name_consumer(pages=()) as (_, request, send, bookkeeping, calls, _t):
             detail = self.assert_refused_without_send(send(), "listing_failed", calls, bookkeeping)
             self.assertIn("stdout_eof", detail)
+
+    def test_reply_read_oserror_preserves_the_boundary_between_listing_and_send(self):
+        with patch.object(sys, "path", [str(SCRIPTS), *sys.path]):
+            import claude_mcp_sender as sender
+
+        reply = sender.StdioMcpChild.reply
+        for failed_id in (3, 4):
+            with self.subTest(reply_id=failed_id), self.name_consumer() as (
+                    _, request, send, bookkeeping, calls, trace):
+                store = trace.parent / "mailbox.sqlite3"
+                request_path = trace.parent / "request.json"
+                request_path.write_text(json.dumps(request), encoding="utf-8")
+
+                def read_reply(child, identity):
+                    if identity == failed_id:
+                        raise OSError("Synthetic read failure with private details")
+                    return reply(child, identity)
+
+                output = io.StringIO()
+                with redirect_stdout(output), patch.object(sender.StdioMcpChild, "reply", read_reply), \
+                        patch.object(sys, "argv", ["claude_mcp_sender.py", "--store", str(store),
+                                                  "--request", str(request_path)]):
+                    self.assertEqual(sender.main(), 0)
+                result = json.loads(output.getvalue())
+                if failed_id == 3:
+                    detail = self.assert_refused_without_send(result, "listing_failed", calls, bookkeeping)
+                    self.assertIn("reply_read_failed", detail)
+                    self.assertNotIn("private details", detail)
+                    self.assertEqual([call["name"] for call in calls()], ["ListAgents"])
+                else:
+                    self.assertEqual(result["stage"], "call")
+                    self.assertEqual(result["reason"], "local_or_protocol_failure")
+                    self.assertEqual(result["peer_input"], "possible_submission")
+                    retained = bookkeeping("show", "send-1")
+                    self.assertEqual(retained["state"], "unknown")
+                    attempt, = retained["attempts"]
+                    self.assertEqual(attempt["submission"], "unknown")
+                    self.assertEqual([o["kind"] for o in attempt["observations"]], ["unknown"] * 2)
+                    request.update(attempt_id="send-1/attempt/2", after_attempt="send-1/attempt/1",
+                                   decision_ref="synthetic://decision/again")
+                    self.assertEqual(send()["reason"], "claim_not_acquired")
+                    self.assertEqual(bookkeeping("show", "send-1"), retained)
+                    self.assertEqual([call["name"] for call in calls()], ["ListAgents", "SendMessage"])

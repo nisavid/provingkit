@@ -484,6 +484,11 @@ class StdioMcpChild:
                 self.selector.unregister(key.fileobj)
                 failure = name + "_limit"
                 self.closure_error = self.closure_error or failure
+                try:
+                    key.fileobj.close()
+                except OSError:
+                    # Keep the first error and let the other pipe drain.
+                    pass
                 if not closing:
                     raise InspectionError(failure)
                 continue
@@ -606,7 +611,10 @@ def read_listing(child, identity, name, selection):
         "jsonrpc": "2.0", "id": identity, "method": "tools/call",
         "params": {"name": "ListAgents", "arguments": {}},
     })
-    result = child.reply(identity)
+    try:
+        result = child.reply(identity)
+    except OSError as error:
+        raise InspectionError("reply_read_failed") from error
     if not supported_tool_result(result) or len(result["content"]) != 1:
         raise PathRefusal("unsupported_listing_result",
                           "The ListAgents result is outside the text profile.")
@@ -780,22 +788,22 @@ def main():
                 result["peer_input"] = "possible_submission"
                 child.send(call)
                 tool_result = child.reply(identity)
-                supported = supported_tool_result(tool_result)
-                submitted = supported and not tool_result.get("isError", False) and not any(
-                    re.match(r"Not sent\b", item["text"]) for item in tool_result["content"]
-                )
+                # No verified success form exists. Retain the reply as evidence of uncertainty.
                 mailbox.observe(
-                    request["message_id"], request["attempt_id"],
-                    "submitted" if submitted else "unknown",
+                    request["message_id"], request["attempt_id"], "unknown",
                     request["evidence_ref"], json.dumps({
                         "target": to, "tool_result": tool_result,
                     }, ensure_ascii=True, sort_keys=True),
                 )
-                if submitted:
-                    result["peer_input"] = "submitted"
-                    result["reason"] = "submitted"
+                supported = supported_tool_result(tool_result)
+                if supported and (tool_result.get("isError", False) or any(
+                    re.match(r"Not sent\b", item["text"]) for item in tool_result["content"]
+                )):
+                    result["reason"] = "tool_error"
+                elif supported and tool_result["content"]:
+                    result["reason"] = "unverified_tool_result"
                 else:
-                    result["reason"] = "tool_error" if supported else "unsupported_tool_result"
+                    result["reason"] = "unsupported_tool_result"
     except InspectionError as error:
         result["reason"] = str(error)
     except (ValueError, RecursionError, OSError, sqlite3.Error, MailboxError):

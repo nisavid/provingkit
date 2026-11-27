@@ -591,7 +591,7 @@ class ClaudeRouteNominationTests(unittest.TestCase):
                 "--store", str(mailbox_path), "--request", result["path"],
             ], capture_output=True, text=True, timeout=12)
             self.assertEqual(sent.returncode, 0, sent.stderr)
-            self.assertEqual(json.loads(sent.stdout)["reason"], "submitted")
+            self.assertEqual(json.loads(sent.stdout)["reason"], "unverified_tool_result")
             requests = (json.loads(line) for line in trace.read_text(encoding="utf-8").splitlines())
             calls = [item["params"] for item in requests if item.get("method") == "tools/call"]
             self.assertEqual([call["name"] for call in calls], ["ListAgents", "SendMessage"])
@@ -879,7 +879,7 @@ class ClaudeRouteNominationTests(unittest.TestCase):
             ], capture_output=True, text=True, timeout=12)
             self.assertEqual(completed.returncode, 0, completed.stderr)
             result = json.loads(completed.stdout)
-            self.assertEqual(result["reason"], "submitted", result)
+            self.assertEqual(result["reason"], "unverified_tool_result", result)
             records = [json.loads(line) for line in
                        (root / "child.jsonl").read_text(encoding="utf-8").splitlines()]
             call = records[-2]["params"]
@@ -974,7 +974,7 @@ class ClaudeRouteNominationTests(unittest.TestCase):
                 ], capture_output=True, text=True, timeout=12)
                 self.assertEqual(sent.returncode, 0, sent.stderr)
                 sent_result = json.loads(sent.stdout)
-                self.assertEqual((sent_result["path"], sent_result["reason"]), ("name", "submitted"))
+                self.assertEqual((sent_result["path"], sent_result["reason"]), ("name", "unverified_tool_result"))
                 outbound_call = [
                     json.loads(line)["params"] for line in
                     (name_root / "name-child.jsonl").read_text(encoding="utf-8").splitlines()
@@ -1010,7 +1010,7 @@ class ClaudeRouteNominationTests(unittest.TestCase):
                         "--store", str(reply_store), "--request", reply_prepared["path"],
                     ], capture_output=True, text=True, timeout=12)
                     self.assertEqual(replied.returncode, 0, replied.stderr)
-                    self.assertEqual(json.loads(replied.stdout)["reason"], "submitted")
+                    self.assertEqual(json.loads(replied.stdout)["reason"], "unverified_tool_result")
                     records = [json.loads(line) for line in
                                (root / "child.jsonl").read_text(encoding="utf-8").splitlines()]
                     call = records[-2]["params"]
