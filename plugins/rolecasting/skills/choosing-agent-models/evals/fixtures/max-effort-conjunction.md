@@ -2,7 +2,7 @@
 
 For each labeled case decide whether max is eligible. Do not use tools. Except where varied, the target's current catalog and executor schema prove GPT-6.2 Sol max and xhigh; the role is ordinary nonsecurity work, unsuitable for Jev, and authority and assurance hold. The reference problem is extremely challenging, extremely complex, and at the frontier with no known prior or closely related solution. The reference workflow is a loop with reconciled collaborative panels of max-effort implementers. All these facts are established fixture inputs, not claims about any real executor.
 
-A. The reference model, problem, and workflow.
+A. In each round the panel assigns the selected Sol implementer one candidate formula and supplies the boundary cases and expected values for its implementation. The panel reconciles the candidates and decides which solution to pursue for the reference problem.
 B. Substitute Luna max, proven by both catalog and schema, for the reference model.
 C. The problem is extremely complex and at the frontier, but only moderately challenging.
 D. The problem is extremely challenging and at the frontier, but only moderately complex.
@@ -13,8 +13,8 @@ H. The reference panel loops, but nobody adjudicates or reconciles the participa
 I. The catalog advertises Sol max, but the executor schema supports only xhigh.
 J. The executor supports Sol max, but the current catalog offers only xhigh.
 K. Only high stakes, risky unknowns, and expensive irreversible mistakes are established. No frontier, extreme-complexity, or panel-loop evidence exists.
-L. The reference workflow is instead a tricritical:loop using max-effort tricritical:review reviewer panels, with adjudication. The reference problem holds.
-M. Substitute Claude Opus 5.5 max, supported by both catalog and schema, in the same ordinary role and reference problem/workflow.
+L. The reference problem goes through a tricritical:loop with adjudicated max-effort tricritical:review panels. Select effort for A's implementer, who implements the adjudicated revision against supplied boundary cases each round. Separate reviewers assess the revision.
+M. Substitute Claude Opus 5.5 max, supported by both catalog and schema, for A's implementer on the settled Claude target. The panel still decides how to solve the frontier problem. The reference workflow holds.
 N. Substitute Claude Opus 5.5 where the schema proves xhigh and a separate Ultracode toggle, but does not support max.
 O. Substitute GPT-6.2 Astra max in a high-stakes deep-cognition role qualifying for the exceptional tier; reference problem/workflow and exact max capability hold.
 P. Substitute Claude Fable 5.2 max in its qualifying high-stakes deep-cognition role, with successful current target invocation proof and exact max capability; reference problem/workflow holds.

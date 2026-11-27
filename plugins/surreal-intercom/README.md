@@ -12,8 +12,13 @@ exposure is established separately during adoption.
 
 The source supports two distinct directions between existing conversations:
 
-- [Codex to Claude](skills/communicating-with-agents/references/claude-mcp-sender.md)
-  through a nominated native MCP child and `SendMessage`.
+- [To Claude](skills/communicating-with-agents/references/claude-mcp-sender.md):
+  the ordinary first send addresses a local Claude agent by name, through the
+  sender's own `claude mcp serve` child, one `ListAgents` listing, and one
+  `SendMessage` call, with no step by the recipient. A recipient-prepared route
+  remains the fallback when the caller supplies one. The layout comes from an
+  observed Claude Desktop `ListAgents` response. The supported duration units
+  come from the Claude Code 2.1.331 formatter.
 - [Claude to Codex](skills/communicating-with-agents/references/codex-owner-admission.md)
   through exact-recipient owner discovery and inherited-settings admission.
 
@@ -40,6 +45,11 @@ imply receipt, a reply, or completed work. The
 preserves original attempts; caller-owned reply observation and reconciliation
 continue those references without automatic resend. These sender commands do not
 supply a portable reply observer or background waiter.
+
+The operator decided on 2026-11-19 that Claude's requested reply starts a turn
+in a Codex sender's chat while the sender's app is running. Nothing is promised
+across Quit, and the mechanism is still to be chosen; this source does not yet
+provide that wake.
 
 The plugin includes one skill and contained Python resources. It supplies no MCP
 server or daemon. [License](LICENSE).

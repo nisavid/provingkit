@@ -7,20 +7,23 @@ dispatch. Every named pair is currently proven by that target's catalog and
 executor schema. A recommendation does not itself revise the target plan or
 grant dispatch authority.
 
-A. A visual UI design worker has an initial GPT target with GPT-6.2 Sol `high`.
-The same owning workflow can authorize an eligible Claude target with Opus 5.5
-`high`; the operator did not fix the provider. State the next model-selection
-step given the Claude visual preference.
+A. Write a routine tooltip for the published settings screen explaining that
+the list is sorted alphabetically. The initial GPT target offers GPT-6.2 Sol
+`high`. An eligible, authorized Claude target offers Opus 5.5 `high`. The
+operator left the provider choice open. What should the caster recommend
+under the UI preference, and when can selection and dispatch proceed?
 
-B. An independent code reviewer has an initial Claude target with Opus 5.5
+B. A second opinion on Sol's code has an initial Claude target with Opus 5.5
 `high`. The same owning workflow can authorize an eligible GPT target with
-GPT-6.2 Sol `high`; the operator did not fix the provider. State the next
+GPT-6.2 Astra `high`; the operator did not fix the provider. State the next
 model-selection step given the GPT review preference.
 
-C. A visual UI design worker has an operator-fixed GPT target with GPT-6.2 Sol
-`high`. Claude Opus 5.5 `high` is available elsewhere, but the operator has
-not revised the target. State the model selection and preference limitation.
+C. Apply the approved toolbar spacing change. The layout test checks that
+the gap between adjacent buttons is exactly 8 pixels. The operator fixed the
+GPT target, which offers GPT-6.2 Sol `high`. Claude Opus 5.5 `high` is
+available elsewhere. Which model and effort fit the fixed target, and what
+about this edit makes the pair suitable?
 
-D. An independent code reviewer has a sole eligible Claude target with Opus
+D. A second opinion on Sol's code has a sole eligible Claude target with Opus
 5.5 `high`; no eligible GPT route exists. State the model selection and
 preference limitation.

@@ -9,6 +9,11 @@ submitting actor, recipient, correlation, authority reference, holds, and unchan
 payload. Its label identifies peer content. The receiving agent uses its own
 verified authority; forwarded content supplies no operator permission.
 
+The envelope's `sender` and `actor` are claims, not identities: they carry no
+authority. A message that arrives from a `claude mcp serve` process names only
+a socket address, with no session and no name for its sender, so nothing in the
+channel confirms either claim.
+
 Keep the obligation owner distinct from the transport's process owner. Preserve
 the selected external store, original message and attempt IDs, observations, and
 private evidence across replacement intake. An uncertain result remains attached
