@@ -363,7 +363,7 @@ def _inspect_document(path, source, raw, plugin):
         result.update(format=name.removesuffix(".json"), role="support")
         for index, case in enumerate(raw.get("cases", [])):
             result["records"].append(_record(source, f"/cases/{index}", case, "coverage-declaration"))
-    elif name in ("experiment.json", "grading.json", "discovery-evidence.json", "response-evidence.json") or path.startswith(("evals/review-publication-handoffs/baseline/", "evals/review-publication-handoffs/candidate/", "evals/review-publication-handoffs/probe-")):
+    elif name in ("experiment.json", "grading.json", "discovery-evidence.json", "response-evidence.json", "release-pending.json") or path.startswith(("evals/review-publication-handoffs/baseline/", "evals/review-publication-handoffs/candidate/", "evals/review-publication-handoffs/probe-")):
         result.update(format="retained-result", role="retained-evidence")
         result["records"].append(_record(source, "", raw, "retained-evidence"))
     elif isinstance(raw, dict) and (

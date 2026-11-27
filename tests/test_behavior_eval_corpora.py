@@ -197,6 +197,7 @@ class CorpusTests(unittest.TestCase):
             ("plugins/mergecraft/skills/writing-github-issue-and-pr-markdown/evals/policy.json", "support"),
             ("plugins/mergecraft/skills/writing-github-issue-and-pr-markdown/evals/experiment.json", "retained-evidence"),
             ("plugins/mergecraft/skills/interacting-with-pr-review-feedback/evals/discovery-evidence.json", "retained-evidence"),
+            ("evals/mergecraft/skills/maintaining-issue-pr-relations/release-pending.json", "retained-evidence"),
             ("evals/review-publication-handoffs/grading.json", "retained-evidence"),
         ):
             with self.subTest(path=path):
