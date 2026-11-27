@@ -1,6 +1,6 @@
 """Correspondence against exact retained processors; constructed evidence only.
 
-Profile qualification requires the two historical Git objects locally. Tests
+Profile qualification requires the registered historical Git objects locally. Tests
 never fetch from the network; shallow/source-only checkouts report skips rather
 than substituting current code for a historical profile.
 """
@@ -20,7 +20,8 @@ from tests import test_behavior_eval_receipts as fixtures
 
 
 PROFILES = {"p957": "957550119aca20a31a26f4e5f9a3f09a2d6bd148",
-            "p24": "24c2d712a0be6a95958713ec80c7e06a89abdc6c"}
+            "p24": "24c2d712a0be6a95958713ec80c7e06a89abdc6c",
+            "pbaad": "baad23e7c1f35336cbab6f358c5fa027ad716f08"}
 PROCESSING_FILES = ("scripts/behavior_eval_receipts.py", "scripts/behavior_eval_corpora.py",
                     "scripts/behavior_eval_inventory.py", "release/behavior-eval-policy.json",
                     "release/behavior-eval-receipt-v1.schema.json")
@@ -87,7 +88,8 @@ class ProfileCorrespondenceTests(unittest.TestCase):
                 self.assertEqual(result["member_qualification"], "not-evaluated")
 
     def test_reconciled_profiles_preserve_uniform_and_per_case_results(self):
-        for profile, per_case in (("p957", False), ("p24", False), ("p24", True)):
+        for profile, per_case in (("p957", False), ("p24", False), ("p24", True),
+                                  ("pbaad", False), ("pbaad", True)):
             for normalized in (False, True):
                 with self.subTest(profile=profile, per_case=per_case, normalized=normalized):
                     case = self.fixture(profile)
@@ -98,6 +100,49 @@ class ProfileCorrespondenceTests(unittest.TestCase):
                     self.assertEqual(result["failed_grade_count"], 1)
                     self.assertEqual(result["processing"], receipt["processing"])
                     self.assertEqual(core.canonical_bytes(receipt), original)
+
+    def test_reconciled_baad_profile_preserves_original_bytes_and_processing(self):
+        case = self.fixture("pbaad")
+        receipt = self.receipt(case, "reconciled-after-run", normalized=True, per_case=True)
+        original = core.canonical_bytes(receipt)
+        result = self.check(case, receipt, "pbaad")
+        self.assertEqual(result["status"], "pass", result)
+        self.assertEqual(result["historical_validation_implementation"]["revision"],
+                         "baad23e7c1f35336cbab6f358c5fa027ad716f08")
+        self.assertEqual(result["processing"], receipt["processing"])
+        self.assertEqual(result["failed_grade_count"], 1)
+        self.assertEqual(core.canonical_bytes(receipt), original)
+        self.assertEqual(result["member_qualification"], "not-evaluated")
+
+    def test_baad_receipt_rejects_other_profiles_and_changed_processing(self):
+        case = self.fixture("pbaad")
+        receipt = self.receipt(case, "reconciled-after-run", normalized=True, per_case=True)
+        source = Path(__file__).resolve().parents[1]
+        for profile in ("p957", "p24"):
+            with self.subTest(profile=profile):
+                case.git("fetch", "--quiet", "--no-tags", str(source), PROFILES[profile])
+                result = self.check(case, receipt, profile)
+                self.assertEqual((result["status"], result["reason_code"]),
+                                 ("fail", "processing-mismatch"))
+        case = self.fixture("pbaad")
+        case.write("scripts/behavior_eval_inventory.py",
+                   (case.repo / "scripts/behavior_eval_inventory.py").read_text()
+                   + "\n# A different processing revision.\n")
+        case.candidate = case.commit("changed processing source")
+        changed_receipt = self.receipt(case, "reconciled-after-run", normalized=True, per_case=True)
+        original = core.canonical_bytes(changed_receipt)
+        result = self.check(case, changed_receipt, "pbaad")
+        self.assertEqual((result["status"], result["reason_code"]),
+                         ("fail", "processing-mismatch"))
+        self.assertEqual(core.canonical_bytes(changed_receipt), original)
+
+    def test_baad_profile_preserves_failed_safety(self):
+        case = self.fixture("pbaad")
+        receipt = self.receipt(case)
+        receipt["runs"][0]["expectations"][0]["passed"] = False
+        result = self.check(case, receipt, "pbaad")
+        self.assertEqual((result["status"], result["reason_code"]),
+                         ("fail", "historical-failed"))
 
     def test_foreign_profile_and_failed_threshold_cannot_pass(self):
         case = self.fixture("p24")
@@ -114,18 +159,20 @@ class ProfileCorrespondenceTests(unittest.TestCase):
         self.assertIsNone(result["input_identity"])
 
     def test_squash_without_source_ancestry_preserves_closure_but_mode_change_fails(self):
-        case = self.fixture("p24")
-        receipt = self.receipt(case)
-        tree = case.git("rev-parse", case.candidate + "^{tree}")
-        landed = case.git("commit-tree", tree, "-p", case.base, "-m", "squashed source")
-        self.assertNotEqual(landed, case.candidate)
-        self.assertEqual(self.check(case, receipt, "p24", candidate=landed)["status"], "pass")
-        case.git("update-index", "--chmod=+x", case.prefix + "/SKILL.md")
-        mode_tree = case.git("write-tree")
-        mode_commit = case.git("commit-tree", mode_tree, "-p", landed, "-m", "mode changed")
-        result = self.check(case, receipt, "p24", candidate=mode_commit)
-        self.assertEqual((result["status"], result["reason_code"]), ("fail", "closure-mismatch"))
-        self.assertEqual(result["diagnostics"][0]["changes"], ["mode"])
+        for profile in PROFILES:
+            with self.subTest(profile=profile):
+                case = self.fixture(profile)
+                receipt = self.receipt(case)
+                tree = case.git("rev-parse", case.candidate + "^{tree}")
+                landed = case.git("commit-tree", tree, "-p", case.base, "-m", "squashed source")
+                self.assertNotEqual(landed, case.candidate)
+                self.assertEqual(self.check(case, receipt, profile, candidate=landed)["status"], "pass")
+                case.git("update-index", "--chmod=+x", case.prefix + "/SKILL.md")
+                mode_tree = case.git("write-tree")
+                mode_commit = case.git("commit-tree", mode_tree, "-p", landed, "-m", "mode changed")
+                result = self.check(case, receipt, profile, candidate=mode_commit)
+                self.assertEqual((result["status"], result["reason_code"]), ("fail", "closure-mismatch"))
+                self.assertEqual(result["diagnostics"][0]["changes"], ["mode"])
 
     def landed_fixture(self, profile="p24"):
         case = self.fixture(profile)
@@ -201,6 +248,16 @@ class ProfileCorrespondenceTests(unittest.TestCase):
         row = result["skills"][0]["landed_correspondence"]
         self.assertEqual(row["historical_validation_implementation"]["revision"], PROFILES["p957"])
         self.assertEqual(row["processing_binding"]["basis"], "source-snapshot")
+
+    def test_normalized_prepared_baad_landed_check_uses_immutable_processor(self):
+        case, context, landing = self.landed_fixture("pbaad")
+        result = inventory.check_landed(case.repo, context=context, landing=landing)
+        self.assertEqual(result["status"], "pass", result)
+        row = result["skills"][0]["landed_correspondence"]
+        self.assertEqual(row["historical_validation_implementation"]["revision"],
+                         "baad23e7c1f35336cbab6f358c5fa027ad716f08")
+        self.assertEqual(row["processing_binding"]["basis"], "source-snapshot")
+        self.assertIsNone(row["processing"])
 
     def test_reviewed_head_requires_receipt_binding_not_landed_source_correspondence(self):
         case, context, landing = self.landed_fixture()
