@@ -1,0 +1,42 @@
+{
+  "current_source_sha256": {
+    "evals/mergecraft/skills/maintaining-issue-pr-relations/evals.json": "58e71b59823b8475b63ec90dd6326aae7950b16d37c3c0869e4318f6f30f54fb",
+    "evals/mergecraft/skills/maintaining-issue-pr-relations/fixtures/absent-pr-creation.md": "936362548c30d97025409df220aaffb847043da109b7c0c6cc8c1ca74975e66b",
+    "evals/mergecraft/skills/maintaining-issue-pr-relations/fixtures/ancestry-only-restack.md": "54d63838339aa2e6233c58658dc62ef1bb819ee3e31cdd0bdb6460543d63b204",
+    "evals/mergecraft/skills/maintaining-issue-pr-relations/fixtures/cross-repository-merge.md": "4b78cdf8b868c57f16aad3c3eab62cd7d4fecd2634f830cb385a85cef24f5ad1",
+    "evals/mergecraft/skills/maintaining-issue-pr-relations/fixtures/dependency-only.md": "56592f454f24534c345deaeea1428ad720d969404bad51a2f74887f69c90c102",
+    "evals/mergecraft/skills/maintaining-issue-pr-relations/fixtures/direct-implementation.md": "e2a08fb82d4943856b61da032fc770a453f22f817e598323b6f51fcded4a3a7f",
+    "evals/mergecraft/skills/maintaining-issue-pr-relations/fixtures/explicit-setting-invalidation.md": "92ba84b73e67499865ce74413477ed1aac27a288831549498010dc64e29c46af",
+    "evals/mergecraft/skills/maintaining-issue-pr-relations/fixtures/fixup-own-contribution.md": "a1bd0687a084a13a2171fd491d6f78a64ef15668d3d03ff2c54a15abece3f69a",
+    "evals/mergecraft/skills/maintaining-issue-pr-relations/fixtures/formatting-skip.md": "8624ddcb4f98255fab5d88b0b56249de8d705292e4f95771ef4f9222825b93c8",
+    "evals/mergecraft/skills/maintaining-issue-pr-relations/fixtures/historical-repair.md": "0be4c093a7dbb67a8b20d8013a581024d3b3b23fbd2a8b0588f08bc9bb0eca8e",
+    "evals/mergecraft/skills/maintaining-issue-pr-relations/fixtures/incidental-mention.md": "ab88c55bebc85f30aeda613d3838d79533d1b984fceb2bf53c42c8cfb7b2509d",
+    "evals/mergecraft/skills/maintaining-issue-pr-relations/fixtures/manual-capacity.md": "f6977d2e489fb8b7bc10da4fd435c2ce7de420b5e652932492caddab15e12f1f",
+    "evals/mergecraft/skills/maintaining-issue-pr-relations/fixtures/post-merge-selective-completion.md": "65b718fcab4a386bf0d31b30583e7a0f45cb8e6017572dcc04e51fda8a47fabc",
+    "evals/mergecraft/skills/maintaining-issue-pr-relations/fixtures/resume-past-ttl.md": "56f0941d33cb51632a4f35ccaaa4af6addb0428cfab842225cedc2e1d0fe24b6",
+    "evals/mergecraft/skills/maintaining-issue-pr-relations/fixtures/settled-plan-no-recursion.md": "b7665a5c2463cfb41021b654732c108ca21fa01c02494fbce9935fed6453a486",
+    "evals/mergecraft/skills/maintaining-issue-pr-relations/fixtures/status-only-resume.md": "4c7b702fa2a583891b7f3eb6a858e2d7a40dcbd88787cb5a3dae1e03ebd623a3",
+    "evals/mergecraft/skills/maintaining-issue-pr-relations/fixtures/unchanged-readiness.md": "6f2b99f593b0b9eccdf7b8dc6e952d709bb24ea7f9df6f6f826bf30b1ac44e2f",
+    "evals/mergecraft/skills/maintaining-issue-pr-relations/fixtures/unlink-preserves-history.md": "facc844ad19d9948658d3afdbaf5a7bdfbd15b599dce308015b3ec2d8b413a67",
+    "evals/mergecraft/skills/maintaining-issue-pr-relations/policy.json": "9ce2bcc03181894ae6e42d64c354f172cd3f9a53b8eba999a5bee5f130514ea8",
+    "evals/mergecraft/skills/maintaining-issue-pr-relations/trigger-evals.json": "13ee33983de7e822c075d5b59c1dba70ccbd91631382f4a364c8e8c85ea47248",
+    "plugins/mergecraft/skills/getting-prs-merged/SKILL.md": "b10273c0eec59e9f3b2818425754cdf8c85123cf7b720e6aff51aac0b36d8ce8",
+    "plugins/mergecraft/skills/getting-prs-ready-for-review/SKILL.md": "2985d269678d66d67e45a8b6be28882a2d99e6c127b58f17cfd0c8c637e0e2db",
+    "plugins/mergecraft/skills/graphite/SKILL.md": "1e4207665556da5328a9a7fa5707b2fac58754a753fc0d57b73e21b7068d4ea5",
+    "plugins/mergecraft/skills/maintaining-issue-pr-relations/SKILL.md": "a3b6bc042be28f7d2816e04dce32393962ea33c5a3ecc6609478534ecb3780b0",
+    "plugins/mergecraft/skills/maintaining-issue-pr-relations/references/command.md": "2171cd60107229573da1f96b127bec3e227557b626a01e603d6208d4648cd6ce",
+    "plugins/mergecraft/skills/maintaining-issue-pr-relations/references/relation-contract.md": "240dc1692d9eef1dc1acc123f5363eb4e2656f3c38cf3b43de16ccdcec03af9e",
+    "plugins/mergecraft/skills/publishing-reviewable-prs/SKILL.md": "5fcff737b21e8f2f1f0ddc5cab824fbc7bf76f168b794ea9002f52a77f962fc3",
+    "plugins/mergecraft/skills/resuming-reviewed-prs/SKILL.md": "961d83fd806d416e5c127f95abd89b3fa9af4a73f3aa51afe8ba850ae587d0f0",
+    "plugins/mergecraft/skills/stacking-pr-fixups/SKILL.md": "a2c9d5be9c057d39a71d23a91cb7e744d87fa6c38052ec65d6bbf90a87bd56ba",
+    "plugins/mergecraft/skills/writing-github-issue-and-pr-markdown/SKILL.md": "91ba73118c682beaf1dcfe07111b357bba917bab278c77f782685cbb0f58d81f",
+    "plugins/mergecraft/skills/writing-github-issue-and-pr-markdown/references/authoring-contract.md": "3e477f3d7607a594eb9f2850fa8a49f61552fc26be5844de49124bc17a486577",
+    "plugins/mergecraft/skills/writing-reviewable-pr-descriptions/SKILL.md": "7b951fdff8ac45197b856bd3d22f82673281f06523c6729bfef754d150f7a97e"
+  },
+  "target_executor": "claude-opus-5-5",
+  "retained_artifact_sha256": {
+    "experiment.json": "1fa1c06da0d5a6241461cc252c2008018155e2a1e860abb5017ef10b8f525e08",
+    "grading.json": "10290c8f715c839bdb3dc83e46c69cd3d82d36cf0d9464f231add43e45c37987"
+  },
+  "retained_inputs": {}
+}

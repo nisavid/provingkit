@@ -189,6 +189,15 @@ class CorpusTests(unittest.TestCase):
         self.assertIn("mapping-duplicate", [d["code"] for d in rejected["diagnostics"]])
 
     def test_protocol_scopes_and_retained_results_never_promote_application_grades(self):
+        # A release-pending record is temporary, so this row supplies its own content.
+        inline = {
+            "evals/mergecraft/skills/maintaining-issue-pr-relations/release-pending.json": json.dumps({
+                "current_source_sha256": {"evals/example.json": "0" * 64},
+                "target_executor": "example-executor",
+                "retained_artifact_sha256": {"experiment.json": "1" * 64, "grading.json": "2" * 64},
+                "retained_inputs": {},
+            }).encode(),
+        }
         for path, role in (
             ("evals/proseweaving/preview-panel/panel.json", "scope"),
             ("evals/review-publication-handoffs/grading-criteria.json", "scope"),
@@ -197,10 +206,11 @@ class CorpusTests(unittest.TestCase):
             ("plugins/mergecraft/skills/writing-github-issue-and-pr-markdown/evals/policy.json", "support"),
             ("plugins/mergecraft/skills/writing-github-issue-and-pr-markdown/evals/experiment.json", "retained-evidence"),
             ("plugins/mergecraft/skills/interacting-with-pr-review-feedback/evals/discovery-evidence.json", "retained-evidence"),
+            ("evals/mergecraft/skills/maintaining-issue-pr-relations/release-pending.json", "retained-evidence"),
             ("evals/review-publication-handoffs/grading.json", "retained-evidence"),
         ):
             with self.subTest(path=path):
-                content = (ROOT / path).read_bytes()
+                content = inline[path] if path in inline else (ROOT / path).read_bytes()
                 document = corpora.inspect_document(path, content)
                 self.assertEqual(document["role"], role)
                 self.assertEqual(document["raw"], json.loads(content))

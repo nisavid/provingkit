@@ -56,6 +56,7 @@ YAML_ERROR = yaml.YAMLError if yaml is not None else ValueError
 
 PLUGIN_RELATIVE = Path("plugins/mergecraft")
 EVAL_RELATIVE = Path("evals/mergecraft")
+RELATION_EVAL_RELATIVE = EVAL_RELATIVE / "skills/maintaining-issue-pr-relations"
 CONTENT_LOCK_RELATIVE = Path("release/plugin-content-locks/mergecraft.json")
 RETIREMENT_FIXTURES_RELATIVE = EVAL_RELATIVE / "retirement-fixtures.json"
 RETIREMENT_CORPUS_RELATIVE = EVAL_RELATIVE / "retirement-comparative-corpus.json"
@@ -74,6 +75,10 @@ EXTERNAL_TOPOLOGY_RELATIVES = (
     Path("plugins/versionkeeping/topology.json"),
 )
 CONTENT_LOCK_EXCLUSIONS = {"CHANGELOG.md", "LICENSE"}
+RELATION_EXECUTOR = "claude-opus-5-5"
+PREVIOUS_RELATION_EXECUTOR = "claude-opus-5"
+MARKDOWN_AUTHORING_EXECUTOR = "claude-opus-5"
+RELEASE_PENDING = "release-pending.json"
 PUBLIC_SKILLS = (
     "configuring-repositories",
     "initializing-repositories",
@@ -1065,9 +1070,18 @@ def validate_markdown_authoring_projections(root: Path) -> None:
         )
 
 
-def validate_markdown_authoring_eval_corpus(root: Path) -> None:
-    prefix = "skills/writing-github-issue-and-pr-markdown/evals"
-    delivery = load_json(root, f"{prefix}/delivery.json")
+def validate_markdown_authoring_eval_corpus(
+    root: Path, *, retained: EvaluationEvidence | None = None
+) -> list[dict]:
+    skill_root = root / "skills/writing-github-issue-and-pr-markdown"
+
+    def load_input(name: str) -> Any:
+        relative = f"evals/{name}"
+        if retained is not None:
+            return retained.source_json(relative)
+        return load_json(skill_root, relative)
+
+    delivery = load_input("delivery.json")
     require(
         isinstance(delivery, dict)
         and set(delivery) == {"schema_version", "executor", "grader"}
@@ -1102,7 +1116,7 @@ def validate_markdown_authoring_eval_corpus(root: Path) -> None:
         "Markdown authoring eval grader boundary drift",
     )
 
-    policy = load_json(root, f"{prefix}/policy.json")
+    policy = load_input("policy.json")
     require(
         isinstance(policy, dict)
         and set(policy)
@@ -1125,7 +1139,7 @@ def validate_markdown_authoring_eval_corpus(root: Path) -> None:
         "Markdown authoring eval pass policy drift",
     )
 
-    document = load_json(root, f"{prefix}/evals.json")
+    document = load_input("evals.json")
     require(
         isinstance(document, dict)
         and set(document) == {"skill_name", "evals"}
@@ -1167,9 +1181,10 @@ def validate_markdown_authoring_eval_corpus(root: Path) -> None:
             item["fixture_paths"] == [fixture_relative],
             f"Markdown authoring eval fixture binding drift: {name}",
         )
-        fixture = read(
-            root,
-            f"skills/writing-github-issue-and-pr-markdown/{fixture_relative}",
+        fixture = (
+            retained.source(fixture_relative)
+            if retained is not None
+            else read(skill_root, fixture_relative)
         )
         lowered = fixture.lower()
         for marker in (
@@ -1199,6 +1214,7 @@ def validate_markdown_authoring_eval_corpus(root: Path) -> None:
                 and expectation["id"] not in expectation_ids
                 and isinstance(expectation["text"], str)
                 and expectation["text"]
+                and isinstance(expectation["severity"], str)
                 and expectation["severity"] in {"safety", "quality"}
                 and expectation["text"] not in fixture,
                 f"Markdown authoring eval expectation drift: {name}",
@@ -1211,7 +1227,8 @@ def validate_markdown_authoring_eval_corpus(root: Path) -> None:
         "Markdown authoring eval name coverage drift",
     )
 
-    coverage = load_json(root, f"{prefix}/coverage.json")
+    # Coverage is not a retained evidence input, so a pending record cannot override it.
+    coverage = load_json(skill_root, "evals/coverage.json")
     require(
         isinstance(coverage, dict)
         and set(coverage) == {"schema_version", "cases"}
@@ -1231,10 +1248,12 @@ def validate_markdown_authoring_eval_corpus(root: Path) -> None:
             and case["name"]
             and isinstance(case["fields"], list)
             and case["fields"]
+            and all(isinstance(field, str) for field in case["fields"])
             and len(case["fields"]) == len(set(case["fields"]))
             and all(field in MARKDOWN_AUTHORING_FIELDS for field in case["fields"])
             and isinstance(case["features"], list)
             and case["features"]
+            and all(isinstance(feature, str) for feature in case["features"])
             and len(case["features"]) == len(set(case["features"]))
             and all(
                 feature in MARKDOWN_AUTHORING_FEATURES
@@ -1252,7 +1271,7 @@ def validate_markdown_authoring_eval_corpus(root: Path) -> None:
         "Markdown authoring seven-field or feature coverage drift",
     )
 
-    trigger_evals = load_json(root, f"{prefix}/trigger-evals.json")
+    trigger_evals = load_input("trigger-evals.json")
     require(
         isinstance(trigger_evals, list)
         and len(trigger_evals) == 11
@@ -1283,7 +1302,7 @@ def validate_markdown_authoring_eval_corpus(root: Path) -> None:
         )
         trigger_queries.add(item["query"])
 
-    fixture_root = root / prefix / "fixtures"
+    fixture_root = skill_root / "evals/fixtures"
     actual_fixtures = {
         path.name
         for path in fixture_root.iterdir()
@@ -1293,40 +1312,259 @@ def validate_markdown_authoring_eval_corpus(root: Path) -> None:
         actual_fixtures == referenced_fixtures,
         "Markdown authoring raw fixture inventory drift",
     )
+    return evals
 
 
-def validate_markdown_authoring_evidence(root: Path) -> None:
+def evidence_text_digest(text: str) -> str:
+    try:
+        return hashlib.sha256(text.encode("utf-8")).hexdigest()
+    except UnicodeEncodeError as error:
+        raise ContractError("evaluation evidence text is not UTF-8") from error
+
+
+class EvaluationEvidence:
+    """Verify an optional source-stage binding to the inputs the evidence used."""
+
+    def __init__(
+        self, root: Path, folder: str, executor: str, *, source_stage: bool
+    ) -> None:
+        self.root = root
+        self.folder = folder
+        self.executor = executor
+        directory = root / folder
+        self.suite = (
+            directory.parent.name if directory.name == "evals" else directory.name
+        )
+        self.pending: dict | None = None
+        self.retained_inputs: dict[str, str] = {}
+        self.mismatches: set[str] = set()
+        relative = f"{folder}/{RELEASE_PENDING}"
+        path = root / relative
+        if source_stage and (path.exists() or path.is_symlink()):
+            pending = load_json(root, relative)
+            require(
+                isinstance(pending, dict)
+                and set(pending)
+                == {
+                    "current_source_sha256",
+                    "target_executor",
+                    "retained_artifact_sha256",
+                    "retained_inputs",
+                }
+                and isinstance(pending["retained_inputs"], dict)
+                and all(
+                    isinstance(text, str)
+                    for text in pending["retained_inputs"].values()
+                ),
+                "release-pending entry shape drift",
+            )
+            require(
+                pending["target_executor"] == executor,
+                "release-pending target executor drift",
+            )
+            self.pending = pending
+            self.retained_inputs = pending["retained_inputs"]
+
+    def artifacts(self) -> tuple[dict, dict]:
+        artifacts = {
+            name: read_bytes(self.root, f"{self.folder}/{name}")
+            for name in ("experiment.json", "grading.json")
+        }
+        if self.pending is not None:
+            self.check_digest_map(
+                self.pending["retained_artifact_sha256"],
+                {
+                    name: hashlib.sha256(content).hexdigest()
+                    for name, content in artifacts.items()
+                },
+                "retained artifact digest drift",
+            )
+        experiment, grading = (
+            strict_json(content.decode("utf-8"), f"{self.folder}/{name}")
+            for name, content in artifacts.items()
+        )
+        require(
+            isinstance(experiment, dict) and isinstance(grading, dict),
+            f"evaluation experiment and grading must be objects: {self.folder}",
+        )
+        return experiment, grading
+
+    def source(self, relative: str) -> str:
+        path = Path(relative)
+        require(not path.is_absolute() and ".." not in path.parts, "unsafe source path")
+        if relative in self.retained_inputs:
+            return self.retained_inputs[relative]
+        return read_bytes(self.root, relative).decode("utf-8")
+
+    def source_json(self, relative: str) -> Any:
+        try:
+            return strict_json(self.source(relative), relative)
+        except json.JSONDecodeError as error:
+            raise ContractError(
+                f"invalid retained input JSON: {relative}: {error}"
+            ) from error
+
+    def check_digest_map(
+        self, recorded: Any, actual: dict[str, str], reason: str
+    ) -> None:
+        if recorded == actual:
+            return
+        message = f"{self.suite} release-pending {reason}"
+        require(
+            isinstance(recorded, dict), f"{message} (expected a path-to-digest object)"
+        )
+        expected_paths, recorded_paths = actual.keys(), recorded.keys()
+        differences = (
+            ("missing", expected_paths - recorded_paths),
+            ("extra", recorded_paths - expected_paths),
+            (
+                "changed",
+                {
+                    path
+                    for path in expected_paths & recorded_paths
+                    if actual[path] != recorded[path]
+                },
+            ),
+        )
+        paths = ", ".join(
+            f"{kind} [{', '.join(sorted(names))}]"
+            for kind, names in differences
+            if names
+        )
+        fail(f"{message} ({paths})")
+
+    def check_sources(
+        self,
+        recorded: dict,
+        current_paths: set[str],
+        retained_paths: set[str],
+        message: str,
+    ) -> None:
+        require(
+            all(
+                not Path(path).is_absolute() and ".." not in Path(path).parts
+                for path in current_paths
+            ),
+            "unsafe source path",
+        )
+        current = {
+            path: hashlib.sha256(read_bytes(self.root, path)).hexdigest()
+            for path in current_paths
+        }
+        if self.pending is None:
+            require(recorded == current, message)
+            return
+        self.check_digest_map(
+            self.pending["current_source_sha256"], current, "current input digest drift"
+        )
+        self.check_digest_map(
+            recorded,
+            {path: evidence_text_digest(self.source(path)) for path in retained_paths},
+            "retained input digest drift",
+        )
+        for path, content in self.retained_inputs.items():
+            require(
+                path in retained_paths,
+                f"release-pending unexpected retained input: {path}",
+            )
+            live = self.root / path
+            require(
+                not live.is_symlink(), f"release-pending input is a symlink: {path}"
+            )
+            require(
+                not live.exists()
+                or read_bytes(self.root, path) != content.encode("utf-8"),
+                f"release-pending unchanged retained input: {path}",
+            )
+        self.mismatches.update(
+            f"source input {path}"
+            for path in current.keys() | recorded.keys()
+            if current.get(path) != recorded.get(path)
+        )
+
+    def check_executor(
+        self, run: dict, scope: str, message: str, previous: str | None = None
+    ) -> str:
+        model = run.get("model_requested")
+        init = run.get("init")
+        allowed = {self.executor}
+        if self.pending is not None and previous is not None:
+            allowed.add(previous)
+        require(
+            isinstance(model, str)
+            and model in allowed
+            and isinstance(init, dict)
+            and init.get("model") == model
+            and run.get("assistant_models") == [model]
+            and run.get("effort_requested") == "high",
+            message,
+        )
+        if model != self.executor:
+            self.mismatches.add(f"{scope} executor {model} -> {self.executor}")
+        return model
+
+    def pending_diagnostics(self) -> list[str]:
+        if self.pending is None:
+            return []
+        require(
+            bool(self.mismatches),
+            f"release-pending entry has no freshness mismatch: {self.suite}",
+        )
+        return [
+            f"{self.suite} release-pending: {mismatch}"
+            for mismatch in sorted(self.mismatches)
+        ]
+
+
+def validate_markdown_authoring_evidence(
+    root: Path, *, source_stage: bool = False
+) -> list[str]:
     """Check retained experiment consistency without judging model behavior."""
     skill = "skills/writing-github-issue-and-pr-markdown"
-    experiment = load_json(root, f"{skill}/evals/experiment.json")
-    corpus = load_json(root, f"{skill}/evals/evals.json")["evals"]
-    source_paths = {
-        "SKILL.md",
-        "references/authoring-contract.md",
-        "evals/evals.json",
-        "evals/policy.json",
-        "evals/delivery.json",
-        "evals/trigger-evals.json",
-        *(path for case in corpus for path in case["fixture_paths"]),
-    }
+    evidence = EvaluationEvidence(
+        root / skill, "evals", MARKDOWN_AUTHORING_EXECUTOR, source_stage=source_stage
+    )
+    experiment, grading = evidence.artifacts()
+    current_corpus = load_json(root, f"{skill}/evals/evals.json")["evals"]
+    corpus = current_corpus
+    if evidence.pending is not None:
+        corpus = validate_markdown_authoring_eval_corpus(root, retained=evidence)
+
+    def source_paths(cases):
+        return {
+            "SKILL.md",
+            "references/authoring-contract.md",
+            "evals/evals.json",
+            "evals/policy.json",
+            "evals/delivery.json",
+            "evals/trigger-evals.json",
+            *(path for case in cases for path in case["fixture_paths"]),
+        }
+
     require(
-        isinstance(experiment, dict)
-        and experiment.get("current_source_sha256")
-        == {
-            path: hashlib.sha256(read_bytes(root, f"{skill}/{path}")).hexdigest()
-            for path in source_paths
-        },
+        len(corpus) == len(current_corpus)
+        and all(
+            all(
+                case[field] == current[field]
+                for field in ("id", "name", "fixture_paths")
+            )
+            and len(case["expectations"]) == len(current["expectations"])
+            for case, current in zip(corpus, current_corpus)
+        ),
+        "Markdown authoring retained case coverage drift",
+    )
+    evidence.check_sources(
+        experiment.get("current_source_sha256"),
+        source_paths(current_corpus),
+        source_paths(corpus),
         "Markdown authoring evidence source binding drift",
     )
+    require(
+        not evidence.retained_inputs.keys()
+        & {"evals/policy.json", "evals/delivery.json"},
+        "Markdown authoring release-pending cannot defer policy or delivery checks",
+    )
 
-    def text_digest(value: str) -> str:
-        try:
-            return hashlib.sha256(value.encode("utf-8")).hexdigest()
-        except UnicodeEncodeError as error:
-            raise ContractError("Markdown authoring evidence text is not UTF-8") from error
-
-    grading = load_json(root, f"{skill}/evals/grading.json")
-    require(isinstance(grading, dict), "Markdown authoring grading must be an object")
     requests = experiment.get("requests_by_sha256")
     runs = experiment.get("behavior_runs")
     selected = grading.get("selected_thresholds")
@@ -1338,8 +1576,7 @@ def validate_markdown_authoring_evidence(root: Path) -> None:
     )
     for digest, request in requests.items():
         require(
-            isinstance(request, str)
-            and text_digest(request) == digest,
+            isinstance(request, str) and evidence_text_digest(request) == digest,
             "Markdown authoring request digest mismatch",
         )
     run_index: dict[str, dict] = {}
@@ -1361,8 +1598,7 @@ def validate_markdown_authoring_evidence(root: Path) -> None:
             and isinstance(run.get("request_sha256"), str)
             and run["request_sha256"] in requests
             and isinstance(run.get("response"), str)
-            and text_digest(run["response"])
-            == run.get("response_sha256"),
+            and evidence_text_digest(run["response"]) == run.get("response_sha256"),
             "Markdown authoring run identity or response binding drift",
         )
         run_index[run["id"]] = run
@@ -1394,14 +1630,15 @@ def validate_markdown_authoring_evidence(root: Path) -> None:
     sessions: set[str] = set()
     for group, variant, case_id in sorted(selected_groups):
         case = cases[case_id]
-        fixtures = {
-            path: read_bytes(root, f"{skill}/{path}").decode("utf-8")
-            for path in case["fixture_paths"]
-        }
-        bundle = {
-            path: read_bytes(root, f"{skill}/{path}").decode("utf-8")
-            for path in ("SKILL.md", "references/authoring-contract.md")
-        } if variant == "with-skill" else {}
+        fixtures = {path: evidence.source(path) for path in case["fixture_paths"]}
+        bundle = (
+            {
+                path: evidence.source(path)
+                for path in ("SKILL.md", "references/authoring-contract.md")
+            }
+            if variant == "with-skill"
+            else {}
+        )
         expected = {
             "prompt": case["prompt"], "fixture": fixtures, "candidate_bundle": bundle,
         }
@@ -1428,6 +1665,19 @@ def validate_markdown_authoring_evidence(root: Path) -> None:
                 == {path: experiment["current_source_sha256"][path] for path in bundle},
                 f"Markdown authoring selected request binding drift: {run_id}",
             )
+            if variant == "with-skill":
+                evidence.check_executor(
+                    run, "behavior", "Markdown authoring executor identity drift"
+                )
+                require(
+                    run.get("exit_code") == 0
+                    and run.get("timed_out") is False
+                    and run.get("result_subtype") == "success"
+                    and run.get("result_is_error") is False
+                    and run.get("tool_use") == []
+                    and run.get("permission_denials") == [],
+                    f"Markdown authoring selected runtime drift: {run_id}",
+                )
             sessions.add(run["session_id"])
             selected_runs[run_id] = run
 
@@ -1544,6 +1794,9 @@ def validate_markdown_authoring_evidence(root: Path) -> None:
         == all(row["met"] for row in selected if row["variant"] == "with-skill"),
         "Markdown authoring candidate result derivation drift",
     )
+    if not source_stage or evidence.pending is not None:
+        require(grading["candidate_passed"], "Markdown authoring candidate did not pass")
+    return evidence.pending_diagnostics()
 
 
 def load_json(root: Path, relative: str) -> Any:
@@ -1567,8 +1820,36 @@ def load_repository_json(repo_root: Path, relative: Path) -> Any:
     return strict_json(read_repository_file(repo_root, relative), relative.as_posix())
 
 
-def _validate_relation_evidence(repo: Path) -> None:
-    folder = repo / "evals/mergecraft/skills/maintaining-issue-pr-relations"
+def is_model_operand(value: Any) -> bool:
+    return isinstance(value, str) and bool(value) and not value.startswith("-")
+
+
+def validate_relation_opus_output(run: dict, model: str | None) -> None:
+    message = f"Opus output attribution drift: {run['id']}"
+    usage = run.get("model_usage")
+    require(isinstance(usage, dict), message)
+    has_output = False
+    for name, record in usage.items():
+        canonical = (
+            record.get("canonicalModel", name) if isinstance(record, dict) else name
+        )
+        if not (
+            name.startswith("claude-opus-")
+            or (isinstance(canonical, str) and canonical.startswith("claude-opus-"))
+        ):
+            continue
+        output = record.get("outputTokens") if isinstance(record, dict) else None
+        require(type(output) is int and output >= 0, message)
+        if output > 0:
+            require(name == canonical and not has_output, message)
+            if model is not None:
+                require(name == model, message)
+            has_output = True
+    require(has_output, message)
+
+
+def _validate_relation_evidence(repo: Path, *, source_stage: bool) -> list[str]:
+    folder = RELATION_EVAL_RELATIVE
     skill = "plugins/mergecraft/skills/maintaining-issue-pr-relations"
     generic = "plugins/mergecraft/skills/writing-github-issue-and-pr-markdown"
     common = [
@@ -1581,10 +1862,6 @@ def _validate_relation_evidence(repo: Path) -> None:
         f"{generic}/references/authoring-contract.md",
     ]
 
-    def require(condition, message):
-        if not condition:
-            raise ContractError(message)
-
     def digest(text):
         return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
@@ -1593,38 +1870,66 @@ def _validate_relation_evidence(repo: Path) -> None:
             isinstance(value, str) and re.fullmatch("[0-9a-f]{64}", value) is not None
         )
 
-    def read(relative):
-        path = Path(relative)
-        require(not path.is_absolute() and ".." not in path.parts, "unsafe source path")
-        return read_bytes(repo, path.as_posix()).decode("utf-8")
-
-    corpus = load_repository_json(repo, (folder / "evals.json").relative_to(repo))[
-        "evals"
-    ]
-    triggers = load_repository_json(
-        repo, (folder / "trigger-evals.json").relative_to(repo)
+    evidence = EvaluationEvidence(
+        repo, folder.as_posix(), RELATION_EXECUTOR, source_stage=source_stage
     )
-    policy = load_repository_json(repo, (folder / "policy.json").relative_to(repo))
-    experiment = load_repository_json(
-        repo, (folder / "experiment.json").relative_to(repo)
-    )
-    grading = load_repository_json(repo, (folder / "grading.json").relative_to(repo))
+    experiment, grading = evidence.artifacts()
+    current_corpus = load_repository_json(repo, folder / "evals.json")["evals"]
+    current_triggers = load_repository_json(repo, folder / "trigger-evals.json")
+    policy = load_repository_json(repo, folder / "policy.json")
+    corpus, triggers = current_corpus, current_triggers
+    if evidence.pending is not None:
+        validate_raw_skill_eval_isolation(repo, retained_relations=evidence)
+        corpus = evidence.source_json(f"{folder}/evals.json")["evals"]
+        triggers = evidence.source_json(f"{folder}/trigger-evals.json")
+        validate_trigger_eval_cases(triggers, "maintaining-issue-pr-relations")
     cases = {c["id"]: c for c in corpus}
     require(set(cases) == set(range(17)) and len(corpus) == 17, "case coverage")
     require(
-        len(triggers) == 13 and policy["repetitions"] == 3,
+        len(triggers) == len(current_triggers) == 13 and policy["repetitions"] == 3,
         "repetition/trigger coverage",
     )
-    paths = set(common)
-    paths.update(f"plugins/mergecraft/skills/{c['caller']}/SKILL.md" for c in corpus)
-    paths.update(f"evals/mergecraft/skills/{p}" for c in corpus for p in c["files"])
-    paths.update(
-        str((folder / p).relative_to(repo))
-        for p in ("evals.json", "policy.json", "trigger-evals.json")
+    require(
+        sum(case["should_trigger"] is True for case in triggers)
+        == sum(case["should_trigger"] is True for case in current_triggers),
+        "retained trigger coverage",
     )
     require(
-        experiment["current_source_sha256"] == {p: digest(read(p)) for p in paths},
+        len(current_corpus) == 17
+        and all(
+            current["id"] == retained["id"]
+            and current["name"] == retained["name"]
+            and current["files"] == retained["files"]
+            and len(current["expectations"]) >= len(retained["expectations"])
+            for current, retained in zip(current_corpus, corpus)
+        ),
+        "retained behavior case coverage",
+    )
+
+    def source_paths(cases):
+        require(
+            all(case["caller"] in PUBLIC_SKILLS for case in cases),
+            "relation eval caller",
+        )
+        return {
+            *common,
+            *(f"plugins/mergecraft/skills/{c['caller']}/SKILL.md" for c in cases),
+            *(f"evals/mergecraft/skills/{p}" for c in cases for p in c["files"]),
+            *(
+                f"{folder}/{name}"
+                for name in ("evals.json", "policy.json", "trigger-evals.json")
+            ),
+        }
+
+    evidence.check_sources(
+        experiment["current_source_sha256"],
+        source_paths(current_corpus),
+        source_paths(corpus),
         "current source binding",
+    )
+    require(
+        f"{folder}/policy.json" not in evidence.retained_inputs,
+        "release-pending cannot defer relation policy checks",
     )
     requests = experiment["requests_by_sha256"]
     require(
@@ -1655,17 +1960,44 @@ def _validate_relation_evidence(repo: Path) -> None:
         "behavior case selection",
     )
     selected_trigger = experiment["selection"]["trigger_experiment"]
+    selected_experiments = {*behavior_by_case.values(), selected_trigger}
+    declared_models = {}
+    for record in experiment["experiments"]:
+        name = record["id"]
+        if name in selected_experiments:
+            require(
+                name not in declared_models, f"duplicate selected experiment: {name}"
+            )
+            declared_models[name] = record.get("model")
+    require(
+        declared_models.keys() == selected_experiments, "missing selected experiment"
+    )
+
+    def require_experiment_model(name: str, model: str) -> None:
+        require(
+            declared_models[name] == model, f"declared experiment model drift: {name}"
+        )
+
+    bind_invocation_and_usage = evidence.pending is None
+    compact_invocation_fields = {
+        "argv",
+        "retained_argv_sha256",
+        "redactions",
+        "retained_argv_digest_format",
+    }
     selected_ids = set()
     expected_thresholds = []
     for case_id, case in cases.items():
         selected_behavior = behavior_by_case[str(case_id)]
-        fixture = {p: read(f"evals/mergecraft/skills/{p}") for p in case["files"]}
+        fixture = {
+            p: evidence.source(f"evals/mergecraft/skills/{p}") for p in case["files"]
+        }
         bundle_paths = list(
             dict.fromkeys(
                 common + [f"plugins/mergecraft/skills/{case['caller']}/SKILL.md"]
             )
         )
-        bundle = {p: read(p) for p in bundle_paths}
+        bundle = {p: evidence.source(p) for p in bundle_paths}
         expected = {
             "prompt": case["prompt"],
             "fixture": fixture,
@@ -1706,14 +2038,61 @@ def _validate_relation_evidence(repo: Path) -> None:
                 and not run["permission_denials"],
                 "executor failure",
             )
-            require(
-                run["model_requested"]
-                == run["init"]["model"]
-                == "claude-opus-5"
-                and run["assistant_models"] == ["claude-opus-5"]
-                and run["effort_requested"] == "high",
-                "actual executor identity",
+            model = evidence.check_executor(
+                run, "behavior", "actual executor identity", PREVIOUS_RELATION_EXECUTOR
             )
+            require_experiment_model(selected_behavior, model)
+            validate_relation_opus_output(
+                run, model if bind_invocation_and_usage else None
+            )
+            invocation = run["invocation"]
+            argv = invocation["argv"]
+            invocation_model = None
+            if invocation.keys() <= compact_invocation_fields:
+                retained_command = json.dumps(argv, separators=(",", ":"))
+                retained_digest = invocation.get("retained_argv_sha256")
+            else:
+                require(
+                    "retained_argv_sha256" not in invocation,
+                    f"behavior compact argv digest on full invocation: {run_id}",
+                )
+                invocation_model = invocation.get("model_requested")
+                invocation_model_error = (
+                    f"behavior full invocation model drift: {run_id}"
+                )
+                require(isinstance(invocation_model, str), invocation_model_error)
+                if bind_invocation_and_usage:
+                    require(invocation_model == model, invocation_model_error)
+                retained_command = json.dumps(invocation, indent=2) + "\n"
+                retained_digest = run.get("command_sha256")
+            require(
+                isinstance(argv, list)
+                and all(isinstance(arg, str) for arg in argv)
+                and digest(retained_command) == retained_digest,
+                f"behavior retained argv digest drift: {run_id}",
+            )
+            options = argv[: argv.index("--")] if "--" in argv else argv
+            model_args = [
+                index
+                for index, arg in enumerate(options)
+                if arg == "--model" or arg.startswith("--model=")
+            ]
+            command_model_error = f"behavior command model drift: {run_id}"
+            require(
+                len(model_args) == 1
+                and model_args[0] + 1 < len(options)
+                and options[model_args[0]] == "--model"
+                and is_model_operand(options[model_args[0] + 1]),
+                command_model_error,
+            )
+            command_model = options[model_args[0] + 1]
+            if invocation_model is not None:
+                require(
+                    invocation_model == command_model,
+                    f"behavior full invocation model disagrees with argv: {run_id}",
+                )
+            if bind_invocation_and_usage:
+                require(command_model == model, command_model_error)
             require(
                 all(
                     run["init"][k] == []
@@ -1789,19 +2168,19 @@ def _validate_relation_evidence(repo: Path) -> None:
             requests[run["request_sha256"]] == prefix + case["query"], "trigger request"
         )
         require(
-            run["candidate_sha256"] == {p: digest(read(p)) for p in plugin_paths},
+            run["candidate_sha256"]
+            == {p: digest(evidence.source(p)) for p in plugin_paths},
             "trigger source binding",
         )
         require(
             run["init"]["tools"] == ["Skill"] and run["init"]["mcp_servers"] == [],
             "trigger tools",
         )
-        require(
-            run["model_requested"] == run["init"]["model"] == "claude-opus-5"
-            and run["assistant_models"] == ["claude-opus-5"]
-            and run["effort_requested"] == "high",
-            "native model/effort",
+        model = evidence.check_executor(
+            run, "trigger", "native model/effort", PREVIOUS_RELATION_EXECUTOR
         )
+        require_experiment_model(selected_trigger, model)
+        validate_relation_opus_output(run, model if bind_invocation_and_usage else None)
         require(
             run["init"]["plugins"]
             == [
@@ -1815,11 +2194,13 @@ def _validate_relation_evidence(repo: Path) -> None:
             and target in run["init"]["skills"],
             "native plugin exclusivity",
         )
-        argv = run["invocation"]["argv"]
+        invocation = run["invocation"]
+        argv = invocation["argv"]
         require(
-            digest(json.dumps(argv, separators=(",", ":")))
-            == run["invocation"]["retained_argv_sha256"]
-            and run["invocation"]["redactions"]
+            invocation.keys() <= compact_invocation_fields
+            and digest(json.dumps(argv, separators=(",", ":")))
+            == invocation.get("retained_argv_sha256")
+            and invocation["redactions"]
             and run["metadata_redactions"],
             "native invocation/redaction binding",
         )
@@ -1831,9 +2212,9 @@ def _validate_relation_evidence(repo: Path) -> None:
             "stream-json",
             "--no-session-persistence",
             "--session-id",
-            run["session_id"],
+            None,
             "--model",
-            "claude-opus-5",
+            None,
             "--effort",
             "high",
             "--permission-mode",
@@ -1864,10 +2245,26 @@ def _validate_relation_evidence(repo: Path) -> None:
             "--debug-file",
             "<LOCAL_DEBUG_FILE>",
         ]
+        session_position = expected_argv.index("--session-id") + 1
+        model_position = expected_argv.index("--model") + 1
+        controls_error = "native configured controls"
         require(
-            argv == expected_argv and run["init"]["permissionMode"] == "dontAsk",
-            "native configured controls",
+            isinstance(argv, list)
+            and len(argv) == len(expected_argv)
+            and all(
+                actual == expected
+                for actual, expected in zip(argv, expected_argv)
+                if expected is not None
+            )
+            and is_model_operand(argv[model_position])
+            and run["init"]["permissionMode"] == "dontAsk",
+            controls_error,
         )
+        if bind_invocation_and_usage:
+            require(argv[session_position] == run["session_id"], controls_error)
+            require(argv[model_position] == model, controls_error)
+        else:
+            require(is_model_operand(argv[session_position]), controls_error)
         require(
             all(
                 hex_digest(run[key])
@@ -1904,7 +2301,7 @@ def _validate_relation_evidence(repo: Path) -> None:
             and len(run["tool_results"]) == len(selected),
             "native Skill launch result",
         )
-        body = read(f"{skill}/SKILL.md").split("---\n", 2)[2].lstrip("\n")
+        body = evidence.source(f"{skill}/SKILL.md").split("---\n", 2)[2].lstrip("\n")
         require(
             len(run["skill_injections"]) == len(selected)
             and all(
@@ -1928,12 +2325,17 @@ def _validate_relation_evidence(repo: Path) -> None:
                 "native source injection text",
             )
         observed = run["isolation"]
+        isolation_error = "native isolation artifact binding"
         require(
             observed["run_id"] == run_id
-            and observed["command_sha256"] == run["command_sha256"]
+            and hex_digest(observed["command_sha256"])
             and hex_digest(observed["debug_sha256"]),
-            "native isolation artifact binding",
+            isolation_error,
         )
+        if bind_invocation_and_usage:
+            require(
+                observed["command_sha256"] == run["command_sha256"], isolation_error
+            )
         require(
             observed["claudeMdExcludes"] == ["**"]
             and observed["skill_directory_commands"] == 0
@@ -1984,16 +2386,19 @@ def _validate_relation_evidence(repo: Path) -> None:
         "extra selected trigger run",
     )
     require(grading["candidate_passed"] is True, "candidate not passed")
+    return evidence.pending_diagnostics()
 
 
-def validate_relation_evidence(repo_root: Path) -> None:
+def validate_relation_evidence(
+    repo_root: Path, *, source_stage: bool = False
+) -> list[str]:
     """Bind selected isolated observations and independent grades to current inputs.
 
     Retained hashes prove consistency, not provider authenticity or the truth of
     a locally authored report. Unselected diagnostics cannot qualify a candidate.
     """
     try:
-        _validate_relation_evidence(repo_root)
+        return _validate_relation_evidence(repo_root, source_stage=source_stage)
     except ContractError as error:
         raise ContractError(f"relation evaluation evidence: {error}") from error
     except (
@@ -2009,11 +2414,17 @@ def validate_relation_evidence(repo_root: Path) -> None:
             "relation evaluation evidence: missing or malformed artifact"
         ) from error
 
-def validate_external_eval_tree(repo_root: Path) -> None:
+
+def validate_external_eval_tree(repo_root: Path, *, source_stage: bool) -> None:
     root = repo_root / EVAL_RELATIVE
     require(root.is_dir() and not root.is_symlink(), "external eval root is invalid")
     for path in root.rglob("*"):
         relative = path.relative_to(repo_root)
+        if source_stage and path.name == RELEASE_PENDING:
+            require(
+                relative == RELATION_EVAL_RELATIVE / RELEASE_PENDING,
+                f"release-pending is unavailable for this suite: {relative}",
+            )
         mode = path.lstat().st_mode
         require(
             not stat.S_ISLNK(mode), f"external eval tree contains a symlink: {relative}"
@@ -2700,6 +3111,8 @@ def validate_inventories(root: Path) -> None:
             for path in skill_root.rglob("*")
             if path.is_file()
         }
+        if skill == "writing-github-issue-and-pr-markdown":
+            actual.discard(f"evals/{RELEASE_PENDING}")
         require(
             actual == EXPECTED_SKILL_FILES[skill],
             f"skill file inventory drift: {skill}",
@@ -3869,10 +4282,20 @@ def validate_merge_eval_isolation(repo_root: Path) -> None:
     )
 
 
-def validate_raw_skill_eval_isolation(repo_root: Path) -> None:
-    for skill, fixture_names in RAW_SKILL_EVAL_FIXTURES.items():
+def validate_raw_skill_eval_isolation(
+    repo_root: Path, *, retained_relations: EvaluationEvidence | None = None
+) -> None:
+    fixture_sets = RAW_SKILL_EVAL_FIXTURES
+    if retained_relations is not None:
+        skill = "maintaining-issue-pr-relations"
+        fixture_sets = {skill: fixture_sets[skill]}
+    for skill, fixture_names in fixture_sets.items():
         relative = EVAL_RELATIVE / f"skills/{skill}/evals.json"
-        document = load_repository_json(repo_root, relative)
+        document = (
+            retained_relations.source_json(relative.as_posix())
+            if retained_relations is not None
+            else load_repository_json(repo_root, relative)
+        )
         require(
             isinstance(document, dict)
             and set(document) == {"skill_name", "evals"}
@@ -3936,8 +4359,11 @@ def validate_raw_skill_eval_isolation(repo_root: Path) -> None:
                 ),
                 f"raw eval prose drift: {skill}",
             )
-            fixture_text = read_repository_file(
-                repo_root, EVAL_RELATIVE / f"skills/{fixture}"
+            fixture_path = EVAL_RELATIVE / f"skills/{fixture}"
+            fixture_text = (
+                retained_relations.source(fixture_path.as_posix())
+                if retained_relations is not None
+                else read_repository_file(repo_root, fixture_path)
             )
             fixture_body = fixture_text.lower()
             if (
@@ -3982,6 +4408,29 @@ def validate_raw_skill_eval_isolation(repo_root: Path) -> None:
                 )
 
 
+def validate_trigger_eval_cases(document: Any, skill: str) -> dict[str, bool]:
+    require(
+        isinstance(document, list) and document,
+        f"trigger eval coverage drift: {skill}",
+    )
+    observed: dict[str, bool] = {}
+    for item in document:
+        require(
+            isinstance(item, dict)
+            and set(item) == {"query", "should_trigger"}
+            and isinstance(item["query"], str)
+            and item["query"]
+            and type(item["should_trigger"]) is bool
+            and item["query"] not in observed,
+            f"trigger eval schema drift: {skill}",
+        )
+        observed[item["query"]] = item["should_trigger"]
+    require(
+        {True, False} <= set(observed.values()), f"trigger eval polarity drift: {skill}"
+    )
+    return observed
+
+
 def validate_writer_publisher_trigger_evals(repo_root: Path) -> None:
     trigger_maps: dict[str, dict[str, bool]] = {}
     for skill in (
@@ -3990,28 +4439,9 @@ def validate_writer_publisher_trigger_evals(repo_root: Path) -> None:
         "publishing-reviewable-prs",
     ):
         relative = EVAL_RELATIVE / f"skills/{skill}/trigger-evals.json"
-        document = load_repository_json(repo_root, relative)
-        require(
-            isinstance(document, list) and document,
-            f"trigger eval coverage drift: {skill}",
+        trigger_maps[skill] = validate_trigger_eval_cases(
+            load_repository_json(repo_root, relative), skill
         )
-        observed: dict[str, bool] = {}
-        for item in document:
-            require(
-                isinstance(item, dict)
-                and set(item) == {"query", "should_trigger"}
-                and isinstance(item["query"], str)
-                and item["query"]
-                and type(item["should_trigger"]) is bool
-                and item["query"] not in observed,
-                f"trigger eval schema drift: {skill}",
-            )
-            observed[item["query"]] = item["should_trigger"]
-        require(
-            {True, False} <= set(observed.values()),
-            f"trigger eval polarity drift: {skill}",
-        )
-        trigger_maps[skill] = observed
 
     writer = trigger_maps["writing-reviewable-pr-descriptions"]
     publisher = trigger_maps["publishing-reviewable-prs"]
@@ -5819,6 +6249,7 @@ def validate(
     emit_success: bool = True,
 ) -> None:
     root = locate_plugin(repo_root)
+    pending_diagnostics = []
     validate_tree_entries(root)
     validate_topology(root)
     validate_no_compatibility_shims(root)
@@ -5828,7 +6259,9 @@ def validate(
     validate_serialized_files(root, source_stage=source_stage)
     validate_markdown_authoring_eval_corpus(root)
     if check_markdown_evidence:
-        validate_markdown_authoring_evidence(root)
+        pending_diagnostics.extend(
+            validate_markdown_authoring_evidence(root, source_stage=source_stage)
+        )
     validate_manifests(root)
     # Source-stage Atlas validation proves the candidate's public source shape.
     # Adapter YAML is a release-only concern and may require an optional parser.
@@ -5838,9 +6271,11 @@ def validate(
     validate_links_and_call_projection(root)
     validate_portability(root)
     validate_atlas_split(repo_root, root)
-    validate_external_eval_tree(repo_root)
+    validate_external_eval_tree(repo_root, source_stage=source_stage)
     if check_relation_evidence:
-        validate_relation_evidence(repo_root)
+        pending_diagnostics.extend(
+            validate_relation_evidence(repo_root, source_stage=source_stage)
+        )
     validate_retirement_contribution_ledger(repo_root, root)
     validate_behavior_corpus(repo_root)
     validate_merge_eval_isolation(repo_root)
@@ -5856,6 +6291,9 @@ def validate(
         check_content_lock = not source_stage
     if check_content_lock:
         validate_content_lock(repo_root, root)
+    if emit_success:
+        for diagnostic in pending_diagnostics:
+            print(diagnostic)
     if selected_skill is not None and emit_success:
         require(selected_skill in PUBLIC_SKILLS, "unknown public skill")
         print(f"Mergecraft quick validation passed: {selected_skill}")
