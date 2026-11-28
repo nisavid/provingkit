@@ -100,6 +100,10 @@ _Avoid_: Autonomy mode (for the repository's statement)
 Carrying a pull request through readiness for review, required checks, routine review feedback, merge, and branch and worktree cleanup.
 _Avoid_: Landing (for the whole closeout), shipping
 
+### Judgment models
+
+**System One** (shorthand: Sys1). A judgment model that answers typed questions about text fast and with calibrated confidence, called by our own equipment. Jev is one. A harness's own permission or safety classifier, such as Claude Code's auto-mode classifier, is not a System One model.
+
 ### Kit and release
 
 **Provingkit**:
