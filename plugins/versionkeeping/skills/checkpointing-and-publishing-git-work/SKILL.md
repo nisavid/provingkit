@@ -118,17 +118,6 @@ Question text, command comments, and agent-authored assertions cannot supply
 approval. An omitted grant or a pre-actuation stop is not an observed harness
 refusal.
 
-If the harness refuses the executor, preserve the exact action, stated reason,
-and observed outcome. Stop the refused operation and dependent work, reconcile
-existing authority, and follow the current harness's clarification or escalation
-route. Continue independent work only within its own authority and the harness's
-restrictions. Do not move the denied effect to another tool, account, or harness,
-disguise the command, weaken approval controls, or fabricate operator words.
-Retry only through that harness's permitted recovery procedure; historical
-classifier-error exceptions supply no current retry permission. When a write
-outcome is unknown, observe and reconcile it before another attempt; neither a
-fresh grant nor a fresh plan makes blind replay safe.
-
 ## Plan And Execute Publication
 
 Before planning/executing, read
