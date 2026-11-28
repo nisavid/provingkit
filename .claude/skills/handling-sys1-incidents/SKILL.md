@@ -63,11 +63,6 @@ them. A replay or source reading can explain a path without proving that the
 native incident took that path. An attributed recovery claim needs observed
 recovery evidence before it can support resolution.
 
-Follow the current action boundary when a tool refuses an operation. Preserve
-the exact action and stated reason, reconcile existing authority, and use the
-owning escalation route if execution remains unavailable. Do not move the
-denied effect to another tool, account, or harness.
-
 Finish with a supported explanation, a testable uncertainty, or a no-change
 conclusion whose scope is explicit.
 
