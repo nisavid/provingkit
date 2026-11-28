@@ -5,9 +5,8 @@ description: Use when diagnosing an observed Sys1 safety denial, supervision mis
 
 # Handle Sys1 Incidents
 
-Turn an observed Sys1 intervention into a bounded finding and, when supported,
-a correction proposal. Sys1 here means the probabilistic judgment used by an
-agent's safety or supervision integration.
+Turn an observed [System One (Sys1)](../../../GLOSSARY.md) intervention into a
+bounded finding and, when supported, a correction proposal.
 
 Use this procedure for an observed incident. Ordinary tool failures, pending
 permission requests, and general Jev adoption use their existing workflows.
